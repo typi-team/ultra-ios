@@ -1,0 +1,16 @@
+PODS:
+  - UltraCore (0.1.1)
+
+DEPENDENCIES:
+  - UltraCore (from `../`)
+
+EXTERNAL SOURCES:
+  UltraCore:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  UltraCore: 3fb1e756a43e2c601cdd066f36155b4339bbd43c
+
+PODFILE CHECKSUM: b144be75f72febf27fa044b1f772113017f11245
+
+COCOAPODS: 1.12.0

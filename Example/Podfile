@@ -8,6 +8,5 @@ target 'UltraCore_Example' do
   target 'UltraCore_Tests' do
     inherit! :search_paths
 
-    
   end
 end
