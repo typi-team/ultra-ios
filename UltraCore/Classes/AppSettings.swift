@@ -1,3 +1,4 @@
+import UIKit
 
 open class AppSettings {
     public init() {
@@ -5,4 +6,9 @@ open class AppSettings {
     }
     
     public var version: String = "0.0.1"
+}
+
+
+public func showSignUp(view controller: UIViewController) {
+    SignUpWireframe.init(presentation: controller)
 }
