@@ -12,9 +12,10 @@ import UIKit
 
 final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
 
+    fileprivate let logoImage = UIImageView.init {
+        $0.image = UIImage.init(named: "")
+    }
+    
 }
-
-// MARK: - Extensions -
-
 extension SignUpViewController: SignUpViewInterface {
 }

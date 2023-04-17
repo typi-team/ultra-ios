@@ -7,13 +7,13 @@
 //
 
 import UIKit
-import UltraCore
+//import UltraCore
 
 class ViewController: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        showSignUp(view: self)
+//        showSignUp(view: self)
     }
 }
 

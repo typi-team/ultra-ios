@@ -3,6 +3,7 @@ use_frameworks!
 platform :ios, '10.0'
 
 target 'UltraCore_Example' do
+  
   pod 'UltraCore', :path => '../'
 
   target 'UltraCore_Tests' do
