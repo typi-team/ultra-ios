@@ -23,7 +23,7 @@ final class SignUpWireframe: BaseWireframe<SignUpViewController> {
         let interactor = SignUpInteractor()
         let presenter = SignUpPresenter(view: moduleViewController, wireframe: self)
         moduleViewController.presenter = presenter
-        moduleViewController.modalPresentationStyle = .fullScreen
+        
         controller.present(moduleViewController, animated: true)
     }
 }

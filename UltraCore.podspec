@@ -29,6 +29,7 @@ Pod::Spec.new do |s|
   s.ios.deployment_target = '11.0'
 
   s.source_files = 'UltraCore/Classes/**/*'
+  s.source_files = 'UltraCore/Classes/Sources/**/*'
   
   # s.resource_bundles = {
   #   'UltraCore' => ['UltraCore/Assets/*.png']

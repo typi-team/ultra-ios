@@ -10,5 +10,5 @@ open class AppSettings {
 
 
 public func showSignUp(view controller: UIViewController) {
-//    SignUpWispec.source_files       = 'Reachability/common/*.swift'reframe.init(presentation: controller)
+    SignUpWireframe.init(presentation: controller)
 }
