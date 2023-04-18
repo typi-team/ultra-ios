@@ -26,7 +26,9 @@ class BaseViewController<T>: UIViewController {
 
 
 extension UIViewController {
-    func setupViews() {}
-    func setupConstraints() {}
-    func setupInitialData() {}
+    @objc func setupViews() {
+        self.view.backgroundColor = .lightGray
+    }
+    @objc func setupConstraints() {}
+    @objc func setupInitialData() {}
 }

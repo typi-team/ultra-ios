@@ -17,3 +17,8 @@ public extension WithCreation where Self: NSObject {
         closure(self)
     }
 }
+
+
+extension String {
+    var url: URL? { URL(string: self) }
+}

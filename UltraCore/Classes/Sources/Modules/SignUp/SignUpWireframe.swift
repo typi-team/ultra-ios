@@ -19,8 +19,6 @@ final class SignUpWireframe: BaseWireframe<SignUpViewController> {
     init(presentation controller: UIViewController) {
         let moduleViewController = SignUpViewController()
         super.init(viewController: moduleViewController)
-
-        let interactor = SignUpInteractor()
         let presenter = SignUpPresenter(view: moduleViewController, wireframe: self)
         moduleViewController.presenter = presenter
         

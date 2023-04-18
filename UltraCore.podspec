@@ -31,14 +31,16 @@ Pod::Spec.new do |s|
   s.source_files = 'UltraCore/Classes/**/*'
   s.source_files = 'UltraCore/Classes/Sources/**/*'
   
-  # s.resource_bundles = {
-  #   'UltraCore' => ['UltraCore/Assets/*.png']
-  # }
+   s.resource_bundles = {
+     'UltraCore' => ['UltraCore/Assets/*.xcassets']
+   }
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
    s.dependency 'gRPC-Swift'
    s.dependency 'Protobuf'
    s.dependency 'SnapKit'
+   s.dependency 'SDWebImage'
    s.dependency 'RxSwift'
+   s.dependency 'PodAsset'
 end
