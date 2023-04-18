@@ -1,11 +1,10 @@
 import UIKit
+import PodAsset
 
 open class AppSettings {
-    public init() {
-        // реализация инициализатора
-    }
-    
+    static let shared = AppSettings()
     public var version: String = "0.0.1"
+    lazy var podAsset = PodAsset.bundle(forPod: "UltraCore")
 }
 
 

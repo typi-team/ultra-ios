@@ -7,8 +7,6 @@
 
 import Foundation
 import SDWebImage
-import AssetsLibrary
-import PodAsset
 
 extension UIImageView {
     enum PlaceholderType {
@@ -18,18 +16,19 @@ extension UIImageView {
     func loadImage(by path: String?, placeholder: PlaceholderType = .square) {
         self.image = placeholder.image
         self.contentMode = .scaleAspectFit
-        self.image = placeholder.image
-        
-//        self.sd_setImage(with: path?.url, placeholderImage: placeholder.image) { image, error, cacheType, url in
-//            Logger.debug(image?.description ?? "")
-//        }
+
+        self.sd_setImage(with: path?.url, placeholderImage: placeholder.image) { image, error, cacheType, url in
+            Logger.debug(image?.description ?? "")
+        }
     }
 }
 
 extension UIImageView.PlaceholderType {
-//    var image: UIImage? { UIImage(named: "placeholder", in: Bundle.init(identifier: "Media"), compatibleWith: nil) }
-    
-    var image: UIImage? {
-        return UIImage.init(named: "placeholder", in: PodAsset.bundle(forPod: "UltraCore"), compatibleWith: nil)
+    var image: UIImage? {  UIImage.named("ff_logo_text") }
+}
+
+extension UIImage {
+    static func named(_ name: String) -> UIImage? {
+        return UIImage(named: name, in: AppSettings.shared.podAsset, compatibleWith: nil)
     }
 }

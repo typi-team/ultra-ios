@@ -32,7 +32,7 @@ Pod::Spec.new do |s|
   s.source_files = 'UltraCore/Classes/Sources/**/*'
   
    s.resource_bundles = {
-     'UltraCore' => ['UltraCore/Assets/*.xcassets']
+     'UltraCore' => ['UltraCore/Assets/*.xcassets','UltraCore/Assets/*.lproj']
    }
 
   # s.public_header_files = 'Pod/Classes/**/*.h'

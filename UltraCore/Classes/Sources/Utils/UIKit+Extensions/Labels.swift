@@ -11,20 +11,20 @@ import UIKit
 class BoldLabel: UILabel {
     override func awakeFromNib() {
         super.awakeFromNib()
-        font = boldFont
+        font = .defaultRegularBody
     }
 }
 
 class RegularLabel: UILabel {
     override func awakeFromNib() {
         super.awakeFromNib()
-        font = regularFont
+        font = .defaultRegularBody
     }
 }
 
 class HeadlineLabel: UILabel {
     override func awakeFromNib() {
         super.awakeFromNib()
-        font = headlineFont
+        font = .defaultRegularBody
     }
 }

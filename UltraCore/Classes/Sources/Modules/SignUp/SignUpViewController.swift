@@ -19,19 +19,51 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
     fileprivate let config = SignUpConfigs()
 
     fileprivate let logoImage = UIImageView()
-
+    
+    fileprivate let scrollView = UIScrollView({
+        $0.translatesAutoresizingMaskIntoConstraints = false
+    })
+    
+    fileprivate let stackView = UIStackView({
+        $0.axis = .vertical
+        $0.translatesAutoresizingMaskIntoConstraints = false
+    })
+    
+    fileprivate let headlineText = RegularLabel({
+        $0.numberOfLines = 0
+        $0.textAlignment = .center
+    })
+    
     override func setupViews() {
         super.setupViews()
-        self.logoImage.loadImage(by: self.config.logoUrl)
-        self.view.addSubview(self.logoImage)
+        self.view.addSubview(scrollView)
+        self.scrollView.addSubview(stackView)
+        self.stackView.addArrangedSubview(logoImage)
+        self.stackView.setCustomSpacing(71, after: logoImage)
+        self.stackView.addArrangedSubview(headlineText)
     }
 
     override func setupConstraints() {
         super.setupConstraints()
-        self.logoImage.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-            make.height.width.equalTo(64)
+
+        self.scrollView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
         }
+
+        self.stackView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+            make.width.equalToSuperview()
+        }
+        
+        self.logoImage.snp.makeConstraints { make in
+            make.height.equalTo(48)
+        }
+    }
+    
+    override func setupInitialData() {
+        super.setupInitialData()
+        self.logoImage.loadImage(by: self.config.logoUrl)
+        self.headlineText.text = "Для регистрации в чат сервисе введите ваши данные"
     }
 }
 

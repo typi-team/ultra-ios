@@ -18,7 +18,6 @@ class BaseViewController<T>: UIViewController {
         self.setupInitialData()
     }
     
-    
     deinit {
         Logger.info("Deinit \(String.init(describing: self))")
     }
@@ -27,7 +26,7 @@ class BaseViewController<T>: UIViewController {
 
 extension UIViewController {
     @objc func setupViews() {
-        self.view.backgroundColor = .lightGray
+        self.view.backgroundColor = .gray100
     }
     @objc func setupConstraints() {}
     @objc func setupInitialData() {}
