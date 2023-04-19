@@ -7,24 +7,47 @@
 
 import UIKit
 
-// Создаем кастомные классы UILabel
-class BoldLabel: UILabel {
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        font = .defaultRegularBody
+class BaseLabel: UILabel {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        self.setupView()
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        self.setupView()
+    }
+
+    func setupView() {
+        textColor = .gray500
+        font = .defaultRegularFootnote
     }
 }
 
-class RegularLabel: UILabel {
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        font = .defaultRegularBody
+class RegularBody: BaseLabel {
+    override func setupView() {
+        super.setupView()
+        self.font = .defaultRegularBody
     }
 }
 
-class HeadlineLabel: UILabel {
-    override func awakeFromNib() {
-        super.awakeFromNib()
-        font = .defaultRegularBody
+class RegularCallout: BaseLabel {
+    override func setupView() {
+        super.setupView()
+        self.font = .defaultRegularCallout
+    }
+}
+
+class RegularFootnote: BaseLabel {
+    override func setupView() {
+        super.setupView()
+        self.font = .defaultRegularFootnote
+    }
+}
+
+class RegularCaption3: BaseLabel {
+    override func setupView() {
+        super.setupView()
+        self.font = .defaultRegularCaption3
     }
 }

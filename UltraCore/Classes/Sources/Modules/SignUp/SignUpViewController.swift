@@ -19,9 +19,39 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
     fileprivate let config = SignUpConfigs()
 
     fileprivate let logoImage = UIImageView()
-    
+
     fileprivate let scrollView = UIScrollView({
         $0.translatesAutoresizingMaskIntoConstraints = false
+    })
+
+    fileprivate lazy var nextButton = ElevatedButton.init({
+        $0.setTitle("Продолжить", for: .normal)
+        $0.addAction {[weak self] in
+            guard let `self` = self else { return }
+            Logger.debug(self.description)
+        }
+    })
+
+    fileprivate let phoneTextField = CustomTextField({
+        $0.keyboardType = .phonePad
+        $0.backgroundColor = .white
+        $0.font = .defaultRegularBody
+        $0.placeholder = "Ваш номер телефона"
+    })
+
+    fileprivate let firstTextField = CustomTextField({
+        $0.keyboardType = .phonePad
+        $0.backgroundColor = .white
+        $0.font = .defaultRegularBody
+        $0.placeholder = "Ваше имя"
+
+    })
+
+    fileprivate let lastTextField = CustomTextField({
+        $0.keyboardType = .phonePad
+        $0.backgroundColor = .white
+        $0.font = .defaultRegularBody
+        $0.placeholder = "Ваша Фамилия"
     })
     
     fileprivate let stackView = UIStackView({
@@ -29,7 +59,7 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         $0.translatesAutoresizingMaskIntoConstraints = false
     })
     
-    fileprivate let headlineText = RegularLabel({
+    fileprivate let headlineText = RegularCallout({
         $0.numberOfLines = 0
         $0.textAlignment = .center
     })
@@ -39,8 +69,39 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         self.view.addSubview(scrollView)
         self.scrollView.addSubview(stackView)
         self.stackView.addArrangedSubview(logoImage)
-        self.stackView.setCustomSpacing(71, after: logoImage)
+        self.stackView.setCustomSpacing(kHeadlinePadding * 3, after: logoImage)
         self.stackView.addArrangedSubview(headlineText)
+        self.stackView.setCustomSpacing(kHeadlinePadding, after: headlineText)
+        
+        self.stackView.addArrangedSubview(phoneTextField)
+        self.stackView.setCustomSpacing(kLowPadding, after: phoneTextField)
+        let phoneHint = RegularFootnote({ $0.text = "    " + "Например +77761595595" })
+        self.stackView.addArrangedSubview(phoneHint)
+        self.stackView.setCustomSpacing(kHeadlinePadding, after: phoneHint)
+        
+        self.stackView.addArrangedSubview(firstTextField)
+        self.stackView.setCustomSpacing(kLowPadding, after: firstTextField)
+        let firstHint = RegularFootnote({ $0.text = "    " + "Например Иван" })
+        self.stackView.addArrangedSubview(firstHint)
+        self.stackView.setCustomSpacing(kHeadlinePadding, after: firstHint)
+        
+        self.stackView.addArrangedSubview(lastTextField)
+        self.stackView.setCustomSpacing(kLowPadding, after: lastTextField)
+        let lastHint = RegularFootnote({ $0.text = "    " + "Например Иванов" })
+        self.stackView.addArrangedSubview(lastHint)
+        self.stackView.setCustomSpacing(kHeadlinePadding * 2, after: lastHint)
+        
+        let nextStack = UIStackView({
+            $0.alignment = .center
+            $0.distribution = .equalCentering
+            
+            $0.addArrangedSubview(UIView())
+            $0.addArrangedSubview(nextButton)
+            $0.addArrangedSubview(UIView())
+        })
+        self.stackView.addArrangedSubview(nextStack)
+        self.stackView.setCustomSpacing(kHeadlinePadding * 2, after: nextStack)
+        
     }
 
     override func setupConstraints() {
@@ -48,6 +109,7 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
 
         self.scrollView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
+            make.width.equalToSuperview()
         }
 
         self.stackView.snp.makeConstraints { make in
@@ -56,7 +118,13 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         }
         
         self.logoImage.snp.makeConstraints { make in
-            make.height.equalTo(48)
+            make.height.equalTo(kHeadlinePadding * 2)
+        }
+        
+        self.nextButton.snp.makeConstraints { make in
+            make.height.equalTo(kMediumPadding * 3)
+            make.left.right.equalTo(kHeadlinePadding)
+            make.right.equalTo(-kHeadlinePadding)
         }
     }
     

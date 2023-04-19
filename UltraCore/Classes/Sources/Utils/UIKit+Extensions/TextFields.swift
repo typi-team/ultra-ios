@@ -6,14 +6,20 @@
 //
 
 import UIKit
-class CustomTextField: UITextField {
-    let padding = UIEdgeInsets(top: 0, left: 12, bottom: 0, right: 12)
 
-    override func textRect(forBounds bounds: CGRect) -> CGRect {
-        return bounds.insetBy(dx: padding.left, dy: padding.right)
+class CustomTextField: UITextField {
+    
+    var padding = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
+
+    override open func textRect(forBounds bounds: CGRect) -> CGRect {
+        return UIEdgeInsetsInsetRect(bounds, padding)
     }
 
-    override func editingRect(forBounds bounds: CGRect) -> CGRect {
-        return bounds.insetBy(dx: padding.left, dy: padding.right)
+    override open func placeholderRect(forBounds bounds: CGRect) -> CGRect {
+        return UIEdgeInsetsInsetRect(bounds, padding)
+    }
+
+    override open func editingRect(forBounds bounds: CGRect) -> CGRect {
+        return UIEdgeInsetsInsetRect(bounds, padding)
     }
 }

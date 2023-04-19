@@ -8,21 +8,19 @@
 import Foundation
 
 extension UIFont {
+    class var defaultRegularBody: UIFont {
+        return UIFont.systemFont(ofSize: 17.0, weight: .regular)
+    }
 
-  class var defaultRegularBody: UIFont {
-    return UIFont(name: "Inter-Regular", size: 17.0)!
-  }
+    class var defaultRegularCallout: UIFont {
+        return UIFont.systemFont(ofSize: 16.0, weight: .regular)
+    }
 
-  class var defaultRegularCallout: UIFont {
-    return UIFont(name: "Inter-Regular", size: 16.0)!
-  }
+    class var defaultRegularFootnote: UIFont {
+        return UIFont.systemFont(ofSize: 13.0, weight: .regular)
+    }
 
-  class var defaultRegularFootnote: UIFont {
-    return UIFont(name: "Inter-Regular", size: 13.0)!
-  }
-
-  class var defaultRegularCaption3: UIFont {
-    return UIFont(name: "Inter-Regular", size: 10.0)!
-  }
-
+    class var defaultRegularCaption3: UIFont {
+        return UIFont.systemFont(ofSize: 10.0, weight: .regular)
+    }
 }

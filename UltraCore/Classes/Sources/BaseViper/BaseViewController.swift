@@ -7,6 +7,10 @@
 
 import UIKit
 
+let kHeadlinePadding: CGFloat = 24
+let kMediumPadding: CGFloat = 16
+let kLowPadding: CGFloat = 8
+
 class BaseViewController<T>: UIViewController {
     
     var presenter: T?
