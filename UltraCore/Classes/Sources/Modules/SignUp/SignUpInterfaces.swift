@@ -17,4 +17,6 @@ protocol SignUpViewInterface: ViewInterface {
 }
 
 protocol SignUpPresenterInterface: PresenterInterface {
+    
+    func login(lastName: String, firstname: String, phone number: String)
 }

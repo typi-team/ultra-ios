@@ -20,6 +20,22 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
+struct FileChunk {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var fileID: String = String()
+
+  var data: Data = Data()
+
+  var seqNum: Int64 = 0
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 struct FileCreateRequest {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -30,6 +46,8 @@ struct FileCreateRequest {
   var size: Int64 = 0
 
   var mimeType: String = String()
+
+  var chunks: [FileChunk] = []
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -90,22 +108,6 @@ struct FileUploadResponse {
   init() {}
 }
 
-struct FileChunk {
-  // SwiftProtobuf.Message conformance is added in an extension below. See the
-  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
-  // methods supported on all messages.
-
-  var fileID: String = String()
-
-  var data: Data = Data()
-
-  var seqNum: Int64 = 0
-
-  var unknownFields = SwiftProtobuf.UnknownStorage()
-
-  init() {}
-}
-
 struct GetUploadedChunksRequest {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -145,12 +147,12 @@ struct PhotoDownloadRequest {
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
+extension FileChunk: @unchecked Sendable {}
 extension FileCreateRequest: @unchecked Sendable {}
 extension FileDownloadRequest: @unchecked Sendable {}
 extension FileCreateResponse: @unchecked Sendable {}
 extension FileUploadAcceptedChunks: @unchecked Sendable {}
 extension FileUploadResponse: @unchecked Sendable {}
-extension FileChunk: @unchecked Sendable {}
 extension GetUploadedChunksRequest: @unchecked Sendable {}
 extension GetUploadedChunksResponse: @unchecked Sendable {}
 extension PhotoDownloadRequest: @unchecked Sendable {}
@@ -158,12 +160,57 @@ extension PhotoDownloadRequest: @unchecked Sendable {}
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
+extension FileChunk: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "FileChunk"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "file_id"),
+    2: .same(proto: "data"),
+    3: .standard(proto: "seq_num"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.fileID) }()
+      case 2: try { try decoder.decodeSingularBytesField(value: &self.data) }()
+      case 3: try { try decoder.decodeSingularInt64Field(value: &self.seqNum) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.fileID.isEmpty {
+      try visitor.visitSingularStringField(value: self.fileID, fieldNumber: 1)
+    }
+    if !self.data.isEmpty {
+      try visitor.visitSingularBytesField(value: self.data, fieldNumber: 2)
+    }
+    if self.seqNum != 0 {
+      try visitor.visitSingularInt64Field(value: self.seqNum, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: FileChunk, rhs: FileChunk) -> Bool {
+    if lhs.fileID != rhs.fileID {return false}
+    if lhs.data != rhs.data {return false}
+    if lhs.seqNum != rhs.seqNum {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension FileCreateRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "FileCreateRequest"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "name"),
     2: .same(proto: "size"),
     3: .same(proto: "mimeType"),
+    4: .same(proto: "chunks"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -175,6 +222,7 @@ extension FileCreateRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       case 1: try { try decoder.decodeSingularStringField(value: &self.name) }()
       case 2: try { try decoder.decodeSingularInt64Field(value: &self.size) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self.mimeType) }()
+      case 4: try { try decoder.decodeRepeatedMessageField(value: &self.chunks) }()
       default: break
       }
     }
@@ -190,6 +238,9 @@ extension FileCreateRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if !self.mimeType.isEmpty {
       try visitor.visitSingularStringField(value: self.mimeType, fieldNumber: 3)
     }
+    if !self.chunks.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.chunks, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -197,6 +248,7 @@ extension FileCreateRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if lhs.name != rhs.name {return false}
     if lhs.size != rhs.size {return false}
     if lhs.mimeType != rhs.mimeType {return false}
+    if lhs.chunks != rhs.chunks {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -336,50 +388,6 @@ extension FileUploadResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
   }
 
   static func ==(lhs: FileUploadResponse, rhs: FileUploadResponse) -> Bool {
-    if lhs.unknownFields != rhs.unknownFields {return false}
-    return true
-  }
-}
-
-extension FileChunk: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "FileChunk"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .standard(proto: "file_id"),
-    2: .same(proto: "data"),
-    3: .standard(proto: "seq_num"),
-  ]
-
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.fileID) }()
-      case 2: try { try decoder.decodeSingularBytesField(value: &self.data) }()
-      case 3: try { try decoder.decodeSingularInt64Field(value: &self.seqNum) }()
-      default: break
-      }
-    }
-  }
-
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if !self.fileID.isEmpty {
-      try visitor.visitSingularStringField(value: self.fileID, fieldNumber: 1)
-    }
-    if !self.data.isEmpty {
-      try visitor.visitSingularBytesField(value: self.data, fieldNumber: 2)
-    }
-    if self.seqNum != 0 {
-      try visitor.visitSingularInt64Field(value: self.seqNum, fieldNumber: 3)
-    }
-    try unknownFields.traverse(visitor: &visitor)
-  }
-
-  static func ==(lhs: FileChunk, rhs: FileChunk) -> Bool {
-    if lhs.fileID != rhs.fileID {return false}
-    if lhs.data != rhs.data {return false}
-    if lhs.seqNum != rhs.seqNum {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

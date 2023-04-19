@@ -27,8 +27,11 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
     fileprivate lazy var nextButton = ElevatedButton.init({
         $0.setTitle("Продолжить", for: .normal)
         $0.addAction {[weak self] in
-            guard let `self` = self else { return }
-            Logger.debug(self.description)
+            guard let `self` = self,
+            let phone = self.phoneTextField.text,
+            let firstname = self.firstTextField.text,
+                let lastname = self.lastTextField.text else { return }
+            self.presenter?.login(lastName: lastname, firstname: firstname, phone: phone)
         }
     })
 
@@ -40,15 +43,16 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
     })
 
     fileprivate let firstTextField = CustomTextField({
-        $0.keyboardType = .phonePad
         $0.backgroundColor = .white
         $0.font = .defaultRegularBody
         $0.placeholder = "Ваше имя"
-
     })
 
-    fileprivate let lastTextField = CustomTextField({
-        $0.keyboardType = .phonePad
+    fileprivate lazy var lastTextField = CustomTextField({
+        $0.returnKeyType = .done
+        $0.addAction(for: .editingDidEndOnExit) {[weak self] in
+            self?.view.endEditing(true)
+        }
         $0.backgroundColor = .white
         $0.font = .defaultRegularBody
         $0.placeholder = "Ваша Фамилия"
