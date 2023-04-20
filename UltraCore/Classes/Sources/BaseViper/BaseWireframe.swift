@@ -5,6 +5,8 @@ protocol WireframeInterface: AnyObject {
 
 class BaseWireframe<ViewController> where ViewController: UIViewController {
 
+    let appSettings: AppSettings = AppSettingsImpl.shared
+    
     private weak var _viewController: ViewController?
 
     // We need it in order to retain the view controller reference upon first access

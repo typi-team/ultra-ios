@@ -24,7 +24,7 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         $0.translatesAutoresizingMaskIntoConstraints = false
     })
 
-    fileprivate lazy var nextButton = ElevatedButton.init({
+    fileprivate lazy var nextButton = ElevatedButton({
         $0.setTitle("Продолжить", for: .normal)
         $0.addAction {[weak self] in
             guard let `self` = self,
@@ -35,27 +35,29 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         }
     })
 
-    fileprivate let phoneTextField = CustomTextField({
-        $0.keyboardType = .phonePad
+    fileprivate let phoneTextField = PhoneNumberTextField({
         $0.backgroundColor = .white
         $0.font = .defaultRegularBody
         $0.placeholder = "Ваш номер телефона"
     })
 
-    fileprivate let firstTextField = CustomTextField({
+    fileprivate lazy var firstTextField = CustomTextField({
         $0.backgroundColor = .white
         $0.font = .defaultRegularBody
         $0.placeholder = "Ваше имя"
+        $0.addAction(for: .editingDidEndOnExit) {[weak self] in
+            self?.lastTextField.becomeFirstResponder()
+        }
     })
 
     fileprivate lazy var lastTextField = CustomTextField({
         $0.returnKeyType = .done
-        $0.addAction(for: .editingDidEndOnExit) {[weak self] in
-            self?.view.endEditing(true)
-        }
         $0.backgroundColor = .white
         $0.font = .defaultRegularBody
         $0.placeholder = "Ваша Фамилия"
+        $0.addAction(for: .editingDidEndOnExit) {[weak self] in
+            self?.view.endEditing(true)
+        }
     })
     
     fileprivate let stackView = UIStackView({
@@ -112,8 +114,10 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         super.setupConstraints()
 
         self.scrollView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-            make.width.equalToSuperview()
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(kMediumPadding)
+            make.leading.equalTo(view.safeAreaLayoutGuide.snp.leading)
+            make.trailing.equalTo(view.safeAreaLayoutGuide.snp.trailing)
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-kMediumPadding)
         }
 
         self.stackView.snp.makeConstraints { make in

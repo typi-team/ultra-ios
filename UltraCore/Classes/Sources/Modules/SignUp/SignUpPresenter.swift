@@ -10,53 +10,75 @@
   import NIO
 import Foundation
 import GRPC
+import RxSwift
 
 final class SignUpPresenter {
-
-    // MARK: - Private properties -
-
+    
+    private let disposeBag:DisposeBag = .init()
     private unowned let view: SignUpViewInterface
-//    private let interactor: SignUpInteractorInterface
+    private let appSettingsStore: AppSettingsStore
     private let wireframe: SignUpWireframeInterface
-
+    
+    private let jwtInteractor: UseCase<IssueJwtRequest, IssueJwtResponse>
+    private let userIdInteractor: UseCase<GetUserIdRequest, GetUserIdResponse>
+    
+    
     // MARK: - Lifecycle -
-
-    init(
-        view: SignUpViewInterface,
-//        interactor: SignUpInteractorInterface,
-        wireframe: SignUpWireframeInterface
-    ) {
+    init(view: SignUpViewInterface,
+         appSettingsStore: AppSettingsStore,
+         wireframe: SignUpWireframeInterface,
+         jwtInteractor: UseCase<IssueJwtRequest, IssueJwtResponse>,
+         userIdInteractor: UseCase<GetUserIdRequest, GetUserIdResponse>) {
         self.view = view
-//        self.interactor = interactor
         self.wireframe = wireframe
+        self.jwtInteractor = jwtInteractor
+        self.appSettingsStore = appSettingsStore
+        self.userIdInteractor = userIdInteractor
     }
 }
 
 // MARK: - Extensions -
-
 extension SignUpPresenter: SignUpPresenterInterface {
+    
+    
     func login(lastName: String, firstname: String, phone number: String) {
-        do {
-            let group = MultiThreadedEventLoopGroup.init(numberOfThreads: 1)
+        var params = GetUserIdRequest()
+        params.firstname = firstname
+        params.lastname = lastName
+        params.phone = number
 
-            var params = GetUserIdRequest.init()
-            params.firstname = firstname
-            params.lastname = lastName
-            params.phone = number
+        self.userIdInteractor.executeSingle(params: params)
             
-            let channel = try GRPCChannelPool.with(
-                target: .host("ultra-dev.typi.team", port: 8080),
-                transportSecurity: .plaintext,
-                eventLoopGroup : group)
-            let response = try AuthServiceNIOClient(channel:channel).issueJwt(IssueJwtRequest.init()).response.wait()
-            print(response.code)
-            
-        }catch let exception {
-            Logger.debug(exception.localizedDescription)
-        }
-        
-        
-        
+            .map({ response -> IssueJwtRequest in
+                var request = IssueJwtRequest()
+                request.userID = response.userID
+                request.deviceID = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
+                request.device = .ios
+                return request
+            })
+            .flatMap({ [weak self] request -> Single<IssueJwtResponse> in
+                guard let `self` = self else {
+                    return .never()
+                }
+                return self.jwtInteractor.executeSingle(params: request)
+            }).do(onSuccess: { [weak self] response in
+                guard let `self` = self else { return }
+                self.appSettingsStore.store(token: response.token)
+            })
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe(onSuccess: { [weak self] response in
+                guard let `self` = self else { return }
+                self.wireframe.navigateToContacts()
+            }, onFailure: { error in
+                fatalError(error.localizedDescription)
+            })
+            .disposed(by: self.disposeBag)
     }
     
+}
+
+
+fileprivate extension SignUpPresenter {
+
 }

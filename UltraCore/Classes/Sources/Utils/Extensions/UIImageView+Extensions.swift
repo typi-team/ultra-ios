@@ -16,10 +16,7 @@ extension UIImageView {
     func loadImage(by path: String?, placeholder: PlaceholderType = .square) {
         self.image = placeholder.image
         self.contentMode = .scaleAspectFit
-
-        self.sd_setImage(with: path?.url, placeholderImage: placeholder.image) { image, error, cacheType, url in
-            Logger.debug(image?.description ?? "")
-        }
+        self.sd_setImage(with: path?.url, placeholderImage: placeholder.image)
     }
 }
 
@@ -29,6 +26,6 @@ extension UIImageView.PlaceholderType {
 
 extension UIImage {
     static func named(_ name: String) -> UIImage? {
-        return UIImage(named: name, in: AppSettings.shared.podAsset, compatibleWith: nil)
+        return UIImage(named: name, in: AppSettingsImpl.shared.podAsset, compatibleWith: nil)
     }
 }

@@ -11,6 +11,7 @@
 import UIKit
 
 protocol SignUpWireframeInterface: WireframeInterface {
+    func navigateToContacts()
 }
 
 protocol SignUpViewInterface: ViewInterface {

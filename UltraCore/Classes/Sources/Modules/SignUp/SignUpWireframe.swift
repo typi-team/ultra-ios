@@ -11,22 +11,32 @@
 import UIKit
 
 final class SignUpWireframe: BaseWireframe<SignUpViewController> {
-
-    // MARK: - Private properties -
-
-    // MARK: - Module setup -
+    
     @discardableResult
-    init(presentation controller: UIViewController) {
-        let moduleViewController = SignUpViewController()
+    init() {
+        let moduleViewController = SignUpViewController({
+            $0.modalPresentationStyle = .fullScreen
+        })
         super.init(viewController: moduleViewController)
-        let presenter = SignUpPresenter(view: moduleViewController, wireframe: self)
+        let userIdInteractor = UserIdInteractorImpl.init(authService: appSettings.authService)
+        let jwtInteractor = JWTTokenInteractorImpl.init(authService: appSettings.authService)
+        let presenter = SignUpPresenter(view: moduleViewController,
+                                        appSettingsStore: AppSettingsStoreImpl(),
+                                        wireframe: self, jwtInteractor: jwtInteractor, userIdInteractor: userIdInteractor)
         moduleViewController.presenter = presenter
         
-        controller.present(moduleViewController, animated: true)
+    }
+    
+    func start(presentation controller: UIViewController) {
+        let navigation  = UINavigationController.init(rootViewController: self.viewController)
+        navigation.modalPresentationStyle = .fullScreen
+        controller.present(navigation, animated: true)
     }
 }
 
 // MARK: - Extensions -
-
 extension SignUpWireframe: SignUpWireframeInterface {
+    func navigateToContacts() {
+        self.navigationController?.pushWireframe(ConversationsWireframe())
+    }
 }
