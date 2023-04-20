@@ -10,21 +10,30 @@
 
 import UIKit
 
-final class ConversationsViewController: UIViewController {
+final class ConversationsViewController: BaseViewController<ConversationsPresenter> {
 
     // MARK: - Public properties -
 
-    var presenter: ConversationsPresenterInterface!
-
-    // MARK: - Lifecycle -
-
-    override func viewDidLoad() {
-        super.viewDidLoad()
+    fileprivate lazy var tableView: UITableView = .init { [weak self] view in
+        view.dataSource = self
     }
+    // MARK: - Lifecycle -
 
 }
 
 // MARK: - Extensions -
+
+extension ConversationsViewController: UITableViewDataSource {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return .max
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        return .init()
+    }
+    
+    
+}
 
 extension ConversationsViewController: ConversationsViewInterface {
 }
