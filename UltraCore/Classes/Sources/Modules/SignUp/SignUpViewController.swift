@@ -131,7 +131,7 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         
         self.nextButton.snp.makeConstraints { make in
             make.height.equalTo(kMediumPadding * 3)
-            make.left.right.equalTo(kHeadlinePadding)
+            make.left.equalTo(kHeadlinePadding)
             make.right.equalTo(-kHeadlinePadding)
         }
     }
@@ -140,6 +140,11 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         super.setupInitialData()
         self.logoImage.loadImage(by: self.config.logoUrl)
         self.headlineText.text = "Для регистрации в чат сервисе введите ваши данные"
+    }
+    
+    override func debugInitialData() {
+        super.debugInitialData()
+        self.presenter?.login(lastName: "Shalkar", firstname: "Rakish", phone: "+77756043100")
     }
 }
 

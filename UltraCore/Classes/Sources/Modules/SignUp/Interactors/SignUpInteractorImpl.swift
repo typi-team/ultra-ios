@@ -21,7 +21,7 @@ class UserIdInteractorImpl: UseCase<GetUserIdRequest, GetUserIdResponse> {
             guard let `self` = self else {
                 return Disposables.create()
             }
-            let call = self.authService.getUserId(params)
+            let call = self.authService.getUserId(params,callOptions:.default )
             call.response.whenComplete { result in
                 switch result {
                 case let .failure(error):
@@ -31,10 +31,14 @@ class UserIdInteractorImpl: UseCase<GetUserIdRequest, GetUserIdResponse> {
                 }
             }
 
-            return Disposables.create {
-                call.cancel(promise: nil)
-            }
+            return Disposables.create()
         }
     }
 }
+
+
+extension CallOptions {
+    static var `default`: CallOptions = .init(timeLimit: .timeout(.seconds(10)))
+}
+
 

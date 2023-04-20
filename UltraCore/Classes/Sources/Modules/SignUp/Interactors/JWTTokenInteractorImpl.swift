@@ -22,9 +22,8 @@ class JWTTokenInteractorImpl: UseCase<IssueJwtRequest, IssueJwtResponse> {
             guard let `self` = self else {
                 return Disposables.create()
             }
-            let call = self.authService.issueJwt(params,callOptions:CallOptions(limit: 5) )
-            call.path
-            
+            let call = self.authService.issueJwt(params, callOptions: .default)
+
             call.response.whenComplete { result in
                 switch result {
                 case let .failure(error):

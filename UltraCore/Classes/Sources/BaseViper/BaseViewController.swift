@@ -13,6 +13,8 @@ let kLowPadding: CGFloat = 8
 
 class BaseViewController<T>: UIViewController {
     
+    var isDebugMode: Bool = true
+    
     var presenter: T?
     
     override func viewDidLoad() {
@@ -20,6 +22,8 @@ class BaseViewController<T>: UIViewController {
         self.setupViews()
         self.setupConstraints()
         self.setupInitialData()
+        
+        if isDebugMode { self.debugInitialData() }
     }
     
     deinit {
@@ -29,6 +33,11 @@ class BaseViewController<T>: UIViewController {
 
 
 extension UIViewController {
+    
+    
+    @objc func debugInitialData() {
+        
+    }
     @objc func setupViews() {
         self.view.backgroundColor = .gray100
     }

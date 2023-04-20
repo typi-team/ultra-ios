@@ -71,7 +71,7 @@ extension SignUpPresenter: SignUpPresenterInterface {
                 guard let `self` = self else { return }
                 self.wireframe.navigateToContacts()
             }, onFailure: { error in
-                fatalError(error.localizedDescription)
+                print("error \(error.localizedDescription)")
             })
             .disposed(by: self.disposeBag)
     }
