@@ -9,16 +9,42 @@
 //
 
 import UIKit
+import RxSwift
+import RxCocoa
+import RxDataSources
 
-final class ConversationsViewController: BaseViewController<ConversationsPresenter> {
 
-    // MARK: - Public properties -
+final class ConversationsViewController: BaseViewController<ConversationsPresenterInterface> {
 
-    fileprivate lazy var tableView: UITableView = .init { [weak self] view in
-        view.dataSource = self
+    fileprivate lazy var tableView: UITableView = .init({
+        $0.rowHeight = 68
+        $0.registerCell(type: ConversationCell.self)
+    })
+        
+    override func setupViews() {
+        super.setupViews()
+        self.view.addSubview(tableView)
+        
+        self.navigationItem.titleView = HeadlineBody({ $0.text = "Список чатов" })
     }
-    // MARK: - Lifecycle -
-
+    
+    override func setupConstraints() {
+        super.setupConstraints()
+        self.tableView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
+    }
+    
+    override func setupInitialData() {
+        self.presenter?.conversation
+            .observe(on: MainScheduler.instance)
+            .bind(to: tableView.rx.items) { tableView, index, model in
+                let cell: ConversationCell = tableView.dequeueCell()
+                cell.setup(conversation: model)
+                return cell
+            }
+            .disposed(by: self.disposeBag)
+    }
 }
 
 // MARK: - Extensions -

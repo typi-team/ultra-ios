@@ -9,6 +9,7 @@
 //
 
 import UIKit
+import RxSwift
 
 protocol ConversationsWireframeInterface: WireframeInterface {
 }
@@ -17,4 +18,5 @@ protocol ConversationsViewInterface: ViewInterface {
 }
 
 protocol ConversationsPresenterInterface: PresenterInterface {
+    var conversation: BehaviorSubject<[Conversation]> { get set }
 }

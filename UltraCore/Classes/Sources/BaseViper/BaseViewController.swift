@@ -6,16 +6,16 @@
 //
 
 import UIKit
+import RxSwift
 
 let kHeadlinePadding: CGFloat = 24
 let kMediumPadding: CGFloat = 16
 let kLowPadding: CGFloat = 8
 
 class BaseViewController<T>: UIViewController {
-    
-    var isDebugMode: Bool = true
-    
     var presenter: T?
+    var isDebugMode: Bool = true
+    let disposeBag: DisposeBag = .init()
     
     override func viewDidLoad() {
         super.viewDidLoad()

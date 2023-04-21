@@ -9,6 +9,7 @@
 //
 
 import Foundation
+import RxSwift
 
 final class ConversationsPresenter {
 
@@ -16,6 +17,8 @@ final class ConversationsPresenter {
 
     private unowned let view: ConversationsViewInterface
     private let wireframe: ConversationsWireframeInterface
+    
+    var conversation: BehaviorSubject<[Conversation]> = .init(value: [DummyConversationImpl(), DummyConversationImpl()])
 
     // MARK: - Lifecycle -
 
