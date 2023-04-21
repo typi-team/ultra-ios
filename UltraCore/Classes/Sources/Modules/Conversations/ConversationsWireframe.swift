@@ -27,6 +27,7 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
     
     func presentWithNavigation(presentation controller: UIViewController) {
         let navigation  = UINavigationController.init(rootViewController: self.viewController)
+        navigation.navigationBar.tintColor = .gray500
         navigation.modalPresentationStyle = .fullScreen
         controller.present(navigation, animated: true)
     }
@@ -35,4 +36,8 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
 // MARK: - Extensions -
 
 extension ConversationsWireframe: ConversationsWireframeInterface {
+    
+    func navigateToContacts() {
+        self.navigationController?.pushWireframe(ContactsBookWireframe())
+    }
 }

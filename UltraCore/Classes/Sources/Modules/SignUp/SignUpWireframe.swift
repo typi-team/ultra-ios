@@ -29,6 +29,7 @@ final class SignUpWireframe: BaseWireframe<SignUpViewController> {
     
     func start(presentation controller: UIViewController) {
         let navigation  = UINavigationController.init(rootViewController: self.viewController)
+        navigation.navigationBar.tintColor = .gray500
         navigation.modalPresentationStyle = .fullScreen
         controller.present(navigation, animated: true)
     }

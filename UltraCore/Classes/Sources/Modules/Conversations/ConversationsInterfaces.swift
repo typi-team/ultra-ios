@@ -12,6 +12,7 @@ import UIKit
 import RxSwift
 
 protocol ConversationsWireframeInterface: WireframeInterface {
+    func navigateToContacts()
 }
 
 protocol ConversationsViewInterface: ViewInterface {
@@ -19,4 +20,6 @@ protocol ConversationsViewInterface: ViewInterface {
 
 protocol ConversationsPresenterInterface: PresenterInterface {
     var conversation: BehaviorSubject<[Conversation]> { get set }
+    
+    func navigateToContacts()
 }

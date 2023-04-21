@@ -24,6 +24,9 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
     override func setupViews() {
         super.setupViews()
         self.view.addSubview(tableView)
+        self.navigationItem.rightBarButtonItem = .init(image: .named("conversation_new_icon"),
+                                                       style: .plain, target: self,
+                                                       action: #selector(self.openContacts))
         
         self.navigationItem.titleView = HeadlineBody({ $0.text = "Список чатов" })
     }
@@ -45,9 +48,20 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
             }
             .disposed(by: self.disposeBag)
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        self.presenter?.navigateToContacts()
+    }
 }
 
 // MARK: - Extensions -
+
+extension ConversationsViewController {
+    @objc func openContacts(_ sender: Any) {
+        self.presenter?.navigateToContacts()
+    }
+}
 
 extension ConversationsViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {

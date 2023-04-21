@@ -34,4 +34,8 @@ final class ConversationsPresenter {
 // MARK: - Extensions -
 
 extension ConversationsPresenter: ConversationsPresenterInterface {
+    
+    func navigateToContacts() {
+        self.wireframe.navigateToContacts()
+    }
 }

@@ -37,6 +37,7 @@ open class AppSettingsImpl:AppSettings  {
 
 
 public func showSignUp(view controller: UIViewController) {
+    
     if AppSettingsImpl.shared.appStore.isAuthed {
         let wireframe = ConversationsWireframe()
         wireframe.presentWithNavigation(presentation: controller)
