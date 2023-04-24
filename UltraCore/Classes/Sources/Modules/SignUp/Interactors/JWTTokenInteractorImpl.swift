@@ -22,7 +22,7 @@ class JWTTokenInteractorImpl: UseCase<IssueJwtRequest, IssueJwtResponse> {
             guard let `self` = self else {
                 return Disposables.create()
             }
-            let call = self.authService.issueJwt(params, callOptions: .default)
+            let call = self.authService.issueJwt(params, callOptions: CallOptions.default())
 
             call.response.whenComplete { result in
                 switch result {

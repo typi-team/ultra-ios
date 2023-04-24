@@ -8,6 +8,7 @@
 import Foundation
 import RxSwift
 import GRPC
+import NIOCore
 
 class UserIdInteractorImpl: UseCase<GetUserIdRequest, GetUserIdResponse> {
   final let authService: AuthServiceClientProtocol
@@ -21,7 +22,7 @@ class UserIdInteractorImpl: UseCase<GetUserIdRequest, GetUserIdResponse> {
             guard let `self` = self else {
                 return Disposables.create()
             }
-            let call = self.authService.getUserId(params,callOptions:.default )
+            let call = self.authService.getUserId(params,callOptions: CallOptions.default() )
             call.response.whenComplete { result in
                 switch result {
                 case let .failure(error):
@@ -38,7 +39,18 @@ class UserIdInteractorImpl: UseCase<GetUserIdRequest, GetUserIdResponse> {
 
 
 extension CallOptions {
-    static var `default`: CallOptions = .init(timeLimit: .timeout(.seconds(10)))
+    static func `default`() -> CallOptions {
+        let appStore = AppSettingsImpl.shared.appStore
+        let isAuthed = appStore.isAuthed
+        if isAuthed {
+            let token = AppSettingsImpl.shared.appStore.token()
+            
+            return .init(customMetadata: .init(httpHeaders: ["Authorization": "Bearer \(token)"]),
+                         timeLimit: .timeout(.seconds(10)))
+        }else {
+            return .init(timeLimit: .timeout(.seconds(10)))
+        }
+    }
 }
 
 

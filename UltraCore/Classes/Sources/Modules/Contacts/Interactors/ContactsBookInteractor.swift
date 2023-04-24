@@ -76,5 +76,12 @@ extension ContactsBookInteractor {
     enum Contacts {
         case denied
         case authorized(contacts: [Contact])
+        
+        var contacts: [Contact] {
+            switch self {
+            case .authorized(contacts: let data): return data
+            case .denied: return []
+            }
+        }
     }
 }

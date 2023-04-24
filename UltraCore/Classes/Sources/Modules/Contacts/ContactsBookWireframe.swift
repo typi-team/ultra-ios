@@ -20,9 +20,11 @@ final class ContactsBookWireframe: BaseWireframe<ContactsBookViewController> {
         let moduleViewController = ContactsBookViewController()
         super.init(viewController: moduleViewController)
         
-
+        let syncInteractor = SyncContactsInteractor.init(contactsService: appSettings.contactsService)
         let presenter = ContactsBookPresenter(view: moduleViewController,
-                                              wireframe: self, bookContacts: ContactsBookInteractor())
+                                              wireframe: self,
+                                              syncContact: syncInteractor,
+                                              bookContacts: ContactsBookInteractor())
         moduleViewController.presenter = presenter
     }
 

@@ -7,8 +7,9 @@ import PodAsset
 protocol AppSettings: Any {
     var channel: GRPCChannel { get }
     var group: EventLoopGroup { get set }
+    var appStore: AppSettingsStore { get set }
     var authService: AuthServiceClientProtocol { get }
-    var appStore: AppSettingsStore { get  set }
+    var contactsService: ContactServiceClientProtocol { get }
 }
 
 open class AppSettingsImpl:AppSettings  {
@@ -33,6 +34,7 @@ open class AppSettingsImpl:AppSettings  {
 //    MARK: Services
     lazy var appStore: AppSettingsStore = AppSettingsStoreImpl()
     lazy var authService: AuthServiceClientProtocol = AuthServiceNIOClient(channel: self.channel)
+    lazy var contactsService: ContactServiceClientProtocol = ContactServiceNIOClient(channel: self.channel)
 }
 
 

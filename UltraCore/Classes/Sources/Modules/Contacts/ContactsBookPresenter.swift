@@ -22,14 +22,16 @@ final class ContactsBookPresenter {
     private unowned let view: ContactsBookViewInterface
     private let wireframe: ContactsBookWireframeInterface
     fileprivate let bookContacts: UseCase<Void, ContactsBookInteractor.Contacts>
-
+    fileprivate let syncContact: UseCase<ContactRequest, ContactResponse>
     // MARK: - Lifecycle -
 
     init(view: ContactsBookViewInterface,
          wireframe: ContactsBookWireframeInterface,
+         syncContact: UseCase<ContactRequest, ContactResponse>,
          bookContacts: UseCase<Void, ContactsBookInteractor.Contacts>) {
         self.view = view
         self.wireframe = wireframe
+        self.syncContact = syncContact
         self.bookContacts = bookContacts
     }
 }
@@ -41,26 +43,15 @@ extension ContactsBookPresenter: ContactsBookPresenterInterface {
     func initial() {
         self.bookContacts
             .executeSingle(params: ())
+            .flatMap({ result -> Single<ContactResponse> in
+                var request = ContactRequest()
+                request.contacts = result.contacts
+                return self.syncContact.executeSingle(params: request)
+            })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { result in
-                switch result {
-                case let .authorized(contacts: contacts):
-                    
-                    var request = ContactRequest.init()
-                    request.contacts = contacts
-                    
-                    ContactServiceNIOClient(channel: AppSettingsImpl.shared.channel).insertContacts(request).response.whenComplete { result in
-                        switch result {
-                        case .success(let response):
-                            print(response)
-                        case .failure(let error):
-                            print(error.localizedDescription)
-                        }
-                    }
-                case .denied:
-                    print("denied")
-                }
+                print(result)
             })
             .disposed(by: self.disposeBag)
     }
