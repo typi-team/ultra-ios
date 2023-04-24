@@ -44,7 +44,7 @@ Pod::Spec.new do |s|
    s.dependency 'Protobuf'
    s.dependency 'gRPC-Swift'
    s.dependency 'SDWebImage'
-   s.dependency 'gRPC-Swift'
-   s.dependency 'SDWebImage'
+   s.dependency 'RealmSwift'
    s.dependency 'RxDataSources'
+   
 end

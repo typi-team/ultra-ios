@@ -10,6 +10,9 @@
 
 import UIKit
 import RxCocoa
+import RxSwift
+import RealmSwift
+import RxDataSources
 
 final class ContactsBookViewController: BaseViewController<ContactsBookPresenterInterface> {
 
@@ -24,14 +27,17 @@ final class ContactsBookViewController: BaseViewController<ContactsBookPresenter
         super.setupViews()
         self.navigationItem.titleView = HeadlineBody { $0.text = "Новый чат" }
         self.view.addSubview(tableView)
-        
-        self.presenter?.contacts.bind(to: tableView.rx.items) {a, b, c in
-            
-            return .init()
-            
-        }
+
+        self.tableView.registerCell(type: ContactCell.self)
+        self.tableView.separatorStyle = .none
+        self.presenter?
+            .contacts
+            .bind(to: tableView.rx.items) { tableView, _, contact in
+                let cell: ContactCell = tableView.dequeueCell()
+                cell.setup(contact: contact)
+                return cell
+            }.disposed(by: disposeBag)
     }
-    
     
     override func setupConstraints() {
         super.setupConstraints()
