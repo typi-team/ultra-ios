@@ -11,7 +11,7 @@ import RxSwift
 import RealmSwift
 import Foundation
 
-final class ContactsBookPresenter {
+final class ContactsBookPresenter: BasePresenter {
     
     // MARK: - Public properties -
 
@@ -59,9 +59,7 @@ extension ContactsBookPresenter: ContactsBookPresenterInterface {
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
-            .subscribe(onCompleted: { [weak self] in
-                Logger.info("Contacts saved on db")
-            })
+            .subscribe(onCompleted: { Logger.info("Contacts saved on db") })
             .disposed(by: self.disposeBag)
     }
 }

@@ -11,7 +11,7 @@
 import Foundation
 import RxSwift
 
-final class ConversationsPresenter {
+final class ConversationsPresenter: BasePresenter {
 
     // MARK: - Private properties -
 
