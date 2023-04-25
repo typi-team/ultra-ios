@@ -1,0 +1,20 @@
+//
+//  String+Extensions.swift
+//  UltraCore
+//
+//  Created by Slam on 4/21/23.
+//
+
+import Foundation
+extension String {
+    var initails: String {
+        let components = self.components(separatedBy: " ")
+        var initials = ""
+        for component in components {
+            if let firstCharacter = component.first {
+                initials.append(firstCharacter)
+            }
+        }
+        return initials
+    }
+}

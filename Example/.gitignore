@@ -1,0 +1,35 @@
+# Xcode
+.DS_Store
+*/build/*
+DerivedData/
+*/.xccheckout
+*.xcuserdata/
+*.xcworkspace/
+!*.xcworkspace/xcshareddata/
+!*.xcworkspace/xcuserdata/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspective
+*.perspectivev3
+*.xcuserstate
+project.xcworkspace/
+*.moved-aside
+*.xcuserstate
+*.xcscmblueprint
+*.xcscheme
+*.xccheckout
+*.xcconfig
+
+# Swift
+*.swiftpm
+*.playground
+*.build
+/.build/
+*.xctest
+/.swiftpm/xcode/package.xcworkspace
+
+# CocoaPods
+Example/Pods/
+Podfile.lock
+../.idea/
