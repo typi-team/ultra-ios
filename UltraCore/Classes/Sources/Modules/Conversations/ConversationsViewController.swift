@@ -15,12 +15,12 @@ import RxDataSources
 
 
 final class ConversationsViewController: BaseViewController<ConversationsPresenterInterface> {
-
+    
     fileprivate lazy var tableView: UITableView = .init({
         $0.rowHeight = 68
         $0.registerCell(type: ConversationCell.self)
     })
-        
+    
     override func setupViews() {
         super.setupViews()
         self.view.addSubview(tableView)
@@ -51,7 +51,7 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        self.presenter?.navigateToContacts()
+        self.presenter?.navigateToConversation(with: self )
     }
 }
 

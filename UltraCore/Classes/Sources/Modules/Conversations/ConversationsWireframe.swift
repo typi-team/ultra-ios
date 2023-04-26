@@ -40,4 +40,8 @@ extension ConversationsWireframe: ConversationsWireframeInterface {
     func navigateToContacts() {
         self.navigationController?.pushWireframe(ContactsBookWireframe())
     }
+    
+    func navigateToConversation(with data: Any) {
+        self.navigationController?.pushWireframe(ConversationWireframe())
+    }
 }
