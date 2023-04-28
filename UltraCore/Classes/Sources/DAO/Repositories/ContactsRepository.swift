@@ -22,13 +22,6 @@ protocol ContactsRepository {
 
 class ContactsRepositoryImpl: ContactsRepository {
     
-    init() {
-        let realm = Realm.myRealm()
-        try! realm.write {
-            realm.deleteAll()
-        }
-    }
-    
     func save(contacts: ContactResponse) -> Completable {
         let dbContacts = contacts.contacts.map { contact -> DBContact in
             return DBContact { dbContact in

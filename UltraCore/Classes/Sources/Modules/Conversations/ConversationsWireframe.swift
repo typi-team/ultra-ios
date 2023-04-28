@@ -41,7 +41,7 @@ extension ConversationsWireframe: ConversationsWireframeInterface {
         self.navigationController?.pushWireframe(ContactsBookWireframe())
     }
     
-    func navigateToConversation(with data: Any) {
-        self.navigationController?.pushWireframe(ConversationWireframe())
+    func navigateToConversation(with data: Conversation) {
+        self.navigationController?.pushWireframe(ConversationWireframe(with: data))
     }
 }

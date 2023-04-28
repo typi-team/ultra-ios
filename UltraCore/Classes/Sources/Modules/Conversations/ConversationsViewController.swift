@@ -51,7 +51,7 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        self.presenter?.navigateToConversation(with: self )
+//        self.presenter?.navigateToConversation(with: DummyConversationImpl.init() )
     }
 }
 

@@ -13,7 +13,7 @@ import RxSwift
 
 protocol ConversationsWireframeInterface: WireframeInterface {
     func navigateToContacts()
-    func navigateToConversation(with data: Any)
+    func navigateToConversation(with data: Conversation)
 }
 
 protocol ConversationsViewInterface: ViewInterface {
@@ -23,5 +23,5 @@ protocol ConversationsPresenterInterface: PresenterInterface {
     var conversation: BehaviorSubject<[Conversation]> { get set }
     
     func navigateToContacts()
-    func navigateToConversation(with data: Any)
+    func navigateToConversation(with data: Conversation)
 }

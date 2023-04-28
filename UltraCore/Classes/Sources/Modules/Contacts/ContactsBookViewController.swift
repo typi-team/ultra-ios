@@ -37,6 +37,15 @@ final class ContactsBookViewController: BaseViewController<ContactsBookPresenter
                 cell.setup(contact: contact)
                 return cell
             }.disposed(by: disposeBag)
+        
+        self.tableView.rx
+            .modelSelected(DBContact.self)
+            .asDriver()
+            .drive { [weak self ] contact in
+                guard let `self` = self else { return }
+                self.presenter?.openConversation(with: contact)
+            }
+            .disposed(by: disposeBag)
     }
     
     override func setupConstraints() {

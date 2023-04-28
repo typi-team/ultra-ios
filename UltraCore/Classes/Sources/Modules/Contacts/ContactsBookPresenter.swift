@@ -43,6 +43,10 @@ final class ContactsBookPresenter: BasePresenter {
 // MARK: - Extensions -
 
 extension ContactsBookPresenter: ContactsBookPresenterInterface {
+    func openConversation(with contact: DBContact) {
+        self.wireframe.openConversation(with: contact)
+    }
+    
      
     func initial() {
         self.bookContacts

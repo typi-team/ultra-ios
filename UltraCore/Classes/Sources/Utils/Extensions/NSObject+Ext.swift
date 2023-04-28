@@ -47,7 +47,7 @@ extension Int64 {
 
 extension Date {
     var nanosec: Int64 {
-        return Int64(Calendar.current.component(.nanosecond, from: self))
+        return  Int64(self.timeIntervalSince1970 * 1000 * 1000)
     }
 }
 

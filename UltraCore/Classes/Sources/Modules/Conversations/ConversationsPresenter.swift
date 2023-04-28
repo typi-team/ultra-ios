@@ -34,7 +34,7 @@ final class ConversationsPresenter: BasePresenter {
 // MARK: - Extensions -
 
 extension ConversationsPresenter: ConversationsPresenterInterface {
-    func navigateToConversation(with data: Any) {
+    func navigateToConversation(with data: Conversation) {
         self.wireframe.navigateToConversation(with: data)
     }
     

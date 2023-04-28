@@ -8,8 +8,10 @@ protocol AppSettings: Any {
     var channel: GRPCChannel { get }
     var group: EventLoopGroup { get set }
     var appStore: AppSettingsStore { get set }
+    var messageRespository: MessageRepository { get }
     var contactRepository: ContactsRepository { get }
     var authService: AuthServiceClientProtocol { get }
+    var messageService: MessageServiceClientProtocol { get }
     var contactsService: ContactServiceClientProtocol { get }
 }
 
@@ -32,8 +34,11 @@ open class AppSettingsImpl:AppSettings  {
 //    MARK: Services
     lazy var appStore: AppSettingsStore = AppSettingsStoreImpl()
     lazy var contactRepository: ContactsRepository = ContactsRepositoryImpl()
+    lazy var messageRespository: MessageRepository = MessageRespositoryImpl()
     lazy var authService: AuthServiceClientProtocol = AuthServiceNIOClient(channel: self.channel)
+    lazy var messageService: MessageServiceClientProtocol = MessageServiceNIOClient.init(channel: channel)
     lazy var contactsService: ContactServiceClientProtocol = ContactServiceNIOClient(channel: self.channel)
+    
 }
 
 public func showSignUp(view controller: UIViewController) {

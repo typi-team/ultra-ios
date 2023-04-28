@@ -16,6 +16,7 @@ protocol ContactDisplayable: Any {
 }
 
 protocol ContactsBookWireframeInterface: WireframeInterface {
+    func openConversation(with contact: DBContact)
 }
 
 protocol ContactsBookViewInterface: ViewInterface {
@@ -25,5 +26,6 @@ protocol ContactsBookViewInterface: ViewInterface {
 protocol ContactsBookPresenterInterface: PresenterInterface {
     
     func initial()
+    func openConversation(with contact: DBContact)
     var contacts: Observable<Results<DBContact>> { get set }
 }

@@ -16,11 +16,15 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
 
     // MARK: - Module setup -
 
-    init() {
+    init(with conversation: Conversation) {
         let moduleViewController = ConversationViewController()
         super.init(viewController: moduleViewController)
-
-        let presenter = ConversationPresenter(view: moduleViewController, wireframe: self)
+        let messageSenderInteractor = SendMessageInteractor.init(messageService: appSettings.messageService)
+        let presenter = ConversationPresenter(conversation: conversation,
+                                              view: moduleViewController,
+                                              messageRepository: appSettings.messageRespository,
+                                              wireframe: self,
+                                              messageSenderInteractor: messageSenderInteractor)
         moduleViewController.presenter = presenter
     }
 
