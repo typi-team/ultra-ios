@@ -24,6 +24,7 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
                                               view: moduleViewController,
                                               messageRepository: appSettings.messageRespository,
                                               wireframe: self,
+                                              conversationRepository: appSettings.conversationRespository,
                                               messageSenderInteractor: messageSenderInteractor)
         moduleViewController.presenter = presenter
     }

@@ -22,18 +22,28 @@ protocol ContactsRepository {
 
 class ContactsRepositoryImpl: ContactsRepository {
     
+    fileprivate let appStore: AppSettingsStore
+    
+    init(appStore: AppSettingsStore) {
+        self.appStore = appStore
+    }
+    
     func save(contacts: ContactResponse) -> Completable {
-        let dbContacts = contacts.contacts.map { contact -> DBContact in
-            return DBContact { dbContact in
-                dbContact.phone = contact.phone
-                dbContact.userID = contact.userID
-                dbContact.lastName = contact.lastname
-                dbContact.firstName = contact.firstname
-            }
-        }
 
-        return Completable.create { observer -> Disposable in
+        return Completable.create {[weak self] observer -> Disposable in
+            guard let `self` = self else { return Disposables.create() }
             do {
+                let userID = self.appStore.userID()
+                let dbContacts = contacts.contacts.map { contact -> DBContact in
+                    return DBContact { dbContact in
+                        dbContact.phone = contact.phone
+                        dbContact.userID = contact.userID
+                        dbContact.lastName = contact.lastname
+                        dbContact.firstName = contact.firstname
+                        dbContact.chatID =  userID + contact.userID
+                    }
+                }
+                
                 let realm = Realm.myRealm()
                 try realm.write {
                     dbContacts.forEach {

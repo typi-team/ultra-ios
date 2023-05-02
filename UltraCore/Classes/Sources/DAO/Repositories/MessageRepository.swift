@@ -42,7 +42,7 @@ extension MessageRespositoryImpl : MessageRepository  {
     func messages(chatID: String) -> Observable<RealmSwift.Results<DBMessage>> {
         return Observable.create { observer in
             let realm = Realm.myRealm()
-            let contacts = realm.objects(DBMessage.self).where { $0.receiver.userID.equals(chatID) }
+            let contacts = realm.objects(DBMessage.self).where { $0.receiver.chatID.equals(chatID) }
             let notificationKey = contacts.observe(keyPaths: []) { changes in
                 switch changes {
                 case let .initial(collection):

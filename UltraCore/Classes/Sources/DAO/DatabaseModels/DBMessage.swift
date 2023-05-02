@@ -26,15 +26,15 @@ class DBMessage: Object {
         return "id"
     }
     
-    convenience init(from message: Message) {
+    convenience init(from message: Message, realm: Realm = .myRealm()) {
         self.init()
         self.id = message.id
         self.state = DBMessageState.init(messageState: message.state)
         self.chatType = message.chatType.rawValue
         self.seqNumber = Int64(message.seqNumber)
         self.type = message.type.rawValue
-        self.receiver = DBReceiver.init(message.receiver)
-        self.sender = DBSender.init(from: message.sender)
+        self.receiver = realm.object(ofType: DBReceiver.self, forPrimaryKey: message.receiver.chatID) ?? DBReceiver.init(message.receiver)
+        self.sender = realm.object(ofType: DBSender.self, forPrimaryKey: message.sender.userID) ?? DBSender.init(from: message.sender)
         self.meta = DBMessageMeta.init(proto: message.meta)
         
         switch message.content {
@@ -103,6 +103,9 @@ class DBReceiver: Object {
     @Persisted var userID: String = ""
     @Persisted var chatID: String = ""
     
+    override static func primaryKey() -> String? {
+        return "chatID"
+    }
     
     convenience init(_ receiver: Receiver) {
         self.init()
@@ -121,6 +124,10 @@ class DBReceiver: Object {
 class DBSender: Object {
     @Persisted var userID: String = ""
     @Persisted var deviceID: String = ""
+    
+    override static func primaryKey() -> String? {
+        return "userID"
+    }
     
     convenience init(from sender: Sender) {
         self.init()
@@ -183,6 +190,10 @@ class DBAudioMessage: Object {
         self.fileName = proto.fileName
     }
     
+    override static func primaryKey() -> String? {
+        return "fileID"
+    }
+    
     func toProto() -> AudioMessage {
         var proto = AudioMessage()
         proto.fileID = self.fileID
@@ -200,6 +211,10 @@ class DBVoiceMessage: Object {
     @objc dynamic var fileSize: Int64 = 0
     @objc dynamic var mimeType: String = ""
     @objc dynamic var fileName: String = ""
+    
+    override static func primaryKey() -> String? {
+        return "fileID"
+    }
     
     convenience init(fromProto proto: VoiceMessage) {
         self.init()
@@ -229,6 +244,10 @@ class DBPhotoMessage: Object {
     @objc dynamic var width: Int32 = 0
     @objc dynamic var height: Int32 = 0
     @objc dynamic var preview: Data = Data()
+    
+    override static func primaryKey() -> String? {
+        return "fileID"
+    }
     
     convenience init(fromProto proto: PhotoMessage) {
         self.init()
@@ -263,6 +282,10 @@ class DBVideoMessage: Object {
     @objc dynamic var width: Int32 = 0
     @objc dynamic var height: Int32 = 0
     @objc dynamic var preview: Data = Data()
+    
+    override static func primaryKey() -> String? {
+        return "fileID"
+    }
 
     convenience init(videoMessage: VideoMessage) {
         self.init()

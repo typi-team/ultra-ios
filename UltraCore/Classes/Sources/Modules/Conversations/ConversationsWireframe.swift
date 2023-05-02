@@ -20,7 +20,10 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
         let moduleViewController = ConversationsViewController()
         super.init(viewController: moduleViewController)
 
-        let presenter = ConversationsPresenter(view: moduleViewController, wireframe: self)
+        let presenter = ConversationsPresenter(view: moduleViewController,
+                                               messageRepository: appSettings.messageRespository,
+                                               wireframe: self,
+                                               conversationRepository: appSettings.conversationRespository)
         moduleViewController.presenter = presenter
     }
 

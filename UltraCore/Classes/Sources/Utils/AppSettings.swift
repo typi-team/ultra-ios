@@ -13,6 +13,7 @@ protocol AppSettings: Any {
     var authService: AuthServiceClientProtocol { get }
     var messageService: MessageServiceClientProtocol { get }
     var contactsService: ContactServiceClientProtocol { get }
+    var conversationRespository: ConversationRepository { get }
 }
 
 open class AppSettingsImpl:AppSettings  {
@@ -33,11 +34,12 @@ open class AppSettingsImpl:AppSettings  {
 
 //    MARK: Services
     lazy var appStore: AppSettingsStore = AppSettingsStoreImpl()
-    lazy var contactRepository: ContactsRepository = ContactsRepositoryImpl()
+    lazy var contactRepository: ContactsRepository = ContactsRepositoryImpl(appStore: self.appStore)
     lazy var messageRespository: MessageRepository = MessageRespositoryImpl()
     lazy var authService: AuthServiceClientProtocol = AuthServiceNIOClient(channel: self.channel)
     lazy var messageService: MessageServiceClientProtocol = MessageServiceNIOClient.init(channel: channel)
     lazy var contactsService: ContactServiceClientProtocol = ContactServiceNIOClient(channel: self.channel)
+    lazy var conversationRespository: ConversationRepository = ConversationRepositoryImpl(appStore: appStore)
     
 }
 

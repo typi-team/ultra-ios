@@ -12,6 +12,8 @@ class DBContact: Object {
     @objc dynamic var lastName = ""
     @objc dynamic var phone = ""
     @objc dynamic var userID = ""
+    @objc dynamic var chatID = ""
+    
     
     override static func primaryKey() -> String? {
         return "phone"

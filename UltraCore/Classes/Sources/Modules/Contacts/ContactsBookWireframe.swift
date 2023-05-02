@@ -34,9 +34,6 @@ final class ContactsBookWireframe: BaseWireframe<ContactsBookViewController> {
 
 extension ContactsBookWireframe: ContactsBookWireframeInterface {
     func openConversation(with contact: DBContact) {
-        
-        var conversation: Conversation = DummyConversationImpl()
-        conversation.id = contact.userID
-        self.navigationController?.pushWireframe(ConversationWireframe(with: conversation))
+        self.navigationController?.pushWireframe(ConversationWireframe(with: ConversationImpl(contact: contact)))
     }
 }
