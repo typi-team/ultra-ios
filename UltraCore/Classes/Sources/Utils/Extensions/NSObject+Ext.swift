@@ -38,7 +38,7 @@ extension UIControl {
 
 extension Int64 {
     func formattedTime(format: String = "HH:mm") -> String {
-        let date = Date(timeIntervalSince1970: TimeInterval(self) / 1000000000)
+        
         let formatter = DateFormatter()
         formatter.dateFormat = format
         return formatter.string(from: date)

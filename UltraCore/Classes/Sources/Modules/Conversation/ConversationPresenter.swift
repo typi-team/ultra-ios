@@ -66,9 +66,14 @@ extension ConversationPresenter: ConversationPresenterInterface {
             $0.chatID = conversation.idintification
             $0.userID = conversation.peer?.userID ?? ""
         })
+        message.meta = .with({
+            $0.created = Date().nanosec
+        })
         
         self.conversationRepository
             .createIfNotExist(from: message)
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
             .subscribe().disposed(by: disposeBag)
             
         self.messageRepository.save(message: message)

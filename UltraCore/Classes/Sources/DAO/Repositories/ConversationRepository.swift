@@ -22,7 +22,6 @@ class ConversationRepositoryImpl {
         Logger.debug(Realm.myRealm().configuration.fileURL?.absoluteString ?? "Realm path is't create")
     }
 }
-
 extension ConversationRepositoryImpl: ConversationRepository {
     func createIfNotExist(from message: Message) -> Completable {
         return Completable.create {[weak self] observer -> Disposable in
@@ -31,8 +30,8 @@ extension ConversationRepositoryImpl: ConversationRepository {
                 let realm = Realm.myRealm()
                 try realm.write({
                     
-                    let isIncoming = message.receiver.userID == self.appStore.userID()
-                    let contact = realm.object(ofType: DBContact.self, forPrimaryKey: isIncoming ? message.receiver.userID : message.sender.userID)
+                    let isIncoming = message.receiver.userID == self.appStore.userID() ? message.sender.userID : message.receiver.userID
+                    let contact = realm.object(ofType: DBContact.self, forPrimaryKey: isIncoming )
                     let existConversation = realm.object(ofType: DBConversation.self, forPrimaryKey: message.receiver.chatID)
                     if let conversation = existConversation {
                         conversation.peer = contact

@@ -16,7 +16,7 @@ class DBContact: Object {
     
     
     override static func primaryKey() -> String? {
-        return "phone"
+        return "userID"
     }
 }
 
