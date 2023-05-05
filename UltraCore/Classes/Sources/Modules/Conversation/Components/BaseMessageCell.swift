@@ -26,12 +26,16 @@ class BaseMessageCell: BaseCell {
     
     override func setupConstraints() {
         super.setupConstraints()
+        
         self.container.snp.makeConstraints { make in
-            make.left.bottom.top.equalToSuperview()
-            make.right.lessThanOrEqualToSuperview().offset(125)
+            make.left.top.equalToSuperview().offset(kHeadlinePadding)
+            make.bottom.equalToSuperview()
+            make.right.lessThanOrEqualToSuperview()
         }
+        
         self.textView.snp.makeConstraints { make in
-            make.left.right.equalToSuperview()
+            make.left.equalToSuperview().offset(kLowPadding)
+            make.right.equalToSuperview().offset(-kLowPadding)
             make.top.equalToSuperview().offset(kLowPadding)
         }
         
@@ -43,7 +47,7 @@ class BaseMessageCell: BaseCell {
     }
     
     func setup(message: Message) {
-        self.textView.text = message.text.content
+        self.textView.text = message.text
         self.deliveryDateLabel.text = message.meta.created.formattedTime()
     }
 }

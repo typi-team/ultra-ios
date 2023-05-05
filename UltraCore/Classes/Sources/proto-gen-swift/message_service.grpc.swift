@@ -65,6 +65,16 @@ internal protocol MessageServiceClientProtocol: GRPCClient {
     _ request: SendAudioRecordingRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<SendAudioRecordingRequest, SendAudioRecordingResponse>
+
+  func sendMediaUploading(
+    _ request: SendMediaUploadingRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<SendMediaUploadingRequest, SendMediaUploadingResponse>
+
+  func getMessage(
+    _ request: GetMessageRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<GetMessageRequest, GetMessageResponse>
 }
 
 extension MessageServiceClientProtocol {
@@ -197,6 +207,43 @@ extension MessageServiceClientProtocol {
       interceptors: self.interceptors?.makeSendAudioRecordingInterceptors() ?? []
     )
   }
+
+  /// Send video uploading presence, should be executed when user starts
+  /// uploading some media.
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to SendMediaUploading.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  internal func sendMediaUploading(
+    _ request: SendMediaUploadingRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<SendMediaUploadingRequest, SendMediaUploadingResponse> {
+    return self.makeUnaryCall(
+      path: MessageServiceClientMetadata.Methods.sendMediaUploading.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSendMediaUploadingInterceptors() ?? []
+    )
+  }
+
+  /// Get message by id, if user has no access to message NotFound error will be returned
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to GetMessage.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  internal func getMessage(
+    _ request: GetMessageRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<GetMessageRequest, GetMessageResponse> {
+    return self.makeUnaryCall(
+      path: MessageServiceClientMetadata.Methods.getMessage.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetMessageInterceptors() ?? []
+    )
+  }
 }
 
 #if compiler(>=5.6)
@@ -298,6 +345,16 @@ internal protocol MessageServiceAsyncClientProtocol: GRPCClient {
     _ request: SendAudioRecordingRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<SendAudioRecordingRequest, SendAudioRecordingResponse>
+
+  func makeSendMediaUploadingCall(
+    _ request: SendMediaUploadingRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<SendMediaUploadingRequest, SendMediaUploadingResponse>
+
+  func makeGetMessageCall(
+    _ request: GetMessageRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<GetMessageRequest, GetMessageResponse>
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -393,6 +450,30 @@ extension MessageServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeSendAudioRecordingInterceptors() ?? []
     )
   }
+
+  internal func makeSendMediaUploadingCall(
+    _ request: SendMediaUploadingRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<SendMediaUploadingRequest, SendMediaUploadingResponse> {
+    return self.makeAsyncUnaryCall(
+      path: MessageServiceClientMetadata.Methods.sendMediaUploading.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSendMediaUploadingInterceptors() ?? []
+    )
+  }
+
+  internal func makeGetMessageCall(
+    _ request: GetMessageRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<GetMessageRequest, GetMessageResponse> {
+    return self.makeAsyncUnaryCall(
+      path: MessageServiceClientMetadata.Methods.getMessage.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetMessageInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -480,6 +561,30 @@ extension MessageServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeSendAudioRecordingInterceptors() ?? []
     )
   }
+
+  internal func sendMediaUploading(
+    _ request: SendMediaUploadingRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> SendMediaUploadingResponse {
+    return try await self.performAsyncUnaryCall(
+      path: MessageServiceClientMetadata.Methods.sendMediaUploading.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSendMediaUploadingInterceptors() ?? []
+    )
+  }
+
+  internal func getMessage(
+    _ request: GetMessageRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> GetMessageResponse {
+    return try await self.performAsyncUnaryCall(
+      path: MessageServiceClientMetadata.Methods.getMessage.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetMessageInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -523,6 +628,12 @@ internal protocol MessageServiceClientInterceptorFactoryProtocol: GRPCSendable {
 
   /// - Returns: Interceptors to use when invoking 'sendAudioRecording'.
   func makeSendAudioRecordingInterceptors() -> [ClientInterceptor<SendAudioRecordingRequest, SendAudioRecordingResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'sendMediaUploading'.
+  func makeSendMediaUploadingInterceptors() -> [ClientInterceptor<SendMediaUploadingRequest, SendMediaUploadingResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'getMessage'.
+  func makeGetMessageInterceptors() -> [ClientInterceptor<GetMessageRequest, GetMessageResponse>]
 }
 
 internal enum MessageServiceClientMetadata {
@@ -537,6 +648,8 @@ internal enum MessageServiceClientMetadata {
       MessageServiceClientMetadata.Methods.delete,
       MessageServiceClientMetadata.Methods.sendTyping,
       MessageServiceClientMetadata.Methods.sendAudioRecording,
+      MessageServiceClientMetadata.Methods.sendMediaUploading,
+      MessageServiceClientMetadata.Methods.getMessage,
     ]
   )
 
@@ -582,6 +695,18 @@ internal enum MessageServiceClientMetadata {
       path: "/MessageService/SendAudioRecording",
       type: GRPCCallType.unary
     )
+
+    internal static let sendMediaUploading = GRPCMethodDescriptor(
+      name: "SendMediaUploading",
+      path: "/MessageService/SendMediaUploading",
+      type: GRPCCallType.unary
+    )
+
+    internal static let getMessage = GRPCMethodDescriptor(
+      name: "GetMessage",
+      path: "/MessageService/GetMessage",
+      type: GRPCCallType.unary
+    )
   }
 }
 
@@ -605,6 +730,13 @@ internal protocol MessageServiceProvider: CallHandlerProvider {
   func sendTyping(request: SendTypingRequest, context: StatusOnlyCallContext) -> EventLoopFuture<SendTypingResponse>
 
   func sendAudioRecording(request: SendAudioRecordingRequest, context: StatusOnlyCallContext) -> EventLoopFuture<SendAudioRecordingResponse>
+
+  /// Send video uploading presence, should be executed when user starts
+  /// uploading some media.
+  func sendMediaUploading(request: SendMediaUploadingRequest, context: StatusOnlyCallContext) -> EventLoopFuture<SendMediaUploadingResponse>
+
+  /// Get message by id, if user has no access to message NotFound error will be returned
+  func getMessage(request: GetMessageRequest, context: StatusOnlyCallContext) -> EventLoopFuture<GetMessageResponse>
 }
 
 extension MessageServiceProvider {
@@ -682,6 +814,24 @@ extension MessageServiceProvider {
         userFunction: self.sendAudioRecording(request:context:)
       )
 
+    case "SendMediaUploading":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<SendMediaUploadingRequest>(),
+        responseSerializer: ProtobufSerializer<SendMediaUploadingResponse>(),
+        interceptors: self.interceptors?.makeSendMediaUploadingInterceptors() ?? [],
+        userFunction: self.sendMediaUploading(request:context:)
+      )
+
+    case "GetMessage":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<GetMessageRequest>(),
+        responseSerializer: ProtobufSerializer<GetMessageResponse>(),
+        interceptors: self.interceptors?.makeGetMessageInterceptors() ?? [],
+        userFunction: self.getMessage(request:context:)
+      )
+
     default:
       return nil
     }
@@ -733,6 +883,19 @@ internal protocol MessageServiceAsyncProvider: CallHandlerProvider {
     request: SendAudioRecordingRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> SendAudioRecordingResponse
+
+  /// Send video uploading presence, should be executed when user starts
+  /// uploading some media.
+  @Sendable func sendMediaUploading(
+    request: SendMediaUploadingRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> SendMediaUploadingResponse
+
+  /// Get message by id, if user has no access to message NotFound error will be returned
+  @Sendable func getMessage(
+    request: GetMessageRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> GetMessageResponse
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -817,6 +980,24 @@ extension MessageServiceAsyncProvider {
         wrapping: self.sendAudioRecording(request:context:)
       )
 
+    case "SendMediaUploading":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<SendMediaUploadingRequest>(),
+        responseSerializer: ProtobufSerializer<SendMediaUploadingResponse>(),
+        interceptors: self.interceptors?.makeSendMediaUploadingInterceptors() ?? [],
+        wrapping: self.sendMediaUploading(request:context:)
+      )
+
+    case "GetMessage":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<GetMessageRequest>(),
+        responseSerializer: ProtobufSerializer<GetMessageResponse>(),
+        interceptors: self.interceptors?.makeGetMessageInterceptors() ?? [],
+        wrapping: self.getMessage(request:context:)
+      )
+
     default:
       return nil
     }
@@ -854,6 +1035,14 @@ internal protocol MessageServiceServerInterceptorFactoryProtocol {
   /// - Returns: Interceptors to use when handling 'sendAudioRecording'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeSendAudioRecordingInterceptors() -> [ServerInterceptor<SendAudioRecordingRequest, SendAudioRecordingResponse>]
+
+  /// - Returns: Interceptors to use when handling 'sendMediaUploading'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeSendMediaUploadingInterceptors() -> [ServerInterceptor<SendMediaUploadingRequest, SendMediaUploadingResponse>]
+
+  /// - Returns: Interceptors to use when handling 'getMessage'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeGetMessageInterceptors() -> [ServerInterceptor<GetMessageRequest, GetMessageResponse>]
 }
 
 internal enum MessageServiceServerMetadata {
@@ -868,6 +1057,8 @@ internal enum MessageServiceServerMetadata {
       MessageServiceServerMetadata.Methods.delete,
       MessageServiceServerMetadata.Methods.sendTyping,
       MessageServiceServerMetadata.Methods.sendAudioRecording,
+      MessageServiceServerMetadata.Methods.sendMediaUploading,
+      MessageServiceServerMetadata.Methods.getMessage,
     ]
   )
 
@@ -911,6 +1102,18 @@ internal enum MessageServiceServerMetadata {
     internal static let sendAudioRecording = GRPCMethodDescriptor(
       name: "SendAudioRecording",
       path: "/MessageService/SendAudioRecording",
+      type: GRPCCallType.unary
+    )
+
+    internal static let sendMediaUploading = GRPCMethodDescriptor(
+      name: "SendMediaUploading",
+      path: "/MessageService/SendMediaUploading",
+      type: GRPCCallType.unary
+    )
+
+    internal static let getMessage = GRPCMethodDescriptor(
+      name: "GetMessage",
+      path: "/MessageService/GetMessage",
       type: GRPCCallType.unary
     )
   }

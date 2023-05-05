@@ -46,9 +46,9 @@ extension CallOptions {
             let token = AppSettingsImpl.shared.appStore.token()
             
             return .init(customMetadata: .init(httpHeaders: ["Authorization": "Bearer \(token)"]),
-                         timeLimit: .timeout(.seconds(10)))
+                         timeLimit: .timeout(.hours(12)))
         }else {
-            return .init(timeLimit: .timeout(.seconds(10)))
+            return .init(timeLimit: .timeout(.hours(12)))
         }
     }
 }

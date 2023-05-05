@@ -24,5 +24,6 @@ protocol ConversationsPresenterInterface: PresenterInterface {
     var conversation: Observable<Results<DBConversation>> { get set }
     
     func navigateToContacts()
+    func setupUpdateSubscription()
     func navigate(to conversation: Conversation)
 }

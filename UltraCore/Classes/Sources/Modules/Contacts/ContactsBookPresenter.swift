@@ -22,7 +22,7 @@ final class ContactsBookPresenter: BasePresenter {
     fileprivate let disposeBag = DisposeBag()
     fileprivate unowned let view: ContactsBookViewInterface
     fileprivate let wireframe: ContactsBookWireframeInterface
-    fileprivate let syncContact: UseCase<ContactRequest, ContactResponse>
+    fileprivate let syncContact: UseCase<ContactsImportRequest, ContactImportResponse>
     fileprivate let bookContacts: UseCase<Void, ContactsBookInteractor.Contacts>
     fileprivate let contactsRepository: ContactsRepository
     // MARK: - Lifecycle -
@@ -30,7 +30,7 @@ final class ContactsBookPresenter: BasePresenter {
     init(view: ContactsBookViewInterface,
          contactsRepository: ContactsRepository,
          wireframe: ContactsBookWireframeInterface,
-         syncContact: UseCase<ContactRequest, ContactResponse>,
+         syncContact: UseCase<ContactsImportRequest, ContactImportResponse>,
          bookContacts: UseCase<Void, ContactsBookInteractor.Contacts>) {
         self.view = view
         self.wireframe = wireframe
@@ -51,19 +51,19 @@ extension ContactsBookPresenter: ContactsBookPresenterInterface {
     func initial() {
         self.bookContacts
             .executeSingle(params: ())
-            .flatMap({[weak self] result -> Single<ContactResponse> in
+            .flatMap({[weak self] result -> Single<ContactImportResponse> in
                 guard let `self` = self else { throw NSError.selfIsNill}
-                var request = ContactRequest()
+                var request = ContactsImportRequest()
                 request.contacts = result.contacts
                 return self.syncContact.executeSingle(params: request)
             })
-            .flatMapCompletable({ [weak self] response -> Completable in
+            .flatMap({ [weak self] response -> Single<Void> in
                 guard let `self` = self else { throw NSError.selfIsNill}
                 return self.contactsRepository.save(contacts: response)
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
-            .subscribe(onCompleted: { Logger.info("Contacts saved on db") })
+            .subscribe(onSuccess: { Logger.info("Contacts saved on db") })
             .disposed(by: self.disposeBag)
     }
 }

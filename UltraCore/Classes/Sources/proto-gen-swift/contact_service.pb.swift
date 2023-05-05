@@ -20,7 +20,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
-struct ContactRequest {
+struct ContactsImportRequest {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -74,7 +74,7 @@ struct ContactByUserIdResponse {
   fileprivate var _storage = _StorageClass.defaultInstance
 }
 
-struct ContactResponse {
+struct ContactImportResponse {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -109,18 +109,18 @@ struct GetStatusesResponse {
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
-extension ContactRequest: @unchecked Sendable {}
+extension ContactsImportRequest: @unchecked Sendable {}
 extension ContactByUserIdRequest: @unchecked Sendable {}
 extension ContactByUserIdResponse: @unchecked Sendable {}
-extension ContactResponse: @unchecked Sendable {}
+extension ContactImportResponse: @unchecked Sendable {}
 extension GetStatusesRequest: @unchecked Sendable {}
 extension GetStatusesResponse: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-extension ContactRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "ContactRequest"
+extension ContactsImportRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "ContactsImportRequest"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "contacts"),
   ]
@@ -144,7 +144,7 @@ extension ContactRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplement
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ContactRequest, rhs: ContactRequest) -> Bool {
+  static func ==(lhs: ContactsImportRequest, rhs: ContactsImportRequest) -> Bool {
     if lhs.contacts != rhs.contacts {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
@@ -259,8 +259,8 @@ extension ContactByUserIdResponse: SwiftProtobuf.Message, SwiftProtobuf._Message
   }
 }
 
-extension ContactResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "ContactResponse"
+extension ContactImportResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "ContactImportResponse"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "contacts"),
   ]
@@ -284,7 +284,7 @@ extension ContactResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ContactResponse, rhs: ContactResponse) -> Bool {
+  static func ==(lhs: ContactImportResponse, rhs: ContactImportResponse) -> Bool {
     if lhs.contacts != rhs.contacts {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

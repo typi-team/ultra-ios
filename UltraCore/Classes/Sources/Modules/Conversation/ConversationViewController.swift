@@ -15,6 +15,7 @@ import UIKit
 final class ConversationViewController: BaseViewController<ConversationPresenterInterface> {
     // MARK: - Properties
     
+    fileprivate var isDrawingTable: Bool = false
     // MARK: - Views
     
     private lazy var tableView: UITableView = .init {[weak self] tableView in
@@ -41,19 +42,10 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     // MARK: - Private Methods
     
     override func setupViews() {
+        self.handleKeyboardTransmission = true
         super.setupViews()
         view.addSubview(tableView)
         view.addSubview(messageInputBar)
-        
-        self.presenter?
-            .messages
-            .bind(to: tableView.rx.items) { tableView, _, message in
-                let cell: BaseMessageCell = tableView.dequeueCell()
-                cell.setup(message: message.toProto())
-                return cell
-            }
-            .disposed(by: disposeBag)
-
     }
     
     override func setupConstraints() {
@@ -69,18 +61,39 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin)
         }
     }
-}
-
-
-    // MARK: - UITableViewDataSource
-
-
-
-    // MARK: - UITableViewDelegate
-
-extension ConversationViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableViewAutomaticDimension
+    
+    override func setupInitialData() {
+        super.setupInitialData()
+        
+        self.presenter?
+            .messages
+            .do(onNext: { [weak self ] result in
+                guard let `self` = self, !self.isDrawingTable else {
+                    return
+                }
+                self.isDrawingTable = true
+                let isEmpty = self.tableView.numberOfRows(inSection: 0) - 1 <= 0
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+                    let lastRowIndex = self.tableView.numberOfRows(inSection: 0) - 1
+                    if lastRowIndex < 0 { return }
+                    let indexPath = IndexPath(row: lastRowIndex, section: 0)
+                    self.tableView.scrollToRow(at: indexPath, at: .top, animated: !isEmpty)
+                    self.isDrawingTable = false
+                })
+            })
+            .bind(to: tableView.rx.items) { tableView, _, message in
+                let cell: BaseMessageCell = tableView.dequeueCell()
+                cell.setup(message: message.toProto())
+                return cell
+            }
+            .disposed(by: disposeBag)
+    }
+    
+    override func changed(keyboard height: CGFloat) {
+        messageInputBar.snp.updateConstraints { make in
+                make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin).offset(-height)
+            
+        }
     }
 }
 
@@ -96,9 +109,6 @@ extension ConversationViewController: MessageInputBarDelegate {
     }
     
     func message(text: String) {
-        var message = Message()
-        message.text.content = text
-        message.meta.created = Date().nanosec
         self.presenter?.send(message: text)
     }
 }

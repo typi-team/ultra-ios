@@ -13,109 +13,41 @@ import Foundation
 
 protocol ContactsRepository {
     func contacts() -> Observable<Results<DBContact>>
-    func contact(id: String) -> Single<DBContact?>
-    func save(contact: DBContact) -> Completable
-    func save(contacts: ContactResponse) -> Completable
-    func delete(contact: DBContact) -> Completable
+    func contact(id: String) -> DBContact?
+    func save(contact: DBContact) -> Single<Void>
+    func save(contacts: ContactImportResponse) -> Single<Void>
+    func delete(contact: DBContact) -> Single<Void>
 }
 
 
 class ContactsRepositoryImpl: ContactsRepository {
-    
-    fileprivate let appStore: AppSettingsStore
-    
-    init(appStore: AppSettingsStore) {
-        self.appStore = appStore
-    }
-    
-    func save(contacts: ContactResponse) -> Completable {
 
-        return Completable.create {[weak self] observer -> Disposable in
-            guard let `self` = self else { return Disposables.create() }
-            do {
-                let userID = self.appStore.userID()
-                let dbContacts = contacts.contacts.map { contact -> DBContact in
-                    return DBContact { dbContact in
-                        dbContact.phone = contact.phone
-                        dbContact.userID = contact.userID
-                        dbContact.lastName = contact.lastname
-                        dbContact.firstName = contact.firstname
-                        dbContact.chatID =  userID + contact.userID
-                    }
-                }
-                
-                let realm = Realm.myRealm()
-                try realm.write {
-                    dbContacts.forEach {
-                        realm.create(DBContact.self, value: $0, update: .all)
-                    }
-                }
-                observer(.completed)
-            } catch {
-                observer(.error(error))
-            }
-            return Disposables.create()
-        }
+    fileprivate let contactDBService: ContactDBService
+    
+    init(contactDBService: ContactDBService) {
+        self.contactDBService = contactDBService
     }
     
-    func contacts() -> Observable<Results<DBContact>> {
-        return Observable.create { observer in
-            let realm = Realm.myRealm()
-            let contacts = realm.objects(DBContact.self)
-            var notificationKey = contacts.observe(keyPaths: ["firstName", "lastName", "phone", "userID"]) { changes in
-
-                switch changes {
-                case let .initial(collection):
-                    observer.on(.next(collection))
-                case let .update(collection, _, _, _):
-                    observer.on(.next(collection))
-                case let .error(error):
-                    observer.on(.error(error))
-                }
-            }
-            return Disposables.create {
-                notificationKey.invalidate()
-            }
-        }
+    func contacts() -> RxSwift.Observable<RealmSwift.Results<DBContact>> {
+        return self.contactDBService.contacts()
     }
     
-    func contact(id: String) -> Single<DBContact?> {
-        let realm = Realm.myRealm()
-        guard let contact = realm.object(ofType: DBContact.self, forPrimaryKey: id) else {
-            return Single.error(NSError(domain: "ContactsRepository", code: 404, userInfo: nil))
-        }
-        return Single.just(contact)
+    func contact(id: String) -> DBContact?{
+        return self.contactDBService.contact(id: id)
     }
     
-    func save( contact: DBContact) -> Completable {
-        return Completable.create { completable in
-            do {
-                let realm = Realm.myRealm()
-                try realm.write {
-                    realm.add(contact, update: .all)
-                }
-                completable(.completed)
-            } catch {
-                completable(.error(error))
-            }
-            return Disposables.create()
-        }
+    func save(contact: DBContact) -> Single<Void> {
+        return self.contactDBService.save(contact: contact)
     }
     
-    func delete( contact: DBContact) -> Completable {
-        return Completable.create { completable in
-            do {
-                let realm = Realm.myRealm()
-                try realm.write {
-                    realm.delete(contact)
-                }
-                completable(.completed)
-            } catch {
-                completable(.error(error))
-            }
-            return Disposables.create()
-        }
+    func save(contacts: ContactImportResponse) -> Single<Void> {
+        return self.contactDBService.save(contacts: contacts)
     }
+    
+    func delete(contact: DBContact) -> Single<Void> {
+        return self.contactDBService.delete(contact: contact)
+    }
+    
 }
 
 extension Realm {

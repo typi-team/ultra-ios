@@ -32,7 +32,7 @@ class DBConversation: Object {
         self.init()
         
         self.lastSeen = message.meta.created
-        self.message = DBMessage.init(from: message, realm: realm)
+        self.message = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm)
         self.idintification = message.receiver.chatID
         
     }
@@ -55,10 +55,10 @@ extension DBConversation: Conversation {
     
     var lastMessage: String? {
         get {
-            return self.message?.textMessage?.content
+            return self.message?.text
         }
         set {
-            self.message?.textMessage?.content = newValue ?? ""
+            self.message?.text = newValue ?? ""
         }
     }
     

@@ -15,7 +15,7 @@ import RealmSwift
 final class ConversationsPresenter: BasePresenter {
 
     // MARK: - Private properties -
-
+    private let updateRepository: UpdateRepository
     private let messageRepository: MessageRepository
     private unowned let view: ConversationsViewInterface
     private let wireframe: ConversationsWireframeInterface
@@ -26,19 +26,26 @@ final class ConversationsPresenter: BasePresenter {
     // MARK: - Lifecycle -
 
     init(view: ConversationsViewInterface,
+         updateRepository: UpdateRepository,
          messageRepository: MessageRepository,
          wireframe: ConversationsWireframeInterface,
          conversationRepository: ConversationRepository) {
         self.view = view
         self.wireframe = wireframe
+        self.updateRepository = updateRepository
         self.messageRepository = messageRepository
         self.conversationRepository = conversationRepository
     }
+    
 }
 
 // MARK: - Extensions -
 
 extension ConversationsPresenter: ConversationsPresenterInterface {
+    func setupUpdateSubscription() {
+        self.updateRepository.setupSubscription()
+    }
+    
     func navigate(to conversation: Conversation) {
         self.wireframe.navigateToConversation(with: conversation)
     }

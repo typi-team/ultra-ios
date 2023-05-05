@@ -123,6 +123,39 @@ struct GetChatMessagesResponse {
   init() {}
 }
 
+struct GetMessageRequest {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var messageID: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct GetMessageResponse {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var message: Message {
+    get {return _message ?? Message()}
+    set {_message = newValue}
+  }
+  /// Returns true if `message` has been explicitly set.
+  var hasMessage: Bool {return self._message != nil}
+  /// Clears the value of `message`. Subsequent reads from it will return its default value.
+  mutating func clearMessage() {self._message = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _message: Message? = nil
+}
+
 struct MessagesDeliveredRequest {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -157,6 +190,8 @@ struct MessagesReadRequest {
   var chatID: String = String()
 
   var maxSeqNumber: UInt64 = 0
+
+  var readTime: Int64 = 0
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -245,11 +280,37 @@ struct SendAudioRecordingResponse {
   init() {}
 }
 
+struct SendMediaUploadingRequest {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var chatID: String = String()
+
+  var mediaType: MediaTypeEnum = .mediaUnknown
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct SendMediaUploadingResponse {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 #if swift(>=5.5) && canImport(_Concurrency)
 extension MessageSendRequest: @unchecked Sendable {}
 extension MessageSendResponse: @unchecked Sendable {}
 extension GetChatMessagesRequest: @unchecked Sendable {}
 extension GetChatMessagesResponse: @unchecked Sendable {}
+extension GetMessageRequest: @unchecked Sendable {}
+extension GetMessageResponse: @unchecked Sendable {}
 extension MessagesDeliveredRequest: @unchecked Sendable {}
 extension MessagesDeliveredResponse: @unchecked Sendable {}
 extension MessagesReadRequest: @unchecked Sendable {}
@@ -260,6 +321,8 @@ extension SendTypingRequest: @unchecked Sendable {}
 extension SendTypingResponse: @unchecked Sendable {}
 extension SendAudioRecordingRequest: @unchecked Sendable {}
 extension SendAudioRecordingResponse: @unchecked Sendable {}
+extension SendMediaUploadingRequest: @unchecked Sendable {}
+extension SendMediaUploadingResponse: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -442,6 +505,74 @@ extension GetChatMessagesResponse: SwiftProtobuf.Message, SwiftProtobuf._Message
   }
 }
 
+extension GetMessageRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "GetMessageRequest"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "message_id"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.messageID) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.messageID.isEmpty {
+      try visitor.visitSingularStringField(value: self.messageID, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: GetMessageRequest, rhs: GetMessageRequest) -> Bool {
+    if lhs.messageID != rhs.messageID {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension GetMessageResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "GetMessageResponse"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "message"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._message) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._message {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: GetMessageResponse, rhs: GetMessageResponse) -> Bool {
+    if lhs._message != rhs._message {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension MessagesDeliveredRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "MessagesDeliveredRequest"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -517,6 +648,7 @@ extension MessagesReadRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "chat_id"),
     2: .standard(proto: "max_seq_number"),
+    3: .standard(proto: "read_time"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -527,6 +659,7 @@ extension MessagesReadRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.chatID) }()
       case 2: try { try decoder.decodeSingularUInt64Field(value: &self.maxSeqNumber) }()
+      case 3: try { try decoder.decodeSingularInt64Field(value: &self.readTime) }()
       default: break
       }
     }
@@ -539,12 +672,16 @@ extension MessagesReadRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if self.maxSeqNumber != 0 {
       try visitor.visitSingularUInt64Field(value: self.maxSeqNumber, fieldNumber: 2)
     }
+    if self.readTime != 0 {
+      try visitor.visitSingularInt64Field(value: self.readTime, fieldNumber: 3)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: MessagesReadRequest, rhs: MessagesReadRequest) -> Bool {
     if lhs.chatID != rhs.chatID {return false}
     if lhs.maxSeqNumber != rhs.maxSeqNumber {return false}
+    if lhs.readTime != rhs.readTime {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -742,6 +879,63 @@ extension SendAudioRecordingResponse: SwiftProtobuf.Message, SwiftProtobuf._Mess
   }
 
   static func ==(lhs: SendAudioRecordingResponse, rhs: SendAudioRecordingResponse) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SendMediaUploadingRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "SendMediaUploadingRequest"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "chat_id"),
+    3: .same(proto: "mediaType"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.chatID) }()
+      case 3: try { try decoder.decodeSingularEnumField(value: &self.mediaType) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.chatID.isEmpty {
+      try visitor.visitSingularStringField(value: self.chatID, fieldNumber: 1)
+    }
+    if self.mediaType != .mediaUnknown {
+      try visitor.visitSingularEnumField(value: self.mediaType, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: SendMediaUploadingRequest, rhs: SendMediaUploadingRequest) -> Bool {
+    if lhs.chatID != rhs.chatID {return false}
+    if lhs.mediaType != rhs.mediaType {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SendMediaUploadingResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "SendMediaUploadingResponse"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let _ = try decoder.nextFieldNumber() {
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: SendMediaUploadingResponse, rhs: SendMediaUploadingResponse) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

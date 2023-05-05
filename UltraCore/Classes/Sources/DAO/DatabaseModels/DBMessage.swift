@@ -16,7 +16,7 @@ class DBMessage: Object {
     @objc dynamic var receiver: DBReceiver? = DBReceiver()
     @objc dynamic var sender: DBSender? = DBSender()
     @objc dynamic var meta: DBMessageMeta? = DBMessageMeta.init()
-    @objc dynamic var textMessage: DBTextMessage?
+    @objc dynamic var text: String = ""
     @objc dynamic var audioMessage: DBAudioMessage?
     @objc dynamic var voiceMessage: DBVoiceMessage?
     @objc dynamic var photoMessage: DBPhotoMessage?
@@ -36,10 +36,8 @@ class DBMessage: Object {
         self.receiver = realm.object(ofType: DBReceiver.self, forPrimaryKey: message.receiver.chatID) ?? DBReceiver.init(message.receiver)
         self.sender = realm.object(ofType: DBSender.self, forPrimaryKey: message.sender.userID) ?? DBSender.init(from: message.sender)
         self.meta = DBMessageMeta.init(proto: message.meta)
-        
+        self.text = message.text
         switch message.content {
-        case .text(let textMessage):
-            self.textMessage = .init(fromProto: textMessage)
         case .audio(let audioMessage):
             self.audioMessage = .init(fromProto: audioMessage)
         case .voice(let voiceMessage):
@@ -63,10 +61,8 @@ class DBMessage: Object {
         message.receiver = receiver!.toProto()
         message.sender = sender!.toProto()
         message.meta = meta!.toProto()
-        
-        if let textMessage = textMessage {
-            message.content = .text(textMessage.toProto())
-        } else if let audioMessage = audioMessage {
+        message.text = self.text
+        if let audioMessage = audioMessage {
             message.content = .audio(audioMessage.toProto())
         } else if let voiceMessage = voiceMessage {
             message.content = .voice(voiceMessage.toProto())
@@ -155,22 +151,6 @@ class DBMessageMeta: Object {
 
     func toProto() -> MessageMeta {
         return MessageMeta.with { $0.created = self.created}
-    }
-}
-
-
-class DBTextMessage: Object {
-    @objc dynamic var content: String = ""
-    
-    convenience init(fromProto proto: TextMessage) {
-        self.init()
-        self.content = proto.content
-    }
-    
-    func toProto() -> TextMessage {
-        var proto = TextMessage()
-        proto.content = self.content
-        return proto
     }
 }
 
@@ -296,7 +276,7 @@ class DBVideoMessage: Object {
         self.fileName = videoMessage.fileName
         self.width = videoMessage.width
         self.height = videoMessage.height
-        self.preview = videoMessage.preview
+        self.preview = videoMessage.thumbPreview
     }
 
     func toProto() -> VideoMessage {
@@ -308,7 +288,7 @@ class DBVideoMessage: Object {
         videoMessage.fileName = self.fileName
         videoMessage.width = self.width
         videoMessage.height = self.height
-        videoMessage.preview = self.preview
+        videoMessage.thumbPreview = self.preview
         return videoMessage
     }
 }

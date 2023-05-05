@@ -40,6 +40,7 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
     }
     
     override func setupInitialData() {
+        self.presenter?.setupUpdateSubscription()
         self.presenter?.conversation
             .observe(on: MainScheduler.instance)
             .bind(to: tableView.rx.items) { tableView, index, model in
@@ -70,6 +71,8 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
         super.viewDidAppear(animated)
 //        self.presenter?.navigateToConversation(with: DummyConversationImpl.init() )
     }
+    
+    
 }
 
 // MARK: - Extensions -

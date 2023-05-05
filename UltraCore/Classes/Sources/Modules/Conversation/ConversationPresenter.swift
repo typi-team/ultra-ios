@@ -52,19 +52,22 @@ extension ConversationPresenter: ConversationPresenterInterface {
     
     func send(message text: String) {
         var params = MessageSendRequest()
-        params.message.text.content = text
+        
         params.peer.user = .with({ [weak self] peer in
             guard let `self` = self else { return }
-            peer.userID = self.conversation.idintification
+            print(conversation.peer?.userID)
+            peer.userID = "u1FNOmSc0DAwM"
         })
+        params.message.text = text
         params.message.meta.created = Date().nanosec
         
         var message = Message()
         message.id = UUID().uuidString
-        message.text = TextMessage.with({ $0.content = text })
-        message.receiver = .with({
-            $0.chatID = conversation.idintification
-            $0.userID = conversation.peer?.userID ?? ""
+        message.text = text
+        message.receiver = .with({[weak self] receiver in
+            guard let `self` = self else { return }
+            receiver.chatID = conversation.idintification
+            receiver.userID = self.conversation.peer?.userID ?? ""
         })
         message.meta = .with({
             $0.created = Date().nanosec
@@ -72,12 +75,8 @@ extension ConversationPresenter: ConversationPresenterInterface {
         
         self.conversationRepository
             .createIfNotExist(from: message)
-            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
-            .observe(on: MainScheduler.instance)
-            .subscribe().disposed(by: disposeBag)
-            
-        self.messageRepository.save(message: message)
-            .andThen(self.messageSenderInteractor.executeSingle(params: params))
+            .flatMap{ self.messageRepository.save(message: message)}
+            .flatMap{self.messageSenderInteractor.executeSingle(params: params)}
             .flatMap({ [weak self] (response: MessageSendResponse) in
                 guard let `self` = self else {
                     throw NSError.selfIsNill
@@ -85,6 +84,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 message.meta.created = response.meta.created
                 message.state.delivered = false
                 message.state.read = false
+                message.seqNumber = response.seqNumber
 
                 return self.messageRepository.update(message: message)
             })

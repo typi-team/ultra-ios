@@ -7,16 +7,16 @@
 import RxSwift
 import Foundation
 
-class SyncContactsInteractor: UseCase<ContactRequest, ContactResponse> {
+class SyncContactsInteractor: UseCase<ContactsImportRequest, ContactImportResponse> {
     fileprivate let contactsService: ContactServiceClientProtocol
     
     init(contactsService: ContactServiceClientProtocol) {
         self.contactsService = contactsService
     }
     
-    override func executeSingle(params: ContactRequest) -> Single<ContactResponse> {
+    override func executeSingle(params: ContactsImportRequest) -> Single<ContactImportResponse> {
         return Single.create { observer -> Disposable in
-            self.contactsService.insertContacts(params,callOptions:  .default())
+            self.contactsService.import(params,callOptions:  .default())
                 .response
                 .whenComplete { result in
                 switch result {
