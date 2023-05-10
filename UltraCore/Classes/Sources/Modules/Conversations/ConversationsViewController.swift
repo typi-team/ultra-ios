@@ -15,15 +15,17 @@ import RxDataSources
 
 
 final class ConversationsViewController: BaseViewController<ConversationsPresenterInterface> {
-
+    
     fileprivate lazy var tableView: UITableView = .init({
-        $0.rowHeight = 68
+        $0.rowHeight = 70
+        $0.delegate = self
         $0.registerCell(type: ConversationCell.self)
     })
-        
+    
     override func setupViews() {
         super.setupViews()
         self.view.addSubview(tableView)
+        
         self.navigationItem.rightBarButtonItem = .init(image: .named("conversation_new_icon"),
                                                        style: .plain, target: self,
                                                        action: #selector(self.openContacts))
@@ -39,6 +41,7 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
     }
     
     override func setupInitialData() {
+        self.presenter?.setupUpdateSubscription()
         self.presenter?.conversation
             .observe(on: MainScheduler.instance)
             .bind(to: tableView.rx.items) { tableView, index, model in
@@ -47,11 +50,22 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
                 return cell
             }
             .disposed(by: self.disposeBag)
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        self.presenter?.navigateToContacts()
+        
+        self.tableView
+            .rx.itemSelected
+            .subscribe { [weak self] (index: IndexPath) in
+                guard let `self` = self else { return }
+                self.tableView.deselectRow(at: index, animated: true)
+            }
+            .disposed(by: disposeBag)
+        
+        self.tableView.rx
+            .modelSelected(Conversation.self)
+            .subscribe { [weak self](conversation: Conversation) in
+                guard let `self` = self else { return }
+                self.presenter?.navigate(to: conversation)
+            }
+            .disposed(by: disposeBag)
     }
 }
 
@@ -63,17 +77,8 @@ extension ConversationsViewController {
     }
 }
 
-extension ConversationsViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return .max
-    }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        return .init()
-    }
-    
+extension ConversationsViewController: UITableViewDelegate {
     
 }
-
 extension ConversationsViewController: ConversationsViewInterface {
 }

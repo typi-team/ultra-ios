@@ -74,12 +74,12 @@ class ConversationCell: BaseCell {
     }
     
     func setup(conversation: Conversation ) {
-        self.avatarView.loadImage(by: nil, placeholder: .initial(text: "ЫР"))
         self.titleView.text = conversation.title
-        self.descriptionView.text = conversation.description
+        self.descriptionView.text = conversation.lastMessage
+        self.unreadView.isHidden = conversation.unreadCount == 0
         self.unreadView.text = conversation.unreadCount.description
-        if #available(iOS 15.0, *) {
-            self.lastSeenView.text = conversation.lastSeen.formatted(date: .complete, time: .omitted)
-        }
+        self.lastSeenView.text = conversation.timestamp.formattedTime()
+        self.avatarView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
+        
     }
 }

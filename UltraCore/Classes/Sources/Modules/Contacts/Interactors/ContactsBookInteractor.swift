@@ -48,7 +48,7 @@ private extension ContactsBookInteractor {
                 var temp = Contact()
                 temp.firstname = contact.givenName
                 temp.lastname = contact.familyName
-                temp.phone = value.value.stringValue
+                temp.phone = value.value.stringValue.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: "[^+\\d]", with: "", options: .regularExpression, range: nil)
                 contacts.append(temp)
             }
         }

@@ -48,7 +48,6 @@ extension SignUpPresenter: SignUpPresenterInterface {
         params.phone = number
 
         self.userIdInteractor.executeSingle(params: params)
-            
             .map({ response -> IssueJwtRequest in
                 var request = IssueJwtRequest()
                 request.userID = response.userID
@@ -60,6 +59,7 @@ extension SignUpPresenter: SignUpPresenterInterface {
                 guard let `self` = self else {
                     return .never()
                 }
+                self.appSettingsStore.store(userID: request.userID)
                 return self.jwtInteractor.executeSingle(params: request)
             }).do(onSuccess: { [weak self] response in
                 guard let `self` = self else { return }

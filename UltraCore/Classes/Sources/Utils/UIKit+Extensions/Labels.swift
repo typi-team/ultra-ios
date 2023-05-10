@@ -62,6 +62,14 @@ class RegularCaption3: BaseLabel {
     }
 }
 
+class SubHeadline: BaseLabel {
+    override func setupView() {
+        super.setupView()
+        self.textColor = .gray700
+        self.font = .defaultRegularSubHeadline
+    }
+}
+
 
 class LabelWithInsets: UILabel {
     var textInsets = UIEdgeInsets.zero {

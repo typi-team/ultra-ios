@@ -9,17 +9,21 @@
 //
 
 import UIKit
+import RealmSwift
 import RxSwift
 
 protocol ConversationsWireframeInterface: WireframeInterface {
     func navigateToContacts()
+    func navigateToConversation(with data: Conversation)
 }
 
 protocol ConversationsViewInterface: ViewInterface {
 }
 
 protocol ConversationsPresenterInterface: PresenterInterface {
-    var conversation: BehaviorSubject<[Conversation]> { get set }
+    var conversation: Observable<Results<DBConversation>> { get set }
     
     func navigateToContacts()
+    func setupUpdateSubscription()
+    func navigate(to conversation: Conversation)
 }

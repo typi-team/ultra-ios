@@ -20,7 +20,11 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
         let moduleViewController = ConversationsViewController()
         super.init(viewController: moduleViewController)
 
-        let presenter = ConversationsPresenter(view: moduleViewController, wireframe: self)
+        let presenter = ConversationsPresenter(view: moduleViewController,
+                                               updateRepository: appSettings.updateRepository,
+                                               messageRepository: appSettings.messageRespository,
+                                               wireframe: self,
+                                               conversationRepository: appSettings.conversationRespository)
         moduleViewController.presenter = presenter
     }
 
@@ -39,5 +43,9 @@ extension ConversationsWireframe: ConversationsWireframeInterface {
     
     func navigateToContacts() {
         self.navigationController?.pushWireframe(ContactsBookWireframe())
+    }
+    
+    func navigateToConversation(with data: Conversation) {
+        self.navigationController?.pushWireframe(ConversationWireframe(with: data))
     }
 }

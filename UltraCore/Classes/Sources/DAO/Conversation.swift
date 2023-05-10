@@ -8,19 +8,26 @@
 import Foundation
 
 protocol Conversation: Any {
-    var title: String { get set }
-    var lastSeen: Date { get set }
+    
+    var title: String { get }
+    var peer: DBContact? { get }
+    var timestamp: Date { get set }
     var unreadCount: Int { get set }
-    var description: String { get set }
+    var lastMessage: String? { get set }
+    var idintification: String { get set }
 }
 
-
-class DummyConversationImpl: Conversation {
-    var title: String = "FF Chat"
-    
-    var lastSeen: Date = Date()
-    
+class ConversationImpl: Conversation {
+    var peer: DBContact?
+    var title: String = ""
+    var lastMessage: String?
     var unreadCount: Int = 0
+    var idintification: String
+    var timestamp: Date = Date()
     
-    var description: String = "Freedom chat"
+    init(contact: DBContact ) {
+        self.peer = contact
+        self.idintification = contact.chatID
+        
+    }
 }

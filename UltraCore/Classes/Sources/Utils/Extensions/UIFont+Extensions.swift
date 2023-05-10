@@ -12,6 +12,10 @@ extension UIFont {
     class var defaultRegularHeadline: UIFont {
         return UIFont.systemFont(ofSize: 18.0, weight: .regular)
     }
+    
+    class var defaultRegularSubHeadline: UIFont {
+        return UIFont.systemFont(ofSize: 15.0, weight: .regular)
+    }
 
     class var defaultRegularBody: UIFont {
         return UIFont.systemFont(ofSize: 17.0, weight: .regular)

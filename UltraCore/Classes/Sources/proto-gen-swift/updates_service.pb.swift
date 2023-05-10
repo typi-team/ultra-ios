@@ -66,6 +66,8 @@ struct InitialStateResponse {
 
   var contacts: [Contact] = []
 
+  var unreadCount: UInt64 = 0
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -164,6 +166,7 @@ extension InitialStateResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     3: .same(proto: "messages"),
     4: .same(proto: "users"),
     5: .same(proto: "contacts"),
+    6: .standard(proto: "unread_count"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -177,6 +180,7 @@ extension InitialStateResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       case 3: try { try decoder.decodeRepeatedMessageField(value: &self.messages) }()
       case 4: try { try decoder.decodeRepeatedMessageField(value: &self.users) }()
       case 5: try { try decoder.decodeRepeatedMessageField(value: &self.contacts) }()
+      case 6: try { try decoder.decodeSingularUInt64Field(value: &self.unreadCount) }()
       default: break
       }
     }
@@ -198,6 +202,9 @@ extension InitialStateResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if !self.contacts.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.contacts, fieldNumber: 5)
     }
+    if self.unreadCount != 0 {
+      try visitor.visitSingularUInt64Field(value: self.unreadCount, fieldNumber: 6)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -207,6 +214,7 @@ extension InitialStateResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if lhs.messages != rhs.messages {return false}
     if lhs.users != rhs.users {return false}
     if lhs.contacts != rhs.contacts {return false}
+    if lhs.unreadCount != rhs.unreadCount {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
