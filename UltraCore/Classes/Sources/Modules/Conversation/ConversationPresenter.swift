@@ -50,6 +50,10 @@ final class ConversationPresenter {
 
 extension ConversationPresenter: ConversationPresenterInterface {
     
+    func viewDidLoad() {
+        self.view.setup(conversation: conversation)
+    }
+    
     func send(message text: String) {
         var params = MessageSendRequest()
         

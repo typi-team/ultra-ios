@@ -8,7 +8,10 @@
 import UIKit
 
 class BaseMessageCell: BaseCell {
-    let textView: SubHeadline = .init({$0.numberOfLines = 0})
+    let textView: SubHeadline = .init({
+        $0.numberOfLines = 0
+    })
+    
     let deliveryDateLabel: RegularFootnote = .init()
     
     let container: UIView = .init({
@@ -28,21 +31,22 @@ class BaseMessageCell: BaseCell {
         super.setupConstraints()
         
         self.container.snp.makeConstraints { make in
-            make.left.top.equalToSuperview().offset(kHeadlinePadding)
-            make.bottom.equalToSuperview()
+            make.top.equalToSuperview()
+            make.left.top.equalToSuperview().offset(kMediumPadding)
+            make.bottom.equalToSuperview().offset(-(kMediumPadding - 2))
             make.right.lessThanOrEqualToSuperview()
         }
         
         self.textView.snp.makeConstraints { make in
-            make.left.equalToSuperview().offset(kLowPadding)
-            make.right.equalToSuperview().offset(-kLowPadding)
             make.top.equalToSuperview().offset(kLowPadding)
+            make.left.equalToSuperview().offset(kLowPadding + 2)
+            make.bottom.equalToSuperview().offset(-kLowPadding)
         }
         
         self.deliveryDateLabel.snp.makeConstraints { make in
-            make.right.left.equalToSuperview()
-            make.top.equalTo(textView.snp.bottom).offset(kLowPadding)
-            make.bottom.equalToSuperview().offset(-kLowPadding)
+            make.centerY.equalTo(textView.snp.centerY)
+            make.left.equalTo(textView.snp.right).offset(kMediumPadding - 5)
+            make.right.equalToSuperview().offset(-(kLowPadding + 1))
         }
     }
     

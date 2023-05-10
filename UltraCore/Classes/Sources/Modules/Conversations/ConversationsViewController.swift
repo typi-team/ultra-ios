@@ -17,7 +17,8 @@ import RxDataSources
 final class ConversationsViewController: BaseViewController<ConversationsPresenterInterface> {
     
     fileprivate lazy var tableView: UITableView = .init({
-        $0.rowHeight = 68
+        $0.rowHeight = 70
+        $0.delegate = self
         $0.registerCell(type: ConversationCell.self)
     })
     
@@ -57,7 +58,7 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
                 self.tableView.deselectRow(at: index, animated: true)
             }
             .disposed(by: disposeBag)
-
+        
         self.tableView.rx
             .modelSelected(Conversation.self)
             .subscribe { [weak self](conversation: Conversation) in
@@ -66,13 +67,6 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
             }
             .disposed(by: disposeBag)
     }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-//        self.presenter?.navigateToConversation(with: DummyConversationImpl.init() )
-    }
-    
-    
 }
 
 // MARK: - Extensions -
@@ -83,6 +77,8 @@ extension ConversationsViewController {
     }
 }
 
-
+extension ConversationsViewController: UITableViewDelegate {
+    
+}
 extension ConversationsViewController: ConversationsViewInterface {
 }

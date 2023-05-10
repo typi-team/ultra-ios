@@ -15,10 +15,12 @@ protocol ConversationWireframeInterface: WireframeInterface {
 }
 
 protocol ConversationViewInterface: ViewInterface {
+    func setup(conversation: Conversation)
     
 }
 
 protocol ConversationPresenterInterface: PresenterInterface {
     func send(message text: String)
     var messages: Observable<Results<DBMessage>> { get set }
+    func viewDidLoad()
 }

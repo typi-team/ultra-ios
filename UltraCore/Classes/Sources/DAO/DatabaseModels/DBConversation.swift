@@ -28,11 +28,11 @@ class DBConversation: Object {
         self.unreadMessageCount = conversation.unreadCount
     }
     
-    convenience init(message: Message, realm: Realm = .myRealm()) {
+    convenience init(message: Message, realm: Realm = .myRealm(), user id: String?) {
         self.init()
         
         self.lastSeen = message.meta.created
-        self.message = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm)
+        self.message = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm, user: id)
         self.idintification = message.receiver.chatID
         
     }

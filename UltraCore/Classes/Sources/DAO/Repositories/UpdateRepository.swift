@@ -43,7 +43,6 @@ extension UpdateRepositoryImpl: UpdateRepository {
         let call = self.update.listen(state, callOptions: .default()) { [weak self] response in
             guard let `self` = self else { return }
             response.updates.forEach { update in
-                print(update.textFormatString())
                 if !update.message.text.isEmpty {
                     let contactID = update.message.sender.userID
                     let contact = self.contactService.contact(id: contactID)

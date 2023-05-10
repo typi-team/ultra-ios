@@ -16,28 +16,27 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     // MARK: - Properties
     
     fileprivate var isDrawingTable: Bool = false
+    
     // MARK: - Views
     
     private lazy var tableView: UITableView = .init {[weak self] tableView in
-//        tableView.delegate = self
-        
-//        tableView.dataSource = self
+        guard let `self` = self else { return }
         tableView.separatorStyle = .none
         tableView.tableFooterView = UIView()
         tableView.registerCell(type: BaseMessageCell.self)
+        tableView.registerCell(type: IncomeMessageCell.self)
+        tableView.registerCell(type: OutgoingMessageCell.self)
+        tableView.backgroundColor = self.view.backgroundColor
         tableView.backgroundView = UIImageView({
             $0.contentMode = .scaleAspectFill
             $0.image = .named("conversation_background")
         })
     }
     
+    private lazy var headline: ProfileNavigationView = .init()
     private lazy var messageInputBar: MessageInputBar = .init({ [weak self] inputBar in
         inputBar.delegate = self
     })
-    
-    
-    // MARK: - Lifecycle
-    
     
     // MARK: - Private Methods
     
@@ -46,6 +45,9 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         super.setupViews()
         view.addSubview(tableView)
         view.addSubview(messageInputBar)
+        
+        navigationItem.leftItemsSupplementBackButton = true
+        navigationItem.leftBarButtonItem = .init(customView: self.headline)
     }
     
     override func setupConstraints() {
@@ -82,11 +84,20 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                 })
             })
             .bind(to: tableView.rx.items) { tableView, _, message in
-                let cell: BaseMessageCell = tableView.dequeueCell()
-                cell.setup(message: message.toProto())
-                return cell
+                if message.isIncome {
+                    let cell: IncomeMessageCell = tableView.dequeueCell()
+                    cell.setup(message: message.toProto())
+                    return cell
+                }else {
+                    let cell: OutgoingMessageCell = tableView.dequeueCell()
+                    cell.setup(message: message.toProto())
+                    return cell
+                }
+                
             }
             .disposed(by: disposeBag)
+        
+        self.presenter?.viewDidLoad()
     }
     
     override func changed(keyboard height: CGFloat) {
@@ -116,6 +127,7 @@ extension ConversationViewController: MessageInputBarDelegate {
 // MARK: - Extensions -
 
 extension ConversationViewController: ConversationViewInterface {
-    
-    
+    func setup(conversation: Conversation) {
+        self.headline.setup(conversation: conversation)
+    }
 }

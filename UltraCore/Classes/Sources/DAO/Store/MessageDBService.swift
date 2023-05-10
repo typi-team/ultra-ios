@@ -9,14 +9,21 @@ import RxSwift
 import RealmSwift
 
 class MessageDBService {
+    fileprivate let userId: String
+    
+    init(userId: String) {
+        self.userId = userId
+    }
 
 //  MARK: Обновление сообщения в базе данных
     func update(message: Message) -> Single<Bool> {
-        return Single.create { completable in
+        return Single.create {[weak self ] completable in
+            guard let `self` = self else { return Disposables.create() }
             do {
                 let realm = Realm.myRealm()
                 try realm.write {
-                    realm.create(DBMessage.self, value: DBMessage(from: message), update: .all)
+                    realm.create(DBMessage.self,
+                                 value: DBMessage(from: message, user: self.userId), update: .all)
                 }
 
                 completable(.success(true))
@@ -52,11 +59,13 @@ class MessageDBService {
     
 //    MARK: Сохранение сообщения в базу данных
     func save(message: Message) -> Single<Void> {
-        return Single.create { completable in
+        return Single.create {[weak self] completable in
+            guard let `self` = self else { return Disposables.create() }
             do {
                 let realm = Realm.myRealm()
                 try realm.write {
-                    realm.create(DBMessage.self, value: DBMessage(from: message), update: .all)
+                    realm.create(DBMessage.self,
+                                 value: DBMessage(from: message, user: self.userId), update: .all)
                     
                 }
                 completable(.success(()))

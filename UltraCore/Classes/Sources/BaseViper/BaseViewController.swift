@@ -33,8 +33,6 @@ class BaseViewController<T>: UIViewController {
             NotificationCenter.default.removeObserver(self)
         }
     }
-    
-    
 }
 
 
@@ -64,6 +62,7 @@ extension UIViewController {
     }
     @objc func setupViews() {
         self.view.backgroundColor = .gray100
+        self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
     }
     @objc func setupConstraints() {}
     @objc func setupInitialData() {}

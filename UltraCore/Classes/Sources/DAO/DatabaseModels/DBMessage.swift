@@ -21,12 +21,15 @@ class DBMessage: Object {
     @objc dynamic var voiceMessage: DBVoiceMessage?
     @objc dynamic var photoMessage: DBPhotoMessage?
     @objc dynamic var videoMessage: DBVideoMessage?
+    @objc dynamic var isIncome: Bool = false
+    
+    
     
     override static func primaryKey() -> String? {
         return "id"
     }
     
-    convenience init(from message: Message, realm: Realm = .myRealm()) {
+    convenience init(from message: Message, realm: Realm = .myRealm(), user id: String?) {
         self.init()
         self.id = message.id
         self.state = DBMessageState.init(messageState: message.state)
@@ -48,6 +51,10 @@ class DBMessage: Object {
             self.videoMessage = .init(videoMessage: videoMessage)
         default:
             break
+        }
+        
+        if let id = id {
+            self.isIncome = message.receiver.userID == id
         }
     }
     

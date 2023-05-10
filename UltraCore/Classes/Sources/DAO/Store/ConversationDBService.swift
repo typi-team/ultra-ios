@@ -28,10 +28,10 @@ class ConversationDBService {
                     if let conversation = existConversation {
                         conversation.peer = contact
                         conversation.lastSeen = message.meta.created
-                        conversation.message = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm)
+                        conversation.message = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm, user: self.userID)
                         realm.create(DBConversation.self, value: conversation, update: .all)
                     } else {
-                        let conversation = realm.create(DBConversation.self, value: DBConversation(message: message))
+                        let conversation = realm.create(DBConversation.self, value: DBConversation(message: message, user: self.userID))
                         conversation.peer = contact
                         realm.add(conversation)
                     }

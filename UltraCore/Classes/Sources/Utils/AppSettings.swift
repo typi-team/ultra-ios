@@ -43,7 +43,7 @@ open class AppSettingsImpl:AppSettings  {
 
 //    MARK: Services
 
-    lazy var messageDBService: MessageDBService = .init()
+    lazy var messageDBService: MessageDBService = .init(userId: appStore.userID())
     lazy var appStore: AppSettingsStore = AppSettingsStoreImpl()
     lazy var contactDBService: ContactDBService = .init(userID: appStore.userID())
     lazy var conversationDBService: ConversationDBService = .init(userID: appStore.userID())
@@ -61,6 +61,13 @@ open class AppSettingsImpl:AppSettings  {
 }
 
 public func showSignUp(view controller: UIViewController) {
+    
+    UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor: UIColor.clear], for: .normal)
+    UIBarButtonItem.appearance().title = ""
+    
+    
+    UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor: UIColor.clear], for: UIControlState.highlighted)
+
     
     if AppSettingsImpl.shared.appStore.isAuthed {
         let wireframe = ConversationsWireframe()
