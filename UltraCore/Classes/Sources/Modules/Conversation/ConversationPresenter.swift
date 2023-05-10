@@ -55,8 +55,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
         
         params.peer.user = .with({ [weak self] peer in
             guard let `self` = self else { return }
-            print(conversation.peer?.userID)
-            peer.userID = "u1FNOmSc0DAwM"
+            peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
         })
         params.message.text = text
         params.message.meta.created = Date().nanosec
