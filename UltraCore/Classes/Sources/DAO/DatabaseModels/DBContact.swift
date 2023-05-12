@@ -20,7 +20,7 @@ class DBContact: Object {
         self.lastName = contact.lastname
         self.phone = contact.phone
         self.userID = contact.userID
-        self.chatID = "p\(id)\(contact.userID)"
+        self.chatID = "p\(id >= contact.userID ? id + contact.userID : contact.userID + id)"
     }
     
     override static func primaryKey() -> String? {

@@ -48,7 +48,12 @@ private extension ContactsBookInteractor {
                 var temp = Contact()
                 temp.firstname = contact.givenName
                 temp.lastname = contact.familyName
-                temp.phone = value.value.stringValue.trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: "[^+\\d]", with: "", options: .regularExpression, range: nil)
+                temp.phone = value.value.stringValue.trimNumber
+                
+                if temp.phone.starts(with: "87"), let range = temp.phone.range(of: "87") {
+                    temp.phone = temp.phone.replacingCharacters(in: range, with: "+77")
+                }
+                
                 contacts.append(temp)
             }
         }
@@ -83,5 +88,11 @@ extension ContactsBookInteractor {
             case .denied: return []
             }
         }
+    }
+}
+
+extension String {
+    var trimNumber: String {
+        return trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: "[^+\\d]", with: "", options: .regularExpression, range: nil)
     }
 }

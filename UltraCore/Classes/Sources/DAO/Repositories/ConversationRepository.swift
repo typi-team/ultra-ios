@@ -22,9 +22,9 @@ class ConversationRepositoryImpl {
         
         let realm = Realm.myRealm()
         print(realm.configuration.fileURL?.absoluteString)
-        try! realm.write({
-            realm.deleteAll()
-        })
+//        try! realm.write({
+//            realm.deleteAll()
+//        })
         
     }
 }
