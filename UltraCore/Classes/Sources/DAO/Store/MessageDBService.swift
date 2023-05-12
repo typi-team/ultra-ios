@@ -22,8 +22,16 @@ class MessageDBService {
             do {
                 let realm = Realm.myRealm()
                 try realm.write {
-                    realm.create(DBMessage.self,
-                                 value: DBMessage(from: message, user: self.userId), update: .all)
+                    if let messageInDB = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) {
+                        messageInDB.state?.read = message.state.read
+                        messageInDB.state?.edited = message.state.edited
+                        messageInDB.state?.delivered = message.state.delivered
+                        messageInDB.seqNumber = Int64(message.seqNumber)
+                    } else {
+                        realm.create(DBMessage.self,
+                                     value: DBMessage(from: message, user: self.userId), update: .all)
+                    }
+                    
                 }
 
                 completable(.success(true))

@@ -28,6 +28,7 @@ class ConversationImpl: Conversation {
     init(contact: DBContact ) {
         self.peer = contact
         self.idintification = contact.chatID
-        
+        self.title = contact.displaName
+        self.lastMessage = contact.phone
     }
 }

@@ -17,13 +17,15 @@ class ConversationDBService {
     }
     
     func createIfNotExist(from message: Message) -> Single<Void> {
+        
+        Logger.info(message.id)
         return Single.create {[weak self] observer -> Disposable in
             guard let `self` = self else { return Disposables.create() }
             do {
                 let realm = Realm.myRealm()
                 try realm.write({
-                    let isIncoming = message.receiver.userID == self.userID ? message.sender.userID : message.receiver.userID
-                    let contact = realm.object(ofType: DBContact.self, forPrimaryKey: isIncoming )
+                    let peerID = message.peerId(user: self.userID)
+                    let contact = realm.object(ofType: DBContact.self, forPrimaryKey: peerID )
                     let existConversation = realm.object(ofType: DBConversation.self, forPrimaryKey: message.receiver.chatID)
                     if let conversation = existConversation {
                         conversation.peer = contact
@@ -31,7 +33,8 @@ class ConversationDBService {
                         conversation.message = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm, user: self.userID)
                         realm.create(DBConversation.self, value: conversation, update: .all)
                     } else {
-                        let conversation = realm.create(DBConversation.self, value: DBConversation(message: message, user: self.userID))
+                        let conversation = realm.create(DBConversation.self,
+                                                        value: DBConversation(message: message, user: self.userID))
                         conversation.peer = contact
                         realm.add(conversation)
                     }
@@ -74,5 +77,12 @@ class ConversationDBService {
             let conversations = Array(realm.objects(DBConversation.self).sorted(byKeyPath: "lastSeen", ascending: false))
             return Observable.just(conversations)
         }
+    }
+}
+
+
+extension Message {
+    func peerId(user id: String) -> String {
+        return sender.userID == id ? receiver.userID : sender.userID
     }
 }

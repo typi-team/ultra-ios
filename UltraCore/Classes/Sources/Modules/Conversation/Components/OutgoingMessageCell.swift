@@ -9,10 +9,10 @@ import Foundation
 
 class OutgoingMessageCell: BaseMessageCell {
     
-    fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_message_status_read"))
+    fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
+    
     override func setupView() {
         super.setupView()
-        
         self.container.addSubview(statusView)
         self.container.backgroundColor = .gray200
     }
@@ -41,6 +41,26 @@ class OutgoingMessageCell: BaseMessageCell {
             make.bottom.equalTo(textView.snp.bottom)
             make.width.equalTo(40)
             make.centerY.equalTo(statusView.snp.centerY)
+        }
+    }
+    
+    override func setup(message: Message) {
+        super.setup(message: message)
+        self.statusView.image = .named(message.statusImageName)
+    }
+}
+
+
+extension Message {
+    var statusImageName: String {
+        if self.seqNumber == 0 {
+            return "conversation_status_loading"
+        } else if self.state.delivered == false && self.state.read == false {
+            return "conversation_status_sent"
+        } else if self.state.delivered == true {
+            return "conversation_status_delivered"
+        } else {
+            return "conversation_status_read"
         }
     }
 }

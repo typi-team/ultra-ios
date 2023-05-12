@@ -14,12 +14,13 @@ class DBContact: Object {
     @objc dynamic var userID = ""
     @objc dynamic var chatID = ""
     
-    convenience init(from contact: Contact) {
+    convenience init(from contact: Contact, user id: String) {
         self.init()
         self.firstName = contact.firstname
         self.lastName = contact.lastname
         self.phone = contact.phone
         self.userID = contact.userID
+        self.chatID = "p\(id)\(contact.userID)"
     }
     
     override static func primaryKey() -> String? {

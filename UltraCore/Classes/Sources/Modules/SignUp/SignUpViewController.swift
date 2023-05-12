@@ -144,7 +144,7 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
     
     override func debugInitialData() {
         super.debugInitialData()
-        self.presenter?.login(lastName: "Test", firstname: "Aidana", phone: "+77756043100")
+        self.presenter?.login(lastName: "Test", firstname: "Aidana", phone: "+77756043111")
     }
 }
 

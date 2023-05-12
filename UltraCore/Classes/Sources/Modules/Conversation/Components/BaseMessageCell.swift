@@ -32,12 +32,12 @@ class BaseMessageCell: BaseCell {
         
         self.container.snp.makeConstraints { make in
             make.top.equalToSuperview()
-            make.left.top.equalToSuperview().offset(kMediumPadding)
+            make.left.equalToSuperview().offset(kMediumPadding)
             make.bottom.equalToSuperview().offset(-(kMediumPadding - 2))
             make.right.lessThanOrEqualToSuperview()
         }
         
-        self.textView.snp.makeConstraints { make in
+        self.textView.snp.makeConstraints { make in 
             make.top.equalToSuperview().offset(kLowPadding)
             make.left.equalToSuperview().offset(kLowPadding + 2)
             make.bottom.equalToSuperview().offset(-kLowPadding)
