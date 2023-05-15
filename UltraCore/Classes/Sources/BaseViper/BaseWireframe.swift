@@ -62,8 +62,12 @@ extension UIViewController {
 
 extension UINavigationController {
 
-    func pushWireframe<ViewController>(_ wireframe: BaseWireframe<ViewController>, animated: Bool = true) {
+    func pushWireframe<ViewController>(_ wireframe: BaseWireframe<ViewController>,
+                                       animated: Bool = true,
+                                       removeFromStack controller: UIViewController? = nil) {
         pushViewController(wireframe.viewController, animated: animated)
+        viewControllers.removeAll(where: { $0 == controller })
+        
     }
 
     func setRootWireframe<ViewController>(_ wireframe: BaseWireframe<ViewController>, animated: Bool = true) {

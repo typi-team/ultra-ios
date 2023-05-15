@@ -38,6 +38,6 @@ final class SignUpWireframe: BaseWireframe<SignUpViewController> {
 // MARK: - Extensions -
 extension SignUpWireframe: SignUpWireframeInterface {
     func navigateToContacts() {
-        self.navigationController?.pushWireframe(ConversationsWireframe())
+        self.navigationController?.pushWireframe(ConversationsWireframe(), removeFromStack: self.viewController)
     }
 }
