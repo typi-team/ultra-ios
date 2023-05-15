@@ -17,7 +17,8 @@ final class ConversationPresenter {
     // MARK: - Private properties -
     
     final let conversation: Conversation
-
+    
+    fileprivate let userID: String
     fileprivate let disposeBag = DisposeBag()
     private unowned let view: ConversationViewInterface
     fileprivate let messageRepository: MessageRepository
@@ -31,13 +32,15 @@ final class ConversationPresenter {
 
     // MARK: - Lifecycle -
 
-    init(conversation: Conversation,
+    init(userID: String,
+         conversation: Conversation,
          view: ConversationViewInterface,
          messageRepository: MessageRepository,
          wireframe: ConversationWireframeInterface,
          conversationRepository: ConversationRepository,
          messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>) {
         self.view = view
+        self.userID = userID
         self.wireframe = wireframe
         self.conversation = conversation
         self.messageRepository = messageRepository
@@ -62,16 +65,18 @@ extension ConversationPresenter: ConversationPresenterInterface {
             peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
         })
         params.message.text = text
+        params.message.id = UUID().uuidString
         params.message.meta.created = Date().nanosec
         
         var message = Message()
-        message.id = UUID().uuidString
         message.text = text
+        message.id = params.message.id
         message.receiver = .with({[weak self] receiver in
             guard let `self` = self else { return }
             receiver.chatID = conversation.idintification
             receiver.userID = self.conversation.peer?.userID ?? ""
         })
+        message.sender = .with({ $0.userID = self.userID })
         message.meta = .with({
             $0.created = Date().nanosec
         })

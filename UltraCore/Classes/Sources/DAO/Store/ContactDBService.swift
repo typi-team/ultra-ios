@@ -21,7 +21,7 @@ class ContactDBService {
             do {
                 
                 let dbContacts = contacts.contacts.map { contact -> DBContact in
-                    return DBContact.init(from: contact)
+                    return DBContact.init(from: contact,user: self.userID)
                 }
                 
                 let realm = Realm.myRealm()

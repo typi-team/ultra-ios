@@ -52,7 +52,8 @@ open class AppSettingsImpl:AppSettings  {
 
     lazy var contactRepository: ContactsRepository = ContactsRepositoryImpl(contactDBService: contactDBService)
     lazy var messageRespository: MessageRepository = MessageRespositoryImpl(messageService: messageDBService)
-    lazy var updateRepository: UpdateRepository = UpdateRepositoryImpl.init(messageService: messageDBService,
+    lazy var updateRepository: UpdateRepository = UpdateRepositoryImpl.init(appStore: appStore,
+                                                                            messageService: messageDBService,
                                                                             contactService: contactDBService,
                                                                             update: updateService,
                                                                             userByIDInteractor: ContactByUserIdInteractor.init(contactsService: contactsService),

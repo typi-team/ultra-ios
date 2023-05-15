@@ -44,6 +44,7 @@ final class ConversationsPresenter: BasePresenter {
 extension ConversationsPresenter: ConversationsPresenterInterface {
     func setupUpdateSubscription() {
         self.updateRepository.setupSubscription()
+        self.updateRepository.sendPoingByTimer()
     }
     
     func navigate(to conversation: Conversation) {

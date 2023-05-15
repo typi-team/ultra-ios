@@ -27,6 +27,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.registerCell(type: IncomeMessageCell.self)
         tableView.registerCell(type: OutgoingMessageCell.self)
         tableView.backgroundColor = self.view.backgroundColor
+        tableView.contentInset = .init(top: kMediumPadding, left: 0, bottom: 0, right: 0)
         tableView.backgroundView = UIImageView({
             $0.contentMode = .scaleAspectFill
             $0.image = .named("conversation_background")

@@ -41,7 +41,7 @@ class MessageInputBar: UIView {
         guard let `self` = self else { return }
         button.setImage(self.kInputPlusImage, for: .normal)
         button.addAction {
-            guard let message = self.messageTextView.text,
+            guard let message = self.messageTextView.text?.trimmingCharacters(in: .whitespacesAndNewlines),
                     !message.isEmpty else {
                 return
             }

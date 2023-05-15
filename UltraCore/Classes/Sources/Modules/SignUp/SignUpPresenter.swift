@@ -45,7 +45,7 @@ extension SignUpPresenter: SignUpPresenterInterface {
         var params = GetUserIdRequest()
         params.firstname = firstname
         params.lastname = lastName
-        params.phone = number
+        params.phone = number.trimNumber
 
         self.userIdInteractor.executeSingle(params: params)
             .map({ response -> IssueJwtRequest in

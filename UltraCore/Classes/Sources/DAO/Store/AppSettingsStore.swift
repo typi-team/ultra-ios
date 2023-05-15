@@ -12,16 +12,28 @@ protocol AppSettingsStore {
     func userID() -> String
     func store(token: String)
     func store(userID: String)
+    func store(last state: Int64)
+    
+    var lastState: Int64 { get }
     var isAuthed: Bool { get }
 }
 
 class AppSettingsStoreImpl {
     fileprivate let kToken = "kToken"
     fileprivate let kUserID = "kUserID"
+    fileprivate let kLastState = "kLastState"
     fileprivate let userDefault = UserDefaults(suiteName: "com.ultaCore.messenger")
 }
 
 extension AppSettingsStoreImpl: AppSettingsStore {
+    func store(last state: Int64) {
+        self.userDefault?.set(state, forKey: kLastState)
+    }
+    
+    var lastState: Int64 {
+        return (self.userDefault?.value(forKey: kLastState) as? Int64) ?? 0
+    }
+    
     func userID() -> String {
         guard let token = self.userDefault?.string(forKey: kUserID) else {
             fatalError("call store(userID:) before call this function")

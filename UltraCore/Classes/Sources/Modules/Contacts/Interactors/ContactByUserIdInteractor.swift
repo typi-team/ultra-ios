@@ -24,7 +24,14 @@ class ContactByUserIdInteractor: UseCase<String, Contact> {
                 .whenComplete { result in
                     switch result {
                     case let .success(userByContact):
-                        observer(.success(userByContact.contact))
+                        observer(.success(.with({
+                            $0.userID = userByContact.user.id
+                            $0.lastname = userByContact.user.lastname
+                            $0.firstname = userByContact.user.firstname
+                            $0.phone = userByContact.user.phone
+                            $0.photo = userByContact.user.photo
+                            
+                        })))
                     case let .failure(error):
                         observer(.failure(error))
                     }

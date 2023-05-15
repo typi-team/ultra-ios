@@ -34,6 +34,7 @@ class DBConversation: Object {
         self.lastSeen = message.meta.created
         self.message = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm, user: id)
         self.idintification = message.receiver.chatID
+        peer = realm.object(ofType: DBContact.self, forPrimaryKey: message.sender.userID == id ? message.receiver.userID : message.sender.userID)
         
     }
 }
