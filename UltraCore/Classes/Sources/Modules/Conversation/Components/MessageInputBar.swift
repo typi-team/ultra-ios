@@ -10,6 +10,7 @@ import Foundation
 protocol MessageInputBarDelegate: AnyObject {
     func exchanges()
     func message(text: String)
+    func typing(is active: Bool)
     func micro(isActivated: Bool)
 }
 
@@ -17,6 +18,7 @@ class MessageInputBar: UIView {
 
 //    MARK: Static properties
     
+    fileprivate var lastTypingDate: Date = .init()
     fileprivate let kTextFieldMaxHeight: CGFloat = 120
     fileprivate let kInputSendImage: UIImage? = .named("conversation_send")
     fileprivate let kInputPlusImage: UIImage? = .named("conversation_plus")
@@ -130,17 +132,21 @@ class MessageInputBar: UIView {
 
 extension MessageInputBar: UITextViewDelegate {
     func textViewDidChange(_ textView: UITextView) {
-        let size = CGSize(width: textView.frame.width,
-                          height: .greatestFiniteMagnitude)
+        let size = CGSize(width: textView.frame.width, height: .greatestFiniteMagnitude)
         let estimatedSize = textView.sizeThatFits(size)
         textView.snp.updateConstraints { make in
             make.height.equalTo(min(estimatedSize.height, kTextFieldMaxHeight))
         }
-        
+
         if textView.text != nil || textView.text != "" {
             self.sendButton.setImage(self.kInputSendImage, for: .normal)
-        }else {
+        } else {
             self.sendButton.setImage(self.kInputPlusImage, for: .normal)
+        }
+        
+        if Date().timeIntervalSince(lastTypingDate) > 4 {
+            self.lastTypingDate = Date()
+            self.delegate?.typing(is: true)
         }
     }
 }

@@ -11,6 +11,7 @@ import RxSwift
 protocol UpdateRepository: AnyObject {
     func setupSubscription()
     func sendPoingByTimer()
+    
 }
 
 class UpdateRepositoryImpl {
@@ -80,6 +81,17 @@ extension UpdateRepositoryImpl: UpdateRepository {
                         Logger.debug(chat.textFormatString())
                     case let .moneyTransferStatus(status):
                         Logger.debug(status.textFormatString())
+                    }
+                } else if let presence = update.ofPresence {
+                    switch presence {
+                    case let .typing(pres):
+                        Logger.debug(pres.textFormatString())
+                    case let .audioRecording(pres):
+                        Logger.debug(pres.textFormatString())
+                    case let .userStatus(pres):
+                        Logger.debug(pres.textFormatString())
+                    case let .mediaUploading(pres):
+                        Logger.debug(pres.textFormatString())
                     }
                 }
             }

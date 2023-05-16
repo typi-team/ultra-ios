@@ -25,6 +25,7 @@ final class ConversationPresenter {
     private let wireframe: ConversationWireframeInterface
     fileprivate let conversationRepository: ConversationRepository
     private let messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>
+    private let sendTypingInteractor: UseCase<String, SendTypingResponse>
 
     // MARK: - Public properties -
 
@@ -38,12 +39,14 @@ final class ConversationPresenter {
          messageRepository: MessageRepository,
          wireframe: ConversationWireframeInterface,
          conversationRepository: ConversationRepository,
+         sendTypingInteractor: UseCase<String, SendTypingResponse>,
          messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>) {
         self.view = view
         self.userID = userID
         self.wireframe = wireframe
         self.conversation = conversation
         self.messageRepository = messageRepository
+        self.sendTypingInteractor = sendTypingInteractor
         self.conversationRepository = conversationRepository
         self.messageSenderInteractor = messageSenderInteractor
     }
@@ -52,6 +55,15 @@ final class ConversationPresenter {
 // MARK: - Extensions -
 
 extension ConversationPresenter: ConversationPresenterInterface {
+    func typing(is active: Bool) {
+        self.sendTypingInteractor
+            .executeSingle(params: conversation.idintification)
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe()
+            .disposed(by: disposeBag)
+    }
+    
     
     func viewDidLoad() {
         self.view.setup(conversation: conversation)

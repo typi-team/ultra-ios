@@ -112,6 +112,10 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     // MARK: - UITextViewDelegate
 
 extension ConversationViewController: MessageInputBarDelegate {
+    func typing(is active: Bool) {
+        self.presenter?.typing(is: active)
+    }
+    
     func exchanges() {
 
     }
