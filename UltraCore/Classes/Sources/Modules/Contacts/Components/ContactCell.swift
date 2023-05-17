@@ -9,17 +9,53 @@ import UIKit
 
 class ContactCell: BaseCell {
     
-    func setup(contact: ContactDisplayable) {
-        
-        if (self.imageView?.borderColor != .green500) {
-            self.imageView?.borderWidth = 2
-            self.imageView?.cornerRadius = 32
-            self.imageView?.borderColor = .green500
-            self.imageView?.contentMode = .scaleAspectFit
+    fileprivate let titleLabel: RegularBody = .init()
+    fileprivate let subLabel: RegularFootnote = .init()
+    fileprivate let avatarImageView: UIImageView = .init()
+    
+    
+    override func setupView() {
+        super.setupView()
+        self.contentView.addSubview(self.subLabel)
+        self.contentView.addSubview(self.titleLabel)
+        self.contentView.addSubview(self.avatarImageView)
+    }
+    
+    
+    override func setupConstraints() {
+        super.setupConstraints()
+        self.avatarImageView.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(kLowPadding)
+            make.width.height.equalTo(kHeadlinePadding * 2)
+            make.bottom.equalToSuperview().offset(-kLowPadding)
+            make.left.equalToSuperview().offset(kMediumPadding)
         }
         
-        self.imageView?.loadImage(by: nil,
+        self.titleLabel.snp.makeConstraints { make in
+            make.top.equalTo(avatarImageView.snp.top)
+            make.right.equalToSuperview().offset(-kHeadlinePadding)
+            make.left.equalTo(avatarImageView.snp.right).offset(kHeadlinePadding)
+        }
+        
+        self.subLabel.snp.makeConstraints { make in
+            make.bottom.equalTo(avatarImageView.snp.bottom)
+            make.right.equalToSuperview().offset(-kHeadlinePadding)
+            make.top.equalTo(titleLabel.snp.bottom).offset(kLowPadding)
+            make.left.equalTo(avatarImageView.snp.right).offset(kHeadlinePadding)
+        }
+    }
+    func setup(contact: ContactDisplayable) {
+        
+        if (self.avatarImageView.borderColor != .green500) {
+            self.avatarImageView.borderWidth = 2
+            self.avatarImageView.cornerRadius = kHeadlinePadding
+            self.avatarImageView.borderColor = .green500
+            self.avatarImageView.contentMode = .scaleAspectFit
+        }
+        
+        self.avatarImageView.loadImage(by: nil,
                                   placeholder: .initial(text: contact.displaName.initails))
-        self.textLabel?.text = contact.displaName
+        self.titleLabel.text = contact.displaName
+        self.subLabel.text = contact.phone
     }
 }

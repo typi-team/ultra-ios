@@ -19,7 +19,8 @@ final class ContactsBookViewController: BaseViewController<ContactsBookPresenter
     // MARK: - Public properties -
 
     fileprivate let tableView: UITableView = .init {
-        $0.rowHeight = 64
+        $0.estimatedRowHeight = 80
+        $0.rowHeight = UITableViewAutomaticDimension
     }
     // MARK: - Lifecycle -
     

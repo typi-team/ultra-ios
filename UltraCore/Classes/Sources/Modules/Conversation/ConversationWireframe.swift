@@ -24,6 +24,7 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
         let presenter = ConversationPresenter(userID: appSettings.appStore.userID(),
                                               conversation: conversation,
                                               view: moduleViewController,
+                                              updateRepository: appSettings.updateRepository,
                                               messageRepository: appSettings.messageRespository,
                                               wireframe: self,
                                               conversationRepository: appSettings.conversationRespository,

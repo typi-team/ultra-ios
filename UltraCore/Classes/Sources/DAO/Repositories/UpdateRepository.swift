@@ -8,13 +8,39 @@
 import Foundation
 import RxSwift
 
+struct UserTypingWithDate {
+    var chatId: String
+    var userId: String
+    var createdAt: Date
+    
+    init(chatId: String, userId: String, createdAt: Date = Date()) {
+        self.chatId = chatId
+        self.userId = userId
+        self.createdAt = createdAt
+    }
+    
+    
+    init(user typing: UserTyping) {
+        self.createdAt = Date()
+        self.chatId = typing.chatID
+        self.userId = typing.userID
+    }
+    
+    var isTyping: Bool {
+        return Date().timeIntervalSince(createdAt) < kTypingMinInterval
+    }
+}
+
 protocol UpdateRepository: AnyObject {
     func setupSubscription()
     func sendPoingByTimer()
-    
+    var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> { get set }
 }
 
 class UpdateRepositoryImpl {
+    
+    var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> = .init(value: [:])
+    
     fileprivate let appStore: AppSettingsStore
     
     fileprivate let contactService: ContactDBService
@@ -84,8 +110,8 @@ extension UpdateRepositoryImpl: UpdateRepository {
                     }
                 } else if let presence = update.ofPresence {
                     switch presence {
-                    case let .typing(pres):
-                        Logger.debug(pres.textFormatString())
+                    case let .typing(typing):
+                        self.handle(user: typing)
                     case let .audioRecording(pres):
                         Logger.debug(pres.textFormatString())
                     case let .userStatus(pres):
@@ -127,5 +153,30 @@ extension UpdateRepositoryImpl {
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .subscribe()
             .dispose()
+    }
+}
+
+extension UpdateRepository {
+    func handle(user typing: UserTyping) {
+        guard var users = try? typingUsers.value() else {
+            return
+        }
+        
+        users[typing.chatID] = .init(user: typing)
+        self.typingUsers.on(.next(users))
+        self.handleRemove(user: typing)
+        
+    }
+    
+    func handleRemove(user typing: UserTyping) {
+        DispatchQueue.global().asyncAfter(deadline: .now() + 3) {[weak self]  in
+            guard let `self` = self else { return }
+            guard let users = try? self.typingUsers.value(),
+                  let createdAt = users[typing.chatID]?.createdAt,
+                  Date().timeIntervalSince(createdAt) > kTypingMinInterval else {
+                return
+            }
+            typingUsers.on(.next(users))
+        }
     }
 }

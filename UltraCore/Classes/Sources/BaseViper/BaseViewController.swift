@@ -8,6 +8,7 @@
 import UIKit
 import RxSwift
 
+let kTypingMinInterval: Double = 3
 let kHeadlinePadding: CGFloat = 24
 let kMediumPadding: CGFloat = 16
 let kLowPadding: CGFloat = 8

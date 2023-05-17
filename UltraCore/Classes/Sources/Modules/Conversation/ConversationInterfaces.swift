@@ -16,7 +16,7 @@ protocol ConversationWireframeInterface: WireframeInterface {
 
 protocol ConversationViewInterface: ViewInterface {
     func setup(conversation: Conversation)
-    
+    func display(is typing: UserTypingWithDate)   
 }
 
 protocol ConversationPresenterInterface: PresenterInterface {

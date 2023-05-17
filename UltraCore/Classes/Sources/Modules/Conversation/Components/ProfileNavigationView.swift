@@ -9,12 +9,13 @@ import Foundation
 
 class ProfileNavigationView: UIView {
     
+    fileprivate var conversation: Conversation?
     fileprivate let headlineText: HeadlineBody = .init()
     fileprivate let sublineText: RegularFootnote = .init()
     
     fileprivate let avatarImageView: UIImageView = .init {
         $0.borderWidth = 1
-        $0.cornerRadius = 22
+        $0.cornerRadius = 20
         $0.frame.size = .init(width: 40, height: 40)
     }
     
@@ -32,10 +33,10 @@ class ProfileNavigationView: UIView {
     
     func setupConstraints() {
         self.avatarImageView.snp.makeConstraints { make in
-            make.top.equalToSuperview()
+            make.width.height.equalTo(40)
             make.left.equalToSuperview()
-            make.bottom.equalToSuperview()
-            make.width.height.equalTo(44)
+            make.top.equalToSuperview()
+            make.bottom.equalToSuperview().offset(-(kLowPadding / 2))
         }
         
         self.headlineText.snp.makeConstraints { make in
@@ -47,7 +48,7 @@ class ProfileNavigationView: UIView {
         self.sublineText.snp.makeConstraints { make in
             make.right.equalToSuperview()
             make.bottom.equalTo(self.avatarImageView.snp.bottom)
-            make.top.equalTo(self.headlineText.snp.bottom).offset(kLowPadding)
+            make.top.equalTo(self.headlineText.snp.bottom).offset(kLowPadding / 2)
             make.left.equalTo(self.avatarImageView.snp.right).offset(kMediumPadding)
         }
     }
@@ -59,9 +60,13 @@ class ProfileNavigationView: UIView {
     }
     
     func setup(conversation: Conversation) {
-        self.avatarImageView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
+        self.conversation = conversation
         self.headlineText.text = conversation.title
         self.sublineText.text = conversation.lastMessage?.description
-        
+        self.avatarImageView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
+    }
+    
+    func setup(user typing: UserTypingWithDate) {
+        self.sublineText.text = typing.isTyping ? "Печатает ... ": conversation?.lastMessage?.description
     }
 }

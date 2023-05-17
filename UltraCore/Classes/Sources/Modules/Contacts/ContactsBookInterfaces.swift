@@ -13,6 +13,7 @@ import RealmSwift
 
 protocol ContactDisplayable: Any {
     var displaName: String { get }
+    var phone: String { get } 
 }
 
 protocol ContactsBookWireframeInterface: WireframeInterface {

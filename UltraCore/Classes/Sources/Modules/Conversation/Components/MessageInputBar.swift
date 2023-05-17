@@ -113,7 +113,7 @@ class MessageInputBar: UIView {
         }
         
         self.messageTextView.snp.makeConstraints { make in
-            make.height.equalTo(36)
+            make.height.equalTo(35)
         }
 
         self.sendButton.snp.makeConstraints { make in
@@ -144,7 +144,7 @@ extension MessageInputBar: UITextViewDelegate {
             self.sendButton.setImage(self.kInputPlusImage, for: .normal)
         }
         
-        if Date().timeIntervalSince(lastTypingDate) > 4 {
+        if Date().timeIntervalSince(lastTypingDate) > kTypingMinInterval {
             self.lastTypingDate = Date()
             self.delegate?.typing(is: true)
         }

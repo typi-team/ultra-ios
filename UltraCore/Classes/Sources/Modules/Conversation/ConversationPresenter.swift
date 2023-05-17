@@ -20,12 +20,14 @@ final class ConversationPresenter {
     
     fileprivate let userID: String
     fileprivate let disposeBag = DisposeBag()
+    fileprivate let updateRepository: UpdateRepository
     private unowned let view: ConversationViewInterface
     fileprivate let messageRepository: MessageRepository
     private let wireframe: ConversationWireframeInterface
     fileprivate let conversationRepository: ConversationRepository
-    private let messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>
     private let sendTypingInteractor: UseCase<String, SendTypingResponse>
+    private let messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>
+    
 
     // MARK: - Public properties -
 
@@ -36,6 +38,7 @@ final class ConversationPresenter {
     init(userID: String,
          conversation: Conversation,
          view: ConversationViewInterface,
+         updateRepository: UpdateRepository,
          messageRepository: MessageRepository,
          wireframe: ConversationWireframeInterface,
          conversationRepository: ConversationRepository,
@@ -45,6 +48,7 @@ final class ConversationPresenter {
         self.userID = userID
         self.wireframe = wireframe
         self.conversation = conversation
+        self.updateRepository = updateRepository
         self.messageRepository = messageRepository
         self.sendTypingInteractor = sendTypingInteractor
         self.conversationRepository = conversationRepository
@@ -67,6 +71,19 @@ extension ConversationPresenter: ConversationPresenterInterface {
     
     func viewDidLoad() {
         self.view.setup(conversation: conversation)
+        self.updateRepository.typingUsers
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .map { [weak self] users -> UserTypingWithDate? in
+                guard let `self` = self else { return nil }
+                return users[self.conversation.idintification]
+            }
+            .compactMap { $0 }
+            .subscribe (onNext: { [weak self] typingUser in
+                guard let `self` = self else { return }
+                self.view.display(is: typingUser)
+            })
+            .disposed(by: disposeBag)
     }
     
     func send(message text: String) {
@@ -108,7 +125,6 @@ extension ConversationPresenter: ConversationPresenterInterface {
 
                 return self.messageRepository.update(message: message)
             })
-
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()
