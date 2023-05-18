@@ -19,6 +19,9 @@ PODS:
     - SwiftNIOSSL (< 3.0.0, >= 2.14.0)
     - SwiftNIOTransportServices (< 2.0.0, >= 1.11.1)
     - SwiftProtobuf (< 2.0.0, >= 1.19.0)
+  - IGListDiffKit (4.0.0)
+  - IGListKit (4.0.0):
+    - IGListDiffKit (= 4.0.0)
   - Logging (1.4.0)
   - PodAsset (1.3.0)
   - Protobuf (3.22.3)
@@ -174,6 +177,7 @@ PODS:
   - SwiftProtobuf (1.21.0)
   - UltraCore (0.1.2):
     - gRPC-Swift
+    - IGListKit
     - PodAsset
     - Protobuf
     - RealmSwift
@@ -198,6 +202,8 @@ SPEC REPOS:
     - CNIOWindows
     - Differentiator
     - gRPC-Swift
+    - IGListDiffKit
+    - IGListKit
     - Logging
     - PodAsset
     - Protobuf
@@ -240,6 +246,8 @@ SPEC CHECKSUMS:
   CNIOWindows: 3047f2d8165848a3936a0a755fee27c6b5ee479b
   Differentiator: e8497ceab83c1b10ca233716d547b9af21b9344d
   gRPC-Swift: 74adcaaa62ac5e0a018938840328cb1fdfb09e7b
+  IGListDiffKit: 665d6cf43ce726e676013db9c7d6c4294259b6b2
+  IGListKit: fd5a5d21935298f5849fa49d426843cff97b77c7
   Logging: beeb016c9c80cf77042d62e83495816847ef108b
   PodAsset: 161b57cdf4d7307b0fb652cccab32fa8d5dc580b
   Protobuf: d03938d5f7e974a97964fb0567771e36fbe9ecce
@@ -265,7 +273,7 @@ SPEC CHECKSUMS:
   SwiftNIOTLS: 598af547490133e9aac52aed0c23c4a90c31dcfc
   SwiftNIOTransportServices: 0b2b407819d82eb63af558c5396e33c945759503
   SwiftProtobuf: afced68785854575756db965e9da52bbf3dc45e7
-  UltraCore: e84482600d8904035f03de31fd5918a68f3cd508
+  UltraCore: 2536fc90ffc543b4c98a2274969f046f11ccc395
 
 PODFILE CHECKSUM: 808348d2d43a3b90a65904b11dcab531486f52d5
 

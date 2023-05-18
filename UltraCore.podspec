@@ -42,6 +42,7 @@ Pod::Spec.new do |s|
    s.dependency 'RxSwift'
    s.dependency 'PodAsset'
    s.dependency 'Protobuf'
+   s.dependency 'IGListKit'
    s.dependency 'gRPC-Swift'
    s.dependency 'SDWebImage'
    s.dependency 'RealmSwift'

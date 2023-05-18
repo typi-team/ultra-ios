@@ -81,5 +81,15 @@ class ConversationCell: BaseCell {
         self.lastSeenView.text = conversation.timestamp.formattedTime()
         self.avatarView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
         
+        self.setupTyping(conversation: conversation)
+    }
+    
+    private func setupTyping(conversation: Conversation) {
+        let typingUsers = conversation.typingData.filter({$0.isTyping})
+        if typingUsers.isEmpty {
+            self.descriptionView.text = conversation.lastMessage
+        } else {
+            self.descriptionView.text = "Печатает ..."
+        }
     }
 }

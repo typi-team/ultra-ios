@@ -49,7 +49,7 @@ class ConversationDBService {
         }
     }
     
-    func conversations() -> Observable<Results<DBConversation>> {
+    func conversations() -> Observable<[Conversation]> {
         return Observable.create { observer -> Disposable in
             let realm = Realm.myRealm()
             let messages = realm.objects(DBConversation.self)
@@ -58,9 +58,9 @@ class ConversationDBService {
             let notificationKey = results.observe(keyPaths: []) { changes in
                 switch changes {
                 case let .initial(collection):
-                    observer.on(.next(collection))
+                    observer.on(.next(Array(collection.map({DBConversation(value: $0)}))))
                 case let .update(collection, _, _, _):
-                    observer.on(.next(collection))
+                    observer.on(.next(Array(collection.map({DBConversation(value: $0)}))))
                 case let .error(error):
                     observer.on(.error(error))
                 }

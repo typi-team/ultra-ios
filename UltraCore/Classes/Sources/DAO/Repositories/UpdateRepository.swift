@@ -8,7 +8,7 @@
 import Foundation
 import RxSwift
 
-struct UserTypingWithDate {
+struct UserTypingWithDate: Hashable {
     var chatId: String
     var userId: String
     var createdAt: Date
@@ -28,6 +28,10 @@ struct UserTypingWithDate {
     
     var isTyping: Bool {
         return Date().timeIntervalSince(createdAt) < kTypingMinInterval
+    }
+    
+    static func == (lhs: UserTypingWithDate, rhs: UserTypingWithDate) -> Bool {
+        return lhs.chatId == rhs.chatId
     }
 }
 

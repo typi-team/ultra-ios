@@ -11,6 +11,7 @@
 import RxSwift
 import Foundation
 import RealmSwift
+import IGListKit
 
 final class ConversationsPresenter: BasePresenter {
 
@@ -21,8 +22,20 @@ final class ConversationsPresenter: BasePresenter {
     private let wireframe: ConversationsWireframeInterface
     private let conversationRepository: ConversationRepository
     
-    lazy var conversation: Observable<Results<DBConversation>> = conversationRepository.conversations()
-
+    lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(conversationRepository.conversations(), updateRepository.typingUsers)
+        .map({ conversations, typingUsers in
+            return conversations.map { conversation in
+                
+                if let typing = typingUsers[conversation.idintification] {
+                    var mutable = conversation
+                    mutable.typingData.remove(typing)
+                    mutable.typingData.insert(typing)
+                    return mutable
+                }
+                return conversation
+            }
+        })
+    
     // MARK: - Lifecycle -
 
     init(view: ConversationsViewInterface,
