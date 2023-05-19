@@ -26,6 +26,7 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
                                               view: moduleViewController,
                                               updateRepository: appSettings.updateRepository,
                                               messageRepository: appSettings.messageRespository,
+                                              contactRepository: appSettings.contactRepository,
                                               wireframe: self,
                                               conversationRepository: appSettings.conversationRespository,
                                               sendTypingInteractor: sendTypingInteractor,

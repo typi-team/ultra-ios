@@ -64,9 +64,44 @@ class ProfileNavigationView: UIView {
         self.headlineText.text = conversation.title
         self.sublineText.text = conversation.lastMessage?.description
         self.avatarImageView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
+        
+        if let contact = conversation.peer {
+            self.sublineText.text = contact.status.displayText
+            self.sublineText.textColor = contact.status.color
+            self.avatarImageView.borderColor = contact.status.color
+        }
     }
     
     func setup(user typing: UserTypingWithDate) {
-        self.sublineText.text = typing.isTyping ? "Печатает ... ": conversation?.lastMessage?.description
+        if typing.isTyping {
+            self.sublineText.textColor = .gray500
+            self.sublineText.text = "Печатает ... "
+        } else if let conversation = self.conversation {
+            self.setup(conversation: conversation)
+        }
+    }
+}
+
+extension UserStatus {
+    var displayText: String {
+        switch status {
+        case .unknown:
+            return "Неизвестно"
+        case .online:
+            return "Онлайн"
+        case .offline:
+            return self.lastSeen.date(format: .dayAndHourMinute)
+        case .away:
+            return self.lastSeen.date(format: .dayAndHourMinute)
+        case .UNRECOGNIZED:
+            return self.lastSeen.date(format: .dayAndHourMinute)
+        }
+    }
+    
+    var color: UIColor {
+        switch status {
+        case .online: return .green600
+        default: return .gray500
+        }
     }
 }

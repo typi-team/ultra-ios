@@ -8,18 +8,23 @@
 import RealmSwift
 
 class DBContact: Object {
+    
     @objc dynamic var firstName = ""
     @objc dynamic var lastName = ""
     @objc dynamic var phone = ""
     @objc dynamic var userID = ""
     @objc dynamic var chatID = ""
+    @objc dynamic var lastseen: Int64 = 0
+    @objc dynamic var statusValue: Int = 0
     
-    convenience init(from contact: Contact, user id: String) {
+    convenience init(from contact: Contact, user id: String = AppSettingsImpl.shared.appStore.userID()) {
         self.init()
-        self.firstName = contact.firstname
-        self.lastName = contact.lastname
         self.phone = contact.phone
         self.userID = contact.userID
+        self.lastName = contact.lastname
+        self.firstName = contact.firstname
+        self.lastseen = contact.status.lastSeen
+        self.statusValue = contact.status.status.rawValue
         self.chatID = "p\(id >= contact.userID ? id + contact.userID : contact.userID + id)"
     }
     
@@ -33,12 +38,11 @@ class DBContact: Object {
             $0.lastname = lastName
             $0.phone = phone
             $0.userID = userID
+            $0.status = .with({ stat in
+                stat.userID = userID
+                stat.status = statusEnum
+                stat.lastSeen = lastseen
+            })
         })
     }
-}
-
-
-
-extension DBContact : ContactDisplayable {
-    var displaName: String { [firstName, lastName].joined(separator: " ") }
 }

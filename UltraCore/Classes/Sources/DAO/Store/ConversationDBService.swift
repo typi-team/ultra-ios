@@ -17,8 +17,6 @@ class ConversationDBService {
     }
     
     func createIfNotExist(from message: Message) -> Single<Void> {
-        
-        Logger.info(message.id)
         return Single.create {[weak self] observer -> Disposable in
             guard let `self` = self else { return Disposables.create() }
             do {

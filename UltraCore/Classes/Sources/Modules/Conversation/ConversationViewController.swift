@@ -132,6 +132,7 @@ extension ConversationViewController: MessageInputBarDelegate {
 // MARK: - Extensions -
 
 extension ConversationViewController: ConversationViewInterface {
+    
     func display(is typing: UserTypingWithDate) {
         self.headline.setup(user: typing)
     }

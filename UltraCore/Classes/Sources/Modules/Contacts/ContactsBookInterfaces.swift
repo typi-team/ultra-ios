@@ -11,13 +11,9 @@
 import RxSwift
 import RealmSwift
 
-protocol ContactDisplayable: Any {
-    var displaName: String { get }
-    var phone: String { get } 
-}
 
 protocol ContactsBookWireframeInterface: WireframeInterface {
-    func openConversation(with contact: DBContact)
+    func openConversation(with contact: ContactDisplayable)
 }
 
 protocol ContactsBookViewInterface: ViewInterface {
@@ -27,6 +23,6 @@ protocol ContactsBookViewInterface: ViewInterface {
 protocol ContactsBookPresenterInterface: PresenterInterface {
     
     func initial()
-    func openConversation(with contact: DBContact)
-    var contacts: Observable<Results<DBContact>> { get set }
+    func openConversation(with contact: ContactDisplayable)
+    var contacts: Observable<[Contact]> { get set }
 }

@@ -15,7 +15,7 @@ final class ContactsBookPresenter: BasePresenter {
     
     // MARK: - Public properties -
 
-    lazy var contacts: Observable<Results<DBContact>> = contactsRepository.contacts()
+    lazy var contacts: Observable<[Contact]> = contactsRepository.contacts()
 
     // MARK: - Private properties -
 
@@ -43,7 +43,7 @@ final class ContactsBookPresenter: BasePresenter {
 // MARK: - Extensions -
 
 extension ContactsBookPresenter: ContactsBookPresenterInterface {
-    func openConversation(with contact: DBContact) {
+    func openConversation(with contact: ContactDisplayable) {
         self.wireframe.openConversation(with: contact)
     }
     

@@ -40,7 +40,7 @@ final class ContactsBookViewController: BaseViewController<ContactsBookPresenter
             }.disposed(by: disposeBag)
         
         self.tableView.rx
-            .modelSelected(DBContact.self)
+            .modelSelected(ContactDisplayable.self)
             .asDriver()
             .drive { [weak self ] contact in
                 guard let `self` = self else { return }

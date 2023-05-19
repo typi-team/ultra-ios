@@ -77,8 +77,8 @@ extension UpdateRepositoryImpl: UpdateRepository {
                 .response
                 .whenComplete { result in
                     switch result {
-                    case let .success(response):
-                        Logger.debug(response.textFormatString())
+                    case .success:
+                        break
                     case let .failure(error):
                         Logger.error(error.localizedDescription)
                         timer.invalidate()
@@ -118,8 +118,13 @@ extension UpdateRepositoryImpl: UpdateRepository {
                         self.handle(user: typing)
                     case let .audioRecording(pres):
                         Logger.debug(pres.textFormatString())
-                    case let .userStatus(pres):
-                        Logger.debug(pres.textFormatString())
+                    case let .userStatus(userStatus):
+                        guard var contact = self.contactService.contact(id: userStatus.userID)?.toProto() else {
+                            return
+                        }
+                        contact.status = userStatus
+                        self.update(contact: contact)
+                        
                     case let .mediaUploading(pres):
                         Logger.debug(pres.textFormatString())
                     }
@@ -153,7 +158,7 @@ extension UpdateRepositoryImpl {
         }
     }
     func update(contact: Contact) {
-        self.contactService.save(contact: DBContact.init(from: contact,user: self.appStore.userID()))
+        self.contactService.save(contact: DBContact.init(from: contact, user: self.appStore.userID()))
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .subscribe()
             .dispose()

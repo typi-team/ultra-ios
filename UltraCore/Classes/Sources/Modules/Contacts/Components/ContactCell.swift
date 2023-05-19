@@ -56,6 +56,7 @@ class ContactCell: BaseCell {
         self.avatarImageView.loadImage(by: nil,
                                   placeholder: .initial(text: contact.displaName.initails))
         self.titleLabel.text = contact.displaName
-        self.subLabel.text = contact.phone
+        self.subLabel.textColor = contact.status.color
+        self.subLabel.text = contact.status.displayText
     }
 }
