@@ -34,6 +34,10 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         })
     }
     
+    fileprivate lazy var messageHeadline: SubHeadline = .init({
+        $0.textAlignment = .center
+        $0.isUserInteractionEnabled = false
+    })
     private lazy var headline: ProfileNavigationView = .init()
     private lazy var messageInputBar: MessageInputBar = .init({ [weak self] inputBar in
         inputBar.delegate = self
@@ -45,6 +49,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.handleKeyboardTransmission = true
         super.setupViews()
         view.addSubview(tableView)
+        view.addSubview(messageHeadline)
         view.addSubview(messageInputBar)
         
         navigationItem.leftItemsSupplementBackButton = true
@@ -59,6 +64,11 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             make.bottom.equalTo(messageInputBar.snp.topMargin).offset(-10)
         }
         
+        self.messageHeadline.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
+            make.bottom.equalTo(messageInputBar.snp.topMargin).offset(-kMediumPadding)
+        }
+        
         messageInputBar.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin)
@@ -70,6 +80,9 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         
         self.presenter?
             .messages
+            .do(onNext: {[weak self] messages in
+                self?.messageHeadline.text = messages.isEmpty ? "В этом чате нет сообщений" : ""
+            })
             .do(onNext: { [weak self ] result in
                 guard let `self` = self, !self.isDrawingTable else {
                     return

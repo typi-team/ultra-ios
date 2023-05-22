@@ -15,8 +15,18 @@ extension Int64 {
     }
     
     var date: Date { Date.init(nanoseconds: self)}
-    func formattedTime(format: Format) -> String { kDateFormatter.string(from: date) }
     
+    ///  Возращает дату по формату
+    /// - Parameter format: Формат даты
+    /// - Returns: Отформатированная дата
+    func dateBy(format: Format) -> String {
+        kDateFormatter.dateFormat = format.rawValue
+        return kDateFormatter.string(from: date)
+    }
+    
+    /// Возврщает дату по формату но с добавление типа "Н минут назад" и "сегодня"
+    /// - Parameter format: Формат даты
+    /// - Returns: Отформатированная дата
     func date(format: Format) -> String {
         kDateFormatter.dateFormat = format.rawValue
         let componentsFormatter = DateComponentsFormatter()

@@ -39,6 +39,15 @@ final class ContactsBookViewController: BaseViewController<ContactsBookPresenter
                 return cell
             }.disposed(by: disposeBag)
         
+        self.tableView
+            .rx.itemSelected
+            .asDriver()
+            .drive(onNext: { [weak self] index in
+                guard let `self` = self else { return }
+                self.tableView.deselectRow(at: index, animated: true)
+            })
+            .disposed(by: disposeBag)
+        
         self.tableView.rx
             .modelSelected(ContactDisplayable.self)
             .asDriver()
@@ -54,6 +63,8 @@ final class ContactsBookViewController: BaseViewController<ContactsBookPresenter
         self.tableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
+        
+        
     }
     override func setupInitialData() {
         self.presenter?.initial()

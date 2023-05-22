@@ -52,6 +52,6 @@ class BaseMessageCell: BaseCell {
     
     func setup(message: Message) {
         self.textView.text = message.text
-        self.deliveryDateLabel.text = message.meta.created.formattedTime(format: .hourAndMinute)
+        self.deliveryDateLabel.text = message.meta.created.dateBy(format: .hourAndMinute)
     }
 }
