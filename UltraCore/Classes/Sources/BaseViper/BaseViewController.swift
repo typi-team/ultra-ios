@@ -11,7 +11,9 @@ import RxSwift
 let kTypingMinInterval: Double = 3
 let kHeadlinePadding: CGFloat = 24
 let kMediumPadding: CGFloat = 16
+let kButtonHeight: CGFloat = 56
 let kLowPadding: CGFloat = 8
+
 
 class BaseViewController<T>: UIViewController {
     var presenter: T?
@@ -63,6 +65,7 @@ extension UIViewController {
     }
     @objc func setupViews() {
         self.view.backgroundColor = .gray100
+        self.hidesBottomBarWhenPushed = true
         self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
     }
     @objc func setupConstraints() {}

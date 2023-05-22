@@ -88,7 +88,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
     }
     
     func setupSubscription() {
-        
+
         let state: ListenRequest = .with { $0.localState = .with { $0.state = UInt64(appStore.lastState) } }
         let call = self.update.listen(state, callOptions: .default()) { [weak self] response in
             guard let `self` = self else { return }
@@ -96,7 +96,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
             response.updates.forEach { update in
                 if let ofUpdate = update.ofUpdate {
                     switch ofUpdate {
-                        
+
                     case let .message(message):
                         self.update(message: message)
                     case let .contact(contact):
@@ -124,7 +124,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
                         }
                         contact.status = userStatus
                         self.update(contact: contact)
-                        
+
                     case let .mediaUploading(pres):
                         Logger.debug(pres.textFormatString())
                     }

@@ -17,15 +17,31 @@ import RxDataSources
 final class ContactsBookViewController: BaseViewController<ContactsBookPresenterInterface> {
 
     // MARK: - Public properties -
+    
+    fileprivate lazy var permissionData = PermissionStateViewData(imageName: "contacts_centered_card",
+                                                                  headline: "Нет доступа к контактам",
+                                                                  subline: "Нажмите на кнопку ниже и предоставьте доступ к вашим контактам.",
+                                                                  action: { [weak self] in
+        UIApplication.shared.open(URL(string: UIApplicationOpenSettingsURLString)!, options: [:], completionHandler: nil)
+                                                                  })
+    fileprivate lazy var backgroundView: PermissionStateView = .init(data: permissionData)
 
-    fileprivate let tableView: UITableView = .init {
-        $0.estimatedRowHeight = 80
-        $0.rowHeight = UITableViewAutomaticDimension
-    }
+    fileprivate let tableView: UITableView = {
+        if #available(iOS 13.0, *) {
+            return .init(frame: .zero, style: .insetGrouped)
+        } else {
+            return .init()
+        }
+    }()
+    
     // MARK: - Lifecycle -
     
     override func setupViews() {
         super.setupViews()
+        
+        self.tableView.estimatedRowHeight = 80
+        self.tableView.rowHeight = UITableViewAutomaticDimension
+        
         self.navigationItem.titleView = HeadlineBody { $0.text = "Новый чат" }
         self.view.addSubview(tableView)
 
@@ -63,16 +79,21 @@ final class ContactsBookViewController: BaseViewController<ContactsBookPresenter
         self.tableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        
-        
     }
+    
     override func setupInitialData() {
         self.presenter?.initial()
     }
-
 }
 
 // MARK: - Extensions -
 
 extension ContactsBookViewController: ContactsBookViewInterface {
+    func permission(is denied: Bool) {
+        if denied {
+            self.tableView.backgroundView = self.backgroundView
+        } else {
+            self.tableView.backgroundView = nil
+        }
+    }
 }

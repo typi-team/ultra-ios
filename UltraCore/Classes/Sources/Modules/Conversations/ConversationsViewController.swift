@@ -14,17 +14,30 @@ import RxCocoa
 import RxDataSources
 
 
+
 final class ConversationsViewController: BaseViewController<ConversationsPresenterInterface> {
+
+    fileprivate lazy var permissionData = PermissionStateViewData(imageName: "conversations_centered_card",
+                                                                  headline: "Нет сообщений",
+                                                                  subline: "У вас пока нет сообщений. Начните общаться с вашими контактами прямо сейчас.")
+    fileprivate lazy var backgroundView: PermissionStateView = .init(data: permissionData)
     
-    fileprivate lazy var tableView: UITableView = .init({
-        $0.rowHeight = 70
-        $0.delegate = self
-        $0.registerCell(type: ConversationCell.self)
-    })
+    fileprivate lazy var tableView: UITableView = {
+        if #available(iOS 13.0, *) {
+            return .init(frame: .zero, style: .insetGrouped)
+        } else {
+            return .init()
+        }
+    }()
     
     override func setupViews() {
         super.setupViews()
         self.view.addSubview(tableView)
+        
+        self.tableView.rowHeight = 70
+        self.tableView.delegate = self
+        self.tableView.backgroundColor = self.view.backgroundColor
+        self.tableView.registerCell(type: ConversationCell.self)
         
         self.navigationItem.rightBarButtonItem = .init(image: .named("conversation_new_icon"),
                                                        style: .plain, target: self,
@@ -44,6 +57,14 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
         self.presenter?.setupUpdateSubscription()
         self.presenter?.conversation
             .observe(on: MainScheduler.instance)
+            .do(onNext: {[weak self] conversations in
+                guard let `self` = self else { return }
+                if conversations.isEmpty {
+                    self.tableView.backgroundView = backgroundView
+                } else {
+                    self.tableView.backgroundView = nil
+                }
+            })
             .bind(to: tableView.rx.items) { tableView, index, model in
                 let cell: ConversationCell = tableView.dequeueCell()
                 cell.setup(conversation: model)

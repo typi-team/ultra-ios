@@ -20,6 +20,7 @@ class BaseLabel: UILabel {
 
     func setupView() {
         textColor = .gray500
+        self.numberOfLines = 0
         font = .defaultRegularFootnote
     }
 }
@@ -27,6 +28,7 @@ class BaseLabel: UILabel {
 class HeadlineBody: BaseLabel {
     override func setupView() {
         super.setupView()
+        self.numberOfLines = 0
         self.textColor = .black
         self.font = .defaultRegularHeadline
     }
@@ -35,6 +37,7 @@ class HeadlineBody: BaseLabel {
 class RegularBody: BaseLabel {
     override func setupView() {
         super.setupView()
+        self.numberOfLines = 0
         self.font = .defaultRegularBody
     }
 }
@@ -42,6 +45,7 @@ class RegularBody: BaseLabel {
 class RegularCallout: BaseLabel {
     override func setupView() {
         super.setupView()
+        self.numberOfLines = 0
         self.textColor = .gray700
         self.font = .defaultRegularCallout
     }
@@ -50,6 +54,7 @@ class RegularCallout: BaseLabel {
 class RegularFootnote: BaseLabel {
     override func setupView() {
         super.setupView()
+        self.numberOfLines = 0
         self.textColor = .gray500
         self.font = .defaultRegularFootnote
     }

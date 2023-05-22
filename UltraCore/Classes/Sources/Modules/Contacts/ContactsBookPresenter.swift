@@ -51,6 +51,17 @@ extension ContactsBookPresenter: ContactsBookPresenterInterface {
     func initial() {
         self.bookContacts
             .executeSingle(params: ())
+            .do(onSuccess: {[weak self ] state in
+                guard let `self` = self else { return }
+                DispatchQueue.main.async {
+                    switch state {
+                    case .denied:
+                        self.view.permission(is: true)
+                    case .authorized:
+                        self.view.permission(is: false)
+                    }
+                }
+            })
             .flatMap({[weak self] result -> Single<ContactImportResponse> in
                 guard let `self` = self else { throw NSError.selfIsNill}
                 var request = ContactsImportRequest()

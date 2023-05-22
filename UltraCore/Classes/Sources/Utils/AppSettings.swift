@@ -61,20 +61,21 @@ open class AppSettingsImpl:AppSettings  {
     lazy var conversationRespository: ConversationRepository = ConversationRepositoryImpl(conversationService: conversationDBService)
 }
 
-public func showSignUp(view controller: UIViewController) {
+public func entryViewController() -> UIViewController {
     
     UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor: UIColor.clear], for: .normal)
     UIBarButtonItem.appearance().title = ""
+    UIBarButtonItem.appearance().tintColor = .green500
     
     
     UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor: UIColor.clear], for: UIControlState.highlighted)
 
     
     if AppSettingsImpl.shared.appStore.isAuthed {
-        let wireframe = ConversationsWireframe()
-        wireframe.presentWithNavigation(presentation: controller)
+        let controller = ConversationsWireframe().viewController
+        controller.hidesBottomBarWhenPushed = false
+        return controller
     } else {
-        let wireframe = SignUpWireframe.init()
-        wireframe.start(presentation: controller)
+        return SignUpWireframe.init().viewController
     }
 }
