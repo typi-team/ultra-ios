@@ -14,7 +14,18 @@ extension UIImageView {
         case initial(text: String)
     }
 
+    func config(contact: ContactDisplayable) {
+        self.contentMode = .scaleAspectFit
+        if let image = contact.image {
+            self.image = image
+        } else {
+            self.loadImage(by: nil, placeholder: .initial(text: contact.displaName.initails))
+        }
+    }
+    
+    
     func loadImage(by path: String?, placeholder: PlaceholderType = .square) {
+        self.contentMode = .scaleAspectFit
         switch placeholder {
         case .initial(text: let text):
             if let image = self.imageFromCache(forKey: text) {
@@ -27,7 +38,6 @@ extension UIImageView {
             }
         default:
             self.image = placeholder.image
-            self.contentMode = .scaleAspectFit
             self.sd_setImage(with: path?.url, placeholderImage: placeholder.image)
         }
     }

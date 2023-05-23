@@ -84,8 +84,16 @@ class ConversationCell: BaseCell {
         self.unreadView.text = conversation.unreadCount.description
         self.lastSeenView.text = conversation.timestamp.formattedTime()
         self.avatarView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
-        
         self.setupTyping(conversation: conversation)
+        self.setupAvatar(conversation: conversation)
+    }
+    
+    private func setupAvatar(conversation: Conversation) {
+        if let contact = conversation.peer {
+            self.avatarView.config(contact: contact)
+        } else {
+            self.avatarView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
+        }
     }
     
     private func setupTyping(conversation: Conversation) {

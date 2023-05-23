@@ -16,6 +16,7 @@ class ProfileNavigationView: UIView {
     fileprivate let avatarImageView: UIImageView = .init {
         $0.borderWidth = 1
         $0.cornerRadius = 20
+        $0.borderColor = .green500
         $0.frame.size = .init(width: 40, height: 40)
     }
     
@@ -63,12 +64,15 @@ class ProfileNavigationView: UIView {
         self.conversation = conversation
         self.headlineText.text = conversation.title
         self.sublineText.text = conversation.lastMessage?.description
-        self.avatarImageView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
+        if let contact = conversation.peer {
+            self.avatarImageView.config(contact: contact)
+        } else {
+            self.avatarImageView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
+        }
         
         if let contact = conversation.peer {
             self.sublineText.text = contact.status.displayText
             self.sublineText.textColor = contact.status.color
-            self.avatarImageView.borderColor = contact.status.color
         }
     }
     

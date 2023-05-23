@@ -14,6 +14,8 @@ protocol ContactDisplayable: Any {
     var chatID: String { get }
     var displaName: String { get }
     var status: UserStatus { get }
+    
+    var image: UIImage? { get }
 }
 
 extension DBContact : ContactDisplayable {
@@ -30,6 +32,8 @@ extension DBContact : ContactDisplayable {
     }
     
     var displaName: String { [firstName, lastName].joined(separator: " ") }
+    
+    var image: UIImage? { UIImage(data: toProto().photo.preview) }
 }
 
 extension Contact: ContactDisplayable {
@@ -39,7 +43,7 @@ extension Contact: ContactDisplayable {
         return "p\(id >= self.userID ? id + self.userID : self.userID + id)"
     }
     
-    var displaName: String {
-        return [firstname, lastname].joined(separator: " ")
-    }
+    var image: UIImage? { UIImage(data: photo.preview) }
+    
+    var displaName: String { [firstname, lastname].joined(separator: " ") }
 }
