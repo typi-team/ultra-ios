@@ -74,8 +74,12 @@ public func entryViewController() -> UIViewController {
     if AppSettingsImpl.shared.appStore.isAuthed {
         let controller = ConversationsWireframe().viewController
         controller.hidesBottomBarWhenPushed = false
+        controller.navigationItem.largeTitleDisplayMode = .never
         return controller
     } else {
-        return SignUpWireframe.init().viewController
+        let controller = SignUpWireframe.init().viewController
+        controller.hidesBottomBarWhenPushed = false
+        controller.navigationItem.largeTitleDisplayMode = .never
+        return controller
     }
 }

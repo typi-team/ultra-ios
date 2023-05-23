@@ -23,6 +23,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         guard let `self` = self else { return }
         tableView.separatorStyle = .none
         tableView.tableFooterView = UIView()
+        tableView.allowsSelection = false 
         tableView.registerCell(type: BaseMessageCell.self)
         tableView.registerCell(type: IncomeMessageCell.self)
         tableView.registerCell(type: OutgoingMessageCell.self)
@@ -93,7 +94,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                     let lastRowIndex = self.tableView.numberOfRows(inSection: 0) - 1
                     if lastRowIndex < 0 { return }
                     let indexPath = IndexPath(row: lastRowIndex, section: 0)
-                    self.tableView.scrollToRow(at: indexPath, at: .top, animated: !isEmpty)
+                    self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: !isEmpty)
                     self.isDrawingTable = false
                 })
             })

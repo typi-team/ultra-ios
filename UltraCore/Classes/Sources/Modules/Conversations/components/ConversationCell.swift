@@ -18,8 +18,12 @@ class ConversationCell: BaseCell {
     })
     
     fileprivate let titleView: RegularCallout = .init()
-    fileprivate let descriptionView: RegularFootnote = .init()
-    fileprivate let lastSeenView: RegularFootnote = .init()
+    fileprivate let descriptionView: RegularFootnote = .init({
+        $0.numberOfLines = 1
+    })
+    fileprivate let lastSeenView: RegularFootnote = .init({
+        $0.textAlignment = .right
+    })
     fileprivate let unreadView: LabelWithInsets = .init({
         $0.font = .defaultRegularFootnote
         $0.textColor = .white
