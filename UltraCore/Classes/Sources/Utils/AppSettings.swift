@@ -10,6 +10,7 @@ protocol AppSettings: Any {
     var appStore: AppSettingsStore { get set }
     var messageRespository: MessageRepository { get }
     var contactRepository: ContactsRepository { get }
+    var fileService: FileServiceClientProtocol { get }
     var authService: AuthServiceClientProtocol { get }
     var messageService: MessageServiceClientProtocol { get }
     var contactsService: ContactServiceClientProtocol { get }
@@ -33,13 +34,20 @@ open class AppSettingsImpl:AppSettings  {
     lazy var version: String = podAsset?.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.2"
     lazy var channel: GRPCChannel = try! GRPCChannelPool.with(target: .host(pathToServer, port: portOfServer),
                                                               transportSecurity: .plaintext, eventLoopGroup: group)
+    
+    lazy var fileChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(pathToServer, port: portOfServer),
+                                                              transportSecurity: .plaintext, eventLoopGroup: group)
+    
+    lazy var updateChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(pathToServer, port: portOfServer),
+                                                              transportSecurity: .plaintext, eventLoopGroup: group)
 
 //    MARK: GRPC Services
     
     lazy var authService: AuthServiceClientProtocol = AuthServiceNIOClient(channel: channel)
-    lazy var updateService: UpdatesServiceClientProtocol = UpdatesServiceNIOClient(channel: channel)
+    lazy var fileService: FileServiceClientProtocol = FileServiceNIOClient(channel: fileChannel)
     lazy var messageService: MessageServiceClientProtocol = MessageServiceNIOClient(channel: channel)
     lazy var contactsService: ContactServiceClientProtocol = ContactServiceNIOClient(channel: channel)
+    lazy var updateService: UpdatesServiceClientProtocol = UpdatesServiceNIOClient(channel: updateChannel)
 
 //    MARK: Services
 

@@ -20,16 +20,19 @@ final class ContactsBookPresenter: BasePresenter {
     // MARK: - Private properties -
 
     fileprivate let disposeBag = DisposeBag()
+    fileprivate let contactsRepository: ContactsRepository
     fileprivate unowned let view: ContactsBookViewInterface
     fileprivate let wireframe: ContactsBookWireframeInterface
-    fileprivate let syncContact: UseCase<ContactsImportRequest, ContactImportResponse>
+    fileprivate let fileDownloadService: UseCase<PhotoDownloadRequest, Any>
     fileprivate let bookContacts: UseCase<Void, ContactsBookInteractor.Contacts>
-    fileprivate let contactsRepository: ContactsRepository
+    fileprivate let syncContact: UseCase<ContactsImportRequest, ContactImportResponse>
+    
     // MARK: - Lifecycle -
 
     init(view: ContactsBookViewInterface,
          contactsRepository: ContactsRepository,
          wireframe: ContactsBookWireframeInterface,
+         fileDownloadService: UseCase<PhotoDownloadRequest, Any>,
          syncContact: UseCase<ContactsImportRequest, ContactImportResponse>,
          bookContacts: UseCase<Void, ContactsBookInteractor.Contacts>) {
         self.view = view
@@ -37,6 +40,7 @@ final class ContactsBookPresenter: BasePresenter {
         self.syncContact = syncContact
         self.bookContacts = bookContacts
         self.contactsRepository = contactsRepository
+        self.fileDownloadService = fileDownloadService
     }
 }
 
@@ -47,11 +51,10 @@ extension ContactsBookPresenter: ContactsBookPresenterInterface {
         self.wireframe.openConversation(with: contact)
     }
     
-     
     func initial() {
         self.bookContacts
             .executeSingle(params: ())
-            .do(onSuccess: {[weak self ] state in
+            .do(onSuccess: { [weak self] state in
                 guard let `self` = self else { return }
                 DispatchQueue.main.async {
                     switch state {
@@ -62,19 +65,28 @@ extension ContactsBookPresenter: ContactsBookPresenterInterface {
                     }
                 }
             })
-            .flatMap({[weak self] result -> Single<ContactImportResponse> in
-                guard let `self` = self else { throw NSError.selfIsNill}
+            .flatMap({ [weak self] result -> Single<ContactImportResponse> in
+                guard let `self` = self else { throw NSError.selfIsNill }
                 var request = ContactsImportRequest()
                 request.contacts = result.contacts
                 return self.syncContact.executeSingle(params: request)
             })
+            .do(onSuccess: {[weak self] result in
+                guard let `self` = self else { throw NSError.selfIsNill }
+                self.runDownloadingImage(for: result.contacts)
+            })
             .flatMap({ [weak self] response -> Single<Void> in
-                guard let `self` = self else { throw NSError.selfIsNill}
+                guard let `self` = self else { throw NSError.selfIsNill }
                 return self.contactsRepository.save(contacts: response)
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { Logger.info("Contacts saved on db") })
             .disposed(by: self.disposeBag)
+    }
+    
+    func runDownloadingImage(for contacts: [Contact]) {
+        
+        
     }
 }
