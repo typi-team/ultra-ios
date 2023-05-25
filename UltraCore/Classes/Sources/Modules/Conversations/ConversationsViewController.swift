@@ -33,12 +33,12 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
     override func setupViews() {
         super.setupViews()
         self.view.addSubview(tableView)
-        
-        self.tableView.rowHeight = 70
+        self.tableView.rowHeight = 64
         self.tableView.delegate = self
-        self.tableView.backgroundColor = self.view.backgroundColor
+        self.tableView.sectionHeaderHeight = 0
         self.tableView.registerCell(type: ConversationCell.self)
-        
+        self.tableView.backgroundColor = self.view.backgroundColor
+        self.tableView.separatorInset = .init(top: 0, left: kMediumPadding * 2, bottom: 0, right: kMediumPadding)
         self.navigationItem.rightBarButtonItem = .init(image: .named("conversation_new_icon"),
                                                        style: .plain, target: self,
                                                        action: #selector(self.openContacts))

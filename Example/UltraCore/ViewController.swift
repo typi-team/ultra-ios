@@ -18,8 +18,7 @@ class ViewController: UITabBarController {
         
         if #available(iOS 13.0, *) {
             self.view.backgroundColor = .systemBackground
-            UITabBar.appearance().barTintColor = .systemBackground
-            
+            self.tabBar.tintColor =  UIColor(red: 34.0 / 255.0, green: 197.0 / 255.0, blue: 94.0 / 255.0, alpha: 1.0)
             self.setupVCs()
         }
     }

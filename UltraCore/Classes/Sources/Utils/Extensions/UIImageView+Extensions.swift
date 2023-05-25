@@ -62,7 +62,7 @@ extension UIImageView {
         // Draw initials
         let attributes: [NSAttributedString.Key: Any] = [
             .foregroundColor: UIColor.green500,
-            .font: UIFont.systemFont(ofSize: size.width/2, weight: .bold)
+            .font: UIFont.defaultRegularBoldSubHeadline
         ]
         let initials = String(username.prefix(2)).uppercased()
         let initialsString = NSAttributedString(string: initials, attributes: attributes)

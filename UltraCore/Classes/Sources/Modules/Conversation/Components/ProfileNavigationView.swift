@@ -92,7 +92,7 @@ extension UserStatus {
         case .unknown:
             return "Неизвестно"
         case .online:
-            return "Онлайн"
+            return "онлайн"
         case .offline:
             return self.lastSeen.date(format: .dayAndHourMinute)
         case .away:

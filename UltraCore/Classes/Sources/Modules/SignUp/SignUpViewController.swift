@@ -11,14 +11,11 @@
 import UIKit
 import SnapKit
 
-struct SignUpConfigs {
-    let logoUrl = "https://longterminvestments.ru/wp-content/uploads/2019/11/freedom-logo1.png"
-}
-
 final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
-    fileprivate let config = SignUpConfigs()
 
-    fileprivate let logoImage = UIImageView()
+    fileprivate let logoImage = UIImageView({
+        $0.contentMode = .scaleAspectFit
+    })
 
     fileprivate let scrollView = UIScrollView({
         $0.translatesAutoresizingMaskIntoConstraints = false
@@ -35,16 +32,21 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         }
     })
 
-    fileprivate let phoneTextField = PhoneNumberTextField({
+    fileprivate lazy var phoneTextField = PhoneNumberTextField({
         $0.backgroundColor = .white
         $0.font = .defaultRegularBody
         $0.placeholder = "Ваш номер телефона"
+        $0.placeholderColor = .gray500
+        $0.addAction(for: .valueChanged) {[weak self] in
+            self?.handleButtonEnabling()
+        }
     })
 
     fileprivate lazy var firstTextField = CustomTextField({
         $0.backgroundColor = .white
-        $0.font = .defaultRegularBody
         $0.placeholder = "Ваше имя"
+        $0.font = .defaultRegularBody
+        $0.placeholderColor = .gray500
         $0.addAction(for: .editingDidEndOnExit) {[weak self] in
             self?.lastTextField.becomeFirstResponder()
         }
@@ -54,7 +56,8 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         $0.returnKeyType = .done
         $0.backgroundColor = .white
         $0.font = .defaultRegularBody
-        $0.placeholder = "Ваша Фамилия"
+        $0.placeholder = "Ваша фамилия"
+        $0.placeholderColor = .gray500
         $0.addAction(for: .editingDidEndOnExit) {[weak self] in
             self?.view.endEditing(true)
         }
@@ -72,6 +75,7 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
     
     override func setupViews() {
         super.setupViews()
+        self.navigationItem.title = ""
         self.view.addSubview(scrollView)
         self.scrollView.addSubview(stackView)
         self.stackView.addArrangedSubview(logoImage)
@@ -81,19 +85,19 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         
         self.stackView.addArrangedSubview(phoneTextField)
         self.stackView.setCustomSpacing(kLowPadding, after: phoneTextField)
-        let phoneHint = RegularFootnote({ $0.text = "    " + "Например +77761595595" })
+        let phoneHint = RegularFootnote({ $0.text = "       " + "Например +77761595595" })
         self.stackView.addArrangedSubview(phoneHint)
         self.stackView.setCustomSpacing(kHeadlinePadding, after: phoneHint)
         
         self.stackView.addArrangedSubview(firstTextField)
         self.stackView.setCustomSpacing(kLowPadding, after: firstTextField)
-        let firstHint = RegularFootnote({ $0.text = "    " + "Например Иван" })
+        let firstHint = RegularFootnote({ $0.text = "       " + "Например Иван" })
         self.stackView.addArrangedSubview(firstHint)
         self.stackView.setCustomSpacing(kHeadlinePadding, after: firstHint)
         
         self.stackView.addArrangedSubview(lastTextField)
         self.stackView.setCustomSpacing(kLowPadding, after: lastTextField)
-        let lastHint = RegularFootnote({ $0.text = "    " + "Например Иванов" })
+        let lastHint = RegularFootnote({ $0.text = "       " + "Например Иванов" })
         self.stackView.addArrangedSubview(lastHint)
         self.stackView.setCustomSpacing(kHeadlinePadding * 2, after: lastHint)
         
@@ -125,12 +129,18 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
             make.width.equalToSuperview()
         }
         
+        self.headlineText.snp.makeConstraints { make in
+            make.left.equalToSuperview().offset(kHeadlinePadding)
+            make.right.equalToSuperview().offset(-kHeadlinePadding)
+        }
+        
         self.logoImage.snp.makeConstraints { make in
             make.height.equalTo(kHeadlinePadding * 2)
+            make.width.equalTo(168)
         }
         
         self.nextButton.snp.makeConstraints { make in
-            make.height.equalTo(kMediumPadding * 3)
+            make.height.equalTo(kLowPadding * 8)
             make.left.equalTo(kHeadlinePadding)
             make.right.equalTo(-kHeadlinePadding)
         }
@@ -138,15 +148,19 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
     
     override func setupInitialData() {
         super.setupInitialData()
-        self.logoImage.loadImage(by: self.config.logoUrl)
+//        self.handleButtonEnabling()
+        self.logoImage.image = .named("ff_logo_text")
         self.headlineText.text = "Для регистрации в чат сервисе введите ваши данные"
-    }
-    
-    override func debugInitialData() {
-        super.debugInitialData()
-//        self.presenter?.login(lastName: "Test", firstname: "Aidana", phone: "+77756043111")
     }
 }
 
 extension SignUpViewController: SignUpViewInterface {
+}
+
+extension SignUpViewController {
+    func handleButtonEnabling() {
+        let isEnabled = (self.phoneTextField.text ?? "").isValidPhone && (self.firstTextField.text ?? "").count > 1
+        self.nextButton.isEnabled = isEnabled
+        self.nextButton.backgroundColor = isEnabled ? .green600 : .green100
+    }
 }

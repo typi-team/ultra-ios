@@ -42,7 +42,7 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
 extension ConversationsWireframe: ConversationsWireframeInterface {
     
     func navigateToContacts() {
-        self.navigationController?.pushWireframe(ContactsBookWireframe())
+        self.navigationController?.presentWireframeWithNavigation(ContactsBookWireframe())
     }
     
     func navigateToConversation(with data: Conversation) {

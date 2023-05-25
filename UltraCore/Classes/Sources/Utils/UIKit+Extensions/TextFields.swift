@@ -9,7 +9,7 @@ import UIKit
 
 class CustomTextField: UITextField {
     
-    var padding = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
+    var padding = UIEdgeInsets(top: kMediumPadding, left: kHeadlinePadding, bottom: kMediumPadding, right: kHeadlinePadding)
 
     override open func textRect(forBounds bounds: CGRect) -> CGRect {
         return UIEdgeInsetsInsetRect(bounds, padding)
@@ -57,5 +57,19 @@ class PhoneNumberTextField: CustomTextField, UITextFieldDelegate {
             }
         }
         return result
+    }
+}
+
+
+extension UITextField {
+    @IBInspectable var placeholderColor: UIColor {
+        get {
+            return attributedPlaceholder?.attribute(.foregroundColor, at: 0, effectiveRange: nil) as? UIColor ?? .clear
+        }
+        set {
+            guard let attributedPlaceholder = attributedPlaceholder else { return }
+            let attributes: [NSAttributedString.Key: UIColor] = [.foregroundColor: newValue]
+            self.attributedPlaceholder = NSAttributedString(string: attributedPlaceholder.string, attributes: attributes)
+        }
     }
 }

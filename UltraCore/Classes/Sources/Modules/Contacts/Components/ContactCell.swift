@@ -9,8 +9,13 @@ import UIKit
 
 class ContactCell: BaseCell {
     
-    fileprivate let titleLabel: RegularBody = .init()
-    fileprivate let subLabel: RegularFootnote = .init()
+    fileprivate let titleLabel: RegularBody = .init({
+        $0.font = .default(of: 14)
+    })
+    fileprivate let subLabel: RegularFootnote = .init({
+        $0.font = .default(of: 12)
+    })
+    
     fileprivate let avatarImageView: UIImageView = .init()
     
     
@@ -26,7 +31,7 @@ class ContactCell: BaseCell {
         super.setupConstraints()
         self.avatarImageView.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(kLowPadding)
-            make.width.height.equalTo(kHeadlinePadding * 2)
+            make.width.height.equalTo((kMediumPadding * 2) + 2)
             make.bottom.equalToSuperview().offset(-kLowPadding)
             make.left.equalToSuperview().offset(kMediumPadding)
         }
@@ -34,21 +39,21 @@ class ContactCell: BaseCell {
         self.titleLabel.snp.makeConstraints { make in
             make.top.equalTo(avatarImageView.snp.top)
             make.right.equalToSuperview().offset(-kHeadlinePadding)
-            make.left.equalTo(avatarImageView.snp.right).offset(kHeadlinePadding)
+            make.left.equalTo(avatarImageView.snp.right).offset(kMediumPadding - 4)
         }
         
         self.subLabel.snp.makeConstraints { make in
             make.bottom.equalTo(avatarImageView.snp.bottom)
             make.right.equalToSuperview().offset(-kHeadlinePadding)
-            make.top.equalTo(titleLabel.snp.bottom).offset(kLowPadding)
-            make.left.equalTo(avatarImageView.snp.right).offset(kHeadlinePadding)
+            make.top.equalTo(titleLabel.snp.bottom).offset(kLowPadding / 2)
+            make.left.equalTo(avatarImageView.snp.right).offset(kMediumPadding - 4)
         }
     }
     func setup(contact: ContactDisplayable) {
         
         if (self.avatarImageView.borderColor != .green500) {
             self.avatarImageView.borderWidth = 2
-            self.avatarImageView.cornerRadius = kHeadlinePadding
+            self.avatarImageView.cornerRadius = 17
             self.avatarImageView.borderColor = .green500
             self.avatarImageView.contentMode = .scaleAspectFit
         }

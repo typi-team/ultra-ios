@@ -36,6 +36,10 @@ class BaseViewController<T>: UIViewController {
             NotificationCenter.default.removeObserver(self)
         }
     }
+    
+    @objc func close(_ sender: Any) {
+        self.dismiss(animated: true)
+    }
 }
 
 

@@ -38,15 +38,15 @@ final class ContactsBookViewController: BaseViewController<ContactsBookPresenter
     
     override func setupViews() {
         super.setupViews()
-        
-        self.tableView.estimatedRowHeight = 80
-        self.tableView.rowHeight = UITableViewAutomaticDimension
-        
-        self.navigationItem.titleView = HeadlineBody { $0.text = "Новый чат" }
+        self.navigationItem.rightBarButtonItem = .init(image: .named("close"), style: .plain, target: self, action: #selector(close(_:)))
+        self.navigationItem.title = "Новый чат"
         self.view.addSubview(tableView)
-
+        
+        self.tableView.rowHeight = 50
+        self.tableView.separatorStyle = .singleLine
         self.tableView.registerCell(type: ContactCell.self)
-        self.tableView.separatorStyle = .none
+        self.tableView.separatorInset = .init(top: 0, left: 32, bottom: 0, right: 16)
+        
         self.presenter?
             .contacts
             .bind(to: tableView.rx.items) { tableView, _, contact in
