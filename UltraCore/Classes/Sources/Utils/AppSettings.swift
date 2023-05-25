@@ -71,25 +71,14 @@ open class AppSettingsImpl:AppSettings  {
 
 public func entryViewController() -> UIViewController {
     
-    UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor: UIColor.clear], for: .normal)
     UIBarButtonItem.appearance().title = ""
     UIBarButtonItem.appearance().tintColor = .green500
-    
-    UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.font: UIFont.defaultRegularHeadline ]
-    
-    
+    UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.font: UIFont.defaultRegularHeadline]
+    UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor: UIColor.clear], for: .normal)
     UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor: UIColor.clear], for: UIControlState.highlighted)
 
-    
-    if AppSettingsImpl.shared.appStore.isAuthed {
-        let controller = ConversationsWireframe().viewController
-        controller.hidesBottomBarWhenPushed = false
-        controller.navigationItem.largeTitleDisplayMode = .never
-        return controller
-    } else {
-        let controller = SignUpWireframe.init().viewController
-        controller.hidesBottomBarWhenPushed = false
-        controller.navigationItem.largeTitleDisplayMode = .never
-        return controller
-    }
+    let controller = AppSettingsImpl.shared.appStore.isAuthed ?
+        ConversationsWireframe().viewController : SignUpWireframe().viewController
+    controller.hidesBottomBarWhenPushed = false
+    return controller
 }

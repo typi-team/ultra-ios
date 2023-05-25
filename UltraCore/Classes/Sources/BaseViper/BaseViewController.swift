@@ -61,7 +61,11 @@ extension UIViewController {
     }
 
     @objc func keyboardWillHide(notification: NSNotification) {
-        // клавиатура закрывается, здесь можно выполнить какие-то действия
+        self.changed(keyboard: 0)
+    }
+    
+    @objc func textFieldDidChange(_ sender: UITextField) {
+        fatalError("implement this methode")
     }
 
     @objc func debugInitialData() {

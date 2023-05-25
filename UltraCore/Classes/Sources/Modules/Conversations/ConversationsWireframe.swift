@@ -27,14 +27,6 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
                                                conversationRepository: appSettings.conversationRespository)
         moduleViewController.presenter = presenter
     }
-
-    
-    func presentWithNavigation(presentation controller: UIViewController) {
-        let navigation  = UINavigationController.init(rootViewController: self.viewController)
-        navigation.navigationBar.tintColor = .gray500
-        navigation.modalPresentationStyle = .fullScreen
-        controller.present(navigation, animated: true)
-    }
 }
 
 // MARK: - Extensions -

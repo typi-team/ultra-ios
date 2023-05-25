@@ -26,6 +26,8 @@ class CustomTextField: UITextField {
 
 class PhoneNumberTextField: CustomTextField, UITextFieldDelegate {
 
+    var changesCallback: VoidCallback?
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         self.keyboardType = .phonePad
@@ -40,6 +42,7 @@ class PhoneNumberTextField: CustomTextField, UITextFieldDelegate {
         guard let text = textField.text else { return false }
         let newString = (text as NSString).replacingCharacters(in: range, with: string)
         textField.text = format(with: "+X (XXX) XXX-XX-XX", phone: newString)
+        self.changesCallback?()
         return false
     }
 

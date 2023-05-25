@@ -36,10 +36,10 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         $0.backgroundColor = .white
         $0.font = .defaultRegularBody
         $0.placeholder = "Ваш номер телефона"
-        $0.placeholderColor = .gray500
-        $0.addAction(for: .valueChanged) {[weak self] in
+        $0.changesCallback = {[weak self] in
             self?.handleButtonEnabling()
         }
+        $0.placeholderColor = .gray500
     })
 
     fileprivate lazy var firstTextField = CustomTextField({
@@ -47,6 +47,7 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         $0.placeholder = "Ваше имя"
         $0.font = .defaultRegularBody
         $0.placeholderColor = .gray500
+        $0.addTarget(self, action: #selector(textFieldDidChange(_:)), for: .editingChanged)
         $0.addAction(for: .editingDidEndOnExit) {[weak self] in
             self?.lastTextField.becomeFirstResponder()
         }
@@ -74,9 +75,15 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
     })
     
     override func setupViews() {
+        
         super.setupViews()
+                
         self.navigationItem.title = ""
+        
+        self.handleKeyboardTransmission = true
+        
         self.view.addSubview(scrollView)
+        
         self.scrollView.addSubview(stackView)
         self.stackView.addArrangedSubview(logoImage)
         self.stackView.setCustomSpacing(kHeadlinePadding * 3, after: logoImage)
@@ -146,9 +153,16 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         }
     }
     
+    override func textFieldDidChange(_ sender: UITextField) {
+        self.handleButtonEnabling()
+    }
+    override func changed(keyboard height: CGFloat) {
+        self.scrollView.contentInset = .init(top: 0, left: 0, bottom: height, right: 0)
+    }
+    
     override func setupInitialData() {
         super.setupInitialData()
-//        self.handleButtonEnabling()
+        self.handleButtonEnabling()
         self.logoImage.image = .named("ff_logo_text")
         self.headlineText.text = "Для регистрации в чат сервисе введите ваши данные"
     }
@@ -159,7 +173,7 @@ extension SignUpViewController: SignUpViewInterface {
 
 extension SignUpViewController {
     func handleButtonEnabling() {
-        let isEnabled = (self.phoneTextField.text ?? "").isValidPhone && (self.firstTextField.text ?? "").count > 1
+        let isEnabled = (self.phoneTextField.text ?? "").trimNumber.isValidPhone && (self.firstTextField.text ?? "").count > 1
         self.nextButton.isEnabled = isEnabled
         self.nextButton.backgroundColor = isEnabled ? .green600 : .green100
     }
