@@ -43,7 +43,8 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
                                                        style: .plain, target: self,
                                                        action: #selector(self.openContacts))
         
-        self.navigationItem.titleView = HeadlineBody({ $0.text = "Список чатов" })
+        self.navigationItem.title = "Список чатов"
+        self.hidesBottomBarWhenPushed = false
     }
     
     override func setupConstraints() {

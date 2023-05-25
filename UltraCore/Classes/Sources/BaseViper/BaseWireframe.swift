@@ -71,8 +71,9 @@ extension UINavigationController {
     func pushWireframe<ViewController>(_ wireframe: BaseWireframe<ViewController>,
                                        animated: Bool = true,
                                        removeFromStack controller: UIViewController? = nil) {
-        
-        pushViewController(wireframe.viewController, animated: animated)
+        var presentController = wireframe.viewController
+        presentController.hidesBottomBarWhenPushed = true
+        pushViewController(presentController, animated: animated)
         viewControllers.removeAll(where: { $0 == controller })
         
     }

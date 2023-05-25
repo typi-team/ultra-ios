@@ -69,7 +69,6 @@ extension UIViewController {
     }
     @objc func setupViews() {
         self.view.backgroundColor = .gray100
-        self.hidesBottomBarWhenPushed = true
         self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
     }
     @objc func setupConstraints() {}

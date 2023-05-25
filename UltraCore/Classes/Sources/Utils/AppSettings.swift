@@ -75,6 +75,8 @@ public func entryViewController() -> UIViewController {
     UIBarButtonItem.appearance().title = ""
     UIBarButtonItem.appearance().tintColor = .green500
     
+    UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.font: UIFont.defaultRegularHeadline ]
+    
     
     UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor: UIColor.clear], for: UIControlState.highlighted)
 
