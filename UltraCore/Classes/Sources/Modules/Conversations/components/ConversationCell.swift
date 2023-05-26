@@ -104,4 +104,9 @@ class ConversationCell: BaseCell {
             self.descriptionView.text = "Печатает ..."
         }
     }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        self.avatarView.image = nil
+    }
 }

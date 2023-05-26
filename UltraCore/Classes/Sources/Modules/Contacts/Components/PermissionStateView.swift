@@ -38,6 +38,7 @@ class PermissionStateView: UIView {
     fileprivate lazy var imageView: UIImageView = .init()
     fileprivate lazy var headline: RegularBody = .init({
         $0.textAlignment = .center
+        $0.font = .default(of: 13, and: .bold)
     })
     fileprivate lazy var button: ElevatedButton = .init()
 
@@ -54,12 +55,12 @@ class PermissionStateView: UIView {
     
     private func setupConstraints() {
         self.imageView.snp.makeConstraints { make in
-            make.width.height.equalTo(84)
+            make.width.height.equalTo(80)
             make.center.equalToSuperview()
         }
         
         self.headline.snp.makeConstraints { make in
-            make.top.equalTo(imageView.snp.bottom).offset(kHeadlinePadding * 2)
+            make.top.equalTo(imageView.snp.bottom).offset((kHeadlinePadding * 2) - 2)
             make.left.equalToSuperview().offset(kMediumPadding)
             make.right.equalToSuperview().offset(-kMediumPadding)
         }
@@ -73,8 +74,8 @@ class PermissionStateView: UIView {
         if data.action != nil {
             self.button.snp.makeConstraints { make in
                 make.bottom.equalTo(safeAreaLayoutGuide.snp.bottomMargin).offset(-kMediumPadding)
-                make.left.equalToSuperview().offset(kMediumPadding)
-                make.right.equalToSuperview().offset(-kMediumPadding)
+                make.left.equalToSuperview().offset(kHeadlinePadding)
+                make.right.equalToSuperview().offset(-kHeadlinePadding)
                 make.height.equalTo(kButtonHeight)
             }
         }

@@ -62,4 +62,9 @@ class ContactCell: BaseCell {
         self.subLabel.textColor = contact.status.color
         self.subLabel.text = contact.status.displayText
     }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        self.avatarImageView.image = nil
+    }
 }

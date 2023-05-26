@@ -18,7 +18,9 @@ extension UIImageView {
         self.contentMode = .scaleAspectFit
         if let image = contact.image {
             self.image = image
+            self.borderWidth = 1
         } else {
+            self.borderWidth = 2
             self.loadImage(by: nil, placeholder: .initial(text: contact.displaName.initails))
         }
     }
@@ -62,7 +64,7 @@ extension UIImageView {
         // Draw initials
         let attributes: [NSAttributedString.Key: Any] = [
             .foregroundColor: UIColor.green500,
-            .font: UIFont.defaultRegularBoldSubHeadline
+            .font: UIFont.default(of: size.width / 2, and: .bold)
         ]
         let initials = String(username.prefix(2)).uppercased()
         let initialsString = NSAttributedString(string: initials, attributes: attributes)

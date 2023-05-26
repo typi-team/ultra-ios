@@ -36,6 +36,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     }
     
     fileprivate lazy var messageHeadline: SubHeadline = .init({
+        $0.textColor = .gray500
         $0.textAlignment = .center
         $0.isUserInteractionEnabled = false
     })
