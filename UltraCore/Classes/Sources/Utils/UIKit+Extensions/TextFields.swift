@@ -8,6 +8,19 @@
 import UIKit
 
 class CustomTextField: UITextField {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        self.setupView()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        self.setupView()
+    }
+    
+    func setupView() {
+        self.tintColor = .green500
+    }
     
     var padding = UIEdgeInsets(top: kMediumPadding, left: kHeadlinePadding, bottom: kMediumPadding, right: kHeadlinePadding)
 
@@ -74,5 +87,23 @@ extension UITextField {
             let attributes: [NSAttributedString.Key: UIColor] = [.foregroundColor: newValue]
             self.attributedPlaceholder = NSAttributedString(string: attributedPlaceholder.string, attributes: attributes)
         }
+    }
+}
+
+class MessageTextView: UITextView {
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        self.setupView()
+    }
+    
+    override init(frame: CGRect, textContainer: NSTextContainer?) {
+        super.init(frame: frame, textContainer: textContainer)
+        self.setupView()
+    }
+    
+    func setupView() {
+        self.textColor = .gray900
+        self.tintColor = .green500
+        self.font = .defaultRegularSubHeadline
     }
 }

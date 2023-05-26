@@ -26,18 +26,19 @@ class OutgoingMessageCell: BaseMessageCell {
         }
 
         self.textView.snp.makeConstraints { make in
-            make.left.equalToSuperview().offset(kLowPadding)
+            make.left.equalToSuperview().offset(10)
             make.top.equalToSuperview().offset(kLowPadding)
             make.bottom.equalToSuperview().offset(-kLowPadding)
         }
 
         self.statusView.snp.makeConstraints { make in
             make.left.equalTo(self.textView.snp.right).offset(kLowPadding / 2)
+            make.width.equalTo(0)
         }
 
         self.deliveryDateLabel.snp.makeConstraints { make in
             make.left.equalTo(self.statusView.snp.right).offset(kLowPadding / 2)
-            make.right.equalToSuperview().offset(-kLowPadding)
+            make.right.equalToSuperview().offset(-10)
             make.bottom.equalTo(textView.snp.bottom)
             make.width.equalTo(40)
             make.centerY.equalTo(statusView.snp.centerY)

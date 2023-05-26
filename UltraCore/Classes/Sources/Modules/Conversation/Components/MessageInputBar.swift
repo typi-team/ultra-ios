@@ -12,6 +12,8 @@ protocol MessageInputBarDelegate: AnyObject {
     func message(text: String)
     func typing(is active: Bool)
     func micro(isActivated: Bool)
+    func pressedDone(in view: MessageInputBar)
+    func pressedPlus(in view: MessageInputBar)
 }
 
 class MessageInputBar: UIView {
@@ -25,6 +27,8 @@ class MessageInputBar: UIView {
     fileprivate let kInputMicroImage: UIImage? = .named("message_input_micro")
     fileprivate let kInputExchangeImage: UIImage? = .named("message_input_exchange")
     
+    private let divider: UIView = .init { $0.backgroundColor = .gray200 }
+    
     private let containerStack: UIStackView = .init {
         $0.axis = .horizontal
         $0.spacing = kMediumPadding
@@ -32,11 +36,11 @@ class MessageInputBar: UIView {
         $0.backgroundColor = .gray200
     }
     
-    private lazy var messageTextView: UITextView = .init {[weak self] textView in
+    private lazy var messageTextView: UITextView = MessageTextView.init {[weak self] textView in
         textView.delegate = self
         textView.backgroundColor = .gray200
         textView.cornerRadius = kLowPadding
-        textView.font = .defaultRegularSubHeadline
+        textView.placeholder = "Введите текст"
     }
     
     private lazy var sendButton: UIButton = .init {[weak self] button in
@@ -45,6 +49,7 @@ class MessageInputBar: UIView {
         button.addAction {
             guard let message = self.messageTextView.text?.trimmingCharacters(in: .whitespacesAndNewlines),
                     !message.isEmpty else {
+                self.delegate?.pressedPlus(in: self)
                 return
             }
             self.messageTextView.text = ""
@@ -65,10 +70,6 @@ class MessageInputBar: UIView {
         guard let `self` = self else { return }
         button.setImage(self.kInputMicroImage, for: .normal)
         button.addAction {
-            guard let message = self.messageTextView.text,
-                    !message.isEmpty else {
-                return
-            }
             self.delegate?.micro(isActivated: false)
         }
     }
@@ -87,10 +88,9 @@ class MessageInputBar: UIView {
         fatalError("init(coder:) has not been implemented")
     }
     
-    
     private func setupViews() {
         self.backgroundColor = .gray100
-        
+        self.addSubview(divider)
         self.addSubview(sendButton)
         self.addSubview(containerStack)
         self.addSubview(exchangesButton)
@@ -101,41 +101,50 @@ class MessageInputBar: UIView {
     
     private func setupConstraints() {
         self.exchangesButton.snp.makeConstraints { make in
-            make.height.width.equalTo(36)
+            make.height.equalTo(36)
+            make.width.equalTo(kHeadlinePadding * 2)
             make.leading.equalToSuperview().offset(kLowPadding)
-            make.bottom.equalToSuperview().offset(-kMediumPadding)
-            
+            make.bottom.equalTo(messageTextView.snp.bottom)
         }
+
+        self.divider.snp.makeConstraints { make in
+            make.left.right.top.equalToSuperview()
+            make.height.equalTo(1)
+        }
+
         self.containerStack.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(kMediumPadding)
+            make.top.equalToSuperview().offset(kMediumPadding - 4)
+            make.bottom.equalToSuperview().offset(-(kMediumPadding - 4))
             make.leading.equalTo(exchangesButton.snp.trailing).offset(kLowPadding)
-            make.bottom.equalToSuperview().offset(-kMediumPadding)
         }
-        
+
         self.messageTextView.snp.makeConstraints { make in
-            make.height.equalTo(35)
+            make.height.equalTo(36)
+            make.left.equalToSuperview().offset(kLowPadding)
         }
 
         self.sendButton.snp.makeConstraints { make in
             make.trailing.equalToSuperview().offset(-kLowPadding)
             make.height.width.equalTo(36)
-            make.bottom.equalToSuperview().offset(-kMediumPadding)
+            make.bottom.equalTo(messageTextView.snp.bottom)
             make.leading.equalTo(containerStack.snp.trailing).offset(kLowPadding)
         }
         
         self.microButton.snp.makeConstraints { make in
             make.width.equalTo(36)
+            make.bottom.equalToSuperview()
         }
     }
 }
 
 
 extension MessageInputBar: UITextViewDelegate {
+    
     func textViewDidChange(_ textView: UITextView) {
         let size = CGSize(width: textView.frame.width, height: .greatestFiniteMagnitude)
         let estimatedSize = textView.sizeThatFits(size)
         textView.snp.updateConstraints { make in
-            make.height.equalTo(min(estimatedSize.height, kTextFieldMaxHeight))
+            make.height.equalTo(min(max(estimatedSize.height, 36), kTextFieldMaxHeight))
         }
 
         if textView.text != nil || textView.text != "" {
@@ -143,10 +152,57 @@ extension MessageInputBar: UITextViewDelegate {
         } else {
             self.sendButton.setImage(self.kInputPlusImage, for: .normal)
         }
-        
+
         if Date().timeIntervalSince(lastTypingDate) > kTypingMinInterval {
             self.lastTypingDate = Date()
             self.delegate?.typing(is: true)
+        }
+    }
+}
+
+
+extension UITextView {
+
+    private class PlaceholderLabel: UILabel { }
+
+    private var placeholderLabel: PlaceholderLabel {
+        if let label = subviews.compactMap({ $0 as? PlaceholderLabel }).first {
+            return label
+        } else {
+            let label = PlaceholderLabel(frame: .zero)
+            label.font = font
+            label.textColor = .gray500
+            addSubview(label)
+            label.snp.makeConstraints { make in
+                make.centerY.equalToSuperview()
+                make.left.equalToSuperview().offset(4)
+                make.right.equalToSuperview()
+            }
+            return label
+        }
+    }
+
+    @IBInspectable
+    var placeholder: String {
+        get {
+            return subviews.compactMap( { $0 as? PlaceholderLabel }).first?.text ?? ""
+        }
+        set {
+            let placeholderLabel = self.placeholderLabel
+            placeholderLabel.text = newValue
+            placeholderLabel.numberOfLines = 0
+            self.addSubview(placeholderLabel)
+            textStorage.delegate = self
+        }
+    }
+
+}
+
+extension UITextView: NSTextStorageDelegate {
+
+    public func textStorage(_ textStorage: NSTextStorage, didProcessEditing editedMask: NSTextStorageEditActions, range editedRange: NSRange, changeInLength delta: Int) {
+        if editedMask.contains(.editedCharacters) {
+            placeholderLabel.isHidden = !text.isEmpty
         }
     }
 }

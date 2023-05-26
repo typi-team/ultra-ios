@@ -39,7 +39,7 @@ final class ContactsBookViewController: BaseViewController<ContactsBookPresenter
     override func setupViews() {
         super.setupViews()
         self.navigationItem.title = "Новый чат"
-        self.navigationItem.rightBarButtonItem = .init(image: .named("close"), style: .plain, target: self, action: #selector(close(_:)))
+        self.navigationItem.rightBarButtonItem = .init(image: .named("icon_close"), style: .plain, target: self, action: #selector(close(_:)))
         
         self.view.addSubview(tableView)
         

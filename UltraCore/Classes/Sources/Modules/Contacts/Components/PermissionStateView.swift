@@ -56,7 +56,8 @@ class PermissionStateView: UIView {
     private func setupConstraints() {
         self.imageView.snp.makeConstraints { make in
             make.width.height.equalTo(80)
-            make.center.equalToSuperview()
+            make.centerX.equalToSuperview()
+            make.centerY.equalToSuperview().offset(-100)
         }
         
         self.headline.snp.makeConstraints { make in
@@ -73,7 +74,7 @@ class PermissionStateView: UIView {
         
         if data.action != nil {
             self.button.snp.makeConstraints { make in
-                make.bottom.equalTo(safeAreaLayoutGuide.snp.bottomMargin).offset(-kMediumPadding)
+                make.bottom.equalTo(safeAreaLayoutGuide.snp.bottomMargin).offset(-kMediumPadding * 2)
                 make.left.equalToSuperview().offset(kHeadlinePadding)
                 make.right.equalToSuperview().offset(-kHeadlinePadding)
                 make.height.equalTo(kButtonHeight)

@@ -132,43 +132,18 @@ endobj
 endobj
 
 5 0 obj
-  << /Type /XObject
-     /Length 6 0 R
-     /Group << /Type /Group
-               /S /Transparency
-            >>
-     /Subtype /Form
-     /Resources << /XObject << /X1 1 0 R >>
-                   /ExtGState << /E1 << /SMask << /Type /Mask
-                                                  /G 3 0 R
-                                                  /S /Alpha
-                                               >>
-                                        /Type /ExtGState
-                                     >> >>
-                >>
-     /BBox [ 0.000000 0.000000 48.000000 36.000000 ]
+  << /XObject << /X1 1 0 R >>
+     /ExtGState << /E1 << /SMask << /Type /Mask
+                                    /G 3 0 R
+                                    /S /Alpha
+                                 >>
+                          /Type /ExtGState
+                       >> >>
   >>
-stream
-q
-/E1 gs
-/X1 Do
-Q
-
-endstream
 endobj
 
 6 0 obj
-  18
-endobj
-
-7 0 obj
-  << /XObject << /X1 5 0 R >>
-     /ExtGState << /E1 << /ca 0.250000 >> >>
-  >>
-endobj
-
-8 0 obj
-  << /Length 9 0 R >>
+  << /Length 7 0 R >>
 stream
 /DeviceRGB CS
 /DeviceRGB cs
@@ -180,53 +155,51 @@ Q
 endstream
 endobj
 
-9 0 obj
+7 0 obj
   46
 endobj
 
-10 0 obj
+8 0 obj
   << /Annots []
      /Type /Page
      /MediaBox [ 0.000000 0.000000 48.000000 36.000000 ]
-     /Resources 7 0 R
-     /Contents 8 0 R
-     /Parent 11 0 R
+     /Resources 5 0 R
+     /Contents 6 0 R
+     /Parent 9 0 R
   >>
 endobj
 
-11 0 obj
-  << /Kids [ 10 0 R ]
+9 0 obj
+  << /Kids [ 8 0 R ]
      /Count 1
      /Type /Pages
   >>
 endobj
 
-12 0 obj
-  << /Pages 11 0 R
+10 0 obj
+  << /Pages 9 0 R
      /Type /Catalog
   >>
 endobj
 
 xref
-0 13
+0 11
 0000000000 65535 f
 0000000010 00000 n
 0000002717 00000 n
 0000002740 00000 n
 0000003456 00000 n
 0000003478 00000 n
-0000004116 00000 n
-0000004137 00000 n
-0000004233 00000 n
-0000004335 00000 n
-0000004356 00000 n
-0000004531 00000 n
-0000004607 00000 n
+0000003776 00000 n
+0000003878 00000 n
+0000003899 00000 n
+0000004072 00000 n
+0000004146 00000 n
 trailer
 << /ID [ (some) (id) ]
-   /Root 12 0 R
-   /Size 13
+   /Root 10 0 R
+   /Size 11
 >>
 startxref
-4668
+4206
 %%EOF

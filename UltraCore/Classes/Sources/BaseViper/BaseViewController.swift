@@ -45,6 +45,12 @@ class BaseViewController<T>: UIViewController {
 
 extension UIViewController {
     
+    func showAlert(from message: String, with title: String? = nil) {
+        let alert = UIAlertController.init(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction.init(title: "Закрыть", style: UIAlertActionStyle.destructive))
+        self.present(alert, animated: true)
+    }
+    
     @objc func registerKeyboardNotification() {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
@@ -74,6 +80,10 @@ extension UIViewController {
     @objc func setupViews() {
         self.view.backgroundColor = .gray100
         self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+        let yourBackImage = UIImage.named( "icon_back_button")
+        self.navigationController?.navigationBar.backIndicatorImage = yourBackImage
+        self.navigationController?.navigationBar.backIndicatorTransitionMaskImage = yourBackImage
+        
     }
     @objc func setupConstraints() {}
     @objc func setupInitialData() {}

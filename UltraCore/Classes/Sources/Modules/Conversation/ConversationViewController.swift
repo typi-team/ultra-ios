@@ -118,8 +118,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     
     override func changed(keyboard height: CGFloat) {
         messageInputBar.snp.updateConstraints { make in
-                make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin).offset(-height)
-            
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin).offset(height > 0 ? -(height - 36) : 0)
         }
     }
 }
@@ -127,16 +126,24 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     // MARK: - UITextViewDelegate
 
 extension ConversationViewController: MessageInputBarDelegate {
+    func pressedPlus(in view: MessageInputBar) {
+        self.showAlert(from: "Данная функция еще в разработке")
+    }
+    
+    func pressedDone(in view: MessageInputBar) {
+        self.view.endEditing(true)
+    }
+    
     func typing(is active: Bool) {
         self.presenter?.typing(is: active)
     }
     
     func exchanges() {
-
+        self.showAlert(from: "Данная функция еще в разработке")
     }
     
     func micro(isActivated: Bool) {
-        
+        self.showAlert(from: "Данная функция еще в разработке")
     }
     
     func message(text: String) {

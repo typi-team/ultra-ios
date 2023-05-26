@@ -9,7 +9,11 @@ import Foundation
 
 extension UIColor {
 
-  @nonobjc class var gray700: UIColor {
+  @nonobjc class var gray900: UIColor {
+      return UIColor(red: 17.0 / 255.0, green: 24.0 / 255.0, blue: 39.0 / 255.0, alpha: 1.0)
+  }
+    
+    @nonobjc class var gray700: UIColor {
       return UIColor(red: 55.0 / 255.0, green: 65.0 / 255.0, blue: 81.0 / 255.0, alpha: 1.0)
   }
 
