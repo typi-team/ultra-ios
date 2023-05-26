@@ -37,9 +37,15 @@ class ViewController: UITabBarController {
     
     func setupVCs() {
            viewControllers = [
-               createNavController(for: UIViewController(), title: NSLocalizedString("Продукты", comment: ""), image: UIImage(named: "cards")!),
-               createNavController(for: UIViewController(), title: NSLocalizedString("Платежи", comment: ""), image: UIImage(named: "payments")!),
-               createNavController(for: UIViewController(), title: NSLocalizedString("Расходы", comment: ""), image: UIImage(named: "banence")!),
+            createNavController(for: UIViewController({
+                $0.view.backgroundColor = UIColor(red: 243.0 / 255.0, green: 244.0 / 255.0, blue: 246.0 / 255.0, alpha: 1.0)
+            }), title: NSLocalizedString("Продукты", comment: ""), image: UIImage(named: "cards")!),
+            createNavController(for: UIViewController({
+                $0.view.backgroundColor = UIColor(red: 243.0 / 255.0, green: 244.0 / 255.0, blue: 246.0 / 255.0, alpha: 1.0)
+            }), title: NSLocalizedString("Платежи", comment: ""), image: UIImage(named: "payments")!),
+            createNavController(for: UIViewController({
+                $0.view.backgroundColor = UIColor(red: 243.0 / 255.0, green: 244.0 / 255.0, blue: 246.0 / 255.0, alpha: 1.0)
+            }), title: NSLocalizedString("Расходы", comment: ""), image: UIImage(named: "banence")!),
                createNavController(for: entryViewController(), title: NSLocalizedString("Чаты", comment: ""), image: UIImage(named: "chats")!)
            ]
        }
