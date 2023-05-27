@@ -23,7 +23,7 @@ final class ContactsBookPresenter: BasePresenter {
     fileprivate let contactsRepository: ContactsRepository
     fileprivate unowned let view: ContactsBookViewInterface
     fileprivate let wireframe: ContactsBookWireframeInterface
-    fileprivate let fileDownloadService: UseCase<PhotoDownloadRequest, Any>
+//    fileprivate let fileDownloadService: UseCase<PhotoDownloadRequest, Any>
     fileprivate let bookContacts: UseCase<Void, ContactsBookInteractor.Contacts>
     fileprivate let syncContact: UseCase<ContactsImportRequest, ContactImportResponse>
     
@@ -32,7 +32,7 @@ final class ContactsBookPresenter: BasePresenter {
     init(view: ContactsBookViewInterface,
          contactsRepository: ContactsRepository,
          wireframe: ContactsBookWireframeInterface,
-         fileDownloadService: UseCase<PhotoDownloadRequest, Any>,
+//         fileDownloadService: UseCase<PhotoDownloadRequest, Any>,
          syncContact: UseCase<ContactsImportRequest, ContactImportResponse>,
          bookContacts: UseCase<Void, ContactsBookInteractor.Contacts>) {
         self.view = view
@@ -40,7 +40,7 @@ final class ContactsBookPresenter: BasePresenter {
         self.syncContact = syncContact
         self.bookContacts = bookContacts
         self.contactsRepository = contactsRepository
-        self.fileDownloadService = fileDownloadService
+//        self.fileDownloadService = fileDownloadService
     }
 }
 
