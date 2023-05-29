@@ -58,7 +58,7 @@ extension UIImageView {
         // Draw circle
         context.addEllipse(in: frame)
         context.clip()
-        context.setFillColor(UIColor.white.cgColor)
+        context.setFillColor(self.backgroundColor?.cgColor ?? UIColor.white.cgColor)
         context.fill(frame)
         
         // Draw initials
@@ -100,6 +100,12 @@ extension UIImageView.PlaceholderType {
 
 extension UIImage {
     static func named(_ name: String) -> UIImage? {
+        let bundle = Bundle(for: AppSettingsImpl.self)
+        if let resourceURL = bundle.url(forResource: "UltraCore", withExtension: "bundle"),
+           let resourceBundle = Bundle(url: resourceURL) {
+            let image = UIImage(named: name, in: resourceBundle, compatibleWith: nil)
+            return image
+        }
         return UIImage(named: name, in: AppSettingsImpl.shared.podAsset, compatibleWith: nil)
     }
 }

@@ -31,9 +31,11 @@ Pod::Spec.new do |s|
   s.source_files = 'UltraCore/Classes/**/*'
   s.source_files = 'UltraCore/Classes/Sources/**/*'
   
-   s.resource_bundles = {
-     'UltraCore' => ['UltraCore/Assets/*.xcassets','UltraCore/Assets/*.lproj']
-   }
+  s.resource_bundles = {
+      'UltraCore' => ['UltraCore/Assets/*.xcassets','UltraCore/Assets/*.lproj','UltraCore/Assets/*.pdf', 'UltraCore/Assets/Assets']
+  }
+  
+  s.resources = ['UltraCore/Assets/*.pdf', 'UltraCore/*.png', 'UltraCore/*']
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'

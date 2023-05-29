@@ -17,6 +17,7 @@ class ProfileNavigationView: UIView {
         $0.borderWidth = 1
         $0.cornerRadius = 20
         $0.borderColor = .green500
+        $0.backgroundColor = .gray100
         $0.frame.size = .init(width: 40, height: 40)
     }
     
