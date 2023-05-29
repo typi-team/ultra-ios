@@ -117,7 +117,14 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     }
     
     override func changed(keyboard height: CGFloat) {
-        messageInputBar.snp.updateConstraints { make in
+        
+        if let indexPath = self.tableView.indexPathsForVisibleRows?.last {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
+                self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: false)
+            })
+        }
+        
+        self.messageInputBar.snp.updateConstraints { make in
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin).offset(height > 0 ? -(height - 36) : 0)
         }
     }
