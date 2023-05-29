@@ -28,8 +28,8 @@ final class ConversationsPresenter: BasePresenter {
                 
                 if let typing = typingUsers[conversation.idintification] {
                     var mutable = conversation
-                    mutable.typingData.remove(typing)
-                    mutable.typingData.insert(typing)
+                    mutable.typingData.removeAll(where: {$0.userId == typing.userId})
+                    mutable.typingData.append(typing)
                     return mutable
                 }
                 return conversation
