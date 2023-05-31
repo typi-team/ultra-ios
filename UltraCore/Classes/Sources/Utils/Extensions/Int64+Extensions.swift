@@ -39,12 +39,12 @@ extension Int64 {
             if minutes <= 1 {
                 return "только что"
             } else if minutes <= 5 {
-                return "был \(timeAgo) назад"
+                return "был(а) в сети \(timeAgo) минуты назад"
             } else {
-                return formattedDate
+                return "был(а) в сети \(formattedDate)"
             }
         } else {
-            return formattedDate
+            return "был(а) в сети \(formattedDate)"
         }
     }
 }

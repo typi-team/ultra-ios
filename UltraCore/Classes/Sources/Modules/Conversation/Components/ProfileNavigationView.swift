@@ -80,7 +80,7 @@ class ProfileNavigationView: UIView {
     func setup(user typing: UserTypingWithDate) {
         if typing.isTyping {
             self.sublineText.textColor = .gray500
-            self.sublineText.text = "Печатает ... "
+            self.sublineText.text = "печатает..."
         } else if let conversation = self.conversation {
             self.setup(conversation: conversation)
         }

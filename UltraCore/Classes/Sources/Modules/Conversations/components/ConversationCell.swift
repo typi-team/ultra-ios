@@ -101,7 +101,7 @@ class ConversationCell: BaseCell {
         if typingUsers.isEmpty {
             self.descriptionView.text = conversation.lastMessage
         } else {
-            self.descriptionView.text = "Печатает ..."
+            self.descriptionView.text = "печатает..."
         }
     }
     

@@ -19,6 +19,10 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     
     // MARK: - Views
     
+    fileprivate let navigationDivider: UIView = .init({
+        $0.backgroundColor = .gray200
+    })
+    
     private lazy var tableView: UITableView = .init {[weak self] tableView in
         guard let `self` = self else { return }
         tableView.separatorStyle = .none
@@ -53,6 +57,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         view.addSubview(tableView)
         view.addSubview(messageHeadline)
         view.addSubview(messageInputBar)
+        view.addSubview(navigationDivider)
         
         navigationItem.leftItemsSupplementBackButton = true
         navigationItem.leftBarButtonItem = .init(customView: self.headline)
@@ -60,9 +65,15 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     
     override func setupConstraints() {
         super.setupConstraints()
-        tableView.snp.makeConstraints { make in
+        self.navigationDivider.snp.makeConstraints { make in
+            make.height.equalTo(1)
             make.top.equalTo(view.safeAreaLayoutGuide.snp.topMargin)
+            make.left.right.equalToSuperview()
+        }
+        
+        self.tableView.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
+            make.top.equalTo(navigationDivider.snp.bottom)
             make.bottom.equalTo(messageInputBar.snp.topMargin).offset(-10)
         }
         
@@ -71,7 +82,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             make.bottom.equalTo(messageInputBar.snp.topMargin).offset(-kMediumPadding)
         }
         
-        messageInputBar.snp.makeConstraints { make in
+        self.messageInputBar.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin)
         }

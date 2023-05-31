@@ -54,7 +54,7 @@ class PhoneNumberTextField: CustomTextField, UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         guard let text = textField.text else { return false }
         let newString = (text as NSString).replacingCharacters(in: range, with: string)
-        textField.text = format(with: "+X (XXX) XXX-XX-XX", phone: newString)
+        textField.text = newString
         self.changesCallback?()
         return false
     }

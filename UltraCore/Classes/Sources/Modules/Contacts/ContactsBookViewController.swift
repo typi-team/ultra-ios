@@ -18,14 +18,6 @@ final class ContactsBookViewController: BaseViewController<ContactsBookPresenter
 
     // MARK: - Public properties -
     
-    fileprivate lazy var permissionData = PermissionStateViewData(imageName: "contacts_centered_card",
-                                                                  headline: "Нет доступа к контактам",
-                                                                  subline: "Нажмите на кнопку ниже и предоставьте доступ к вашим контактам.",
-                                                                  action: { [weak self] in
-        UIApplication.shared.open(URL(string: UIApplicationOpenSettingsURLString)!, options: [:], completionHandler: nil)
-                                                                  })
-    fileprivate lazy var backgroundView: PermissionStateView = .init(data: permissionData)
-
     fileprivate let tableView: UITableView = {
         if #available(iOS 13.0, *) {
             return .init(frame: .zero, style: .insetGrouped)
@@ -50,11 +42,21 @@ final class ContactsBookViewController: BaseViewController<ContactsBookPresenter
         
         self.presenter?
             .contacts
+            .do(onNext: {[weak self] contacts in
+                guard let `self` = self else { return }
+                if contacts.isEmpty {
+                    self.contacts(is: contacts.isEmpty)
+                } else if !AppHardwareUtils.checkPermissons() {
+                    self.permission(is: false)
+                }
+                
+            })
             .bind(to: tableView.rx.items) { tableView, _, contact in
                 let cell: ContactCell = tableView.dequeueCell()
                 cell.setup(contact: contact)
                 return cell
-            }.disposed(by: disposeBag)
+            }
+            .disposed(by: disposeBag)
         
         self.tableView
             .rx.itemSelected
@@ -90,9 +92,26 @@ final class ContactsBookViewController: BaseViewController<ContactsBookPresenter
 // MARK: - Extensions -
 
 extension ContactsBookViewController: ContactsBookViewInterface {
+    func contacts(is empty: Bool) {
+        if empty {
+            let data = PermissionStateViewData(imageName: "contacts_centered_card",
+                                               headline: "Ваш список контактов пуст",
+                                               subline: "К сожалению у вас нет контактов которые используют данное приложение.")
+            self.tableView.backgroundView = PermissionStateView(data: data)
+        } else {
+            self.tableView.backgroundView = nil
+        }
+    }
+    
     func permission(is denied: Bool) {
         if denied {
-            self.tableView.backgroundView = self.backgroundView
+            self.tableView.backgroundView = PermissionStateView(data: PermissionStateViewData(imageName: "contacts_centered_card",
+                                                                                              headline: "Нет доступа к контактам",
+                                                                                              subline: "Нажмите на кнопку ниже и предоставьте доступ к вашим контактам.",
+                                                                                              action: {
+                                                                                                  UIApplication.shared.open(URL(string: UIApplicationOpenSettingsURLString)!, options: [:], completionHandler: nil)
+                                                                                              })
+            )
         } else {
             self.tableView.backgroundView = nil
         }

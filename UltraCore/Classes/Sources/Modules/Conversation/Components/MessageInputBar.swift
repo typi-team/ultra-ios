@@ -40,7 +40,7 @@ class MessageInputBar: UIView {
         textView.delegate = self
         textView.backgroundColor = .gray200
         textView.cornerRadius = kLowPadding
-        textView.placeholder = "Введите текст"
+        textView.placeholder = "Введите текст..."
     }
     
     private lazy var sendButton: UIButton = .init {[weak self] button in
@@ -119,7 +119,7 @@ class MessageInputBar: UIView {
         }
 
         self.messageTextView.snp.makeConstraints { make in
-            make.height.equalTo(36)
+            make.height.equalTo(35)
             make.left.equalToSuperview().offset(kLowPadding)
         }
 
@@ -141,15 +141,17 @@ class MessageInputBar: UIView {
 extension MessageInputBar: UITextViewDelegate {
     
     func textViewDidChange(_ textView: UITextView) {
-        let size = CGSize(width: textView.frame.width, height: .greatestFiniteMagnitude)
-        let estimatedSize = textView.sizeThatFits(size)
+       
         textView.snp.updateConstraints { make in
-            make.height.equalTo(min(max(estimatedSize.height, 36), kTextFieldMaxHeight))
+            make.height.equalTo(min(textView.heightOfInsertedText() + kLowPadding * 2 + 1, kTextFieldMaxHeight))
         }
 
-        if textView.text != nil || textView.text != "" {
+        if let text = textView.text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            self.microButton.isHidden = true
             self.sendButton.setImage(self.kInputSendImage, for: .normal)
+            
         } else {
+            self.microButton.isHidden = false
             self.sendButton.setImage(self.kInputPlusImage, for: .normal)
         }
 
@@ -205,4 +207,21 @@ extension UITextView: NSTextStorageDelegate {
             placeholderLabel.isHidden = !text.isEmpty
         }
     }
+    
+    func heightOfInsertedText() ->CGFloat {
+        guard let text = text else { return 0.0 }
+        let maxSize = CGSize(width: frame.width, height: CGFloat.greatestFiniteMagnitude)
+        let options: NSStringDrawingOptions = [.usesLineFragmentOrigin, .usesFontLeading]
+
+        let attributes: [NSAttributedString.Key: Any] = [NSAttributedString.Key.font: font as Any]
+
+        let boundingRect = (text as NSString).boundingRect(with: maxSize,
+                                                           options: options,
+                                                           attributes: attributes,
+                                                           context: nil)
+
+        return ceil(boundingRect.height)
+    }
 }
+
+

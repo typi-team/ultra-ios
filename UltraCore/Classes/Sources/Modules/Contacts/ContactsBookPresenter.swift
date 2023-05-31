@@ -54,34 +54,37 @@ extension ContactsBookPresenter: ContactsBookPresenterInterface {
     func initial() {
         self.bookContacts
             .executeSingle(params: ())
-            .do(onSuccess: { [weak self] state in
-                guard let `self` = self else { return }
-                DispatchQueue.main.async {
-                    switch state {
-                    case .denied:
-                        self.view.permission(is: true)
-                    case .authorized:
-                        self.view.permission(is: false)
-                    }
-                }
-            })
+//            .do(onSuccess: { [weak self] state in
+//                guard let `self` = self else { return }
+//                DispatchQueue.main.async {
+//                    switch state {
+//                    case .denied:
+//                        self.view.permission(is: true)
+//                    case .authorized:
+//                        self.view.permission(is: false)
+//                    }
+//                }
+//            })
             .flatMap({ [weak self] result -> Single<ContactImportResponse> in
                 guard let `self` = self else { throw NSError.selfIsNill }
+                if result.contacts.isEmpty {
+                    return Single.just(ContactImportResponse())
+                }
                 var request = ContactsImportRequest()
                 request.contacts = result.contacts
                 return self.syncContact.executeSingle(params: request)
             })
-            .do(onSuccess: {[weak self] result in
+            .do(onSuccess: { [weak self] result in
                 guard let `self` = self else { throw NSError.selfIsNill }
                 self.runDownloadingImage(for: result.contacts)
             })
-            .flatMap({ [weak self] response -> Single<Void> in
+            .flatMap({ [weak self] response -> Single<[Contact]> in
                 guard let `self` = self else { throw NSError.selfIsNill }
-                return self.contactsRepository.save(contacts: response)
+                return self.contactsRepository.save(contacts: response).map({ response.contacts })
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
-            .subscribe(onSuccess: { Logger.info("Contacts saved on db") })
+            .subscribe(onSuccess: { contacts in Logger.info("Contacts \(contacts.count)pcs saved on db") })
             .disposed(by: self.disposeBag)
     }
     

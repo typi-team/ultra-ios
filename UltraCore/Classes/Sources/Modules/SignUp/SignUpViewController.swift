@@ -173,7 +173,7 @@ extension SignUpViewController: SignUpViewInterface {
 
 extension SignUpViewController {
     func handleButtonEnabling() {
-        let isEnabled = (self.phoneTextField.text ?? "").trimNumber.isValidPhone && (self.firstTextField.text ?? "").count > 1
+        let isEnabled = (self.phoneTextField.text ?? "").count > 5 && (self.firstTextField.text ?? "").count > 1
         self.nextButton.isEnabled = isEnabled
         self.nextButton.backgroundColor = isEnabled ? .green600 : .green100
     }

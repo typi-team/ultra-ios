@@ -18,6 +18,7 @@ protocol ContactsBookWireframeInterface: WireframeInterface {
 
 protocol ContactsBookViewInterface: ViewInterface {
     func permission(is denied: Bool)
+    func contacts(is empty: Bool)
 }
 
 
