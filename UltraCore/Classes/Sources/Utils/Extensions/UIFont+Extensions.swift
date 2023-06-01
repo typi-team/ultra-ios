@@ -16,6 +16,10 @@ extension UIFont {
     class var defaultRegularSubHeadline: UIFont {
         return UIFont.systemFont(ofSize: 15.0, weight: .regular)
     }
+    
+    class var defaultRegularBoldSubHeadline: UIFont {
+        return UIFont.systemFont(ofSize: 15.0, weight: .bold)
+    }
 
     class var defaultRegularBody: UIFont {
         return UIFont.systemFont(ofSize: 17.0, weight: .regular)
@@ -31,5 +35,12 @@ extension UIFont {
 
     class var defaultRegularCaption3: UIFont {
         return UIFont.systemFont(ofSize: 10.0, weight: .regular)
+    }
+}
+
+
+extension UIFont {
+    static func `default`(of size: CGFloat, and weight: Weight = .regular) -> UIFont {
+        return UIFont.systemFont(ofSize: size, weight: weight)
     }
 }

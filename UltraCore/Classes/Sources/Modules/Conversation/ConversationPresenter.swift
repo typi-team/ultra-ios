@@ -16,15 +16,19 @@ final class ConversationPresenter {
 
     // MARK: - Private properties -
     
-    final let conversation: Conversation
+    var conversation: Conversation
     
     fileprivate let userID: String
     fileprivate let disposeBag = DisposeBag()
+    fileprivate let updateRepository: UpdateRepository
     private unowned let view: ConversationViewInterface
     fileprivate let messageRepository: MessageRepository
+    fileprivate let contactRepository: ContactsRepository
     private let wireframe: ConversationWireframeInterface
     fileprivate let conversationRepository: ConversationRepository
+    private let sendTypingInteractor: UseCase<String, SendTypingResponse>
     private let messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>
+    
 
     // MARK: - Public properties -
 
@@ -35,15 +39,21 @@ final class ConversationPresenter {
     init(userID: String,
          conversation: Conversation,
          view: ConversationViewInterface,
+         updateRepository: UpdateRepository,
          messageRepository: MessageRepository,
+         contactRepository: ContactsRepository,
          wireframe: ConversationWireframeInterface,
          conversationRepository: ConversationRepository,
+         sendTypingInteractor: UseCase<String, SendTypingResponse>,
          messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>) {
         self.view = view
         self.userID = userID
         self.wireframe = wireframe
         self.conversation = conversation
+        self.updateRepository = updateRepository
+        self.contactRepository = contactRepository
         self.messageRepository = messageRepository
+        self.sendTypingInteractor = sendTypingInteractor
         self.conversationRepository = conversationRepository
         self.messageSenderInteractor = messageSenderInteractor
     }
@@ -52,9 +62,44 @@ final class ConversationPresenter {
 // MARK: - Extensions -
 
 extension ConversationPresenter: ConversationPresenterInterface {
+    func typing(is active: Bool) {
+        self.sendTypingInteractor
+            .executeSingle(params: conversation.idintification)
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe()
+            .disposed(by: disposeBag)
+    }
+    
     
     func viewDidLoad() {
         self.view.setup(conversation: conversation)
+        self.updateRepository.typingUsers
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .map { [weak self] users -> UserTypingWithDate? in
+                guard let `self` = self else { return nil }
+                return users[self.conversation.idintification]
+            }
+            .compactMap { $0 }
+            .subscribe (onNext: { [weak self] typingUser in
+                guard let `self` = self else { return }
+                self.view.display(is: typingUser)
+            })
+            .disposed(by: disposeBag)
+        
+        if let userID = self.conversation.peer?.userID {
+            self.contactRepository
+                .contacts()
+                .map { $0.filter({ contact in contact.userID == userID }) }
+                .compactMap({ $0.first })
+                .subscribe(onNext: { [weak self] contact in
+                    guard let `self` = self else { return }
+                    self.conversation.peer = contact
+                    self.view.setup(conversation: self.conversation)
+                })
+                .disposed(by: disposeBag)
+        }
     }
     
     func send(message text: String) {
@@ -96,7 +141,6 @@ extension ConversationPresenter: ConversationPresenterInterface {
 
                 return self.messageRepository.update(message: message)
             })
-
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()

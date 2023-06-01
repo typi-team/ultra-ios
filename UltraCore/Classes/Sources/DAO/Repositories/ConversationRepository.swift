@@ -10,7 +10,7 @@ import RealmSwift
 
 protocol ConversationRepository {
     func createIfNotExist(from message: Message) -> Single<Void>
-    func conversations() -> Observable<Results<DBConversation>>
+    func conversations() -> Observable<[Conversation]>
 }
 
 class ConversationRepositoryImpl {
@@ -25,7 +25,6 @@ class ConversationRepositoryImpl {
 //        try! realm.write({
 //            realm.deleteAll()
 //        })
-        
     }
 }
 
@@ -34,7 +33,7 @@ extension ConversationRepositoryImpl: ConversationRepository {
         return self.conversationService.createIfNotExist(from: message)
     }
     
-    func conversations() -> Observable<Results<DBConversation>> {
+    func conversations() -> Observable<[Conversation]> {
         return self.conversationService.conversations()
     }
 }

@@ -26,18 +26,15 @@ final class SignUpWireframe: BaseWireframe<SignUpViewController> {
         moduleViewController.presenter = presenter
         
     }
-    
-    func start(presentation controller: UIViewController) {
-        let navigation  = UINavigationController.init(rootViewController: self.viewController)
-        navigation.navigationBar.tintColor = .gray500
-        navigation.modalPresentationStyle = .fullScreen
-        controller.present(navigation, animated: true)
-    }
 }
 
 // MARK: - Extensions -
 extension SignUpWireframe: SignUpWireframeInterface {
     func navigateToContacts() {
-        self.navigationController?.pushWireframe(ConversationsWireframe(), removeFromStack: self.viewController)
+        let wireframe = ConversationsWireframe()
+        let presentController = wireframe.viewController
+        self.navigationController?.pushViewController(presentController, animated: true)
+        self.navigationController?.viewControllers.removeAll(where: {$0 == self.viewController})
     }
 }
+ 

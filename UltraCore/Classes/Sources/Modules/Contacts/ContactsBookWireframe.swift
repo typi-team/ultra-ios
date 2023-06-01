@@ -20,9 +20,11 @@ final class ContactsBookWireframe: BaseWireframe<ContactsBookViewController> {
         let moduleViewController = ContactsBookViewController()
         super.init(viewController: moduleViewController)
         
+//        let imageDownloadInteractor = ImageDownloadInteractor.init(client: appSettings.fileService)
         let syncInteractor = SyncContactsInteractor.init(contactsService: appSettings.contactsService)
         let presenter = ContactsBookPresenter(view: moduleViewController, contactsRepository: appSettings.contactRepository,
                                               wireframe: self,
+//                                              fileDownloadService: imageDownloadInteractor,
                                               syncContact: syncInteractor,
                                               bookContacts: ContactsBookInteractor())
         moduleViewController.presenter = presenter
@@ -33,7 +35,7 @@ final class ContactsBookWireframe: BaseWireframe<ContactsBookViewController> {
 // MARK: - Extensions -
 
 extension ContactsBookWireframe: ContactsBookWireframeInterface {
-    func openConversation(with contact: DBContact) {
+    func openConversation(with contact: ContactDisplayable) {
         self.navigationController?.pushWireframe(ConversationWireframe(with: ConversationImpl(contact: contact)))
     }
 }

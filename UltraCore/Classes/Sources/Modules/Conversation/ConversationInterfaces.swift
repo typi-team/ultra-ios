@@ -16,11 +16,12 @@ protocol ConversationWireframeInterface: WireframeInterface {
 
 protocol ConversationViewInterface: ViewInterface {
     func setup(conversation: Conversation)
-    
+    func display(is typing: UserTypingWithDate)
 }
 
 protocol ConversationPresenterInterface: PresenterInterface {
+    func viewDidLoad()
+    func typing(is active: Bool)
     func send(message text: String)
     var messages: Observable<Results<DBMessage>> { get set }
-    func viewDidLoad()
 }

@@ -9,12 +9,15 @@ import Foundation
 
 class ProfileNavigationView: UIView {
     
+    fileprivate var conversation: Conversation?
     fileprivate let headlineText: HeadlineBody = .init()
     fileprivate let sublineText: RegularFootnote = .init()
     
     fileprivate let avatarImageView: UIImageView = .init {
         $0.borderWidth = 1
-        $0.cornerRadius = 22
+        $0.cornerRadius = 20
+        $0.borderColor = .green500
+        $0.backgroundColor = .gray100
         $0.frame.size = .init(width: 40, height: 40)
     }
     
@@ -32,10 +35,10 @@ class ProfileNavigationView: UIView {
     
     func setupConstraints() {
         self.avatarImageView.snp.makeConstraints { make in
-            make.top.equalToSuperview()
+            make.width.height.equalTo(40)
             make.left.equalToSuperview()
-            make.bottom.equalToSuperview()
-            make.width.height.equalTo(44)
+            make.top.equalToSuperview()
+            make.bottom.equalToSuperview().offset(-(kLowPadding / 2))
         }
         
         self.headlineText.snp.makeConstraints { make in
@@ -47,7 +50,7 @@ class ProfileNavigationView: UIView {
         self.sublineText.snp.makeConstraints { make in
             make.right.equalToSuperview()
             make.bottom.equalTo(self.avatarImageView.snp.bottom)
-            make.top.equalTo(self.headlineText.snp.bottom).offset(kLowPadding)
+            make.top.equalTo(self.headlineText.snp.bottom).offset(kLowPadding / 2)
             make.left.equalTo(self.avatarImageView.snp.right).offset(kMediumPadding)
         }
     }
@@ -59,9 +62,51 @@ class ProfileNavigationView: UIView {
     }
     
     func setup(conversation: Conversation) {
-        self.avatarImageView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
+        self.conversation = conversation
         self.headlineText.text = conversation.title
         self.sublineText.text = conversation.lastMessage?.description
+        if let contact = conversation.peer {
+            self.avatarImageView.config(contact: contact)
+        } else {
+            self.avatarImageView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
+        }
         
+        if let contact = conversation.peer {
+            self.sublineText.text = contact.status.displayText
+            self.sublineText.textColor = contact.status.color
+        }
+    }
+    
+    func setup(user typing: UserTypingWithDate) {
+        if typing.isTyping {
+            self.sublineText.textColor = .gray500
+            self.sublineText.text = "печатает..."
+        } else if let conversation = self.conversation {
+            self.setup(conversation: conversation)
+        }
+    }
+}
+
+extension UserStatus {
+    var displayText: String {
+        switch status {
+        case .unknown:
+            return "Неизвестно"
+        case .online:
+            return "онлайн"
+        case .offline:
+            return self.lastSeen.date(format: .dayAndHourMinute)
+        case .away:
+            return self.lastSeen.date(format: .dayAndHourMinute)
+        case .UNRECOGNIZED:
+            return self.lastSeen.date(format: .dayAndHourMinute)
+        }
+    }
+    
+    var color: UIColor {
+        switch status {
+        case .online: return .green600
+        default: return .gray500
+        }
     }
 }

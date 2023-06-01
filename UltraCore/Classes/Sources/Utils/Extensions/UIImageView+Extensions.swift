@@ -14,20 +14,33 @@ extension UIImageView {
         case initial(text: String)
     }
 
+    func config(contact: ContactDisplayable) {
+        self.contentMode = .scaleAspectFit
+        if let image = contact.image {
+            self.image = image
+            self.borderWidth = 1
+        } else {
+            self.borderWidth = 2
+            self.loadImage(by: nil, placeholder: .initial(text: contact.displaName.initails))
+        }
+    }
+    
+    
     func loadImage(by path: String?, placeholder: PlaceholderType = .square) {
+        self.contentMode = .scaleAspectFit
         switch placeholder {
-        case .initial(text: let text):
+        case let .initial(text: text):
             if let image = self.imageFromCache(forKey: text) {
                 self.image = image
-            }else if  let image = self.generateAvatarImage(forUsername: text, size: self.frame.size == .zero ? CGSize.init(width: 64, height: 64) : self.frame.size) {
+            } else if let image = self.generateAvatarImage(forUsername: text, size: self.frame.size == .zero ? CGSize(width: 64, height: 64) : self.frame.size) {
                 self.saveImageToCache(image, forKey: text)
                 self.image = image
             } else {
                 self.image = placeholder.image
             }
+
         default:
             self.image = placeholder.image
-            self.contentMode = .scaleAspectFit
             self.sd_setImage(with: path?.url, placeholderImage: placeholder.image)
         }
     }
@@ -46,13 +59,13 @@ extension UIImageView {
         // Draw circle
         context.addEllipse(in: frame)
         context.clip()
-        context.setFillColor(UIColor.white.cgColor)
+        context.setFillColor(UIColor.clear.cgColor)
         context.fill(frame)
         
         // Draw initials
         let attributes: [NSAttributedString.Key: Any] = [
             .foregroundColor: UIColor.green500,
-            .font: UIFont.systemFont(ofSize: size.width/2, weight: .bold)
+            .font: UIFont.default(of: size.width / 2, and: .bold)
         ]
         let initials = String(username.prefix(2)).uppercased()
         let initialsString = NSAttributedString(string: initials, attributes: attributes)
@@ -88,6 +101,12 @@ extension UIImageView.PlaceholderType {
 
 extension UIImage {
     static func named(_ name: String) -> UIImage? {
+        let bundle = Bundle(for: AppSettingsImpl.self)
+        if let resourceURL = bundle.url(forResource: "UltraCore", withExtension: "bundle"),
+           let resourceBundle = Bundle(url: resourceURL) {
+            let image = UIImage(named: name, in: resourceBundle, compatibleWith: nil)
+            return image
+        }
         return UIImage(named: name, in: AppSettingsImpl.shared.podAsset, compatibleWith: nil)
     }
 }

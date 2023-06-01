@@ -18,8 +18,12 @@ class ConversationCell: BaseCell {
     })
     
     fileprivate let titleView: RegularCallout = .init()
-    fileprivate let descriptionView: RegularFootnote = .init()
-    fileprivate let lastSeenView: RegularFootnote = .init()
+    fileprivate let descriptionView: RegularFootnote = .init({
+        $0.numberOfLines = 1
+    })
+    fileprivate let lastSeenView: RegularFootnote = .init({
+        $0.textAlignment = .right
+    })
     fileprivate let unreadView: LabelWithInsets = .init({
         $0.font = .defaultRegularFootnote
         $0.textColor = .white
@@ -43,14 +47,14 @@ class ConversationCell: BaseCell {
         super.setupConstraints()
         
         self.avatarView.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(14)
+            make.top.equalToSuperview().offset(12)
             make.left.equalToSuperview().offset(20)
             make.width.equalTo(40)
-            make.bottom.equalToSuperview().offset(-14)
+            make.bottom.equalToSuperview().offset(-12)
         }
         
         self.titleView.snp.makeConstraints { make in
-            make.top.equalTo(self.avatarView.snp.top)
+            make.top.equalToSuperview().offset(10)
             make.left.equalTo(self.avatarView.snp.right).offset(kMediumPadding)
         }
 
@@ -61,9 +65,9 @@ class ConversationCell: BaseCell {
         }
 
         self.descriptionView.snp.makeConstraints { make in
-            make.top.greaterThanOrEqualTo(titleView.snp.bottom).offset(kLowPadding)
+            make.top.greaterThanOrEqualTo(titleView.snp.bottom).offset(2)
             make.left.equalTo(avatarView.snp.right).offset(kMediumPadding)
-            make.bottom.greaterThanOrEqualTo(avatarView.snp.bottom)
+            make.bottom.equalToSuperview().offset(-10)
         }
 
         self.unreadView.snp.makeConstraints { make in
@@ -80,6 +84,29 @@ class ConversationCell: BaseCell {
         self.unreadView.text = conversation.unreadCount.description
         self.lastSeenView.text = conversation.timestamp.formattedTime()
         self.avatarView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
-        
+        self.setupTyping(conversation: conversation)
+        self.setupAvatar(conversation: conversation)
+    }
+    
+    private func setupAvatar(conversation: Conversation) {
+        if let contact = conversation.peer {
+            self.avatarView.config(contact: contact)
+        } else {
+            self.avatarView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
+        }
+    }
+    
+    private func setupTyping(conversation: Conversation) {
+        let typingUsers = conversation.typingData.filter({$0.isTyping})
+        if typingUsers.isEmpty {
+            self.descriptionView.text = conversation.lastMessage
+        } else {
+            self.descriptionView.text = "печатает..."
+        }
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        self.avatarView.image = nil
     }
 }

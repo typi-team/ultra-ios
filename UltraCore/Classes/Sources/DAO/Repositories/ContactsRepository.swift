@@ -12,7 +12,7 @@ import RxDataSources
 import Foundation
 
 protocol ContactsRepository {
-    func contacts() -> Observable<Results<DBContact>>
+    func contacts() -> Observable<[Contact]>
     func contact(id: String) -> DBContact?
     func save(contact: DBContact) -> Single<Void>
     func save(contacts: ContactImportResponse) -> Single<Void>
@@ -28,7 +28,7 @@ class ContactsRepositoryImpl: ContactsRepository {
         self.contactDBService = contactDBService
     }
     
-    func contacts() -> RxSwift.Observable<RealmSwift.Results<DBContact>> {
+    func contacts() -> Observable<[Contact]> {
         return self.contactDBService.contacts()
     }
     

@@ -19,10 +19,15 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     
     // MARK: - Views
     
+    fileprivate let navigationDivider: UIView = .init({
+        $0.backgroundColor = .gray200
+    })
+    
     private lazy var tableView: UITableView = .init {[weak self] tableView in
         guard let `self` = self else { return }
         tableView.separatorStyle = .none
         tableView.tableFooterView = UIView()
+        tableView.allowsSelection = false 
         tableView.registerCell(type: BaseMessageCell.self)
         tableView.registerCell(type: IncomeMessageCell.self)
         tableView.registerCell(type: OutgoingMessageCell.self)
@@ -34,6 +39,11 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         })
     }
     
+    fileprivate lazy var messageHeadline: SubHeadline = .init({
+        $0.textColor = .gray500
+        $0.textAlignment = .center
+        $0.isUserInteractionEnabled = false
+    })
     private lazy var headline: ProfileNavigationView = .init()
     private lazy var messageInputBar: MessageInputBar = .init({ [weak self] inputBar in
         inputBar.delegate = self
@@ -45,7 +55,9 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.handleKeyboardTransmission = true
         super.setupViews()
         view.addSubview(tableView)
+        view.addSubview(messageHeadline)
         view.addSubview(messageInputBar)
+        view.addSubview(navigationDivider)
         
         navigationItem.leftItemsSupplementBackButton = true
         navigationItem.leftBarButtonItem = .init(customView: self.headline)
@@ -53,13 +65,24 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     
     override func setupConstraints() {
         super.setupConstraints()
-        tableView.snp.makeConstraints { make in
+        self.navigationDivider.snp.makeConstraints { make in
+            make.height.equalTo(1)
             make.top.equalTo(view.safeAreaLayoutGuide.snp.topMargin)
+            make.left.right.equalToSuperview()
+        }
+        
+        self.tableView.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
+            make.top.equalTo(navigationDivider.snp.bottom)
             make.bottom.equalTo(messageInputBar.snp.topMargin).offset(-10)
         }
         
-        messageInputBar.snp.makeConstraints { make in
+        self.messageHeadline.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview()
+            make.bottom.equalTo(messageInputBar.snp.topMargin).offset(-kMediumPadding)
+        }
+        
+        self.messageInputBar.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin)
         }
@@ -70,6 +93,9 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         
         self.presenter?
             .messages
+            .do(onNext: {[weak self] messages in
+                self?.messageHeadline.text = messages.isEmpty ? "В этом чате нет сообщений" : ""
+            })
             .do(onNext: { [weak self ] result in
                 guard let `self` = self, !self.isDrawingTable else {
                     return
@@ -80,7 +106,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                     let lastRowIndex = self.tableView.numberOfRows(inSection: 0) - 1
                     if lastRowIndex < 0 { return }
                     let indexPath = IndexPath(row: lastRowIndex, section: 0)
-                    self.tableView.scrollToRow(at: indexPath, at: .top, animated: !isEmpty)
+                    self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: !isEmpty)
                     self.isDrawingTable = false
                 })
             })
@@ -102,9 +128,15 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     }
     
     override func changed(keyboard height: CGFloat) {
-        messageInputBar.snp.updateConstraints { make in
-                make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin).offset(-height)
-            
+        
+        if let indexPath = self.tableView.indexPathsForVisibleRows?.last {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
+                self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: false)
+            })
+        }
+        
+        self.messageInputBar.snp.updateConstraints { make in
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin).offset(height > 0 ? -(height - 36) : 0)
         }
     }
 }
@@ -112,12 +144,24 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     // MARK: - UITextViewDelegate
 
 extension ConversationViewController: MessageInputBarDelegate {
+    func pressedPlus(in view: MessageInputBar) {
+        self.showAlert(from: "Данная функция еще в разработке")
+    }
+    
+    func pressedDone(in view: MessageInputBar) {
+        self.view.endEditing(true)
+    }
+    
+    func typing(is active: Bool) {
+        self.presenter?.typing(is: active)
+    }
+    
     func exchanges() {
-
+        self.showAlert(from: "Данная функция еще в разработке")
     }
     
     func micro(isActivated: Bool) {
-        
+        self.showAlert(from: "Данная функция еще в разработке")
     }
     
     func message(text: String) {
@@ -128,6 +172,11 @@ extension ConversationViewController: MessageInputBarDelegate {
 // MARK: - Extensions -
 
 extension ConversationViewController: ConversationViewInterface {
+    
+    func display(is typing: UserTypingWithDate) {
+        self.headline.setup(user: typing)
+    }
+    
     func setup(conversation: Conversation) {
         self.headline.setup(conversation: conversation)
     }

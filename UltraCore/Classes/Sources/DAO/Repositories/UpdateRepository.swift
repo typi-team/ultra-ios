@@ -8,12 +8,43 @@
 import Foundation
 import RxSwift
 
+struct UserTypingWithDate: Hashable {
+    var chatId: String
+    var userId: String
+    var createdAt: Date
+    
+    init(chatId: String, userId: String, createdAt: Date = Date()) {
+        self.chatId = chatId
+        self.userId = userId
+        self.createdAt = createdAt
+    }
+    
+    
+    init(user typing: UserTyping) {
+        self.createdAt = Date()
+        self.chatId = typing.chatID
+        self.userId = typing.userID
+    }
+    
+    var isTyping: Bool {
+        return Date().timeIntervalSince(createdAt) < kTypingMinInterval
+    }
+    
+    static func == (lhs: UserTypingWithDate, rhs: UserTypingWithDate) -> Bool {
+        return lhs.chatId == rhs.chatId
+    }
+}
+
 protocol UpdateRepository: AnyObject {
     func setupSubscription()
     func sendPoingByTimer()
+    var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> { get set }
 }
 
 class UpdateRepositoryImpl {
+    
+    var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> = .init(value: [:])
+    
     fileprivate let appStore: AppSettingsStore
     
     fileprivate let contactService: ContactDBService
@@ -46,8 +77,8 @@ extension UpdateRepositoryImpl: UpdateRepository {
                 .response
                 .whenComplete { result in
                     switch result {
-                    case let .success(response):
-                        Logger.debug(response.textFormatString())
+                    case .success:
+                        break
                     case let .failure(error):
                         Logger.error(error.localizedDescription)
                         timer.invalidate()
@@ -57,7 +88,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
     }
     
     func setupSubscription() {
-        
+
         let state: ListenRequest = .with { $0.localState = .with { $0.state = UInt64(appStore.lastState) } }
         let call = self.update.listen(state, callOptions: .default()) { [weak self] response in
             guard let `self` = self else { return }
@@ -65,7 +96,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
             response.updates.forEach { update in
                 if let ofUpdate = update.ofUpdate {
                     switch ofUpdate {
-                        
+
                     case let .message(message):
                         self.update(message: message)
                     case let .contact(contact):
@@ -80,6 +111,22 @@ extension UpdateRepositoryImpl: UpdateRepository {
                         Logger.debug(chat.textFormatString())
                     case let .moneyTransferStatus(status):
                         Logger.debug(status.textFormatString())
+                    }
+                } else if let presence = update.ofPresence {
+                    switch presence {
+                    case let .typing(typing):
+                        self.handle(user: typing)
+                    case let .audioRecording(pres):
+                        Logger.debug(pres.textFormatString())
+                    case let .userStatus(userStatus):
+                        guard var contact = self.contactService.contact(id: userStatus.userID)?.toProto() else {
+                            return
+                        }
+                        contact.status = userStatus
+                        self.update(contact: contact)
+
+                    case let .mediaUploading(pres):
+                        Logger.debug(pres.textFormatString())
                     }
                 }
             }
@@ -111,9 +158,34 @@ extension UpdateRepositoryImpl {
         }
     }
     func update(contact: Contact) {
-        self.contactService.save(contact: DBContact.init(from: contact,user: self.appStore.userID()))
+        self.contactService.save(contact: DBContact.init(from: contact, user: self.appStore.userID()))
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .subscribe()
             .dispose()
+    }
+}
+
+extension UpdateRepository {
+    func handle(user typing: UserTyping) {
+        guard var users = try? typingUsers.value() else {
+            return
+        }
+        
+        users[typing.chatID] = .init(user: typing)
+        self.typingUsers.on(.next(users))
+        self.handleRemove(user: typing)
+        
+    }
+    
+    func handleRemove(user typing: UserTyping) {
+        DispatchQueue.global().asyncAfter(deadline: .now() + 3) {[weak self]  in
+            guard let `self` = self else { return }
+            guard let users = try? self.typingUsers.value(),
+                  let createdAt = users[typing.chatID]?.createdAt,
+                  Date().timeIntervalSince(createdAt) > kTypingMinInterval else {
+                return
+            }
+            typingUsers.on(.next(users))
+        }
     }
 }

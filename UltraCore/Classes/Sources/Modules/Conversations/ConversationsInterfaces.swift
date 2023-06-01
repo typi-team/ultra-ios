@@ -21,7 +21,7 @@ protocol ConversationsViewInterface: ViewInterface {
 }
 
 protocol ConversationsPresenterInterface: PresenterInterface {
-    var conversation: Observable<Results<DBConversation>> { get set }
+    var conversation: Observable<[Conversation]> { get set }
     
     func navigateToContacts()
     func setupUpdateSubscription()

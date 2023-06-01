@@ -10,6 +10,7 @@ protocol AppSettings: Any {
     var appStore: AppSettingsStore { get set }
     var messageRespository: MessageRepository { get }
     var contactRepository: ContactsRepository { get }
+    var fileService: FileServiceClientProtocol { get }
     var authService: AuthServiceClientProtocol { get }
     var messageService: MessageServiceClientProtocol { get }
     var contactsService: ContactServiceClientProtocol { get }
@@ -24,7 +25,7 @@ open class AppSettingsImpl:AppSettings  {
 //    MARK: Public properties
 
     public var portOfServer: Int = 8080
-    public var pathToServer: String = "ultra-dev.typi.team"
+    public var pathToServer: String = "ultra-test.typi.team"
 
 //    MARK: Local Singletone properties
 
@@ -33,13 +34,20 @@ open class AppSettingsImpl:AppSettings  {
     lazy var version: String = podAsset?.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.2"
     lazy var channel: GRPCChannel = try! GRPCChannelPool.with(target: .host(pathToServer, port: portOfServer),
                                                               transportSecurity: .plaintext, eventLoopGroup: group)
+    
+    lazy var fileChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(pathToServer, port: portOfServer),
+                                                              transportSecurity: .plaintext, eventLoopGroup: group)
+    
+    lazy var updateChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(pathToServer, port: portOfServer),
+                                                              transportSecurity: .plaintext, eventLoopGroup: group)
 
 //    MARK: GRPC Services
     
     lazy var authService: AuthServiceClientProtocol = AuthServiceNIOClient(channel: channel)
-    lazy var updateService: UpdatesServiceClientProtocol = UpdatesServiceNIOClient(channel: channel)
+    lazy var fileService: FileServiceClientProtocol = FileServiceNIOClient(channel: fileChannel)
     lazy var messageService: MessageServiceClientProtocol = MessageServiceNIOClient(channel: channel)
     lazy var contactsService: ContactServiceClientProtocol = ContactServiceNIOClient(channel: channel)
+    lazy var updateService: UpdatesServiceClientProtocol = UpdatesServiceNIOClient(channel: updateChannel)
 
 //    MARK: Services
 
@@ -61,20 +69,16 @@ open class AppSettingsImpl:AppSettings  {
     lazy var conversationRespository: ConversationRepository = ConversationRepositoryImpl(conversationService: conversationDBService)
 }
 
-public func showSignUp(view controller: UIViewController) {
+public func entryViewController() -> UIViewController {
     
-    UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor: UIColor.clear], for: .normal)
     UIBarButtonItem.appearance().title = ""
-    
-    
+    UIBarButtonItem.appearance().tintColor = .green500
+    UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.font: UIFont.defaultRegularHeadline]
+    UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor: UIColor.clear], for: .normal)
     UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor: UIColor.clear], for: UIControlState.highlighted)
 
-    
-    if AppSettingsImpl.shared.appStore.isAuthed {
-        let wireframe = ConversationsWireframe()
-        wireframe.presentWithNavigation(presentation: controller)
-    } else {
-        let wireframe = SignUpWireframe.init()
-        wireframe.start(presentation: controller)
-    }
+    let controller = AppSettingsImpl.shared.appStore.isAuthed ?
+        ConversationsWireframe().viewController : SignUpWireframe().viewController
+    controller.hidesBottomBarWhenPushed = false
+    return controller
 }

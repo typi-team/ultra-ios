@@ -57,6 +57,12 @@ extension UIViewController {
     func presentWireframe<ViewController>(_ wireframe: BaseWireframe<ViewController>, animated: Bool = true, completion: (() -> Void)? = nil) {
         present(wireframe.viewController, animated: animated, completion: completion)
     }
+    
+    func presentWireframeWithNavigation<ViewController>(_ wireframe: BaseWireframe<ViewController>, animated: Bool = true, completion: (() -> Void)? = nil) {
+        let viewController = UINavigationController.init(rootViewController:  wireframe.viewController)
+        viewController.modalPresentationStyle = .fullScreen
+        present(viewController, animated: animated, completion: completion)
+    }
 
 }
 
@@ -65,7 +71,9 @@ extension UINavigationController {
     func pushWireframe<ViewController>(_ wireframe: BaseWireframe<ViewController>,
                                        animated: Bool = true,
                                        removeFromStack controller: UIViewController? = nil) {
-        pushViewController(wireframe.viewController, animated: animated)
+        let presentController = wireframe.viewController
+        presentController.hidesBottomBarWhenPushed = true
+        pushViewController(presentController, animated: animated)
         viewControllers.removeAll(where: { $0 == controller })
         
     }

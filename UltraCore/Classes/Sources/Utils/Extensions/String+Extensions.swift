@@ -17,4 +17,8 @@ extension String {
         }
         return initials
     }
+    
+    var isValidPhone: Bool {
+        return self.starts(with: "+7") && count == 12
+    }
 }
