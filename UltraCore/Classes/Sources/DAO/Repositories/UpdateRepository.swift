@@ -45,8 +45,8 @@ class UpdateRepositoryImpl {
     
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> = .init(value: [:])
     
+    fileprivate let disposeBag = DisposeBag()
     fileprivate let appStore: AppSettingsStore
-    
     fileprivate let contactService: ContactDBService
     fileprivate let messageService: MessageDBService
     fileprivate let update: UpdatesServiceClientProtocol
@@ -102,9 +102,9 @@ extension UpdateRepositoryImpl: UpdateRepository {
                     case let .contact(contact):
                         self.update(contact: contact)
                     case let .messagesDelivered(message):
-                        Logger.debug(message.textFormatString())
+                        self.messagesDelivered(message: message)
                     case let .messagesRead(message):
-                        Logger.debug(message.textFormatString())
+                        self.messagesReaded(message: message)
                     case let .messagesDeleted(message):
                         Logger.debug(message.textFormatString())
                     case let .chatDeleted(chat):
@@ -165,7 +165,7 @@ extension UpdateRepositoryImpl {
     }
 }
 
-extension UpdateRepository {
+extension UpdateRepositoryImpl {
     func handle(user typing: UserTyping) {
         guard var users = try? typingUsers.value() else {
             return
@@ -187,5 +187,23 @@ extension UpdateRepository {
             }
             typingUsers.on(.next(users))
         }
+    }
+    
+    func messagesDelivered(message delivered: MessagesDelivered) {
+        self.messageService
+            .delivered(message: delivered)
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .subscribe()
+            .disposed(by: disposeBag)
+        
+    }
+    
+    func messagesReaded(message delivered: MessagesRead) {
+        self.messageService
+            .readed(message: delivered)
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .subscribe()
+            .disposed(by: disposeBag)
+        
     }
 }

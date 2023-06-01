@@ -61,7 +61,7 @@ class DBMessage: Object {
     func toProto() -> Message {
         var message = Message()
         message.id = id
-        message.state = state!.state
+        message.state = state!.toProto()
         message.chatType = ChatTypeEnum(rawValue: chatType) ?? ChatTypeEnum.peerToPeer
         message.seqNumber = UInt64(seqNumber)
         message.type = MessageTypeEnum.init(rawValue: self.type) ?? MessageTypeEnum.text
@@ -95,11 +95,13 @@ class DBMessageState: Object {
         self.edited = messageState.edited
     }
     
-    lazy var state: MessageState = .with({
-        $0.read = self.read
-        $0.edited = self.edited
-        $0.delivered = self.delivered
-    })
+    func toProto() ->  MessageState {
+        return .with({
+            $0.read = self.read
+            $0.edited = self.edited
+            $0.delivered = self.delivered
+        })
+    }
 }
 
 class DBReceiver: Object {

@@ -41,6 +41,49 @@ class MessageDBService {
             return Disposables.create()
         }
     }
+    
+    //  MARK: Обновить сообщения как доставлено в базе данных
+    func delivered(message data: MessagesDelivered) -> Single<Bool> {
+        return Single.create { completable in
+            do {
+                let realm = Realm.myRealm()
+                try realm.write {
+                    let messagesInDB = realm.objects(DBMessage.self)
+                        .where({ $0.receiver.chatID.equals(data.chatID) })
+                        .where({ $0.seqNumber <= Int64(data.maxSeqNumber) })
+                    messagesInDB.forEach { message in
+                        message.state?.delivered = true
+                    }
+                }
+                completable(.success(true))
+            } catch {
+                completable(.failure(error))
+            }
+            return Disposables.create()
+        }
+    }
+    
+    //  MARK: Обновить сообщения как прочитанный в базе данных
+    func readed(message data: MessagesRead) -> Single<Bool> {
+        return Single.create { completable in
+            do {
+                let realm = Realm.myRealm()
+                try realm.write {
+                    let messagesInDB = realm.objects(DBMessage.self)
+                        .where({ $0.receiver.chatID.equals(data.chatID) })
+                        .where({ $0.seqNumber <= Int64(data.maxSeqNumber) })
+                    messagesInDB.forEach { message in
+                        message.state?.read = true
+                        message.state?.delivered = true
+                    }
+                }
+                completable(.success(true))
+            } catch {
+                completable(.failure(error))
+            }
+            return Disposables.create()
+        }
+    }
 
 //   MARK: Получение всех сообщений в чате
     func messages(chatID: String) -> Observable<RealmSwift.Results<DBMessage>> {
