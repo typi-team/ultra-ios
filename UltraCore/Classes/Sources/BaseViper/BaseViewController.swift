@@ -51,6 +51,15 @@ extension UIViewController {
         self.present(alert, animated: true)
     }
     
+    func showSettingAlert(from message: String, with title: String? = nil) {
+        let alert = UIAlertController.init(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction.init(title: "Настройки", style: .default, handler: { _ in
+            UIApplication.shared.open(URL(string: UIApplicationOpenSettingsURLString)!, options: [:], completionHandler: nil)
+        }))
+        alert.addAction(UIAlertAction.init(title: "Закрыть", style: UIAlertActionStyle.destructive))
+        self.present(alert, animated: true)
+    }
+    
     @objc func registerKeyboardNotification() {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)

@@ -29,15 +29,16 @@ extension UIImageView {
     func loadImage(by path: String?, placeholder: PlaceholderType = .square) {
         self.contentMode = .scaleAspectFit
         switch placeholder {
-        case .initial(text: let text):
+        case let .initial(text: text):
             if let image = self.imageFromCache(forKey: text) {
                 self.image = image
-            }else if  let image = self.generateAvatarImage(forUsername: text, size: self.frame.size == .zero ? CGSize.init(width: 64, height: 64) : self.frame.size) {
+            } else if let image = self.generateAvatarImage(forUsername: text, size: self.frame.size == .zero ? CGSize(width: 64, height: 64) : self.frame.size) {
                 self.saveImageToCache(image, forKey: text)
                 self.image = image
             } else {
                 self.image = placeholder.image
             }
+
         default:
             self.image = placeholder.image
             self.sd_setImage(with: path?.url, placeholderImage: placeholder.image)
@@ -58,7 +59,7 @@ extension UIImageView {
         // Draw circle
         context.addEllipse(in: frame)
         context.clip()
-        context.setFillColor(self.backgroundColor?.cgColor ?? UIColor.white.cgColor)
+        context.setFillColor(UIColor.clear.cgColor)
         context.fill(frame)
         
         // Draw initials

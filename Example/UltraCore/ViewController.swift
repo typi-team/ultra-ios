@@ -20,6 +20,7 @@ class ViewController: UITabBarController {
             self.view.backgroundColor = .systemBackground
             self.tabBar.tintColor =  UIColor(red: 34.0 / 255.0, green: 197.0 / 255.0, blue: 94.0 / 255.0, alpha: 1.0)
             self.setupVCs()
+            self.selectedIndex = 3
         }
     }
     

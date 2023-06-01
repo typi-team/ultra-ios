@@ -42,14 +42,19 @@ final class ContactsBookViewController: BaseViewController<ContactsBookPresenter
         
         self.presenter?
             .contacts
+            .debounce(.milliseconds(300), scheduler: MainScheduler.instance)
             .do(onNext: {[weak self] contacts in
                 guard let `self` = self else { return }
-                if contacts.isEmpty {
-                    self.contacts(is: contacts.isEmpty)
+                if contacts.isEmpty && !AppHardwareUtils.checkPermissons() {
+                    self.permission(is: true)
+                } else if contacts.isEmpty && AppHardwareUtils.checkPermissons() {
+                    self.contacts(is: true)
                 } else if !AppHardwareUtils.checkPermissons() {
-                    self.permission(is: false)
+                    self.showSettingAlert(from: "Зайдите в настройки и переведите Контакты в состояние ВКЛ",
+                                          with: "Freedom Chat не имеет доступа к вашим контактам")
+                } else {
+                    self.tableView.backgroundView = nil
                 }
-                
             })
             .bind(to: tableView.rx.items) { tableView, _, contact in
                 let cell: ContactCell = tableView.dequeueCell()
