@@ -64,8 +64,9 @@ open class AppSettingsImpl:AppSettings  {
                                                                             messageService: messageDBService,
                                                                             contactService: contactDBService,
                                                                             update: updateService,
+                                                                            conversationService: conversationDBService,
                                                                             userByIDInteractor: ContactByUserIdInteractor.init(contactsService: contactsService),
-                                                                            conversationService: conversationDBService)
+                                                                            deliveredMessageInteractor: DeliveredMessageInteractor.init(messageService: messageService))
     lazy var conversationRespository: ConversationRepository = ConversationRepositoryImpl(conversationService: conversationDBService)
 }
 

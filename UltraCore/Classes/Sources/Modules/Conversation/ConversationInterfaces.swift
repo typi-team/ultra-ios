@@ -23,5 +23,5 @@ protocol ConversationPresenterInterface: PresenterInterface {
     func viewDidLoad()
     func typing(is active: Bool)
     func send(message text: String)
-    var messages: Observable<Results<DBMessage>> { get set }
+    var messages: Observable<[Message]> { get set }
 }

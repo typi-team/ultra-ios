@@ -12,7 +12,7 @@ import RxSwift
 protocol MessageRepository: AnyObject {
     func save(message: Message) -> Single<Void>
     func update(message: Message) -> Single<Bool>
-    func messages(chatID: String) -> Observable<Results<DBMessage>>
+    func messages(chatID: String) -> Observable<[Message]>
 //    func readAllMessages(in chatID: String, to seq: Int)
 }
 
@@ -35,7 +35,7 @@ extension MessageRespositoryImpl : MessageRepository  {
         return self.messageService.update(message: message)
     }
 
-    func messages(chatID: String) -> Observable<RealmSwift.Results<DBMessage>> {
+    func messages(chatID: String) -> Observable<[Message]> {
         return self.messageService.messages(chatID: chatID)
     }
 }

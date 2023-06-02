@@ -36,7 +36,7 @@ class DBMessage: Object {
         self.chatType = message.chatType.rawValue
         self.seqNumber = Int64(message.seqNumber)
         self.type = message.type.rawValue
-        self.receiver = realm.object(ofType: DBReceiver.self, forPrimaryKey: message.receiver.chatID) ?? DBReceiver.init(message.receiver)
+        self.receiver = realm.object(ofType: DBReceiver.self, forPrimaryKey: message.receiver.id) ?? DBReceiver.init(message.receiver)
         self.sender = realm.object(ofType: DBSender.self, forPrimaryKey: message.sender.userID) ?? DBSender.init(from: message.sender)
         self.meta = DBMessageMeta.init(proto: message.meta)
         self.text = message.text
@@ -105,15 +105,18 @@ class DBMessageState: Object {
 }
 
 class DBReceiver: Object {
+    
+    @Persisted var id: String = ""
     @Persisted var userID: String = ""
     @Persisted var chatID: String = ""
     
     override static func primaryKey() -> String? {
-        return "chatID"
+        return "id"
     }
     
     convenience init(_ receiver: Receiver) {
         self.init()
+        self.id = receiver.id
         self.userID = receiver.userID
         self.chatID = receiver.chatID
     }
@@ -302,3 +305,7 @@ class DBVideoMessage: Object {
     }
 }
 
+
+extension Receiver {
+    var id: String { chatID + userID }
+}

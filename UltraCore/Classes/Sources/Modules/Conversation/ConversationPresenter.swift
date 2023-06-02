@@ -20,6 +20,7 @@ final class ConversationPresenter {
     
     fileprivate let userID: String
     fileprivate let disposeBag = DisposeBag()
+    fileprivate let appStore: AppSettingsStore
     fileprivate let updateRepository: UpdateRepository
     private unowned let view: ConversationViewInterface
     fileprivate let messageRepository: MessageRepository
@@ -27,16 +28,18 @@ final class ConversationPresenter {
     private let wireframe: ConversationWireframeInterface
     fileprivate let conversationRepository: ConversationRepository
     private let sendTypingInteractor: UseCase<String, SendTypingResponse>
+    private let readMessageInteractor: UseCase<Message, MessagesReadResponse>
     private let messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>
     
 
     // MARK: - Public properties -
 
-    lazy var messages: Observable<Results<DBMessage>> = messageRepository.messages(chatID: conversation.idintification)
+    lazy var messages: Observable<[Message]> = messageRepository.messages(chatID: conversation.idintification)
 
     // MARK: - Lifecycle -
 
     init(userID: String,
+         appStore: AppSettingsStore,
          conversation: Conversation,
          view: ConversationViewInterface,
          updateRepository: UpdateRepository,
@@ -45,15 +48,18 @@ final class ConversationPresenter {
          wireframe: ConversationWireframeInterface,
          conversationRepository: ConversationRepository,
          sendTypingInteractor: UseCase<String, SendTypingResponse>,
+         readMessageInteractor: UseCase<Message, MessagesReadResponse>,
          messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>) {
         self.view = view
         self.userID = userID
+        self.appStore = appStore
         self.wireframe = wireframe
         self.conversation = conversation
         self.updateRepository = updateRepository
         self.contactRepository = contactRepository
         self.messageRepository = messageRepository
         self.sendTypingInteractor = sendTypingInteractor
+        self.readMessageInteractor = readMessageInteractor
         self.conversationRepository = conversationRepository
         self.messageSenderInteractor = messageSenderInteractor
     }
@@ -100,6 +106,20 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 })
                 .disposed(by: disposeBag)
         }
+        
+        self.messageRepository.messages(chatID: conversation.idintification)
+            .debounce(RxTimeInterval.milliseconds(400), scheduler: ConcurrentDispatchQueueScheduler(qos: .background))
+            .do(onNext: { [weak self] messages in
+                guard let `self` = self else { return }
+                let unreadMessages = messages.filter({ $0.sender.userID != self.appStore.userID() }).filter({ $0.state.read == false })
+                guard let lastUnreadMessage = unreadMessages.last else { return }
+                self.readMessageInteractor.executeSingle(params: lastUnreadMessage)
+                    .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+                    .subscribe()
+                    .disposed(by: self.disposeBag)
+            })
+            .subscribe()
+            .disposed(by: disposeBag)
     }
     
     func send(message text: String) {
@@ -146,5 +166,9 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .subscribe()
             .disposed(by: self.disposeBag)
     }
-    
 }
+
+extension Message {
+    var isIncome: Bool { self.receiver.userID == AppSettingsImpl.shared.appStore.userID() }
+}
+

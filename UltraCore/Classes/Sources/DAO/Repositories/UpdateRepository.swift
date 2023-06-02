@@ -52,20 +52,23 @@ class UpdateRepositoryImpl {
     fileprivate let update: UpdatesServiceClientProtocol
     fileprivate let conversationService: ConversationDBService
     fileprivate let contactByIDInteractor: UseCase<String, Contact>
+    fileprivate let deliveredMessageInteractor: UseCase<Message, MessagesDeliveredResponse>
     
     
     init(appStore: AppSettingsStore,
          messageService: MessageDBService,
          contactService: ContactDBService,
          update: UpdatesServiceClientProtocol,
+         conversationService: ConversationDBService,
          userByIDInteractor: UseCase<String, Contact>,
-         conversationService: ConversationDBService) {
+         deliveredMessageInteractor: UseCase<Message, MessagesDeliveredResponse>) {
         self.update = update
         self.appStore = appStore
         self.messageService = messageService
         self.contactService = contactService
-        self.contactByIDInteractor = userByIDInteractor
         self.conversationService = conversationService
+        self.contactByIDInteractor = userByIDInteractor
+        self.deliveredMessageInteractor = deliveredMessageInteractor
     }
 }
 
@@ -153,6 +156,13 @@ extension UpdateRepositoryImpl {
             self.conversationService
                 .createIfNotExist(from: message)
                 .flatMap({ self.messageService.update(message: message) })
+                .subscribe()
+                .dispose()
+        }
+        
+        if message.state.delivered == false && message.isIncome {
+            self.deliveredMessageInteractor
+                .executeSingle(params: message)
                 .subscribe()
                 .dispose()
         }

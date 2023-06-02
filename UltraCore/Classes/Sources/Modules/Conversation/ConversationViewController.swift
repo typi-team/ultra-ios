@@ -93,16 +93,18 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         
         self.presenter?
             .messages
+            .observe(on: MainScheduler.instance)
             .do(onNext: {[weak self] messages in
-                self?.messageHeadline.text = messages.isEmpty ? "В этом чате нет сообщений" : ""
+                    self?.messageHeadline.text = messages.isEmpty ? "В этом чате нет сообщений" : ""
             })
-            .do(onNext: { [weak self ] result in
+            .do(onNext: { [weak self] result in
                 guard let `self` = self, !self.isDrawingTable else {
                     return
                 }
                 self.isDrawingTable = true
                 let isEmpty = self.tableView.numberOfRows(inSection: 0) - 1 <= 0
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+                    
                     let lastRowIndex = self.tableView.numberOfRows(inSection: 0) - 1
                     if lastRowIndex < 0 { return }
                     let indexPath = IndexPath(row: lastRowIndex, section: 0)
@@ -113,14 +115,13 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .bind(to: tableView.rx.items) { tableView, _, message in
                 if message.isIncome {
                     let cell: IncomeMessageCell = tableView.dequeueCell()
-                    cell.setup(message: message.toProto())
+                    cell.setup(message: message)
                     return cell
-                }else {
+                } else {
                     let cell: OutgoingMessageCell = tableView.dequeueCell()
-                    cell.setup(message: message.toProto())
+                    cell.setup(message: message)
                     return cell
                 }
-                
             }
             .disposed(by: disposeBag)
         

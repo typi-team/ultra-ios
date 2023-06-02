@@ -86,22 +86,22 @@ class MessageDBService {
     }
 
 //   MARK: Получение всех сообщений в чате
-    func messages(chatID: String) -> Observable<RealmSwift.Results<DBMessage>> {
+    func messages(chatID: String) -> Observable<[Message]> {
         return Observable.create { observer in
             let realm = Realm.myRealm()
-            let contacts = realm.objects(DBMessage.self).where { $0.receiver.chatID.equals(chatID) }
-            let notificationKey = contacts.observe(keyPaths: []) { changes in
+            let messages = realm.objects(DBMessage.self).where { $0.receiver.chatID.equals(chatID) }
+            let notificationKey = messages.observe(keyPaths: []) { changes in
                 switch changes {
                 case let .initial(collection):
-                    observer.on(.next(collection))
+                    observer.on(.next(collection.map({$0.toProto()})))
                 case let .update(collection, _, _, _):
-                    observer.on(.next(collection))
+                    observer.on(.next(collection.map({$0.toProto()})))
                 case let .error(error):
                     observer.on(.error(error))
                 }
             }
             
-            observer.onNext(contacts)
+            observer.onNext(messages.map({$0.toProto()}))
             return Disposables.create {
                 notificationKey.invalidate()
             }
