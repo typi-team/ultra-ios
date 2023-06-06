@@ -12,9 +12,11 @@ import RxCocoa
 import RxSwift
 import UIKit
 
-final class ConversationViewController: BaseViewController<ConversationPresenterInterface> {
+final class ConversationViewController: BaseViewController<ConversationPresenterInterface>, (UIImagePickerControllerDelegate & UINavigationControllerDelegate) {
     // MARK: - Properties
     
+    let sheetTransitioningDelegate = SheetTransitioningDelegate()
+
     fileprivate var isDrawingTable: Bool = false
     
     // MARK: - Views
@@ -145,8 +147,19 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     // MARK: - UITextViewDelegate
 
 extension ConversationViewController: MessageInputBarDelegate {
+    
     func pressedPlus(in view: MessageInputBar) {
-        self.showAlert(from: "Данная функция еще в разработке")
+        let viewController = FilesController()
+        viewController.resultCallback = {[weak self] action in
+            guard let `self` = self else { return }
+            switch action {
+            case .fromGallery: self.openMedia(type: .photoLibrary)
+            case .takePhoto: self.openMedia(type: .camera)
+            }
+        }
+        viewController.modalPresentationStyle = .custom
+        viewController.transitioningDelegate = sheetTransitioningDelegate
+        present(viewController, animated: true)
     }
     
     func pressedDone(in view: MessageInputBar) {
@@ -180,5 +193,31 @@ extension ConversationViewController: ConversationViewInterface {
     
     func setup(conversation: Conversation) {
         self.headline.setup(conversation: conversation)
+    }
+}
+
+
+private extension ConversationViewController {
+    func openMedia(type: UIImagePickerController.SourceType) {
+        self.present(UIImagePickerController({
+            $0.delegate = self
+            $0.sourceType = type
+//            $0.showsCameraControls = true
+        }), animated: true)
+    }
+}
+
+
+extension ConversationViewController {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        print(info)
+        picker.dismiss(animated: true, completion: {
+            guard let image = info["UIImagePickerControllerOriginalImage"] as? UIImage,
+                  let data = UIImagePNGRepresentation(image) else {
+                 return
+            }
+            print(info)
+            self.presenter?.upload(image: data, width: image.size.width, height: image.size.height)
+        })
     }
 }

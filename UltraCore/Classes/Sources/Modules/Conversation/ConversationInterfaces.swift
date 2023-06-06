@@ -24,4 +24,5 @@ protocol ConversationPresenterInterface: PresenterInterface {
     func typing(is active: Bool)
     func send(message text: String)
     var messages: Observable<[Message]> { get set }
+    func upload(image data: Data, width: CGFloat, height: CGFloat)
 }

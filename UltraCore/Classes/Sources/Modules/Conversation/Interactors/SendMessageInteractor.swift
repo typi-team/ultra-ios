@@ -24,6 +24,7 @@ class SendMessageInteractor: UseCase<MessageSendRequest, MessageSendResponse> {
                 case let .success(response):
                     observer(.success(response))
                 case let .failure(error):
+                    print(error.localizedDescription)
                     observer(.failure(error))
                 }
             }

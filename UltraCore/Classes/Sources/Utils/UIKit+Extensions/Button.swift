@@ -46,3 +46,23 @@ class ElevatedButton: UIButton {
         self.titleLabel?.font = .defaultRegularCallout
     }
 }
+
+
+class TextButton: UIButton {
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        self.setupView()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    func setupView() {
+        self.setTitleColor(.gray700, for: .normal)
+        self.titleLabel?.font = .defaultRegularCallout
+        self.contentHorizontalAlignment = UIControlContentHorizontalAlignment.left
+        self.titleEdgeInsets = .init(top: 0, left: kMediumPadding + 2, bottom: 0, right: 0)
+    }
+}

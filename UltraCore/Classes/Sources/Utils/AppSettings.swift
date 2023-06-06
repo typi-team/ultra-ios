@@ -25,7 +25,7 @@ open class AppSettingsImpl:AppSettings  {
 //    MARK: Public properties
 
     public var portOfServer: Int = 8080
-    public var pathToServer: String = "ultra-test.typi.team"
+    public var pathToServer: String = "ultra-dev.typi.team"
 
 //    MARK: Local Singletone properties
 

@@ -19,9 +19,13 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
     init(with conversation: Conversation) {
         let moduleViewController = ConversationViewController()
         super.init(viewController: moduleViewController)
+        
         let messageSenderInteractor = SendMessageInteractor.init(messageService: appSettings.messageService)
         let sendTypingInteractor = SendTypingInteractor.init(messageService: appSettings.messageService)
         let readMessageInteractor = ReadMessageInteractor.init(messageService: appSettings.messageService)
+        let createFileInteractor = CreateFileInteractor.init(fileService: appSettings.fileService)
+        let uploadInteractor = UploadFileInteractor.init(fileService: appSettings.fileService)
+        
         let presenter = ConversationPresenter(userID: appSettings.appStore.userID(),
                                               appStore: appSettings.appStore,
                                               conversation: conversation,
@@ -33,7 +37,9 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
                                               conversationRepository: appSettings.conversationRespository,
                                               sendTypingInteractor: sendTypingInteractor,
                                               readMessageInteractor: readMessageInteractor,
-                                              messageSenderInteractor: messageSenderInteractor)
+                                              uploadFileInteractor: uploadInteractor,
+                                              messageSenderInteractor: messageSenderInteractor,
+                                              createFileSpaceInteractor: createFileInteractor)
         moduleViewController.presenter = presenter
     }
 
