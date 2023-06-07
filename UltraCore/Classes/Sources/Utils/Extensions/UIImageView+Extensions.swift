@@ -108,7 +108,7 @@ extension UIImage {
         case highest = 1
     }
 
-    func jpeg(_ jpegQuality: JPEGQuality) -> Data? { UIImageJPEGRepresentation(self, jpegQuality.rawValue) }
+    func compress(_ jpegQuality: JPEGQuality) -> Data? { UIImageJPEGRepresentation(self, jpegQuality.rawValue) }
 
     static func named(_ name: String) -> UIImage? {
         let bundle = Bundle(for: AppSettingsImpl.self)

@@ -7,7 +7,7 @@
 
 import RxSwift
 
-class UploadFileInteractor: UseCase<[FileChunk], FileChunk> {
+class UploadFileInteractor: UseCase<[FileChunk], Void> {
 
      private let fileService: FileServiceClientProtocol
 
@@ -15,25 +15,20 @@ class UploadFileInteractor: UseCase<[FileChunk], FileChunk> {
          self.fileService = fileService
      }
 
-     override func execute(params: [FileChunk]) -> Observable<FileChunk> {
-         return Observable<FileChunk>.create { observer -> Disposable in
-             var call = self.fileService.upload(callOptions: .default())
-             
-                 call.sendMessages(params, compression: .enabled)
-                    .whenComplete { result in
-                        
-                        switch result {
-                        case .success:
-                            call.sendEnd().whenSuccess { _ in
-                                observer.on(.next(params.last!))
-                            }
-                            
-                            
-                        case let .failure(error):
-                            observer.on(.error(error))
-                        }
+    override func executeSingle(params: [FileChunk]) -> Single<Void> {
+        return Single<Void>.create { observer -> Disposable in
+            self.fileService.upload(callOptions: .default())
+                .sendMessages(params, compression: .enabled)
+                .whenComplete { result in
+                    switch result {
+                    case let .success(response):
+                        observer(.success(response))
+                    case let .failure(error):
+                        observer(.failure(error))
                     }
-             return Disposables.create()
-         }
-     }
+                }
+
+            return Disposables.create()
+        }
+    }
 }

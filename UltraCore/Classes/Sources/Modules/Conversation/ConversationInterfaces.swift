@@ -19,10 +19,16 @@ protocol ConversationViewInterface: ViewInterface {
     func display(is typing: UserTypingWithDate)
 }
 
+struct FileUpload {
+    let data: Data
+    let width: CGFloat
+    let height: CGFloat
+    let mime: String
+}
 protocol ConversationPresenterInterface: PresenterInterface {
     func viewDidLoad()
     func typing(is active: Bool)
+    func upload(file: FileUpload)
     func send(message text: String)
     var messages: Observable<[Message]> { get set }
-    func upload(image data: Data, width: CGFloat, height: CGFloat)
 }

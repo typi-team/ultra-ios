@@ -18,26 +18,87 @@ protocol MediaRepository {
     var downloadingImages: BehaviorSubject<[FileDownloadRequest]> { get set }
     func image(from message: Message, with type: ImageType) -> UIImage?
     func download(from message: Message) -> Single<Message>
+    
+    func upload(file: FileUpload, in conversation: Conversation) -> Single<MessageSendRequest>
 }
 
 class MediaRepositoryImpl {
-    
-    fileprivate let fileService: FileServiceClientProtocol
-    
     fileprivate let sdCache: SDImageCache
+    fileprivate let appStore: AppSettingsStore
+    fileprivate let messageDBService: MessageDBService
+    fileprivate let fileService: FileServiceClientProtocol
+    fileprivate let uploadFileInteractor: UseCase<[FileChunk], Void>
+    fileprivate let createFileSpaceInteractor: UseCase<(data: Data, extens: String), [FileChunk]>
     
     var downloadingImages: BehaviorSubject<[FileDownloadRequest]> = .init(value: [])
     
     init(sdCache: SDImageCache = .shared,
-         fileService: FileServiceClientProtocol = AppSettingsImpl.shared.fileService) {
+         uploadFileInteractor: UseCase<[FileChunk], Void>,
+         appStore: AppSettingsStore = AppSettingsImpl.shared.appStore,
+         fileService: FileServiceClientProtocol = AppSettingsImpl.shared.fileService,
+         messageDBService: MessageDBService = AppSettingsImpl.shared.messageDBService,
+         createFileSpaceInteractor: UseCase<(data: Data, extens: String), [FileChunk]>) {
         self.sdCache = sdCache
+        self.appStore = appStore
         self.fileService = fileService
-        self.sdCache.clearDisk()
-        self.sdCache.clearMemory()
+        self.messageDBService = messageDBService
+        self.uploadFileInteractor = uploadFileInteractor
+        self.createFileSpaceInteractor = createFileSpaceInteractor
+        
+//        self.sdCache.clearDisk()
+//        self.sdCache.clearMemory()
     }
 }
 
 extension MediaRepositoryImpl: MediaRepository {
+   
+    func upload(file:FileUpload, in conversation: Conversation) -> Single<MessageSendRequest> {
+        let userID = appStore.userID()
+        var message = Message.with { mess in
+            mess.receiver = .with({ receiver in
+                receiver.chatID = conversation.idintification
+                receiver.userID = conversation.peer?.userID ?? ""
+            })
+            mess.meta = .with { $0.created = Date().nanosec }
+            mess.sender = .with { $0.userID = userID }
+            mess.id = UUID().uuidString
+            mess.photo = .with({ photo in
+                photo.fileName = ""
+                photo.fileSize = Int64(file.data.count)
+                photo.mimeType = file.mime
+                photo.height = Int32(file.height)
+                photo.width = Int32(file.width)
+            })
+        }
+
+        return self.createFileSpaceInteractor
+            .executeSingle(params: (file.data, message.photo.extensions))
+            .map({ [weak self] chunks in
+                guard let `self` = self else { throw NSError.selfIsNill }
+                message.photo.fileID = chunks.first?.fileID ?? ""
+                try self.storeImageInLocal(data: file.data, by: message)
+                return chunks
+            })
+            .flatMap({ [weak self] response -> Single<[FileChunk]> in
+                guard let `self` = self else { throw NSError.selfIsNill }
+                return self.messageDBService.save(message: message).map({ response })
+            })
+            .flatMap({ [weak self] response -> Single<Void> in
+                guard let `self` = self else {
+                    throw NSError.selfIsNill
+                }
+                return self.uploadFileInteractor.executeSingle(params: response)
+            })
+            .map({ _ -> MessageSendRequest in
+                return MessageSendRequest.with({ req in
+                    req.peer.user = .with({ peer in
+                        peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
+                    })
+                    req.message = message
+                })
+            })
+    }
+    
     
     func image(from message: Message, with type: ImageType) -> UIImage? {
         guard message.hasPhoto else { return nil }
@@ -76,7 +137,10 @@ extension MediaRepositoryImpl: MediaRepository {
                 .download(params, callOptions: .default(), handler: { chunk in
                     data.append(chunk.data)
                     params.fromChunkNumber = chunk.seqNum
-                    self.downloadingImages.on(.next(try! self.downloadingImages.value()))
+                    var images = try? self.downloadingImages.value()
+                    images?.removeAll(where: {$0.fileID == chunk.fileID})
+                    images?.append(params)
+                    self.downloadingImages.on(.next(images ?? []))
                 })
                 .status
                 .flatMapThrowing({ [weak self] status in
@@ -86,6 +150,11 @@ extension MediaRepositoryImpl: MediaRepository {
                 .whenComplete { result in
                     switch result {
                     case .success:
+                        params.fromChunkNumber = params.toChunkNumber
+                        var images = try? self.downloadingImages.value()
+                        images?.removeAll(where: {$0.fileID == params.fileID})
+                        images?.append(params)
+                        self.downloadingImages.on(.next(images ?? []))
                         observer(.success(message))
                     case let .failure(error):
                         observer(.failure(error))
@@ -100,13 +169,13 @@ extension MediaRepositoryImpl: MediaRepository {
 private extension MediaRepositoryImpl {
     func storeImageInLocal(data: Data, by message: Message) throws {
         guard let image = UIImage.sd_image(with: data)?.downsample(reductionAmount: 0.1),
-              let low = image.jpeg(.low),
-              let medium = image.jpeg(.medium) else {
+              let low = image.compress(.low),
+              let medium = image.compress(.medium) else {
             throw NSError.selfIsNill
         }
         self.sdCache.store(nil, imageData: low, forKey: message.photo.previewFileId, toDisk: true)
         sdCache.store(nil, imageData: medium, forKey: message.photo.snapshotFileId, toDisk: true)
-        sdCache.store(nil, imageData: image.jpeg(.high), forKey: message.photo.originalFileId, toDisk: true)
+        sdCache.store(nil, imageData: image.compress(.high), forKey: message.photo.originalFileId, toDisk: true)
     }
 }
 

@@ -212,7 +212,6 @@ private extension ConversationViewController {
         self.present(UIImagePickerController({
             $0.delegate = self
             $0.sourceType = type
-//            $0.showsCameraControls = true
         }), animated: true)
     }
 }
@@ -220,14 +219,12 @@ private extension ConversationViewController {
 
 extension ConversationViewController {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        print(info)
         picker.dismiss(animated: true, completion: {
             guard let image = info["UIImagePickerControllerOriginalImage"] as? UIImage,
-                  let data = UIImagePNGRepresentation(image) else {
+                  let data = image.compress(.medium) else {
                  return
             }
-            print(info)
-            self.presenter?.upload(image: data, width: image.size.width, height: image.size.height)
+            self.presenter?.upload(file: .init(data: data, width: image.size.width, height: image.size.height, mime: "image/jpgчч"))
         })
     }
 }

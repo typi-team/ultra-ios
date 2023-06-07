@@ -60,7 +60,9 @@ open class AppSettingsImpl:AppSettings  {
 
 //    MARK: Repositories
 
-    lazy var mediaRepository: MediaRepository = MediaRepositoryImpl(fileService: fileService)
+    lazy var mediaRepository: MediaRepository = MediaRepositoryImpl(uploadFileInteractor: UploadFileInteractor(fileService: fileService),
+                                                                    fileService: fileService,
+                                                                    createFileSpaceInteractor: CreateFileInteractor(fileService: fileService))
     lazy var contactRepository: ContactsRepository = ContactsRepositoryImpl(contactDBService: contactDBService)
     lazy var messageRespository: MessageRepository = MessageRespositoryImpl(messageService: messageDBService)
     lazy var updateRepository: UpdateRepository = UpdateRepositoryImpl.init(appStore: appStore,

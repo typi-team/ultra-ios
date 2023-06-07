@@ -13,6 +13,7 @@ class IncomingMediaCell: MediaCell {
         self.addSubview(container)
         self.backgroundColor = .clear
         self.container.addSubview(mediaView)
+        self.container.addSubview(downloadProgress)
         self.container.addSubview(deliveryWrapper)
         self.deliveryWrapper.addSubview(deliveryDateLabel)
     }
@@ -30,6 +31,11 @@ class IncomingMediaCell: MediaCell {
             make.edges.equalToSuperview()
             make.width.equalTo(self.constants.maxWidth)
             make.height.equalTo(self.constants.maxHeight)
+        }
+        
+        self.downloadProgress.snp.makeConstraints { make in
+            make.left.right.bottom.equalToSuperview()
+            make.height.equalTo(5)
         }
 
         self.deliveryWrapper.snp.makeConstraints { make in

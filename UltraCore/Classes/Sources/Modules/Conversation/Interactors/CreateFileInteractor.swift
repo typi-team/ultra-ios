@@ -18,30 +18,26 @@ class CreateFileInteractor: UseCase<(data: Data, extens: String), [FileChunk]> {
 
     override func executeSingle(params: (data: Data, extens: String)) -> Single<[FileChunk]> {
         return Single.create { [weak self] observer -> Disposable in
-            do {
-                guard let `self` = self else { return Disposables.create() }
-                let request = FileCreateRequest.with({
-                    $0.name = params.data.hashValue.description
-                    $0.size = Int64(params.data.count)
-                    $0.mimeType = "image/\(params.extens)"
-                })
 
-                try self.writeDataToFile(data: params.data, fileName: request.name)
+            guard let `self` = self else { return Disposables.create() }
+            let request = FileCreateRequest.with({
+                $0.name = params.data.hashValue.description
+                $0.size = Int64(params.data.count)
+                $0.mimeType = "image/\(params.extens)"
+            })
 
-                self.fileService.create(request, callOptions: .default())
-                    .response
-                    .whenComplete { [weak self] result in
-                        guard let `self` = self else { return observer(.failure(NSError.selfIsNill)) }
-                        switch result {
-                        case let .success(response):
-                            observer(.success(splitDataIntoChunks(data: params.data, file: response)))
-                        case let .failure(error):
-                            observer(.failure(error))
-                        }
+            self.fileService
+                .create(request, callOptions: .default())
+                .response
+                .whenComplete { [weak self] result in
+                    guard let `self` = self else { return observer(.failure(NSError.selfIsNill)) }
+                    switch result {
+                    case let .success(response):
+                        observer(.success(splitDataIntoChunks(data: params.data, file: response)))
+                    case let .failure(error):
+                        observer(.failure(error))
                     }
-            } catch let error {
-                observer(.failure(error))
-            }
+                }
             return Disposables.create()
         }
     }
@@ -69,14 +65,5 @@ private extension CreateFileInteractor {
             }
         }
         return chunks
-    }
-    
-    func writeDataToFile(data: Data, fileName: String) throws {
-        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
-            throw NSError(domain: "Ошибка получения директории документов", code: 1001)
-        }
-
-        let fileURL = documentsDirectory.appendingPathComponent(fileName)
-        try data.write(to: fileURL)
     }
 }

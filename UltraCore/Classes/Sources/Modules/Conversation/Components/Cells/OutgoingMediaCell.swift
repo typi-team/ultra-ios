@@ -15,6 +15,7 @@ class OutgoingMediaCell: MediaCell {
         self.addSubview(container)
         self.backgroundColor = .clear
         self.container.addSubview(mediaView)
+        self.container.addSubview(downloadProgress)
         self.container.addSubview(deliveryWrapper)
         self.deliveryWrapper.addSubview(statusView)
         self.deliveryWrapper.addSubview(deliveryDateLabel)
@@ -35,6 +36,11 @@ class OutgoingMediaCell: MediaCell {
             make.width.equalTo(self.constants.maxWidth)
             make.height.equalTo(self.constants.maxHeight)
         }
+        
+        self.downloadProgress.snp.makeConstraints { make in
+            make.left.right.equalToSuperview()
+            make.height.equalTo(1)
+        }
 
         self.deliveryWrapper.snp.makeConstraints { make in
             make.bottom.equalToSuperview().offset(-kLowPadding)
@@ -44,11 +50,11 @@ class OutgoingMediaCell: MediaCell {
         
         self.statusView.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(kLowPadding / 2)
-            make.centerX.equalToSuperview()
+            make.centerY.equalToSuperview()
         }
         
         self.deliveryDateLabel.snp.makeConstraints { make in
-            make.left.equalTo(statusView.snp.right).offset(kLowPadding / 2)
+            make.left.equalTo(statusView.snp.right).offset((kLowPadding / 2))
             make.top.equalToSuperview().offset(kLowPadding / 2)
             make.right.equalToSuperview().offset(-(kLowPadding / 2))
             make.bottom.equalToSuperview().offset(-(kLowPadding / 2))
