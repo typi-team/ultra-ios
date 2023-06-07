@@ -32,8 +32,8 @@ class MediaRepositoryImpl {
          fileService: FileServiceClientProtocol = AppSettingsImpl.shared.fileService) {
         self.sdCache = sdCache
         self.fileService = fileService
-//        sdCache.clearDisk()
-//        sdCache.clearMemory()
+        self.sdCache.clearDisk()
+        self.sdCache.clearMemory()
     }
 }
 
@@ -117,7 +117,7 @@ private extension PhotoMessage {
     var snapshotFileId: String { "snapshot_\(fileID)" }
 }
 
-private extension Message {
+extension Message {
     var hasPhoto: Bool { self.photo.fileID != "" }
 }
 

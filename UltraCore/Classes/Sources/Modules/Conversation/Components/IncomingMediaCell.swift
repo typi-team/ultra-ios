@@ -10,23 +10,26 @@ import RxSwift
 
 class IncomingMediaCell: BaseMessageCell {
     
-    
+    fileprivate let deliveryWrapper: UIView = .init{
+        $0.cornerRadius = 12
+        $0.backgroundColor = UIColor.white.withAlphaComponent(0.8)
+    }
     fileprivate let mediaRepository: MediaRepository = AppSettingsImpl.shared.mediaRepository
     
     fileprivate lazy var mediaView: UIImageView = .init {
         $0.image = .named("ff_logo_text")
-        $0.contentMode = .scaleAspectFit
+        $0.contentMode = .scaleAspectFill
     }
+    
     override func setupView() {
-        super.setupView()
         self.addSubview(container)
         self.backgroundColor = .clear
         self.container.addSubview(mediaView)
-        self.container.addSubview(deliveryDateLabel)
+        self.container.addSubview(deliveryWrapper)
+        self.deliveryWrapper.addSubview(deliveryDateLabel)
     }
     
     override func setupConstraints() {
-        super.setupConstraints()
 
         self.container.snp.makeConstraints { make in
             make.top.equalToSuperview()
@@ -41,10 +44,16 @@ class IncomingMediaCell: BaseMessageCell {
             make.height.equalTo(self.constants.maxHeight)
         }
 
-        self.deliveryDateLabel.snp.makeConstraints { make in
-            make.width.equalTo(40)
-            make.bottom.equalTo(textView.snp.bottom)
+        self.deliveryWrapper.snp.makeConstraints { make in
+            make.bottom.equalToSuperview().offset(-kLowPadding)
             make.right.equalToSuperview().offset(-(kLowPadding + 1))
+        }
+        
+        self.deliveryDateLabel.snp.makeConstraints { make in
+            make.left.equalToSuperview().offset(kLowPadding / 2)
+            make.top.equalToSuperview().offset(kLowPadding / 2)
+            make.right.equalToSuperview().offset(-(kLowPadding / 2))
+            make.bottom.equalToSuperview().offset(-(kLowPadding / 2))
         }
     }
     
@@ -62,7 +71,7 @@ class IncomingMediaCell: BaseMessageCell {
                 .observe(on: MainScheduler.instance)
                 .map({ [weak self] request -> UIImage? in
                     guard let `self` = self, let message = self.message, request != nil  else { return nil }
-                    return self.mediaRepository.image(from: message, with: .preview)
+                    return self.mediaRepository.image(from: message, with: .origin)
                 })
                 .compactMap({$0})
                 .subscribe { [weak self] image in
