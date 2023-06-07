@@ -32,6 +32,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.allowsSelection = false 
         tableView.registerCell(type: BaseMessageCell.self)
         tableView.registerCell(type: IncomeMessageCell.self)
+        tableView.registerCell(type: IncomingMediaCell.self)
         tableView.registerCell(type: OutgoingMessageCell.self)
         tableView.backgroundColor = self.view.backgroundColor
         tableView.contentInset = .init(top: kMediumPadding, left: 0, bottom: 0, right: 0)
@@ -115,7 +116,11 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                 })
             })
             .bind(to: tableView.rx.items) { tableView, _, message in
-                if message.isIncome {
+                if message.isIncome && message.photo.fileID != "" {
+                    let cell: IncomingMediaCell = tableView.dequeueCell()
+                    cell.setup(message: message)
+                    return cell
+                } else if message.isIncome {
                     let cell: IncomeMessageCell = tableView.dequeueCell()
                     cell.setup(message: message)
                     return cell

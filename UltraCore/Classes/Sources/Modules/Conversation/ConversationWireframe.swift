@@ -30,6 +30,7 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
                                               appStore: appSettings.appStore,
                                               conversation: conversation,
                                               view: moduleViewController,
+                                              mediaRepository: appSettings.mediaRepository,
                                               updateRepository: appSettings.updateRepository,
                                               messageRepository: appSettings.messageRespository,
                                               contactRepository: appSettings.contactRepository,

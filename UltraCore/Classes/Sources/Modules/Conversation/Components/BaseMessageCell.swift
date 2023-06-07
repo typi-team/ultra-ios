@@ -6,8 +6,20 @@
 //
 
 import UIKit
+import RxSwift
+
+
+struct MediaMessageConstants {
+    let maxWidth: CGFloat
+    let maxHeight: CGFloat
+}
 
 class BaseMessageCell: BaseCell {
+    var message: Message?
+    var actionCallback: ((Message?) -> Void)?
+    lazy var disposeBag: DisposeBag = .init()
+    lazy var constants: MediaMessageConstants = .init(maxWidth: 300, maxHeight: 200)
+    
     let textView: SubHeadline = .init({
         $0.numberOfLines = 0
     })
@@ -52,6 +64,7 @@ class BaseMessageCell: BaseCell {
     }
     
     func setup(message: Message) {
+        self.message = message
         self.textView.text = message.text
         self.deliveryDateLabel.text = message.meta.created.dateBy(format: .hourAndMinute)
     }

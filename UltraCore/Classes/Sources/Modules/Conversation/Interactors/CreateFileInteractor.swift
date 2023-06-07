@@ -48,26 +48,26 @@ class CreateFileInteractor: UseCase<(data: Data, extens: String), [FileChunk]> {
 }
 
 private extension CreateFileInteractor {
-    func splitDataIntoChunks(data: Data, file response: FileCreateResponse ) -> [FileChunk] {
+    
+    func splitDataIntoChunks(data: Data, file response: FileCreateResponse) -> [FileChunk] {
         var chunks: [FileChunk] = []
-        var offset = 0
-        
-        var seqNumber: Int64 = 0
-        
-        while offset < data.count {
-            let chunkLength = min(Int(response.chunkSize), data.count - offset)
-            let chunkRange = Range(offset..<offset + chunkLength)
-            let chunkData = data.subdata(in: chunkRange)
-            chunks.append(FileChunk.with({ file in
-                file.fileID = response.fileID
-                file.data = chunkData
-                file.seqNum = seqNumber
-                
-            }))
-            seqNumber += 1
-            offset += chunkLength
+        data.withUnsafeBytes { (u8Ptr: UnsafePointer<UInt8>) in
+            let mutRawPointer = UnsafeMutableRawPointer(mutating: u8Ptr)
+            let uploadChunkSize = Int(response.chunkSize)
+            let totalSize = data.count
+            var offset = 0
+            var seqNumber: Int64 = 0
+            while offset < totalSize {
+                let chunkSize = offset + uploadChunkSize > totalSize ? totalSize - offset : uploadChunkSize
+                chunks.append(FileChunk.with({ file in
+                    file.fileID = response.fileID
+                    file.data = Data(bytesNoCopy: mutRawPointer + offset, count: chunkSize, deallocator: Data.Deallocator.none)
+                    file.seqNum = seqNumber
+                }))
+                seqNumber += 1
+                offset += chunkSize
+            }
         }
-        
         return chunks
     }
     
@@ -79,31 +79,4 @@ private extension CreateFileInteractor {
         let fileURL = documentsDirectory.appendingPathComponent(fileName)
         try data.write(to: fileURL)
     }
-}
-
-class UploadFileInteractor: UseCase<[FileChunk], FileChunk> {
-
-     private let fileService: FileServiceClientProtocol
-
-     init(fileService: FileServiceClientProtocol) {
-         self.fileService = fileService
-     }
-
-     override func execute(params: [FileChunk]) -> Observable<FileChunk> {
-         return Observable.from(params).flatMap { file -> Observable<FileChunk> in
-             return Observable<FileChunk>.create { observer -> Disposable in
-                 self.fileService.upload(callOptions: .default())
-                     .sendMessage(file)
-                     .whenComplete { result in
-                     switch result {
-                     case .success:
-                         observer.on(.next(file))
-                     case let .failure(error):
-                         observer.on(.error(error))
-                     }
-                 }
-                 return Disposables.create()
-             }
-         }
-     }
 }

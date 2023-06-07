@@ -8,6 +8,7 @@ protocol AppSettings: Any {
     var channel: GRPCChannel { get }
     var group: EventLoopGroup { get set }
     var appStore: AppSettingsStore { get set }
+    var mediaRepository: MediaRepository { get }
     var messageRespository: MessageRepository { get }
     var contactRepository: ContactsRepository { get }
     var fileService: FileServiceClientProtocol { get }
@@ -31,12 +32,13 @@ open class AppSettingsImpl:AppSettings  {
 
     lazy var podAsset = PodAsset.bundle(forPod: "UltraCore")
     lazy var group: EventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+    lazy var fileGroup: EventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     lazy var version: String = podAsset?.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.2"
     lazy var channel: GRPCChannel = try! GRPCChannelPool.with(target: .host(pathToServer, port: portOfServer),
                                                               transportSecurity: .plaintext, eventLoopGroup: group)
     
     lazy var fileChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(pathToServer, port: portOfServer),
-                                                              transportSecurity: .plaintext, eventLoopGroup: group)
+                                                              transportSecurity: .plaintext, eventLoopGroup: fileGroup)
     
     lazy var updateChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(pathToServer, port: portOfServer),
                                                               transportSecurity: .plaintext, eventLoopGroup: group)
@@ -58,6 +60,7 @@ open class AppSettingsImpl:AppSettings  {
 
 //    MARK: Repositories
 
+    lazy var mediaRepository: MediaRepository = MediaRepositoryImpl(fileService: fileService)
     lazy var contactRepository: ContactsRepository = ContactsRepositoryImpl(contactDBService: contactDBService)
     lazy var messageRespository: MessageRepository = MessageRespositoryImpl(messageService: messageDBService)
     lazy var updateRepository: UpdateRepository = UpdateRepositoryImpl.init(appStore: appStore,

@@ -100,6 +100,16 @@ extension UIImageView.PlaceholderType {
 }
 
 extension UIImage {
+    enum JPEGQuality: CGFloat {
+        case lowest = 0
+        case low = 0.25
+        case medium = 0.5
+        case high = 0.75
+        case highest = 1
+    }
+
+    func jpeg(_ jpegQuality: JPEGQuality) -> Data? { UIImageJPEGRepresentation(self, jpegQuality.rawValue) }
+
     static func named(_ name: String) -> UIImage? {
         let bundle = Bundle(for: AppSettingsImpl.self)
         if let resourceURL = bundle.url(forResource: "UltraCore", withExtension: "bundle"),
@@ -108,5 +118,18 @@ extension UIImage {
             return image
         }
         return UIImage(named: name, in: AppSettingsImpl.shared.podAsset, compatibleWith: nil)
+    }
+    
+    func downsample(reductionAmount: Float) -> UIImage? {
+        let image = UIKit.CIImage(image: self)
+        guard let lanczosFilter = CIFilter(name: "CILanczosScaleTransform") else { return nil }
+        lanczosFilter.setValue(image, forKey: kCIInputImageKey)
+        lanczosFilter.setValue(NSNumber(value: reductionAmount), forKey: kCIInputScaleKey)
+
+        guard let outputImage = lanczosFilter.outputImage else { return nil }
+        let context = CIContext(options: [kCIContextUseSoftwareRenderer: false])
+        let scaledImage = UIImage(cgImage: context.createCGImage(outputImage, from: outputImage.extent)!)
+
+        return scaledImage
     }
 }

@@ -21,6 +21,7 @@ final class ConversationPresenter {
     fileprivate let userID: String
     fileprivate let disposeBag = DisposeBag()
     fileprivate let appStore: AppSettingsStore
+    fileprivate let mediaRepository: MediaRepository
     fileprivate let updateRepository: UpdateRepository
     private unowned let view: ConversationViewInterface
     fileprivate let messageRepository: MessageRepository
@@ -36,6 +37,23 @@ final class ConversationPresenter {
     // MARK: - Public properties -
 
     lazy var messages: Observable<[Message]> = messageRepository.messages(chatID: conversation.idintification)
+        .do(onNext: {[weak self ] messages in
+            guard let `self` = self else { return }
+            let messages = messages.filter({ $0.photo.fileID != "" })
+            guard !messages.isEmpty else { return }
+
+            Observable.from(messages)
+                .flatMap { message in
+                    return self.mediaRepository.download(from: message)
+                }
+                .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+                .observe(on: MainScheduler.instance)
+                .subscribe(onNext: { next in
+                    print("downloaded image in \(next.photo.fileID) ")
+                })
+                .disposed(by: self.disposeBag)
+        
+    })
 
     // MARK: - Lifecycle -
 
@@ -43,6 +61,7 @@ final class ConversationPresenter {
          appStore: AppSettingsStore,
          conversation: Conversation,
          view: ConversationViewInterface,
+         mediaRepository: MediaRepository,
          updateRepository: UpdateRepository,
          messageRepository: MessageRepository,
          contactRepository: ContactsRepository,
@@ -58,6 +77,7 @@ final class ConversationPresenter {
         self.appStore = appStore
         self.wireframe = wireframe
         self.conversation = conversation
+        self.mediaRepository = mediaRepository
         self.updateRepository = updateRepository
         self.contactRepository = contactRepository
         self.messageRepository = messageRepository
