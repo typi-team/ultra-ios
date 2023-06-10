@@ -6,8 +6,17 @@
 //
 
 import UIKit
+import RxSwift
 
 class OutgoingMediaCell: MediaCell {
+    
+    fileprivate let uploadProgressContainer: UIView = .init({
+        $0.isHidden = true
+        $0.cornerRadius = kLowPadding
+        $0.backgroundColor = UIColor.black
+    })
+    
+    fileprivate let uploadProgress: UIActivityIndicatorView = .init(activityIndicatorStyle: .whiteLarge)
     
     fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
     
@@ -19,6 +28,8 @@ class OutgoingMediaCell: MediaCell {
         self.container.addSubview(deliveryWrapper)
         self.deliveryWrapper.addSubview(statusView)
         self.deliveryWrapper.addSubview(deliveryDateLabel)
+        self.container.addSubview(uploadProgressContainer)
+        self.uploadProgressContainer.addSubview(uploadProgress)
     }
     
     override func setupConstraints() {
@@ -42,7 +53,17 @@ class OutgoingMediaCell: MediaCell {
             make.height.equalTo(1)
         }
 
-        self.deliveryWrapper.snp.makeConstraints { make in
+        self.uploadProgressContainer.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+        }
+        
+        self.uploadProgress.snp.makeConstraints { make in
+            make.height.width.equalTo(kHeadlinePadding)
+            make.top.left.equalToSuperview().offset(kLowPadding)
+            make.right.bottom.equalToSuperview().offset(-kLowPadding)
+        }
+        
+         self.deliveryWrapper.snp.makeConstraints { make in
             make.bottom.equalToSuperview().offset(-kLowPadding)
             make.right.equalToSuperview().offset(-(kLowPadding + 1))
         }
@@ -65,11 +86,49 @@ class OutgoingMediaCell: MediaCell {
         super.setup(message: message)
         self.statusView.image = .named(message.statusImageName)
         self.mediaView.image = UIImage.init(data: message.photo.preview)
-        if let image = self.mediaRepository.image(from: message, with: .snapshot) {
+        if self.mediaRepository.isUploading(from: message) {
+            self.uploadingProgress(for: message)
+        } else if let image = self.mediaRepository.image(from: message, with: .snapshot) {
             self.mediaView.image = image
         } else {
             self.dowloadImage(by: message)
         }
+    }
+    
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        self.uploadProgressContainer.isHidden = true
+    }
+}
+
+extension OutgoingMediaCell {
+    func uploadingProgress(for message: Message) {
+        self.mediaView.image = self.mediaRepository.image(from: message, with: .snapshot) ?? UIImage(data: message.photo.preview)
+        self.mediaRepository
+            .uploadingImages
+            .map({ $0.first(where: { $0.fileID == self.message?.photo.fileID }) })
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .do(onNext: {[weak self] _ in
+                self?.uploadProgressContainer.isHidden = false
+            })
+            .map({ [weak self] request -> UIImage? in
+                guard let `self` = self, let message = self.message, let request = request else { return nil }
+
+                if request.fromChunkNumber >= request.toChunkNumber {
+                    return self.mediaRepository.image(from: message, with: .origin)
+                } else {
+                    return nil
+                }
+            })
+            .compactMap({ $0 })
+            .subscribe { [weak self] image in
+                guard let `self` = self else { return }
+                self.mediaView.image = image
+                self.uploadProgressContainer.isHidden = true
+            }
+            .disposed(by: disposeBag)
     }
 }
 

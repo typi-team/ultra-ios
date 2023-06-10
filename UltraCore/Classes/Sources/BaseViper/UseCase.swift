@@ -17,6 +17,6 @@ class UseCase<P, R> {
     }
     
     deinit {
-        Logger.info("Deinit \(String.init(describing: self))")
+        PP.info("Deinit \(String.init(describing: self))")
     }
 }

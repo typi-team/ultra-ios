@@ -221,10 +221,10 @@ extension ConversationViewController {
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         picker.dismiss(animated: true, completion: {
             guard let image = info["UIImagePickerControllerOriginalImage"] as? UIImage,
-                  let data = image.compress(.medium) else {
+                  let data = UIImagePNGRepresentation(image) else {
                  return
             }
-            self.presenter?.upload(file: .init(data: data, width: image.size.width, height: image.size.height, mime: "image/jpgчч"))
+            self.presenter?.upload(file: .init(data: data, width: image.size.width, height: image.size.height, mime: "image/png"))
         })
     }
 }

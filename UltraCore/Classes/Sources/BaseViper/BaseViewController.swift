@@ -31,7 +31,7 @@ class BaseViewController<T>: UIViewController {
     }
     
     deinit {
-        Logger.info("Deinit \(String.init(describing: self))")
+        PP.info("Deinit \(String.init(describing: self))")
         if handleKeyboardTransmission {
             NotificationCenter.default.removeObserver(self)
         }

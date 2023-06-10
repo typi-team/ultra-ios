@@ -83,7 +83,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
                     case .success:
                         break
                     case let .failure(error):
-                        Logger.error(error.localizedDescription)
+                        PP.error(error.localizedDescription)
                         timer.invalidate()
                     }
                 }
@@ -109,18 +109,18 @@ extension UpdateRepositoryImpl: UpdateRepository {
                     case let .messagesRead(message):
                         self.messagesReaded(message: message)
                     case let .messagesDeleted(message):
-                        Logger.debug(message.textFormatString())
+                        PP.debug(message.textFormatString())
                     case let .chatDeleted(chat):
-                        Logger.debug(chat.textFormatString())
+                        PP.debug(chat.textFormatString())
                     case let .moneyTransferStatus(status):
-                        Logger.debug(status.textFormatString())
+                        PP.debug(status.textFormatString())
                     }
                 } else if let presence = update.ofPresence {
                     switch presence {
                     case let .typing(typing):
                         self.handle(user: typing)
                     case let .audioRecording(pres):
-                        Logger.debug(pres.textFormatString())
+                        PP.debug(pres.textFormatString())
                     case let .userStatus(userStatus):
                         guard var contact = self.contactService.contact(id: userStatus.userID)?.toProto() else {
                             return
@@ -129,7 +129,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
                         self.update(contact: contact)
 
                     case let .mediaUploading(pres):
-                        Logger.debug(pres.textFormatString())
+                        PP.debug(pres.textFormatString())
                     }
                 }
             }
