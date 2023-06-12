@@ -181,7 +181,7 @@ private extension MediaRepositoryImpl {
                 guard let `self` = self,
                       let process = try? self.uploadingMedias.value(),
                       var file = process.first(where: { $0.fileID == message.fileID }) else { return }
-                file.fromChunkNumber = file.toChunkNumber * 9
+                file.fromChunkNumber = file.toChunkNumber - ((file.toChunkNumber * 80) / 100)
                 self.uploadingMedias.on(.next(process))
             })
             .flatMap({ [weak self] response -> Single<[FileChunk]> in
@@ -192,7 +192,7 @@ private extension MediaRepositoryImpl {
                 guard let `self` = self,
                       let process = try? self.uploadingMedias.value(),
                       var file = process.first(where: { $0.fileID == message.fileID }) else { return }
-                file.fromChunkNumber = file.toChunkNumber * 60
+                file.fromChunkNumber = file.toChunkNumber - ((file.toChunkNumber * 60) / 100)
                 self.uploadingMedias.on(.next(process))
             })
             .flatMap({ [weak self] response -> Single<Void> in
@@ -201,11 +201,12 @@ private extension MediaRepositoryImpl {
                 }
                 return self.uploadFileInteractor.executeSingle(params: response)
             })
+                
             .do(onSuccess: { [weak self] _ in
                 guard let `self` = self,
                       let process = try? self.uploadingMedias.value(),
                       var file = process.first(where: { $0.fileID == message.fileID }) else { return }
-                file.fromChunkNumber = file.toChunkNumber
+                file.fromChunkNumber = file.toChunkNumber - ((file.toChunkNumber * 80) / 100)
                 self.uploadingMedias.on(.next(process))
             })
             .map({ _ -> MessageSendRequest in
@@ -217,6 +218,12 @@ private extension MediaRepositoryImpl {
                 })
             })
             .do(onSuccess: { [weak self] _ in
+                guard let `self` = self, var process = try? self.uploadingMedias.value() else { return }
+                process.removeAll(where: { $0.fileID == message.photo.fileID })
+                self.uploadingMedias.on(.next(process))
+            }, onError: {[weak self] (error: Error) in
+                
+                PP.warning(error.localizedDescription)
                 guard let `self` = self, var process = try? self.uploadingMedias.value() else { return }
                 process.removeAll(where: { $0.fileID == message.photo.fileID })
                 self.uploadingMedias.on(.next(process))

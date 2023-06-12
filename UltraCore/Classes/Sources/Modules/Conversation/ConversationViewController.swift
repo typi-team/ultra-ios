@@ -237,7 +237,6 @@ extension ConversationViewController {
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        print(info)
         if info["UIImagePickerControllerMediaType"] as? String == "public.movie",
             let url = info["UIImagePickerControllerMediaURL"]  as? URL,
             let data = try? Data(contentsOf: url) {

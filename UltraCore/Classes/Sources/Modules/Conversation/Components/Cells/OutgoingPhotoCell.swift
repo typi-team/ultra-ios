@@ -10,9 +10,12 @@ import RxSwift
 
 class OutgoingPhotoCell: MediaCell {
     
-    fileprivate let uploadProgress: UIProgressView = .init({
-        $0.trackTintColor = .clear
-        $0.progressTintColor = .green500
+    fileprivate let sameProgressInSameTime: RegularCaption3 = .init({
+        $0.isHidden = true
+        $0.cornerRadius = 4
+        $0.textAlignment = .left
+        $0.text = "  Идет выгрузка...  "
+        $0.backgroundColor = UIColor.white.withAlphaComponent(0.7)
     })
     
     fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
@@ -21,11 +24,12 @@ class OutgoingPhotoCell: MediaCell {
         self.addSubview(container)
         self.backgroundColor = .clear
         self.container.addSubview(mediaView)
-        self.mediaView.addSubview(uploadProgress)
+        self.mediaView.addSubview(sameProgressInSameTime)
         self.mediaView.addSubview(downloadProgress)
         self.container.addSubview(deliveryWrapper)
         self.deliveryWrapper.addSubview(statusView)
         self.deliveryWrapper.addSubview(deliveryDateLabel)
+        self.sameProgressInSameTime.bringSubview(toFront: mediaView)
         
         
     }
@@ -52,9 +56,8 @@ class OutgoingPhotoCell: MediaCell {
             make.bottom.equalToSuperview()
         }
 
-        self.uploadProgress.snp.makeConstraints { make in
-            make.left.right.equalToSuperview()
-            make.height.equalTo(1)
+        self.sameProgressInSameTime.snp.makeConstraints { make in
+            make.left.equalToSuperview().offset(12)
             make.top.equalToSuperview().offset(2)
         }
         
@@ -90,10 +93,9 @@ class OutgoingPhotoCell: MediaCell {
         }
     }
     
-    
     override func prepareForReuse() {
         super.prepareForReuse()
-        self.uploadProgress.isHidden = true
+        self.sameProgressInSameTime.isHidden = true
     }
 }
 
@@ -108,13 +110,13 @@ extension OutgoingPhotoCell {
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .do(onNext: { [weak self] request in
-                guard let `self` = self, let request = request else { return }
+                self?.sameProgressInSameTime.isHidden = true
+                guard let `self` = self, let request = request else { return  }
                 if request.fromChunkNumber >= request.toChunkNumber {
-                    self.uploadProgress.isHidden = true
+                    self.sameProgressInSameTime.isHidden = true
                 } else {
-                    self.uploadProgress.isHidden = false
-                    PP.info((Float(request.fromChunkNumber) / Float(request.toChunkNumber)).description)
-                    self.uploadProgress.progress = Float(request.fromChunkNumber) / Float(request.toChunkNumber)
+                    self.sameProgressInSameTime.isHidden = false
+                    
                 }
             })
             .map({ [weak self] request -> UIImage? in
@@ -130,7 +132,9 @@ extension OutgoingPhotoCell {
             .subscribe(onNext: { [weak self] image in
                 guard let `self` = self else { return }
                 self.mediaView.image = image
-                
+            }, onError:  { [weak self] error in
+                guard let `self` = self else { return }
+                self.sameProgressInSameTime.isHidden = true
             })
             .disposed(by: disposeBag)
     }
