@@ -10,13 +10,10 @@ import RxSwift
 
 class OutgoingPhotoCell: MediaCell {
     
-    fileprivate let uploadProgressContainer: UIView = .init({
-        $0.isHidden = true
-        $0.cornerRadius = kLowPadding
-        $0.backgroundColor = UIColor.black
+    fileprivate let uploadProgress: UIProgressView = .init({
+        $0.trackTintColor = .clear
+        $0.progressTintColor = .green500
     })
-    
-    fileprivate let uploadProgress: UIActivityIndicatorView = .init(activityIndicatorStyle: .whiteLarge)
     
     fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
     
@@ -24,12 +21,13 @@ class OutgoingPhotoCell: MediaCell {
         self.addSubview(container)
         self.backgroundColor = .clear
         self.container.addSubview(mediaView)
-        self.container.addSubview(downloadProgress)
+        self.mediaView.addSubview(uploadProgress)
+        self.mediaView.addSubview(downloadProgress)
         self.container.addSubview(deliveryWrapper)
         self.deliveryWrapper.addSubview(statusView)
         self.deliveryWrapper.addSubview(deliveryDateLabel)
-        self.container.addSubview(uploadProgressContainer)
-        self.uploadProgressContainer.addSubview(uploadProgress)
+        
+        
     }
     
     override func setupConstraints() {
@@ -51,16 +49,13 @@ class OutgoingPhotoCell: MediaCell {
         self.downloadProgress.snp.makeConstraints { make in
             make.left.right.equalToSuperview()
             make.height.equalTo(1)
+            make.bottom.equalToSuperview()
         }
 
-        self.uploadProgressContainer.snp.makeConstraints { make in
-            make.center.equalToSuperview()
-        }
-        
         self.uploadProgress.snp.makeConstraints { make in
-            make.height.width.equalTo(kHeadlinePadding)
-            make.top.left.equalToSuperview().offset(kLowPadding)
-            make.right.bottom.equalToSuperview().offset(-kLowPadding)
+            make.left.right.equalToSuperview()
+            make.height.equalTo(1)
+            make.top.equalToSuperview().offset(2)
         }
         
          self.deliveryWrapper.snp.makeConstraints { make in
@@ -98,7 +93,7 @@ class OutgoingPhotoCell: MediaCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        self.uploadProgressContainer.isHidden = true
+        self.uploadProgress.isHidden = true
     }
 }
 
@@ -108,12 +103,19 @@ extension OutgoingPhotoCell {
             UIImage(data: message.photo.preview) ??
             UIImage(data: message.video.thumbPreview)
         self.mediaRepository
-            .uploadingImages
-            .map({ $0.first(where: { $0.fileID == self.message?.photo.fileID }) })
+            .uploadingMedias
+            .map({ $0.first(where: { $0.fileID == self.message?.fileID }) })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
-            .do(onNext: {[weak self] _ in
-                self?.uploadProgressContainer.isHidden = false
+            .do(onNext: { [weak self] request in
+                guard let `self` = self, let request = request else { return }
+                if request.fromChunkNumber >= request.toChunkNumber {
+                    self.uploadProgress.isHidden = true
+                } else {
+                    self.uploadProgress.isHidden = false
+                    PP.info((Float(request.fromChunkNumber) / Float(request.toChunkNumber)).description)
+                    self.uploadProgress.progress = Float(request.fromChunkNumber) / Float(request.toChunkNumber)
+                }
             })
             .map({ [weak self] request -> UIImage? in
                 guard let `self` = self, let message = self.message, let request = request else { return nil }
@@ -125,11 +127,11 @@ extension OutgoingPhotoCell {
                 }
             })
             .compactMap({ $0 })
-            .subscribe { [weak self] image in
+            .subscribe(onNext: { [weak self] image in
                 guard let `self` = self else { return }
                 self.mediaView.image = image
-                self.uploadProgressContainer.isHidden = true
-            }
+                
+            })
             .disposed(by: disposeBag)
     }
 }

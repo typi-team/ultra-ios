@@ -99,8 +99,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { _ in PP.debug(file.mime) },
-                       onError: { error in
-                PP.debug(error.localizedDescription)
+                       onFailure: { error in PP.debug(error.localizedDescription)
             })
             .disposed(by: disposeBag)
     }

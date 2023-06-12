@@ -80,6 +80,8 @@ extension DBConversation: Conversation {
                 return text
             } else if message?.toProto().hasPhoto ?? false {
                 return "📷 Фото"
+            }else if message?.toProto().hasVideo ?? false {
+                return "🎥 Видео"
             }
             return self.message?.text
         }

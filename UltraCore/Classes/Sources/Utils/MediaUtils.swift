@@ -67,14 +67,14 @@ class MediaUtils {
         sdCache.store(nil, imageData: image.compress(.high), forKey: message.photo.originalFileId, toDisk: true)
     }
     
-    func storeVideoImageInLocal(data: Data, by message: Message) throws {
+    func storeVideoImageInLocal(data: Data, by message: VideoMessage) throws {
         guard let image = UIImage.sd_image(with: data)?.downsample(reductionAmount: 1.0),
               let low = image.compress(.low),
               let medium = image.compress(.medium) else {
             throw NSError.objectsIsNill
         }
-        self.sdCache.store(nil, imageData: low, forKey: message.video.previewVideoFileId, toDisk: true)
-        self.sdCache.store(nil, imageData: medium, forKey: message.video.originalVideoFileId, toDisk: true)
+        self.sdCache.store(nil, imageData: low, forKey: message.previewVideoFileId, toDisk: true)
+        self.sdCache.store(nil, imageData: medium, forKey: message.originalVideoFileId, toDisk: true)
     }
     
     @discardableResult
