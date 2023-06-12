@@ -7,7 +7,7 @@
 
 import UIKit
 
-class IncomingMediaCell: MediaCell {
+class IncomingPhotoCell: MediaCell {
     
     override func setupView() {
         self.addSubview(container)
@@ -54,6 +54,19 @@ class IncomingMediaCell: MediaCell {
     override func setup(message: Message) {
         super.setup(message: message)
         self.mediaView.image = UIImage.init(data: message.photo.preview)
+        if let image = self.mediaRepository.image(from: message, with: .snapshot) {
+            self.mediaView.image = image
+        } else {
+            self.dowloadImage(by: message)
+        }
+    }
+}
+
+
+class IncomingVideoCell: IncomingPhotoCell {
+    override func setup(message: Message) {
+        super.setup(message: message)
+        self.mediaView.image = UIImage.init(data: message.video.thumbPreview)
         if let image = self.mediaRepository.image(from: message, with: .snapshot) {
             self.mediaView.image = image
         } else {

@@ -8,7 +8,7 @@
 import UIKit
 import RxSwift
 
-class OutgoingMediaCell: MediaCell {
+class OutgoingPhotoCell: MediaCell {
     
     fileprivate let uploadProgressContainer: UIView = .init({
         $0.isHidden = true
@@ -102,9 +102,11 @@ class OutgoingMediaCell: MediaCell {
     }
 }
 
-extension OutgoingMediaCell {
+extension OutgoingPhotoCell {
     func uploadingProgress(for message: Message) {
-        self.mediaView.image = self.mediaRepository.image(from: message, with: .snapshot) ?? UIImage(data: message.photo.preview)
+        self.mediaView.image = self.mediaRepository.image(from: message, with: .snapshot) ??
+            UIImage(data: message.photo.preview) ??
+            UIImage(data: message.video.thumbPreview)
         self.mediaRepository
             .uploadingImages
             .map({ $0.first(where: { $0.fileID == self.message?.photo.fileID }) })
@@ -132,3 +134,19 @@ extension OutgoingMediaCell {
     }
 }
 
+
+class OutgoingVideoCell: OutgoingPhotoCell {
+    override func setup(message: Message) {
+        super.setup(message: message)
+        self.statusView.image = .named(message.statusImageName)
+        self.mediaView.image = UIImage.init(data: message.video.thumbPreview)
+        if self.mediaRepository.isUploading(from: message) {
+            self.uploadingProgress(for: message)
+        } else if let image = self.mediaRepository.image(from: message, with: .snapshot) {
+            self.mediaView.image = image
+        } else {
+            self.dowloadImage(by: message)
+        }
+    }
+    
+}

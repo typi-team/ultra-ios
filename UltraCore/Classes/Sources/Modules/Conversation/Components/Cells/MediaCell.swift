@@ -37,7 +37,7 @@ class MediaCell: BaseMessageCell {
         self.mediaView.image = UIImage(data: message.photo.preview)
         self.mediaRepository
             .downloadingImages
-            .map({ $0.first(where: { $0.fileID == self.message?.photo.fileID }) })
+            .map({ $0.first(where: { $0.fileID == self.message?.fileID }) })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .do(onNext: { [weak self] request in

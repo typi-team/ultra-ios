@@ -39,7 +39,7 @@ final class ConversationPresenter {
     lazy var messages: Observable<[Message]> = messageRepository.messages(chatID: conversation.idintification)
         .do(onNext: {[weak self ] messages in
             guard let `self` = self else { return }
-            let messages = messages.filter({ $0.photo.fileID != "" })
+            let messages = messages.filter({ $0.photo.fileID != "" || $0.video.fileID != "" })
                 .filter({ self.mediaRepository.image(from: $0, with: .snapshot) == nil })
             guard !messages.isEmpty else { return }
 
@@ -98,7 +98,10 @@ extension ConversationPresenter: ConversationPresenterInterface {
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
-            .subscribe(onSuccess: { _ in print(file.mime) })
+            .subscribe(onSuccess: { _ in PP.debug(file.mime) },
+                       onError: { error in
+                PP.debug(error.localizedDescription)
+            })
             .disposed(by: disposeBag)
     }
     

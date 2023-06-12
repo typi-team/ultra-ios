@@ -20,11 +20,13 @@ protocol ConversationViewInterface: ViewInterface {
 }
 
 struct FileUpload {
+    let url: URL?
     let data: Data
+    let mime: MimeType
     let width: CGFloat
     let height: CGFloat
-    let mime: String
 }
+
 protocol ConversationPresenterInterface: PresenterInterface {
     func viewDidLoad()
     func typing(is active: Bool)

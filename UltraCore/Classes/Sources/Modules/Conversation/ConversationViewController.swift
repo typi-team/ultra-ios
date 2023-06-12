@@ -32,9 +32,11 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.allowsSelection = false 
         tableView.registerCell(type: BaseMessageCell.self)
         tableView.registerCell(type: IncomeMessageCell.self)
-        tableView.registerCell(type: IncomingMediaCell.self)
+        tableView.registerCell(type: IncomingPhotoCell.self)
+        tableView.registerCell(type: IncomingVideoCell.self)
         tableView.registerCell(type: OutgoingMessageCell.self)
-        tableView.registerCell(type: OutgoingMediaCell.self)
+        tableView.registerCell(type: OutgoingPhotoCell.self)
+        tableView.registerCell(type: OutgoingVideoCell.self)
         tableView.backgroundColor = self.view.backgroundColor
         tableView.contentInset = .init(top: kMediumPadding, left: 0, bottom: 0, right: 0)
         tableView.backgroundView = UIImageView({
@@ -118,11 +120,19 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             })
             .bind(to: tableView.rx.items) { tableView, _, message in
                 if message.isIncome && message.photo.fileID != "" {
-                    let cell: IncomingMediaCell = tableView.dequeueCell()
+                    let cell: IncomingPhotoCell = tableView.dequeueCell()
                     cell.setup(message: message)
                     return cell
                 } else if !message.isIncome && message.photo.fileID != "" {
-                    let cell: OutgoingMediaCell = tableView.dequeueCell()
+                    let cell: OutgoingPhotoCell = tableView.dequeueCell()
+                    cell.setup(message: message)
+                    return cell
+                } else if message.isIncome && message.video.fileID != "" {
+                    let cell: IncomingVideoCell = tableView.dequeueCell()
+                    cell.setup(message: message)
+                    return cell
+                } else if !message.isIncome && message.video.fileID != "" {
+                    let cell: OutgoingVideoCell = tableView.dequeueCell()
                     cell.setup(message: message)
                     return cell
                 } else if message.isIncome {
@@ -163,7 +173,7 @@ extension ConversationViewController: MessageInputBarDelegate {
         viewController.resultCallback = {[weak self] action in
             guard let `self` = self else { return }
             switch action {
-            case .fromGallery: self.openMedia(type: .photoLibrary)
+            case .fromGallery: self.openMedia(type: .savedPhotosAlbum)
             case .takePhoto: self.openMedia(type: .camera)
             }
         }
@@ -212,19 +222,34 @@ private extension ConversationViewController {
         self.present(UIImagePickerController({
             $0.delegate = self
             $0.sourceType = type
+            $0.videoQuality = .typeMedium
+            $0.mediaTypes = ["public.movie", "public.image"]
+            $0.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
         }), animated: true)
     }
 }
 
 
 extension ConversationViewController {
+    
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            dismiss(animated: true, completion: nil)
+    }
+    
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        picker.dismiss(animated: true, completion: {
-            guard let image = info["UIImagePickerControllerOriginalImage"] as? UIImage,
-                  let data = UIImagePNGRepresentation(image) else {
-                 return
-            }
-            self.presenter?.upload(file: .init(data: data, width: image.size.width, height: image.size.height, mime: "image/png"))
-        })
+        print(info)
+        if info["UIImagePickerControllerMediaType"] as? String == "public.movie",
+            let url = info["UIImagePickerControllerMediaURL"]  as? URL,
+            let data = try? Data(contentsOf: url) {
+            picker.dismiss(animated: true)
+            self.presenter?.upload(file: .init(url: url, data: data, mime: "video/mp4", width: 300, height: 200))
+        } else if let image = info["UIImagePickerControllerOriginalImage"] as? UIImage,
+                  let downsampled = image.downsample(reductionAmount: 0.7),
+                  let data = UIImagePNGRepresentation(downsampled) {
+            picker.dismiss(animated: true, completion: {
+                
+                self.presenter?.upload(file: .init(url: nil, data: data, mime: "image/png", width: image.size.width, height: image.size.height))
+            })
+        }
     }
 }

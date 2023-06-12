@@ -7,7 +7,6 @@
 
 import UIKit
 import RxSwift
-import SDWebImage
 
 enum ImageType {
     case preview, snapshot, origin
@@ -25,7 +24,7 @@ protocol MediaRepository {
 }
 
 class MediaRepositoryImpl {
-    fileprivate let sdCache: SDImageCache
+    fileprivate let mediaUtils: MediaUtils
     fileprivate let appStore: AppSettingsStore
     fileprivate let messageDBService: MessageDBService
     fileprivate let fileService: FileServiceClientProtocol
@@ -35,14 +34,15 @@ class MediaRepositoryImpl {
     var uploadingImages: BehaviorSubject<[FileDownloadRequest]> = .init(value: [])
     var downloadingImages: BehaviorSubject<[FileDownloadRequest]> = .init(value: [])
     
-    init(sdCache: SDImageCache = .shared,
+    init(mediaUtils: MediaUtils,
          uploadFileInteractor: UseCase<[FileChunk], Void>,
          appStore: AppSettingsStore = AppSettingsImpl.shared.appStore,
          fileService: FileServiceClientProtocol = AppSettingsImpl.shared.fileService,
          messageDBService: MessageDBService = AppSettingsImpl.shared.messageDBService,
          createFileSpaceInteractor: UseCase<(data: Data, extens: String), [FileChunk]>) {
-        self.sdCache = sdCache
+        
         self.appStore = appStore
+        self.mediaUtils = mediaUtils
         self.fileService = fileService
         self.messageDBService = messageDBService
         self.uploadFileInteractor = uploadFileInteractor
@@ -59,114 +59,34 @@ extension MediaRepositoryImpl: MediaRepository {
         return try! self.uploadingImages.value().contains(where: { $0.fileID == message.photo.fileID })
     }
 
-    func upload(file:FileUpload, in conversation: Conversation) -> Single<MessageSendRequest> {
-        let userID = appStore.userID()
-        var message = Message.with { mess in
-            mess.receiver = .with({ receiver in
-                receiver.chatID = conversation.idintification
-                receiver.userID = conversation.peer?.userID ?? ""
-            })
-            mess.meta = .with { $0.created = Date().nanosec }
-            mess.sender = .with { $0.userID = userID }
-            mess.id = UUID().uuidString
-            mess.photo = .with({ photo in
-                photo.fileName = ""
-                photo.fileSize = Int64(file.data.count)
-                photo.mimeType = file.mime
-                photo.height = Int32(file.height)
-                photo.width = Int32(file.width)
-            })
+    func upload(file: FileUpload, in conversation: Conversation) -> Single<MessageSendRequest> {
+        if file.mime.containsImage {
+            return self.uploadImage(by: file, in: conversation)
+        } else if file.mime.containsVideo {
+            return self.uploadVideo(by: file, in: conversation)
+        }else {
+            fatalError()
         }
-
-        return self.createFileSpaceInteractor
-            .executeSingle(params: (file.data, message.photo.extensions))
-            .do(onSuccess: { [weak self] chunks in
-                guard let `self` = self else { return }
-                var images = try self.uploadingImages.value()
-                images.append(FileDownloadRequest.with({
-                    $0.fileID = chunks.first?.fileID ?? ""
-                    $0.fromChunkNumber = 0
-                    $0.toChunkNumber = Int64(chunks.count)
-                }))
-                self.uploadingImages.on(.next(images))
-            })
-            .map({ [weak self] chunks in
-                guard let `self` = self else { throw NSError.selfIsNill }
-                message.photo.fileID = chunks.first?.fileID ?? ""
-                try self.storeImageInLocal(data: file.data, by: message)
-                return chunks
-            })
-            .do(onSuccess: { [weak self] _ in
-                guard let `self` = self,
-                      let process = try? self.uploadingImages.value(),
-                      var file = process.first(where: { $0.fileID == message.photo.fileID }) else { return }
-                file.toChunkNumber = file.toChunkNumber / 10
-                self.uploadingImages.on(.next(process))
-            })
-            .flatMap({ [weak self] response -> Single<[FileChunk]> in
-                guard let `self` = self else { throw NSError.selfIsNill }
-                return self.messageDBService.save(message: message).map({ response })
-            })
-            .do(onSuccess: {[weak self] _ in
-                guard let `self` = self,
-                      let process = try? self.uploadingImages.value(),
-                      var file = process.first(where: { $0.fileID == message.photo.fileID }) else { return }
-                file.toChunkNumber = file.toChunkNumber / 40
-                self.uploadingImages.on(.next(process))
-            })
-            .flatMap({ [weak self] response -> Single<Void> in
-                guard let `self` = self else {
-                    throw NSError.selfIsNill
-                }
-                return self.uploadFileInteractor.executeSingle(params: response)
-            })
-            .do(onSuccess: {[weak self] _ in
-                guard let `self` = self,
-                      let process = try? self.uploadingImages.value(),
-                      var file = process.first(where: { $0.fileID == message.photo.fileID }) else { return }
-                file.toChunkNumber = file.toChunkNumber
-                self.uploadingImages.on(.next(process))
-            })
-            .map({ _ -> MessageSendRequest in
-                MessageSendRequest.with({ req in
-                    req.peer.user = .with({ peer in
-                        peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
-                    })
-                    req.message = message
-                })
-            })
-            .do(onSuccess: {[weak self] _ in
-                guard let `self` = self, var process = try? self.uploadingImages.value() else { return }
-                process.removeAll(where: { $0.fileID == message.photo.fileID })
-                self.uploadingImages.on(.next(process))
-            })
     }
     
     
     func image(from message: Message, with type: ImageType) -> UIImage? {
-        guard message.hasPhoto else { return nil }
-        switch type {
-        case .preview:
-            return sdCache.imageFromCache(forKey: message.photo.previewFileId)
-        case .snapshot:
-            return sdCache.imageFromCache(forKey: message.photo.snapshotFileId)
-        case .origin:
-            return sdCache.imageFromCache(forKey: message.photo.originalFileId)
-        }
+        return self.mediaUtils.image(from: message, with: type)
     }
     
     func download(from message: Message) -> Single<Message> {
         var inProgressValues = try! downloadingImages.value()
-        if inProgressValues.contains(where: {$0.fileID == message.photo.fileID }) {
+        guard let fileID = message.fileID,
+              !inProgressValues.contains(where: {$0.fileID == fileID}) else {
             return Single.just(message)
         }
 
-        let maxChunkSize = message.photo.fileSize / (512 * 1024)
+        let maxChunkSize = message.fileSize / (512 * 1024)
         
         return Single<Message>.create {[weak self] observer -> Disposable in
             guard let `self` = self else { return Disposables.create() }
             var params = FileDownloadRequest.with({
-                $0.fileID = message.photo.fileID
+                $0.fileID = fileID
                 $0.fromChunkNumber = 0
                 $0.toChunkNumber = maxChunkSize
             })
@@ -186,19 +106,37 @@ extension MediaRepositoryImpl: MediaRepository {
                     self.downloadingImages.on(.next(images ?? []))
                 })
                 .status
-                .flatMapThrowing({ [weak self] status in
-                    guard let `self` = self else { throw NSError.selfIsNill }
-                    return try self.storeImageInLocal(data: data, by: message)
-                })
-                .whenComplete { result in
+                .whenComplete {[weak self] result in
+                    guard let `self` = self else { return observer(.failure(NSError.selfIsNill))}
                     switch result {
                     case .success:
-                        params.fromChunkNumber = params.toChunkNumber
-                        var images = try? self.downloadingImages.value()
-                        images?.removeAll(where: {$0.fileID == params.fileID})
-                        images?.append(params)
-                        self.downloadingImages.on(.next(images ?? []))
-                        observer(.success(message))
+                        do {
+                            if message.hasPhoto {
+                                try self.mediaUtils.storeImageInLocal(data: data, by: message)
+                                params.fromChunkNumber = params.toChunkNumber
+                                var images = try? self.downloadingImages.value()
+                                images?.removeAll(where: { $0.fileID == params.fileID })
+                                images?.append(params)
+                                self.downloadingImages.on(.next(images ?? []))
+                                observer(.success(message))
+                            } else {
+                                Single<URL>.just(try self.mediaUtils.save(data, video: message.video))
+                                    .flatMap({ (url: URL) -> Single<Data> in self.mediaUtils.thumbnailData(in: url) })
+                                    .map({ imageData in try self.mediaUtils.storeVideoImageInLocal(data: imageData, by: message) })
+                                    .subscribe(onSuccess: {
+                                        params.fromChunkNumber = params.toChunkNumber
+                                        var images = try? self.downloadingImages.value()
+                                        images?.removeAll(where: { $0.fileID == params.fileID })
+                                        images?.append(params)
+                                        self.downloadingImages.on(.next(images ?? []))
+                                        observer(.success(message))
+                                    })
+                                    .dispose()
+                                return
+                            }
+                        } catch {
+                            observer(.failure(error))
+                        }
                     case let .failure(error):
                         observer(.failure(error))
                     }
@@ -210,26 +148,169 @@ extension MediaRepositoryImpl: MediaRepository {
 }
 
 private extension MediaRepositoryImpl {
-    func storeImageInLocal(data: Data, by message: Message) throws {
-        guard let image = UIImage.sd_image(with: data)?.downsample(reductionAmount: 0.1),
-              let low = image.compress(.low),
-              let medium = image.compress(.medium) else {
-            throw NSError.selfIsNill
-        }
-        self.sdCache.store(nil, imageData: low, forKey: message.photo.previewFileId, toDisk: true)
-        sdCache.store(nil, imageData: medium, forKey: message.photo.snapshotFileId, toDisk: true)
-        sdCache.store(nil, imageData: image.compress(.high), forKey: message.photo.originalFileId, toDisk: true)
+    
+    func uploadImage(by file: FileUpload, in conversation: Conversation) -> Single<MessageSendRequest> {
+
+        var message = self.mediaUtils.createMessageForUpload(in: conversation, with: appStore.userID())
+        message.photo = .with({ photo in
+            photo.fileName = ""
+            photo.fileSize = Int64(file.data.count)
+            photo.mimeType = file.mime
+            photo.height = Int32(file.height)
+            photo.width = Int32(file.width)
+        })
+
+        return self.createFileSpaceInteractor.executeSingle(params: (file.data, message.photo.mimeType))
+            .do(onSuccess: { [weak self] chunks in
+                guard let `self` = self else { return }
+                var images = try self.uploadingImages.value()
+                images.append(FileDownloadRequest.with({
+                    $0.fileID = chunks.first?.fileID ?? ""
+                    $0.fromChunkNumber = 0
+                    $0.toChunkNumber = Int64(chunks.count)
+                }))
+                self.uploadingImages.on(.next(images))
+            })
+            .map({ [weak self] chunks in
+                guard let `self` = self else { throw NSError.selfIsNill }
+                message.photo.fileID = chunks.first?.fileID ?? ""
+                try self.mediaUtils.storeImageInLocal(data: file.data, by: message)
+                return chunks
+            })
+            .do(onSuccess: { [weak self] _ in
+                guard let `self` = self,
+                      let process = try? self.uploadingImages.value(),
+                      var file = process.first(where: { $0.fileID == message.photo.fileID }) else { return }
+                file.toChunkNumber = file.toChunkNumber / 10
+                self.uploadingImages.on(.next(process))
+            })
+            .flatMap({ [weak self] response -> Single<[FileChunk]> in
+                guard let `self` = self else { throw NSError.selfIsNill }
+                return self.messageDBService.save(message: message).map({ response })
+            })
+            .do(onSuccess: { [weak self] _ in
+                guard let `self` = self,
+                      let process = try? self.uploadingImages.value(),
+                      var file = process.first(where: { $0.fileID == message.photo.fileID }) else { return }
+                file.toChunkNumber = file.toChunkNumber / 40
+                self.uploadingImages.on(.next(process))
+            })
+            .flatMap({ [weak self] response -> Single<Void> in
+                guard let `self` = self else {
+                    throw NSError.selfIsNill
+                }
+                return self.uploadFileInteractor.executeSingle(params: response)
+            })
+            .do(onSuccess: { [weak self] _ in
+                guard let `self` = self,
+                      let process = try? self.uploadingImages.value(),
+                      var file = process.first(where: { $0.fileID == message.photo.fileID }) else { return }
+                file.toChunkNumber = file.toChunkNumber
+                self.uploadingImages.on(.next(process))
+            })
+            .map({ _ -> MessageSendRequest in
+                MessageSendRequest.with({ req in
+                    req.peer.user = .with({ peer in
+                        peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
+                    })
+                    req.message = message
+                })
+            })
+            .do(onSuccess: { [weak self] _ in
+                guard let `self` = self, var process = try? self.uploadingImages.value() else { return }
+                process.removeAll(where: { $0.fileID == message.photo.fileID })
+                self.uploadingImages.on(.next(process))
+            })
     }
-}
+    
+    func uploadVideo(by file: FileUpload, in conversation: Conversation) -> Single<MessageSendRequest> {
 
-private extension PhotoMessage {
-    var extensions:String { mimeType.components(separatedBy: "/").last ?? ""}
-    var previewFileId: String { "preview_\(fileID)" }
-    var originalFileId: String { "original_\(fileID)" }
-    var snapshotFileId: String { "snapshot_\(fileID)" }
-}
+        var message = self.mediaUtils.createMessageForUpload(in: conversation, with: appStore.userID())
+        
+        message.video = .with({ photo in
+            photo.fileName = ""
+            photo.fileSize = Int64(file.data.count)
+            photo.mimeType = file.mime
+            photo.height = Int32(file.height)
+            photo.width = Int32(file.width)
+        })
 
-extension Message {
-    var hasPhoto: Bool { self.photo.fileID != "" }
+//        return
+//        self.mediaUtils.thumbnailData(in: file)
+//            .flatMap({[weak self] data -> Single<[FileChunk]> in
+//                guard let `self` = self else { throw NSError.selfIsNill }
+//                return self.createFileSpaceInteractor.executeSingle(params: (data: data, extens: "image/png"))
+//            })
+//            .flatMap({[weak self] chunks -> Single<Void> in
+//                guard let `self` = self else { throw NSError.selfIsNill }
+//                return self.uploadFileInteractor.executeSingle(params: chunks)
+//                    .do(onSuccess: { _ in
+//                        message.video.thumbFileID = chunks.first?.fileID ?? ""
+//                    })
+//            })
+//            .flatMap({ _ -> Single<[FileChunk]> in
+                return self.createFileSpaceInteractor
+                    .executeSingle(params: (file.data, message.video.mimeType))
+//            })
+//            .do(onSuccess: { [weak self] chunks in
+//                guard let `self` = self else { return }
+//                var images = try self.uploadingImages.value()
+//                images.append(FileDownloadRequest.with({
+//                    $0.fileID = chunks.first?.fileID ?? ""
+//                    $0.fromChunkNumber = 0
+//                    $0.toChunkNumber = Int64(chunks.count)
+//                }))
+//                self.uploadingImages.on(.next(images))
+//            })
+            .do( onSuccess: { [weak self] chunks in
+                guard let `self` = self else { throw NSError.selfIsNill }
+                message.video.fileID = chunks.first?.fileID ?? ""
+                try self.mediaUtils.save(file.data, video: message.video)
+            })
+//            .do(onSuccess: { [weak self] _ in
+//                guard let `self` = self,
+//                      let process = try? self.uploadingImages.value(),
+//                      var file = process.first(where: { $0.fileID == message.photo.fileID }) else { return }
+//                file.toChunkNumber = file.toChunkNumber / 10
+//                self.uploadingImages.on(.next(process))
+//            })
+//            .flatMap({ [weak self] response -> Single<[FileChunk]> in
+//                guard let `self` = self else { throw NSError.selfIsNill }
+//                return self.messageDBService.save(message: message).map({ response })
+//            })
+//            .do(onSuccess: { [weak self] _ in
+//                guard let `self` = self,
+//                      let process = try? self.uploadingImages.value(),
+//                      var file = process.first(where: { $0.fileID == message.photo.fileID }) else { return }
+//                file.toChunkNumber = file.toChunkNumber / 40
+//                self.uploadingImages.on(.next(process))
+//            })
+            .flatMap({ [weak self] response -> Single<Void> in
+                guard let `self` = self else {
+                    throw NSError.selfIsNill
+                }
+                return self.uploadFileInteractor.executeSingle(params: response)
+            })
+            .do(onSuccess: { [weak self] _ in
+                guard let `self` = self,
+                      let process = try? self.uploadingImages.value(),
+                      var file = process.first(where: { $0.fileID == message.photo.fileID }) else { return }
+                file.toChunkNumber = file.toChunkNumber
+                self.uploadingImages.on(.next(process))
+            })
+            .map({ _ -> MessageSendRequest in
+                return MessageSendRequest.with({ req in
+                    req.peer.user = .with({ peer in
+                        peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
+                    })
+                    req.message = message
+                })
+            })
+            .do(onSuccess: { [weak self] _ in
+                guard let `self` = self, var process = try? self.uploadingImages.value() else { return }
+                process.removeAll(where: { $0.fileID == message.photo.fileID })
+                self.uploadingImages.on(.next(process))
+            })
+    }
 }
 

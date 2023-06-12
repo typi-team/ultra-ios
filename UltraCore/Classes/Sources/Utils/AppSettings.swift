@@ -29,13 +29,13 @@ open class AppSettingsImpl:AppSettings  {
     public var pathToServer: String = "ultra-dev.typi.team"
 
 //    MARK: Local Singletone properties
-
+    lazy var mediaUtils: MediaUtils = .init()
     lazy var podAsset = PodAsset.bundle(forPod: "UltraCore")
     lazy var version: String = podAsset?.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.2"
 
     lazy var logger: Logger = {
         var log = Logger(label: "GRPC")
-//        log.logLevel = .debug
+        log.logLevel = .debug
         return log
     }()
     
@@ -65,7 +65,8 @@ open class AppSettingsImpl:AppSettings  {
 
 //    MARK: Repositories
 
-    lazy var mediaRepository: MediaRepository = MediaRepositoryImpl(uploadFileInteractor: UploadFileInteractor(fileService: fileService),
+    lazy var mediaRepository: MediaRepository = MediaRepositoryImpl(mediaUtils: mediaUtils,
+                                                                    uploadFileInteractor: UploadFileInteractor(fileService: fileService),
                                                                     fileService: fileService,
                                                                     createFileSpaceInteractor: CreateFileInteractor(fileService: fileService))
     lazy var contactRepository: ContactsRepository = ContactsRepositoryImpl(contactDBService: contactDBService)

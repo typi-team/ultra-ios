@@ -23,7 +23,7 @@ class CreateFileInteractor: UseCase<(data: Data, extens: String), [FileChunk]> {
             let request = FileCreateRequest.with({
                 $0.name = params.data.hashValue.description
                 $0.size = Int64(params.data.count)
-                $0.mimeType = "image/\(params.extens)"
+                $0.mimeType =  params.extens
             })
 
             self.fileService
