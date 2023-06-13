@@ -29,8 +29,10 @@ struct FileUpload {
 
 protocol ConversationPresenterInterface: PresenterInterface {
     func viewDidLoad()
+    
     func typing(is active: Bool)
     func upload(file: FileUpload)
     func send(message text: String)
+    func mediaURL(from message: Message) -> URL?
     var messages: Observable<[Message]> { get set }
 }

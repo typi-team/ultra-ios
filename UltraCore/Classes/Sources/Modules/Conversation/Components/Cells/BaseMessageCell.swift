@@ -39,6 +39,10 @@ class BaseMessageCell: BaseCell {
         self.container.addSubview(deliveryDateLabel)
     }
     
+    override func additioanSetup() {
+        super.additioanSetup()
+    }
+    
     override func setupConstraints() {
         super.setupConstraints()
 

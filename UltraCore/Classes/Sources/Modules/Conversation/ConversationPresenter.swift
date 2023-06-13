@@ -39,8 +39,8 @@ final class ConversationPresenter {
     lazy var messages: Observable<[Message]> = messageRepository.messages(chatID: conversation.idintification)
         .do(onNext: {[weak self ] messages in
             guard let `self` = self else { return }
-            let messages = messages.filter({ $0.photo.fileID != "" || $0.video.fileID != "" })
-                .filter({ self.mediaRepository.image(from: $0, with: .snapshot) == nil })
+            let messages = messages.filter({ $0.fileID != nil })
+                .filter({ self.mediaRepository.image(from: $0) == nil })
             guard !messages.isEmpty else { return }
 
             Observable.from(messages)
@@ -89,6 +89,10 @@ final class ConversationPresenter {
 // MARK: - Extensions -
 
 extension ConversationPresenter: ConversationPresenterInterface {
+    func mediaURL(from message: Message) -> URL? {
+        return self.mediaRepository.mediaURL(from: message)
+    }
+    
     func upload(file: FileUpload) {
         self.mediaRepository
             .upload(file: file, in: conversation)

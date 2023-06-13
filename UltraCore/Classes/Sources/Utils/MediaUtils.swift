@@ -14,34 +14,11 @@ import MobileCoreServices
 
 class MediaUtils {
     
-    fileprivate let sdCache: SDImageCache
-    
-    init(sdCache: SDImageCache = .shared) {
-        self.sdCache = sdCache
-    }
-    
-    func image(from message: Message, with type: ImageType) -> UIImage? {
-        if message.hasPhoto {
-            switch type {
-            case .preview:
-                return sdCache.imageFromCache(forKey: message.photo.previewFileId)
-            case .snapshot:
-                return sdCache.imageFromCache(forKey: message.photo.snapshotFileId)
-            case .origin:
-                return sdCache.imageFromCache(forKey: message.photo.originalFileId)
-            }
-        } else if message.hasVideo {
-            switch type {
-            case .preview:
-                return sdCache.imageFromCache(forKey: message.video.previewVideoFileId)
-            case .snapshot:
-                return sdCache.imageFromCache(forKey: message.video.originalVideoFileId)
-            case .origin:
-                return sdCache.imageFromCache(forKey: message.video.originalVideoFileId)
-            }
-        } else {
-            return nil
-        }
+    func image(from message: Message) -> UIImage? {
+        
+        guard let data = try? readFileWithName(fileName: message.hasPhoto ? message.photo.previewFileIdWithExtensions : message.video.previewVideoFileIdWithExtension),
+              let unWrapData = data else { return nil }
+        return UIImage(data: unWrapData)
     }
     
     func createMessageForUpload(in conversation: Conversation, with userID: String) -> Message {
@@ -56,47 +33,22 @@ class MediaUtils {
         }
     }
     
-    func storeImageInLocal(data: Data, by message: Message) throws {
-        guard let image = UIImage.sd_image(with: data)?.downsample(reductionAmount: 0.1),
-              let low = image.compress(.low),
-              let medium = image.compress(.medium) else {
-            throw NSError.objectsIsNill
-        }
-        self.sdCache.store(nil, imageData: low, forKey: message.photo.previewFileId, toDisk: true)
-        sdCache.store(nil, imageData: medium, forKey: message.photo.snapshotFileId, toDisk: true)
-        sdCache.store(nil, imageData: image.compress(.high), forKey: message.photo.originalFileId, toDisk: true)
-    }
-    
-    func storeVideoImageInLocal(data: Data, by message: VideoMessage) throws {
-        guard let image = UIImage.sd_image(with: data)?.downsample(reductionAmount: 1.0),
-              let low = image.compress(.low),
-              let medium = image.compress(.medium) else {
-            throw NSError.objectsIsNill
-        }
-        self.sdCache.store(nil, imageData: low, forKey: message.previewVideoFileId, toDisk: true)
-        self.sdCache.store(nil, imageData: medium, forKey: message.originalVideoFileId, toDisk: true)
-    }
-    
     @discardableResult
-    func save(_ data: Data, video message: VideoMessage) throws -> URL {
+    func write(_ data: Data, file path: String, and extension: String) throws -> URL {
         let fileManager = FileManager.default
         let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let fileURL = documentsDirectory.appendingPathComponent("\(message.fileID).\(message.extensions)")
+        let fileURL = documentsDirectory.appendingPathComponent(path).appendingPathExtension(`extension`)
         try data.write(to: fileURL, options: .atomic)
         return fileURL
     }
-
-    func videoURL(file id: String) -> URL? {
-        let fileManager = FileManager.default
-        let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let fileURL = documentsDirectory.appendingPathComponent(id)
-        
-        if fileManager.fileExists(atPath: fileURL.path) {
-            return fileURL
-        } else {
-            PP.warning("Файл с именем \(id) не найден.")
+    
+    func readFileWithName(fileName: String) throws -> Data? {
+        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
             return nil
         }
+        let fileURL = documentsDirectory.appendingPathComponent(fileName)
+        let data = try Data(contentsOf: fileURL)
+        return data
     }
     
     func thumbnailData(in url: URL) -> Single<Data> {
@@ -119,6 +71,19 @@ class MediaUtils {
                 observer(.failure(error))
             }
             return Disposables.create()
+        }
+    }
+    
+    func mediaURL(from message: Message) -> URL? {
+        let fileManager = FileManager.default
+        let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let fileURL = documentsDirectory.appendingPathComponent(message.originalFileIdWithExtension)
+        
+        if fileManager.fileExists(atPath: fileURL.path) {
+            return fileURL
+        } else {
+            PP.warning("Файл с именем \(message.originalFileIdWithExtension) не найден.")
+            return nil
         }
     }
 }
@@ -161,17 +126,35 @@ extension MimeType {
     }
 }
 
+extension Message {
+    var originalFileIdWithExtension: String {
+        if hasPhoto {
+            return photo.originalFileIdWithExtension
+        }else {
+            return video.originalVideoFileIdWithExtension
+        }
+    }
+}
+
 extension VideoMessage {
     var extensions:String { mimeType.components(separatedBy: "/").last ?? ""}
+    
     var previewVideoFileId: String { "preview_video_\(fileID)" }
     var originalVideoFileId: String { "original_video_\(fileID)" }
+    
+    var previewVideoFileIdWithExtension: String { "preview_video_\(fileID).png" }
+    var originalVideoFileIdWithExtension: String { "original_video_\(fileID).\(extensions)" }
 }
 
 extension PhotoMessage {
+
     var extensions:String { mimeType.components(separatedBy: "/").last ?? ""}
+
     var previewFileId: String { "preview_\(fileID)" }
+    var previewFileIdWithExtensions: String { "preview_\(fileID).\(extensions)" }
+
     var originalFileId: String { "original_\(fileID)" }
-    var snapshotFileId: String { "snapshot_\(fileID)" }
+    var originalFileIdWithExtension: String { "original_\(fileID).\(extensions)" }
 }
 
 extension Message {

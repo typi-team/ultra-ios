@@ -86,7 +86,7 @@ class OutgoingPhotoCell: MediaCell {
         self.mediaView.image = UIImage.init(data: message.photo.preview)
         if self.mediaRepository.isUploading(from: message) {
             self.uploadingProgress(for: message)
-        } else if let image = self.mediaRepository.image(from: message, with: .snapshot) {
+        } else if let image = self.mediaRepository.image(from: message) {
             self.mediaView.image = image
         } else {
             self.dowloadImage(by: message)
@@ -101,7 +101,7 @@ class OutgoingPhotoCell: MediaCell {
 
 extension OutgoingPhotoCell {
     func uploadingProgress(for message: Message) {
-        self.mediaView.image = self.mediaRepository.image(from: message, with: .snapshot) ??
+        self.mediaView.image = self.mediaRepository.image(from: message) ??
             UIImage(data: message.photo.preview) ??
             UIImage(data: message.video.thumbPreview)
         self.mediaRepository
@@ -123,7 +123,7 @@ extension OutgoingPhotoCell {
                 guard let `self` = self, let message = self.message, let request = request else { return nil }
 
                 if request.fromChunkNumber >= request.toChunkNumber {
-                    return self.mediaRepository.image(from: message, with: .origin)
+                    return self.mediaRepository.image(from: message)
                 } else {
                     return nil
                 }
@@ -148,7 +148,7 @@ class OutgoingVideoCell: OutgoingPhotoCell {
         self.mediaView.image = UIImage.init(data: message.video.thumbPreview)
         if self.mediaRepository.isUploading(from: message) {
             self.uploadingProgress(for: message)
-        } else if let image = self.mediaRepository.image(from: message, with: .snapshot) {
+        } else if let image = self.mediaRepository.image(from: message) {
             self.mediaView.image = image
         } else {
             self.dowloadImage(by: message)

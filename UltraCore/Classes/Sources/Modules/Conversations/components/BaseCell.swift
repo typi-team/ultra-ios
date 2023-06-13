@@ -12,6 +12,8 @@ class BaseCell: UITableViewCell {
         super.init(coder: coder)
         self.setupView()
         self.setupConstraints()
+        
+        self.additioanSetup()
     }
     
     
@@ -30,6 +32,8 @@ class BaseCell: UITableViewCell {
 }
 
 extension UITableViewCell {
+    @objc func additioanSetup() {
+    }
     @objc func setupView() {
         
     }

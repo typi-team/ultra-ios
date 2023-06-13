@@ -8,18 +8,15 @@
 import UIKit
 import RxSwift
 
-enum ImageType {
-    case preview, snapshot, origin
-}
-
 protocol MediaRepository {
     
     var uploadingMedias: BehaviorSubject<[FileDownloadRequest]> { get set }
     var downloadingImages: BehaviorSubject<[FileDownloadRequest]> { get set }
     
+    func mediaURL(from message: Message) -> URL?
     func isUploading(from message: Message) -> Bool
     func download(from message: Message) -> Single<Message>
-    func image(from message: Message, with type: ImageType) -> UIImage?
+    func image(from message: Message) -> UIImage?
     func upload(file: FileUpload, in conversation: Conversation) -> Single<MessageSendRequest>
 }
 
@@ -47,13 +44,14 @@ class MediaRepositoryImpl {
         self.messageDBService = messageDBService
         self.uploadFileInteractor = uploadFileInteractor
         self.createFileSpaceInteractor = createFileSpaceInteractor
-        
-//        self.sdCache.clearDisk()
-//        self.sdCache.clearMemory()
     }
 }
 
 extension MediaRepositoryImpl: MediaRepository {
+    func mediaURL(from message: Message) -> URL? {
+        return mediaUtils.mediaURL(from: message)
+    }
+    
     
     func isUploading(from message: Message) -> Bool {
         return try! self.uploadingMedias.value().contains(where: { $0.fileID == message.fileID })
@@ -69,9 +67,8 @@ extension MediaRepositoryImpl: MediaRepository {
         }
     }
     
-    
-    func image(from message: Message, with type: ImageType) -> UIImage? {
-        return self.mediaUtils.image(from: message, with: type)
+    func image(from message: Message) -> UIImage? {
+        return self.mediaUtils.image(from: message)
     }
     
     func download(from message: Message) -> Single<Message> {
@@ -100,6 +97,7 @@ extension MediaRepositoryImpl: MediaRepository {
                 .download(params, callOptions: .default(), handler: { chunk in
                     data.append(chunk.data)
                     params.fromChunkNumber = chunk.seqNum
+                    PP.warning((Float(params.fromChunkNumber) / Float(params.toChunkNumber)).description)
                     var images = try? self.downloadingImages.value()
                     images?.removeAll(where: {$0.fileID == chunk.fileID})
                     images?.append(params)
@@ -112,7 +110,9 @@ extension MediaRepositoryImpl: MediaRepository {
                     case .success:
                         do {
                             if message.hasPhoto {
-                                try self.mediaUtils.storeImageInLocal(data: data, by: message)
+                                try self.mediaUtils.write(data, file: message.photo.originalFileId, and: message.photo.extensions)
+                                try self.mediaUtils.write(data, file: message.photo.previewFileId, and: message.photo.extensions)
+                                
                                 params.fromChunkNumber = params.toChunkNumber
                                 var images = try? self.downloadingImages.value()
                                 images?.removeAll(where: { $0.fileID == params.fileID })
@@ -120,9 +120,10 @@ extension MediaRepositoryImpl: MediaRepository {
                                 self.downloadingImages.on(.next(images ?? []))
                                 observer(.success(message))
                             } else {
-                                Single<URL>.just(try self.mediaUtils.save(data, video: message.video))
+                                Single<URL>
+                                    .just(try self.mediaUtils.write(data, file: message.video.originalVideoFileId, and: message.video.extensions))
                                     .flatMap({ (url: URL) -> Single<Data> in self.mediaUtils.thumbnailData(in: url) })
-                                    .map({ imageData in try self.mediaUtils.storeVideoImageInLocal(data: imageData, by: message.video) })
+                                    .map({ imageData in try self.mediaUtils.write(imageData, file: message.video.previewVideoFileId, and: "png")})
                                     .subscribe(onSuccess: {
                                         params.fromChunkNumber = params.toChunkNumber
                                         var images = try? self.downloadingImages.value()
@@ -174,7 +175,8 @@ private extension MediaRepositoryImpl {
             .map({ [weak self] chunks in
                 guard let `self` = self else { throw NSError.selfIsNill }
                 message.photo.fileID = chunks.first?.fileID ?? ""
-                try self.mediaUtils.storeImageInLocal(data: file.data, by: message)
+                try self.mediaUtils.write(file.data, file: message.photo.previewFileId, and: message.photo.extensions)
+                try self.mediaUtils.write(file.data, file: message.photo.originalFileId, and: message.photo.extensions)
                 return chunks
             })
             .do(onSuccess: { [weak self] _ in
@@ -265,7 +267,7 @@ private extension MediaRepositoryImpl {
             }
             .do(onSuccess: {[weak self] chunks in
                 message.video.fileID = chunks.first?.fileID ?? ""
-                try? self?.mediaUtils.storeVideoImageInLocal(data: thumbnailData, by: message.video)
+                try self?.mediaUtils.write(thumbnailData, file: message.video.previewVideoFileId, and: "png")
             })
             .do(onSuccess: { [weak self] chunks in
                 guard let `self` = self else { return }
@@ -280,7 +282,7 @@ private extension MediaRepositoryImpl {
             .do( onSuccess: { [weak self] chunks in
                 guard let `self` = self else { throw NSError.selfIsNill }
                 message.video.fileID = chunks.first?.fileID ?? ""
-                try self.mediaUtils.save(file.data, video: message.video)
+                try self.mediaUtils.write(file.data, file: message.video.originalVideoFileId, and: message.video.extensions)
             })
             .do(onSuccess: { [weak self] _ in
                 guard let `self` = self,

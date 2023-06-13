@@ -53,7 +53,7 @@ class MediaCell: BaseMessageCell {
                 guard let `self` = self, let message = self.message, let request = request else { return nil }
 
                 if request.fromChunkNumber >= request.toChunkNumber {
-                    return self.mediaRepository.image(from: message, with: .origin)
+                    return self.mediaRepository.image(from: message)
                 } else {
                     return nil
                 }

@@ -17,12 +17,14 @@ class UploadFileInteractor: UseCase<[FileChunk], Void> {
 
     override func executeSingle(params: [FileChunk]) -> Single<Void> {
         return Single<Void>.create { observer -> Disposable in
-            self.fileService.upload(callOptions: .default())
-                .sendMessages(params, compression: .enabled)
+            let call = self.fileService.upload(callOptions: .default())
+            call.sendMessages(params, compression: .enabled)
                 .whenComplete { result in
                     switch result {
                     case let .success(response):
-                        observer(.success(response))
+                        call.sendEnd().whenSuccess { _ in
+                            observer(.success(response))
+                        }
                     case let .failure(error):
                         observer(.failure(error))
                     }
