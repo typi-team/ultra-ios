@@ -105,9 +105,9 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .compactMap({$0})
             .subscribe(onNext: { [weak self] url in
                 guard let `self` = self else { return }
+                self.view.endEditing(true)
                 self.mediaItem = url
                 let previewController = QLPreviewController()
-                previewController.modalPresentationStyle = .fullScreen
                 previewController.dataSource = self
                 previewController.currentPreviewItemIndex = 0
                 self.present(previewController, animated: true)

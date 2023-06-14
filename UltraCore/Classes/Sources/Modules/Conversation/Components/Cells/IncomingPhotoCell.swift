@@ -13,6 +13,7 @@ class IncomingPhotoCell: MediaCell {
         self.addSubview(container)
         self.backgroundColor = .clear
         self.container.addSubview(mediaView)
+        self.container.addSubview(playView)
         self.container.addSubview(downloadProgress)
         self.container.addSubview(deliveryWrapper)
         self.deliveryWrapper.addSubview(deliveryDateLabel)
@@ -49,6 +50,11 @@ class IncomingPhotoCell: MediaCell {
             make.right.equalToSuperview().offset(-(kLowPadding / 2))
             make.bottom.equalToSuperview().offset(-(kLowPadding / 2))
         }
+        
+        self.playView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.width.height.equalTo(kHeadlinePadding * 2)
+        }
     }
     
     override func setup(message: Message) {
@@ -69,6 +75,7 @@ class IncomingVideoCell: IncomingPhotoCell {
         self.mediaView.image = UIImage.init(data: message.video.thumbPreview)
         if let image = self.mediaRepository.image(from: message) {
             self.mediaView.image = image
+            self.playView.isHidden = !message.hasVideo
         } else {
             self.dowloadImage(by: message)
         }

@@ -10,6 +10,11 @@ import RxSwift
 
 class MediaCell: BaseMessageCell {
     
+    let playView: UIImageView = .init {
+        $0.isUserInteractionEnabled = false
+        $0.image = .named("conversation_media_play")
+    }
+    
     let downloadProgress: UIProgressView = .init({
         $0.trackTintColor = .clear
         $0.progressTintColor = .green500
@@ -30,6 +35,7 @@ class MediaCell: BaseMessageCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         self.mediaView.image = nil
+        self.playView.isHidden = true
         self.downloadProgress.isHidden = true
     }
 
@@ -59,6 +65,10 @@ class MediaCell: BaseMessageCell {
                 }
             })
             .compactMap({ $0 })
+                .do(onNext: {[weak self] _ in
+                    guard let `self` = self, let message = self.message else { return }
+                    self.playView.isHidden = !message.hasVideo
+                })
             .subscribe { [weak self] image in
                 guard let `self` = self else { return }
                 self.mediaView.image = image

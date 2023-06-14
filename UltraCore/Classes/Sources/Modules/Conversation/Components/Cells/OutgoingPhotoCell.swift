@@ -26,6 +26,7 @@ class OutgoingPhotoCell: MediaCell {
         self.container.addSubview(mediaView)
         self.mediaView.addSubview(sameProgressInSameTime)
         self.mediaView.addSubview(downloadProgress)
+        self.mediaView.addSubview(playView)
         self.container.addSubview(deliveryWrapper)
         self.deliveryWrapper.addSubview(statusView)
         self.deliveryWrapper.addSubview(deliveryDateLabel)
@@ -77,6 +78,11 @@ class OutgoingPhotoCell: MediaCell {
             make.top.equalToSuperview().offset(kLowPadding / 2)
             make.right.equalToSuperview().offset(-(kLowPadding / 2))
             make.bottom.equalToSuperview().offset(-(kLowPadding / 2))
+        }
+        
+        self.playView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.width.height.equalTo(kHeadlinePadding * 2)
         }
     }
     
@@ -150,6 +156,7 @@ class OutgoingVideoCell: OutgoingPhotoCell {
             self.uploadingProgress(for: message)
         } else if let image = self.mediaRepository.image(from: message) {
             self.mediaView.image = image
+            self.playView.isHidden = !message.hasVideo
         } else {
             self.dowloadImage(by: message)
         }
