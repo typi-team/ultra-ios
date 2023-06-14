@@ -3,11 +3,12 @@ import GRPC
 import UIKit
 import NIOPosix
 import PodAsset
+import Logging
 
 protocol AppSettings: Any {
     var channel: GRPCChannel { get }
-    var group: EventLoopGroup { get set }
     var appStore: AppSettingsStore { get set }
+    var mediaRepository: MediaRepository { get }
     var messageRespository: MessageRepository { get }
     var contactRepository: ContactsRepository { get }
     var fileService: FileServiceClientProtocol { get }
@@ -24,22 +25,28 @@ open class AppSettingsImpl:AppSettings  {
 
 //    MARK: Public properties
 
-    public var portOfServer: Int = 8080
-    public var pathToServer: String = "ultra-test.typi.team"
+    public var portOfServer: Int = 443
+    public var pathToServer: String = "ultra-dev.typi.team"
 
 //    MARK: Local Singletone properties
-
+    lazy var mediaUtils: MediaUtils = .init()
     lazy var podAsset = PodAsset.bundle(forPod: "UltraCore")
-    lazy var group: EventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
     lazy var version: String = podAsset?.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.2"
+
+    lazy var logger: Logger = {
+        var log = Logger(label: "GRPC")
+        log.logLevel = .debug
+        return log
+    }()
+    
     lazy var channel: GRPCChannel = try! GRPCChannelPool.with(target: .host(pathToServer, port: portOfServer),
-                                                              transportSecurity: .plaintext, eventLoopGroup: group)
-    
+                                                              transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
+
     lazy var fileChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(pathToServer, port: portOfServer),
-                                                              transportSecurity: .plaintext, eventLoopGroup: group)
-    
+                                                                  transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
+
     lazy var updateChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(pathToServer, port: portOfServer),
-                                                              transportSecurity: .plaintext, eventLoopGroup: group)
+                                                                    transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
 
 //    MARK: GRPC Services
     
@@ -58,20 +65,25 @@ open class AppSettingsImpl:AppSettings  {
 
 //    MARK: Repositories
 
+    lazy var mediaRepository: MediaRepository = MediaRepositoryImpl(mediaUtils: mediaUtils,
+                                                                    uploadFileInteractor: UploadFileInteractor(fileService: fileService),
+                                                                    fileService: fileService,
+                                                                    createFileSpaceInteractor: CreateFileInteractor(fileService: fileService))
     lazy var contactRepository: ContactsRepository = ContactsRepositoryImpl(contactDBService: contactDBService)
     lazy var messageRespository: MessageRepository = MessageRespositoryImpl(messageService: messageDBService)
     lazy var updateRepository: UpdateRepository = UpdateRepositoryImpl.init(appStore: appStore,
                                                                             messageService: messageDBService,
                                                                             contactService: contactDBService,
                                                                             update: updateService,
+                                                                            conversationService: conversationDBService,
                                                                             userByIDInteractor: ContactByUserIdInteractor.init(contactsService: contactsService),
-                                                                            conversationService: conversationDBService)
+                                                                            deliveredMessageInteractor: DeliveredMessageInteractor.init(messageService: messageService))
     lazy var conversationRespository: ConversationRepository = ConversationRepositoryImpl(conversationService: conversationDBService)
 }
 
 public func entryViewController() -> UIViewController {
     
-    UIBarButtonItem.appearance().title = ""
+//    UIBarButtonItem.appearance().title = ""
     UIBarButtonItem.appearance().tintColor = .green500
     UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.font: UIFont.defaultRegularHeadline]
     UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor: UIColor.clear], for: .normal)

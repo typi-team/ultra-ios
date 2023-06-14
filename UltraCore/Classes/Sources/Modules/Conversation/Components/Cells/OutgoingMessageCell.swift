@@ -33,7 +33,6 @@ class OutgoingMessageCell: BaseMessageCell {
 
         self.statusView.snp.makeConstraints { make in
             make.left.equalTo(self.textView.snp.right).offset(kLowPadding / 2)
-            make.width.equalTo(0)
         }
 
         self.deliveryDateLabel.snp.makeConstraints { make in
@@ -58,7 +57,7 @@ extension Message {
             return "conversation_status_loading"
         } else if self.state.delivered == false && self.state.read == false {
             return "conversation_status_sent"
-        } else if self.state.delivered == true {
+        } else if self.state.delivered == true && self.state.read == false {
             return "conversation_status_delivered"
         } else {
             return "conversation_status_read"

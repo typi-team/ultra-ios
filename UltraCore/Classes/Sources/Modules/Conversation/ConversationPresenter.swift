@@ -20,6 +20,8 @@ final class ConversationPresenter {
     
     fileprivate let userID: String
     fileprivate let disposeBag = DisposeBag()
+    fileprivate let appStore: AppSettingsStore
+    fileprivate let mediaRepository: MediaRepository
     fileprivate let updateRepository: UpdateRepository
     private unowned let view: ConversationViewInterface
     fileprivate let messageRepository: MessageRepository
@@ -27,33 +29,58 @@ final class ConversationPresenter {
     private let wireframe: ConversationWireframeInterface
     fileprivate let conversationRepository: ConversationRepository
     private let sendTypingInteractor: UseCase<String, SendTypingResponse>
-    private let messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>
+    private let readMessageInteractor: UseCase<Message, MessagesReadResponse>
     
+    private let messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>
+
 
     // MARK: - Public properties -
 
-    lazy var messages: Observable<Results<DBMessage>> = messageRepository.messages(chatID: conversation.idintification)
+    lazy var messages: Observable<[Message]> = messageRepository.messages(chatID: conversation.idintification)
+        .do(onNext: {[weak self ] messages in
+            guard let `self` = self else { return }
+            let messages = messages.filter({ $0.fileID != nil })
+                .filter({ self.mediaRepository.image(from: $0) == nil })
+            guard !messages.isEmpty else { return }
+
+            Observable.from(messages)
+                .flatMap { [weak self] message in
+                    guard let `self` = self else { throw NSError.selfIsNill }
+                    return self.mediaRepository.download(from: message)
+                }
+                .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+                .observe(on: MainScheduler.instance)
+                .subscribe()
+                .disposed(by: self.disposeBag)
+        
+    })
 
     // MARK: - Lifecycle -
 
     init(userID: String,
+         appStore: AppSettingsStore,
          conversation: Conversation,
          view: ConversationViewInterface,
+         mediaRepository: MediaRepository,
          updateRepository: UpdateRepository,
          messageRepository: MessageRepository,
          contactRepository: ContactsRepository,
          wireframe: ConversationWireframeInterface,
          conversationRepository: ConversationRepository,
          sendTypingInteractor: UseCase<String, SendTypingResponse>,
+         readMessageInteractor: UseCase<Message, MessagesReadResponse>,
          messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>) {
         self.view = view
         self.userID = userID
+        self.appStore = appStore
         self.wireframe = wireframe
         self.conversation = conversation
+        self.mediaRepository = mediaRepository
         self.updateRepository = updateRepository
         self.contactRepository = contactRepository
         self.messageRepository = messageRepository
         self.sendTypingInteractor = sendTypingInteractor
+        self.readMessageInteractor = readMessageInteractor
         self.conversationRepository = conversationRepository
         self.messageSenderInteractor = messageSenderInteractor
     }
@@ -62,6 +89,25 @@ final class ConversationPresenter {
 // MARK: - Extensions -
 
 extension ConversationPresenter: ConversationPresenterInterface {
+    func mediaURL(from message: Message) -> URL? {
+        return self.mediaRepository.mediaURL(from: message)
+    }
+    
+    func upload(file: FileUpload) {
+        self.mediaRepository
+            .upload(file: file, in: conversation)
+            .flatMap({ [weak self] request in
+                guard let `self` = self else { throw NSError.selfIsNill }
+                return self.messageSenderInteractor.executeSingle(params: request)
+            })
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe(onSuccess: { _ in PP.debug(file.mime) },
+                       onFailure: { error in PP.debug(error.localizedDescription)
+            })
+            .disposed(by: disposeBag)
+    }
+    
     func typing(is active: Bool) {
         self.sendTypingInteractor
             .executeSingle(params: conversation.idintification)
@@ -100,6 +146,20 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 })
                 .disposed(by: disposeBag)
         }
+        
+        self.messageRepository.messages(chatID: conversation.idintification)
+            .debounce(RxTimeInterval.milliseconds(400), scheduler: ConcurrentDispatchQueueScheduler(qos: .background))
+            .do(onNext: { [weak self] messages in
+                guard let `self` = self else { return }
+                let unreadMessages = messages.filter({ $0.sender.userID != self.appStore.userID() }).filter({ $0.state.read == false })
+                guard let lastUnreadMessage = unreadMessages.last else { return }
+                self.readMessageInteractor.executeSingle(params: lastUnreadMessage)
+                    .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+                    .subscribe()
+                    .disposed(by: self.disposeBag)
+            })
+            .subscribe()
+            .disposed(by: disposeBag)
     }
     
     func send(message text: String) {
@@ -146,5 +206,13 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .subscribe()
             .disposed(by: self.disposeBag)
     }
+}
+
+extension Message {
+    var isIncome: Bool { self.receiver.userID == AppSettingsImpl.shared.appStore.userID() }
+}
+
+
+private extension ConversationPresenter {
     
 }

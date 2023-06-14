@@ -19,9 +19,20 @@ protocol ConversationViewInterface: ViewInterface {
     func display(is typing: UserTypingWithDate)
 }
 
+struct FileUpload {
+    let url: URL?
+    let data: Data
+    let mime: MimeType
+    let width: CGFloat
+    let height: CGFloat
+}
+
 protocol ConversationPresenterInterface: PresenterInterface {
     func viewDidLoad()
+    
     func typing(is active: Bool)
+    func upload(file: FileUpload)
     func send(message text: String)
-    var messages: Observable<Results<DBMessage>> { get set }
+    func mediaURL(from message: Message) -> URL?
+    var messages: Observable<[Message]> { get set }
 }

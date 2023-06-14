@@ -41,24 +41,67 @@ class MessageDBService {
             return Disposables.create()
         }
     }
+    
+    //  MARK: Обновить сообщения как доставлено в базе данных
+    func delivered(message data: MessagesDelivered) -> Single<Bool> {
+        return Single.create { completable in
+            do {
+                let realm = Realm.myRealm()
+                try realm.write {
+                    let messagesInDB = realm.objects(DBMessage.self)
+                        .where({ $0.receiver.chatID.equals(data.chatID) })
+                        .where({ $0.seqNumber <= Int64(data.maxSeqNumber) })
+                    messagesInDB.forEach { message in
+                        message.state?.delivered = true
+                    }
+                }
+                completable(.success(true))
+            } catch {
+                completable(.failure(error))
+            }
+            return Disposables.create()
+        }
+    }
+    
+    //  MARK: Обновить сообщения как прочитанный в базе данных
+    func readed(message data: MessagesRead) -> Single<Bool> {
+        return Single.create { completable in
+            do {
+                let realm = Realm.myRealm()
+                try realm.write {
+                    let messagesInDB = realm.objects(DBMessage.self)
+                        .where({ $0.receiver.chatID.equals(data.chatID) })
+                        .where({ $0.seqNumber <= Int64(data.maxSeqNumber) })
+                    messagesInDB.forEach { message in
+                        message.state?.read = true
+                        message.state?.delivered = true
+                    }
+                }
+                completable(.success(true))
+            } catch {
+                completable(.failure(error))
+            }
+            return Disposables.create()
+        }
+    }
 
 //   MARK: Получение всех сообщений в чате
-    func messages(chatID: String) -> Observable<RealmSwift.Results<DBMessage>> {
+    func messages(chatID: String) -> Observable<[Message]> {
         return Observable.create { observer in
             let realm = Realm.myRealm()
-            let contacts = realm.objects(DBMessage.self).where { $0.receiver.chatID.equals(chatID) }
-            let notificationKey = contacts.observe(keyPaths: []) { changes in
+            let messages = realm.objects(DBMessage.self).where { $0.receiver.chatID.equals(chatID) }
+            let notificationKey = messages.observe(keyPaths: []) { changes in
                 switch changes {
                 case let .initial(collection):
-                    observer.on(.next(collection))
+                    observer.on(.next(collection.map({$0.toProto()})))
                 case let .update(collection, _, _, _):
-                    observer.on(.next(collection))
+                    observer.on(.next(collection.map({$0.toProto()})))
                 case let .error(error):
                     observer.on(.error(error))
                 }
             }
             
-            observer.onNext(contacts)
+            observer.onNext(messages.map({$0.toProto()}))
             return Disposables.create {
                 notificationKey.invalidate()
             }

@@ -76,6 +76,13 @@ extension DBConversation: Conversation {
     
     var lastMessage: String? {
         get {
+            if let text = self.message?.text, !text.isEmpty {
+                return text
+            } else if message?.toProto().hasPhoto ?? false {
+                return "📷 Фото"
+            }else if message?.toProto().hasVideo ?? false {
+                return "🎥 Видео"
+            }
             return self.message?.text
         }
         set {

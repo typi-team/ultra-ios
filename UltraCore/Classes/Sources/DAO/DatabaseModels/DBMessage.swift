@@ -36,7 +36,7 @@ class DBMessage: Object {
         self.chatType = message.chatType.rawValue
         self.seqNumber = Int64(message.seqNumber)
         self.type = message.type.rawValue
-        self.receiver = realm.object(ofType: DBReceiver.self, forPrimaryKey: message.receiver.chatID) ?? DBReceiver.init(message.receiver)
+        self.receiver = realm.object(ofType: DBReceiver.self, forPrimaryKey: message.receiver.id) ?? DBReceiver.init(message.receiver)
         self.sender = realm.object(ofType: DBSender.self, forPrimaryKey: message.sender.userID) ?? DBSender.init(from: message.sender)
         self.meta = DBMessageMeta.init(proto: message.meta)
         self.text = message.text
@@ -61,7 +61,7 @@ class DBMessage: Object {
     func toProto() -> Message {
         var message = Message()
         message.id = id
-        message.state = state!.state
+        message.state = state!.toProto()
         message.chatType = ChatTypeEnum(rawValue: chatType) ?? ChatTypeEnum.peerToPeer
         message.seqNumber = UInt64(seqNumber)
         message.type = MessageTypeEnum.init(rawValue: self.type) ?? MessageTypeEnum.text
@@ -95,23 +95,28 @@ class DBMessageState: Object {
         self.edited = messageState.edited
     }
     
-    lazy var state: MessageState = .with({
-        $0.read = self.read
-        $0.edited = self.edited
-        $0.delivered = self.delivered
-    })
+    func toProto() ->  MessageState {
+        return .with({
+            $0.read = self.read
+            $0.edited = self.edited
+            $0.delivered = self.delivered
+        })
+    }
 }
 
 class DBReceiver: Object {
+    
+    @Persisted var id: String = ""
     @Persisted var userID: String = ""
     @Persisted var chatID: String = ""
     
     override static func primaryKey() -> String? {
-        return "chatID"
+        return "id"
     }
     
     convenience init(_ receiver: Receiver) {
         self.init()
+        self.id = receiver.id
         self.userID = receiver.userID
         self.chatID = receiver.chatID
     }
@@ -300,3 +305,7 @@ class DBVideoMessage: Object {
     }
 }
 
+
+extension Receiver {
+    var id: String { chatID + userID }
+}

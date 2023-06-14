@@ -66,7 +66,7 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
                     self.tableView.backgroundView = nil
                 }
             })
-            .debounce(.milliseconds(500), scheduler: MainScheduler.asyncInstance)
+//            .debounce(.milliseconds(500), scheduler: MainScheduler.asyncInstance)
             .bind(to: tableView.rx.items) { tableView, index, model in
                 let cell: ConversationCell = tableView.dequeueCell()
                 cell.setup(conversation: model)

@@ -15,35 +15,35 @@ enum LogLevel: Int {
     case error = 4
 }
 
-class Logger {
+class PP {
     static var logLevel: LogLevel = .verbose
 
     static func verbose(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
-        if Logger.logLevel.rawValue <= LogLevel.verbose.rawValue {
+        if PP.logLevel.rawValue <= LogLevel.verbose.rawValue {
             log("[VERBOSE 😎] \(message)", file: file, function: function, line: line)
         }
     }
 
     static func debug(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
-        if Logger.logLevel.rawValue <= LogLevel.debug.rawValue {
+        if PP.logLevel.rawValue <= LogLevel.debug.rawValue {
             log("[DEBUG 🤓] \(message)", file: file, function: function, line: line)
         }
     }
 
     static func info(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
-        if Logger.logLevel.rawValue <= LogLevel.info.rawValue {
+        if PP.logLevel.rawValue <= LogLevel.info.rawValue {
             log("[INFO 🥹] \(message)", file: file, function: function, line: line)
         }
     }
 
     static func warning(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
-        if Logger.logLevel.rawValue <= LogLevel.warning.rawValue {
+        if PP.logLevel.rawValue <= LogLevel.warning.rawValue {
             log("[WARNING 😤] \(message)", file: file, function: function, line: line)
         }
     }
 
     static func error(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
-        if Logger.logLevel.rawValue <= LogLevel.error.rawValue {
+        if PP.logLevel.rawValue <= LogLevel.error.rawValue {
             log("[ERROR 🤬] \(message)", file: file, function: function, line: line)
         }
     }

@@ -45,27 +45,30 @@ class UpdateRepositoryImpl {
     
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> = .init(value: [:])
     
+    fileprivate let disposeBag = DisposeBag()
     fileprivate let appStore: AppSettingsStore
-    
     fileprivate let contactService: ContactDBService
     fileprivate let messageService: MessageDBService
     fileprivate let update: UpdatesServiceClientProtocol
     fileprivate let conversationService: ConversationDBService
     fileprivate let contactByIDInteractor: UseCase<String, Contact>
+    fileprivate let deliveredMessageInteractor: UseCase<Message, MessagesDeliveredResponse>
     
     
     init(appStore: AppSettingsStore,
          messageService: MessageDBService,
          contactService: ContactDBService,
          update: UpdatesServiceClientProtocol,
+         conversationService: ConversationDBService,
          userByIDInteractor: UseCase<String, Contact>,
-         conversationService: ConversationDBService) {
+         deliveredMessageInteractor: UseCase<Message, MessagesDeliveredResponse>) {
         self.update = update
         self.appStore = appStore
         self.messageService = messageService
         self.contactService = contactService
-        self.contactByIDInteractor = userByIDInteractor
         self.conversationService = conversationService
+        self.contactByIDInteractor = userByIDInteractor
+        self.deliveredMessageInteractor = deliveredMessageInteractor
     }
 }
 
@@ -80,7 +83,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
                     case .success:
                         break
                     case let .failure(error):
-                        Logger.error(error.localizedDescription)
+                        PP.error(error.localizedDescription)
                         timer.invalidate()
                     }
                 }
@@ -102,22 +105,22 @@ extension UpdateRepositoryImpl: UpdateRepository {
                     case let .contact(contact):
                         self.update(contact: contact)
                     case let .messagesDelivered(message):
-                        Logger.debug(message.textFormatString())
+                        self.messagesDelivered(message: message)
                     case let .messagesRead(message):
-                        Logger.debug(message.textFormatString())
+                        self.messagesReaded(message: message)
                     case let .messagesDeleted(message):
-                        Logger.debug(message.textFormatString())
+                        PP.debug(message.textFormatString())
                     case let .chatDeleted(chat):
-                        Logger.debug(chat.textFormatString())
+                        PP.debug(chat.textFormatString())
                     case let .moneyTransferStatus(status):
-                        Logger.debug(status.textFormatString())
+                        PP.debug(status.textFormatString())
                     }
                 } else if let presence = update.ofPresence {
                     switch presence {
                     case let .typing(typing):
                         self.handle(user: typing)
                     case let .audioRecording(pres):
-                        Logger.debug(pres.textFormatString())
+                        PP.debug(pres.textFormatString())
                     case let .userStatus(userStatus):
                         guard var contact = self.contactService.contact(id: userStatus.userID)?.toProto() else {
                             return
@@ -126,7 +129,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
                         self.update(contact: contact)
 
                     case let .mediaUploading(pres):
-                        Logger.debug(pres.textFormatString())
+                        PP.debug(pres.textFormatString())
                     }
                 }
             }
@@ -156,6 +159,13 @@ extension UpdateRepositoryImpl {
                 .subscribe()
                 .dispose()
         }
+        
+        if message.state.delivered == false && message.isIncome {
+            self.deliveredMessageInteractor
+                .executeSingle(params: message)
+                .subscribe()
+                .dispose()
+        }
     }
     func update(contact: Contact) {
         self.contactService.save(contact: DBContact.init(from: contact, user: self.appStore.userID()))
@@ -165,7 +175,7 @@ extension UpdateRepositoryImpl {
     }
 }
 
-extension UpdateRepository {
+extension UpdateRepositoryImpl {
     func handle(user typing: UserTyping) {
         guard var users = try? typingUsers.value() else {
             return
@@ -187,5 +197,23 @@ extension UpdateRepository {
             }
             typingUsers.on(.next(users))
         }
+    }
+    
+    func messagesDelivered(message delivered: MessagesDelivered) {
+        self.messageService
+            .delivered(message: delivered)
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .subscribe()
+            .disposed(by: disposeBag)
+        
+    }
+    
+    func messagesReaded(message delivered: MessagesRead) {
+        self.messageService
+            .readed(message: delivered)
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .subscribe()
+            .disposed(by: disposeBag)
+        
     }
 }
