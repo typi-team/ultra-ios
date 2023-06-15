@@ -16,13 +16,25 @@ protocol AppSettingsStore {
     
     var lastState: Int64 { get }
     var isAuthed: Bool { get }
+    var ssid: String? { get set }
 }
 
 class AppSettingsStoreImpl {
     fileprivate let kToken = "kToken"
+    fileprivate let kSID = "kSSID"
     fileprivate let kUserID = "kUserID"
     fileprivate let kLastState = "kLastState"
     fileprivate let userDefault = UserDefaults(suiteName: "com.ultaCore.messenger")
+    
+    var ssid: String? {
+        get {
+            return userDefault?.string(forKey: kSID)
+        }
+        
+        set {
+            userDefault?.set(newValue, forKey: kSID)
+        }
+    }
 }
 
 extension AppSettingsStoreImpl: AppSettingsStore {

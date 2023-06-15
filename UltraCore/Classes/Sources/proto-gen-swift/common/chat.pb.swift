@@ -20,6 +20,22 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
+struct ChatMember {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var id: String = String()
+
+  var isCaller: Bool = false
+
+  var type: UserTypeEnum = .userTypeUnknown
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 struct Chat {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -33,7 +49,7 @@ struct Chat {
 
   var unread: Int64 = 0
 
-  var members: [String] = []
+  var members: [ChatMember] = []
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -117,6 +133,7 @@ struct Peer {
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
+extension ChatMember: @unchecked Sendable {}
 extension Chat: @unchecked Sendable {}
 extension PeerUser: @unchecked Sendable {}
 extension PeerChat: @unchecked Sendable {}
@@ -125,6 +142,50 @@ extension Peer.OneOf_OfPeer: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
+
+extension ChatMember: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "ChatMember"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "id"),
+    2: .standard(proto: "is_caller"),
+    3: .same(proto: "type"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.id) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.isCaller) }()
+      case 3: try { try decoder.decodeSingularEnumField(value: &self.type) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.id.isEmpty {
+      try visitor.visitSingularStringField(value: self.id, fieldNumber: 1)
+    }
+    if self.isCaller != false {
+      try visitor.visitSingularBoolField(value: self.isCaller, fieldNumber: 2)
+    }
+    if self.type != .userTypeUnknown {
+      try visitor.visitSingularEnumField(value: self.type, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: ChatMember, rhs: ChatMember) -> Bool {
+    if lhs.id != rhs.id {return false}
+    if lhs.isCaller != rhs.isCaller {return false}
+    if lhs.type != rhs.type {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
 
 extension Chat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "Chat"
@@ -146,7 +207,7 @@ extension Chat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
       case 2: try { try decoder.decodeSingularStringField(value: &self.chatID) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self.title) }()
       case 4: try { try decoder.decodeSingularInt64Field(value: &self.unread) }()
-      case 5: try { try decoder.decodeRepeatedStringField(value: &self.members) }()
+      case 5: try { try decoder.decodeRepeatedMessageField(value: &self.members) }()
       default: break
       }
     }
@@ -166,7 +227,7 @@ extension Chat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
       try visitor.visitSingularInt64Field(value: self.unread, fieldNumber: 4)
     }
     if !self.members.isEmpty {
-      try visitor.visitRepeatedStringField(value: self.members, fieldNumber: 5)
+      try visitor.visitRepeatedMessageField(value: self.members, fieldNumber: 5)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
