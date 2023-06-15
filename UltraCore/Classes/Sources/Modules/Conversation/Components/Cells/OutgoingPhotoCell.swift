@@ -150,13 +150,13 @@ extension OutgoingPhotoCell {
 class OutgoingVideoCell: OutgoingPhotoCell {
     override func setup(message: Message) {
         super.setup(message: message)
+        self.playView.isHidden = !message.hasVideo
         self.statusView.image = .named(message.statusImageName)
         self.mediaView.image = UIImage.init(data: message.video.thumbPreview)
         if self.mediaRepository.isUploading(from: message) {
             self.uploadingProgress(for: message)
         } else if let image = self.mediaRepository.image(from: message) {
             self.mediaView.image = image
-            self.playView.isHidden = !message.hasVideo
         } else {
             self.dowloadImage(by: message)
         }
