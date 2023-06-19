@@ -16,7 +16,7 @@ protocol AppSettingsStore {
     
     var lastState: Int64 { get }
     var isAuthed: Bool { get }
-    var ssid: String? { get set }
+    var ssid: String { get set }
 }
 
 class AppSettingsStoreImpl {
@@ -26,9 +26,12 @@ class AppSettingsStoreImpl {
     fileprivate let kLastState = "kLastState"
     fileprivate let userDefault = UserDefaults(suiteName: "com.ultaCore.messenger")
     
-    var ssid: String? {
+    var ssid: String {
         get {
-            return userDefault?.string(forKey: kSID)
+            guard let sid = userDefault?.string(forKey: kSID) else {
+                fatalError("don't call this methode without value")
+            }
+            return sid
         }
         
         set {

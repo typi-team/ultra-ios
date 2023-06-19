@@ -32,7 +32,7 @@ class ContactByUserIdInteractor: UseCase<String, Contact> {
                                 $0.phone = userByContact.user.phone
                                 $0.photo = userByContact.user.photo
                             })))
-                        }else if userByContact.hasContact {
+                        } else if userByContact.hasContact {
                             observer(.success(.with({
                                 $0.userID = userByContact.contact.userID
                                 $0.lastname = userByContact.contact.lastname
@@ -40,15 +40,13 @@ class ContactByUserIdInteractor: UseCase<String, Contact> {
                                 $0.phone = userByContact.contact.phone
                                 $0.photo = userByContact.contact.photo
                             })))
-                        }else {
+                        } else {
                             observer(.failure(NSError.objectsIsNill))
                         }
-                        
                     case let .failure(error):
                         observer(.failure(error))
                     }
                 }
-
             return Disposables.create()
         }
     }

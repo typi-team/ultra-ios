@@ -78,8 +78,14 @@ extension FFSignUpPresenter: SignUpPresenterInterface {
                 fatalError(error.localizedDescription)
             } else if let data = data,
                       let userResponse = try? JSONDecoder().decode(UserResponse.self, from: data) {
-                entryViewController(with: userResponse.sid) { controller in
-                    self.view.open(view: controller)
+                update(sid: userResponse.sid) { error in
+                    if let error = error {
+                        fatalError()
+                    } else {
+                        DispatchQueue.main.async {
+                            self.view.open(view: entryConversationsViewController())
+                        }
+                    }
                 }
 
             } else {

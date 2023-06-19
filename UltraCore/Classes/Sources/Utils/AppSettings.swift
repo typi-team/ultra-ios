@@ -6,14 +6,8 @@ import NIOPosix
 import PodAsset
 import Logging
 
-public protocol UCAppDelegate: AnyObject {
-    func ssid() -> String?
-    func signUpView() -> UIViewController?
-}
-
 protocol AppSettings: Any {
     
-    var delegate: UCAppDelegate? { get set }
     var appStore: AppSettingsStore { get set }
     
     var mediaRepository: MediaRepository { get }
@@ -26,13 +20,9 @@ protocol AppSettings: Any {
     var authService: AuthServiceClientProtocol { get }
     var messageService: MessageServiceClientProtocol { get }
     var contactsService: ContactServiceClientProtocol { get }
-    
-    func update(ssid: String, callback: @escaping(IssueJwtResponse) -> Void)
 }
 
 open class AppSettingsImpl: AppSettings  {
-    
-    weak var delegate: UCAppDelegate?
     
     static let shared = AppSettingsImpl()
 
@@ -87,50 +77,44 @@ open class AppSettingsImpl: AppSettings  {
                                                                             deliveredMessageInteractor: DeliveredMessageInteractor.init(messageService: messageService))
     lazy var conversationRespository: ConversationRepository = ConversationRepositoryImpl(conversationService: conversationDBService)
     
-    func update(ssid: String, callback: @escaping (IssueJwtResponse) -> Void) {
-        self.appStore.ssid = ssid
+    func update(ssid: String, callback: @escaping (Error?) -> Void) {
         let localService = JWTTokenInteractorImpl(authService: authService)
-
         _ = localService.executeSingle(params: .with({ $0.sessionID = ssid }))
             .do(onSuccess: { [weak self] response in
                 guard let `self` = self else { return }
                 self.appStore.store(token: response.token)
                 self.appStore.store(userID: response.userID)
-            })
-            .do(onSuccess: { callback($0) })
-            .asObservable()
-            .flatMap({ _ in Observable<Int64>.interval(.seconds(240), scheduler: ConcurrentDispatchQueueScheduler(qos: .background)) })
-            .flatMap({ _ -> Observable<IssueJwtResponse> in
-                localService.executeSingle(params: .with({ $0.sessionID = ssid })).asObservable()
-            })
-            .do(onNext: { [weak self] response in
-                self?.appStore.store(token: response.token)
-            })
-            .catch({ error -> Observable<IssueJwtResponse> in
-                print(error.localizedDescription)
-                return Observable.just(IssueJwtResponse())
-            })
+            }, onError: { callback($0) })
+            .do(onSuccess: { _ in callback(nil) })
             .subscribe()
     }
 }
 
-public func entryViewController(delegate: UCAppDelegate) -> UIViewController {
-    AppSettingsImpl.shared.delegate = delegate
+
+func setupAppearance() {
     UIBarButtonItem.appearance().tintColor = .green500
     UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.font: UIFont.defaultRegularHeadline]
     UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor: UIColor.clear], for: .normal)
     UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor: UIColor.clear], for: UIControlState.highlighted)
-
-    let controller = AppSettingsImpl.shared.appStore.ssid == nil ? delegate.signUpView() ?? SignUpWireframe().viewController : ConversationsWireframe().viewController
-    controller.hidesBottomBarWhenPushed = false
-    return controller
 }
 
-public func entryViewController(with ssid: String, callback: @escaping(UIViewController) -> Void) {
-    AppSettingsImpl.shared.update(ssid: ssid, callback: { _ in
-        DispatchQueue.main.async {
-            callback(ConversationsWireframe().viewController)
-        }
-    })
-    
+public func entrySignUpViewController()->  UIViewController {
+    setupAppearance()
+    return SignUpWireframe().viewController
+}
+
+public func entryViewController()->  UIViewController {
+    setupAppearance()
+    return AppSettingsImpl.shared.appStore.isAuthed ? ConversationsWireframe().viewController : SignUpWireframe().viewController
+}
+
+public func entryConversationsViewController()->  UIViewController {
+    setupAppearance()
+    return ConversationsWireframe().viewController
+}
+
+
+public func update(sid token: String, with callback: @escaping(Error?) -> Void) {
+    AppSettingsImpl.shared.appStore.ssid = token
+    AppSettingsImpl.shared.update(ssid: token, callback: callback)
 }

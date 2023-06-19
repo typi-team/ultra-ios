@@ -165,7 +165,7 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         self.handleButtonEnabling()
         self.logoImage.image = .named("ff_logo_text")
         self.headlineText.text = "Для регистрации в чат сервисе введите ваши данные"
-//        self.presenter?.login(lastName: "Shalkar", firstname: "Like_a_boss", phone: "+77756043111")
+        self.presenter?.login(lastName: "Shalkar", firstname: "Like_a_boss", phone: "+77756043111")
     }
 }
 
