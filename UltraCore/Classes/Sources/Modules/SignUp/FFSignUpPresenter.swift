@@ -80,7 +80,7 @@ extension FFSignUpPresenter: SignUpPresenterInterface {
                       let userResponse = try? JSONDecoder().decode(UserResponse.self, from: data) {
                 update(sid: userResponse.sid) { error in
                     if let error = error {
-                        fatalError()
+                        fatalError(error.localizedDescription)
                     } else {
                         DispatchQueue.main.async {
                             self.view.open(view: entryConversationsViewController())
