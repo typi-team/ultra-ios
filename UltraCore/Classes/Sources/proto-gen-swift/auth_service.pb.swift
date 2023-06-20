@@ -31,6 +31,8 @@ struct IssueJwtRequest {
 
   var device: DeviceEnum = .web
 
+  var sessionID: String = String()
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -73,11 +75,9 @@ struct IssueJwtResponse {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var code: Int32 = 0
-
-  var message: String = String()
-
   var token: String = String()
+
+  var userID: String = String()
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -99,6 +99,7 @@ extension IssueJwtRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     1: .standard(proto: "user_id"),
     2: .standard(proto: "device_id"),
     3: .same(proto: "device"),
+    4: .standard(proto: "session_id"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -110,6 +111,7 @@ extension IssueJwtRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
       case 1: try { try decoder.decodeSingularStringField(value: &self.userID) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.deviceID) }()
       case 3: try { try decoder.decodeSingularEnumField(value: &self.device) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.sessionID) }()
       default: break
       }
     }
@@ -125,6 +127,9 @@ extension IssueJwtRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     if self.device != .web {
       try visitor.visitSingularEnumField(value: self.device, fieldNumber: 3)
     }
+    if !self.sessionID.isEmpty {
+      try visitor.visitSingularStringField(value: self.sessionID, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -132,6 +137,7 @@ extension IssueJwtRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     if lhs.userID != rhs.userID {return false}
     if lhs.deviceID != rhs.deviceID {return false}
     if lhs.device != rhs.device {return false}
+    if lhs.sessionID != rhs.sessionID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -228,9 +234,8 @@ extension GetUserIdResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
 extension IssueJwtResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "IssueJwtResponse"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "code"),
-    2: .same(proto: "message"),
-    3: .same(proto: "token"),
+    1: .same(proto: "token"),
+    2: .standard(proto: "user_id"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -239,31 +244,26 @@ extension IssueJwtResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularInt32Field(value: &self.code) }()
-      case 2: try { try decoder.decodeSingularStringField(value: &self.message) }()
-      case 3: try { try decoder.decodeSingularStringField(value: &self.token) }()
+      case 1: try { try decoder.decodeSingularStringField(value: &self.token) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.userID) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.code != 0 {
-      try visitor.visitSingularInt32Field(value: self.code, fieldNumber: 1)
-    }
-    if !self.message.isEmpty {
-      try visitor.visitSingularStringField(value: self.message, fieldNumber: 2)
-    }
     if !self.token.isEmpty {
-      try visitor.visitSingularStringField(value: self.token, fieldNumber: 3)
+      try visitor.visitSingularStringField(value: self.token, fieldNumber: 1)
+    }
+    if !self.userID.isEmpty {
+      try visitor.visitSingularStringField(value: self.userID, fieldNumber: 2)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: IssueJwtResponse, rhs: IssueJwtResponse) -> Bool {
-    if lhs.code != rhs.code {return false}
-    if lhs.message != rhs.message {return false}
     if lhs.token != rhs.token {return false}
+    if lhs.userID != rhs.userID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

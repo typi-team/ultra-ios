@@ -15,6 +15,7 @@ protocol SignUpWireframeInterface: WireframeInterface {
 }
 
 protocol SignUpViewInterface: ViewInterface {
+    func open(view controller: UIViewController)
 }
 
 protocol SignUpPresenterInterface: PresenterInterface {

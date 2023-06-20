@@ -16,6 +16,7 @@ protocol ContactDisplayable: Any {
     var status: UserStatus { get }
     
     var image: UIImage? { get }
+    var imagePath: String { get }
 }
 
 extension DBContact : ContactDisplayable {
@@ -34,9 +35,13 @@ extension DBContact : ContactDisplayable {
     var displaName: String { [firstName, lastName].joined(separator: " ") }
     
     var image: UIImage? { UIImage(data: toProto().photo.preview) }
+    
+    var imagePath: String { self.toProto().imagePath }
 }
 
 extension Contact: ContactDisplayable {
+    var imagePath: String { "\(self.previewKey).\(self.previewExtension)" }
+    
     var chatID: String {
         let id = AppSettingsImpl.shared.appStore.userID()
 

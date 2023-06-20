@@ -19,28 +19,32 @@ final class ContactsBookPresenter: BasePresenter {
 
     // MARK: - Private properties -
 
+    fileprivate let mediaUtils = MediaUtils()
     fileprivate let disposeBag = DisposeBag()
+    fileprivate let appStore: AppSettingsStore
     fileprivate let contactsRepository: ContactsRepository
     fileprivate unowned let view: ContactsBookViewInterface
     fileprivate let wireframe: ContactsBookWireframeInterface
-//    fileprivate let fileDownloadService: UseCase<PhotoDownloadRequest, Any>
+    fileprivate let contactImageDownloadInteractor: UseCase<Contact, Void>
     fileprivate let bookContacts: UseCase<Void, ContactsBookInteractor.Contacts>
     fileprivate let syncContact: UseCase<ContactsImportRequest, ContactImportResponse>
     
     // MARK: - Lifecycle -
 
-    init(view: ContactsBookViewInterface,
+    init(appStore: AppSettingsStore,
+         view: ContactsBookViewInterface,
          contactsRepository: ContactsRepository,
          wireframe: ContactsBookWireframeInterface,
-//         fileDownloadService: UseCase<PhotoDownloadRequest, Any>,
+         contactImageDownloadInteractor: UseCase<Contact, Void>,
          syncContact: UseCase<ContactsImportRequest, ContactImportResponse>,
          bookContacts: UseCase<Void, ContactsBookInteractor.Contacts>) {
         self.view = view
+        self.appStore = appStore
         self.wireframe = wireframe
         self.syncContact = syncContact
         self.bookContacts = bookContacts
         self.contactsRepository = contactsRepository
-//        self.fileDownloadService = fileDownloadService
+        self.contactImageDownloadInteractor = contactImageDownloadInteractor
     }
 }
 
@@ -63,22 +67,22 @@ extension ContactsBookPresenter: ContactsBookPresenterInterface {
                 request.contacts = result.contacts
                 return self.syncContact.executeSingle(params: request)
             })
-            .do(onSuccess: { [weak self] result in
-                guard let `self` = self else { throw NSError.selfIsNill }
-                self.runDownloadingImage(for: result.contacts)
-            })
             .flatMap({ [weak self] response -> Single<[Contact]> in
                 guard let `self` = self else { throw NSError.selfIsNill }
                 return self.contactsRepository.save(contacts: response).map({ response.contacts })
+            })
+            .flatMap({ contacts -> Single<[Contact]> in
+                Observable.from(contacts.filter({ $0.hasPhoto }))
+                    .flatMap({ [weak self] contact -> Single in
+                        guard let `self` = self else { throw NSError.selfIsNill }
+                        return self.contactImageDownloadInteractor.executeSingle(params: contact)
+                    })
+                    .asSingle()
+                    .map({ contacts })
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { contacts in PP.info("Contacts \(contacts.count)pcs saved on db") })
             .disposed(by: self.disposeBag)
-    }
-    
-    func runDownloadingImage(for contacts: [Contact]) {
-        
-        
     }
 }

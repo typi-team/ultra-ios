@@ -22,9 +22,10 @@ final class ContactsBookWireframe: BaseWireframe<ContactsBookViewController> {
         
 //        let imageDownloadInteractor = ImageDownloadInteractor.init(client: appSettings.fileService)
         let syncInteractor = SyncContactsInteractor.init(contactsService: appSettings.contactsService)
-        let presenter = ContactsBookPresenter(view: moduleViewController, contactsRepository: appSettings.contactRepository,
+        let presenter = ContactsBookPresenter(appStore: appSettings.appStore,
+                                              view: moduleViewController, contactsRepository: appSettings.contactRepository,
                                               wireframe: self,
-//                                              fileDownloadService: imageDownloadInteractor,
+                                              contactImageDownloadInteractor: ContactDownloadInteractor.init(mediaUtils: MediaUtils(), appStore: appSettings.appStore),
                                               syncContact: syncInteractor,
                                               bookContacts: ContactsBookInteractor())
         moduleViewController.presenter = presenter

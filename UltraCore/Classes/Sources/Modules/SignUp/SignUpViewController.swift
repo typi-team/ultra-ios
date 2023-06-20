@@ -170,6 +170,11 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
 }
 
 extension SignUpViewController: SignUpViewInterface {
+    func open(view controller: UIViewController) {
+        self.navigationController?.pushViewController(controller, animated: true)
+        
+    }
+    
 }
 
 extension SignUpViewController {

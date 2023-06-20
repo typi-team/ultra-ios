@@ -19,6 +19,7 @@ extension UIImageView {
         if let image = contact.image {
             self.image = image
             self.borderWidth = 1
+            self.image = MediaUtils.image(from: contact) ?? image
         } else {
             self.borderWidth = 2
             self.loadImage(by: nil, placeholder: .initial(text: contact.displaName.initails))

@@ -13,6 +13,16 @@ import AVFoundation
 import MobileCoreServices
 
 class MediaUtils {
+    static func image(from contact: ContactDisplayable) -> UIImage? {
+        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            return nil
+        }
+        let fileURL = documentsDirectory.appendingPathComponent(contact.imagePath)
+        if let data = try? Data(contentsOf: fileURL) {
+            return UIImage(data: data)
+        }
+        return nil
+    }
     
     func image(from message: Message) -> UIImage? {
         

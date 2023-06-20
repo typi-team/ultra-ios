@@ -121,6 +121,8 @@ enum MessageTypeEnum: SwiftProtobuf.Enum {
   case video // = 4
   case file // = 5
   case money // = 6
+  case contact // = 7
+  case location // = 8
   case UNRECOGNIZED(Int)
 
   init() {
@@ -136,6 +138,8 @@ enum MessageTypeEnum: SwiftProtobuf.Enum {
     case 4: self = .video
     case 5: self = .file
     case 6: self = .money
+    case 7: self = .contact
+    case 8: self = .location
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -149,6 +153,8 @@ enum MessageTypeEnum: SwiftProtobuf.Enum {
     case .video: return 4
     case .file: return 5
     case .money: return 6
+    case .contact: return 7
+    case .location: return 8
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -167,6 +173,8 @@ extension MessageTypeEnum: CaseIterable {
     .video,
     .file,
     .money,
+    .contact,
+    .location,
   ]
 }
 
@@ -215,6 +223,50 @@ extension UserStatusEnum: CaseIterable {
     .online,
     .offline,
     .away,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
+enum UserTypeEnum: SwiftProtobuf.Enum {
+  typealias RawValue = Int
+  case userTypeUnknown // = 0
+  case user // = 1
+  case bot // = 2
+  case UNRECOGNIZED(Int)
+
+  init() {
+    self = .userTypeUnknown
+  }
+
+  init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .userTypeUnknown
+    case 1: self = .user
+    case 2: self = .bot
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  var rawValue: Int {
+    switch self {
+    case .userTypeUnknown: return 0
+    case .user: return 1
+    case .bot: return 2
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+}
+
+#if swift(>=4.2)
+
+extension UserTypeEnum: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static var allCases: [UserTypeEnum] = [
+    .userTypeUnknown,
+    .user,
+    .bot,
   ]
 }
 
@@ -397,6 +449,7 @@ extension DeviceEnum: @unchecked Sendable {}
 extension ChatTypeEnum: @unchecked Sendable {}
 extension MessageTypeEnum: @unchecked Sendable {}
 extension UserStatusEnum: @unchecked Sendable {}
+extension UserTypeEnum: @unchecked Sendable {}
 extension MediaTypeEnum: @unchecked Sendable {}
 extension MoneyStatusEnum: @unchecked Sendable {}
 extension PhotoSize: @unchecked Sendable {}
@@ -430,6 +483,8 @@ extension MessageTypeEnum: SwiftProtobuf._ProtoNameProviding {
     4: .same(proto: "VIDEO"),
     5: .same(proto: "FILE"),
     6: .same(proto: "MONEY"),
+    7: .same(proto: "CONTACT"),
+    8: .same(proto: "LOCATION"),
   ]
 }
 
@@ -439,6 +494,14 @@ extension UserStatusEnum: SwiftProtobuf._ProtoNameProviding {
     1: .same(proto: "ONLINE"),
     2: .same(proto: "OFFLINE"),
     3: .same(proto: "AWAY"),
+  ]
+}
+
+extension UserTypeEnum: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "USER_TYPE_UNKNOWN"),
+    1: .same(proto: "USER"),
+    2: .same(proto: "BOT"),
   ]
 }
 

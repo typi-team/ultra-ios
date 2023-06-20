@@ -153,6 +153,40 @@ struct MoneyTransferStatus {
   fileprivate var _status: MoneyStatus? = nil
 }
 
+struct CallRequest {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var host: String = String()
+
+  var room: String = String()
+
+  var accessToken: String = String()
+
+  var sender: String = String()
+
+  var video: Bool = false
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct CallReject {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var room: String = String()
+
+  var user: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 struct Update {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -261,6 +295,22 @@ struct Update {
     set {_uniqueStorage()._ofPresence = .mediaUploading(newValue)}
   }
 
+  var callRequest: CallRequest {
+    get {
+      if case .callRequest(let v)? = _storage._ofPresence {return v}
+      return CallRequest()
+    }
+    set {_uniqueStorage()._ofPresence = .callRequest(newValue)}
+  }
+
+  var callReject: CallReject {
+    get {
+      if case .callReject(let v)? = _storage._ofPresence {return v}
+      return CallReject()
+    }
+    set {_uniqueStorage()._ofPresence = .callReject(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   enum OneOf_OfUpdate: Equatable {
@@ -317,6 +367,8 @@ struct Update {
     case audioRecording(UserAudioRecording)
     case userStatus(UserStatus)
     case mediaUploading(UserMediaUploading)
+    case callRequest(CallRequest)
+    case callReject(CallReject)
 
   #if !swift(>=4.1)
     static func ==(lhs: Update.OneOf_OfPresence, rhs: Update.OneOf_OfPresence) -> Bool {
@@ -338,6 +390,14 @@ struct Update {
       }()
       case (.mediaUploading, .mediaUploading): return {
         guard case .mediaUploading(let l) = lhs, case .mediaUploading(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.callRequest, .callRequest): return {
+        guard case .callRequest(let l) = lhs, case .callRequest(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.callReject, .callReject): return {
+        guard case .callReject(let l) = lhs, case .callReject(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -376,6 +436,8 @@ extension UserTyping: @unchecked Sendable {}
 extension UserAudioRecording: @unchecked Sendable {}
 extension UserMediaUploading: @unchecked Sendable {}
 extension MoneyTransferStatus: @unchecked Sendable {}
+extension CallRequest: @unchecked Sendable {}
+extension CallReject: @unchecked Sendable {}
 extension Update: @unchecked Sendable {}
 extension Update.OneOf_OfUpdate: @unchecked Sendable {}
 extension Update.OneOf_OfPresence: @unchecked Sendable {}
@@ -728,6 +790,100 @@ extension MoneyTransferStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
   }
 }
 
+extension CallRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "CallRequest"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "host"),
+    2: .same(proto: "room"),
+    3: .standard(proto: "access_token"),
+    4: .same(proto: "sender"),
+    5: .same(proto: "video"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.host) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.room) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.accessToken) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.sender) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self.video) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.host.isEmpty {
+      try visitor.visitSingularStringField(value: self.host, fieldNumber: 1)
+    }
+    if !self.room.isEmpty {
+      try visitor.visitSingularStringField(value: self.room, fieldNumber: 2)
+    }
+    if !self.accessToken.isEmpty {
+      try visitor.visitSingularStringField(value: self.accessToken, fieldNumber: 3)
+    }
+    if !self.sender.isEmpty {
+      try visitor.visitSingularStringField(value: self.sender, fieldNumber: 4)
+    }
+    if self.video != false {
+      try visitor.visitSingularBoolField(value: self.video, fieldNumber: 5)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: CallRequest, rhs: CallRequest) -> Bool {
+    if lhs.host != rhs.host {return false}
+    if lhs.room != rhs.room {return false}
+    if lhs.accessToken != rhs.accessToken {return false}
+    if lhs.sender != rhs.sender {return false}
+    if lhs.video != rhs.video {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension CallReject: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "CallReject"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "room"),
+    2: .same(proto: "user"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.room) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.user) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.room.isEmpty {
+      try visitor.visitSingularStringField(value: self.room, fieldNumber: 1)
+    }
+    if !self.user.isEmpty {
+      try visitor.visitSingularStringField(value: self.user, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: CallReject, rhs: CallReject) -> Bool {
+    if lhs.room != rhs.room {return false}
+    if lhs.user != rhs.user {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension Update: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "Update"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -743,6 +899,8 @@ extension Update: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
     9: .same(proto: "audioRecording"),
     10: .standard(proto: "user_status"),
     13: .same(proto: "mediaUploading"),
+    15: .same(proto: "callRequest"),
+    16: .same(proto: "callReject"),
   ]
 
   fileprivate class _StorageClass {
@@ -920,6 +1078,32 @@ extension Update: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
             _storage._ofUpdate = .moneyTransferStatus(v)
           }
         }()
+        case 15: try {
+          var v: CallRequest?
+          var hadOneofValue = false
+          if let current = _storage._ofPresence {
+            hadOneofValue = true
+            if case .callRequest(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._ofPresence = .callRequest(v)
+          }
+        }()
+        case 16: try {
+          var v: CallReject?
+          var hadOneofValue = false
+          if let current = _storage._ofPresence {
+            hadOneofValue = true
+            if case .callReject(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._ofPresence = .callReject(v)
+          }
+        }()
         default: break
         }
       }
@@ -986,6 +1170,17 @@ extension Update: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
       try { if case .moneyTransferStatus(let v)? = _storage._ofUpdate {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 14)
       } }()
+      switch _storage._ofPresence {
+      case .callRequest?: try {
+        guard case .callRequest(let v)? = _storage._ofPresence else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 15)
+      }()
+      case .callReject?: try {
+        guard case .callReject(let v)? = _storage._ofPresence else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 16)
+      }()
+      default: break
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }

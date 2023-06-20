@@ -1,43 +1,40 @@
 import NIO
 import GRPC
 import UIKit
+import RxSwift
 import NIOPosix
 import PodAsset
 import Logging
 
 protocol AppSettings: Any {
-    var channel: GRPCChannel { get }
+    
     var appStore: AppSettingsStore { get set }
+    
     var mediaRepository: MediaRepository { get }
+    var updateRepository: UpdateRepository { get }
     var messageRespository: MessageRepository { get }
     var contactRepository: ContactsRepository { get }
+    var conversationRespository: ConversationRepository { get }
+    
     var fileService: FileServiceClientProtocol { get }
     var authService: AuthServiceClientProtocol { get }
     var messageService: MessageServiceClientProtocol { get }
     var contactsService: ContactServiceClientProtocol { get }
-    var conversationRespository: ConversationRepository { get }
-    
-    var updateRepository: UpdateRepository { get }
 }
 
-open class AppSettingsImpl:AppSettings  {
+open class AppSettingsImpl: AppSettings  {
+    
     static let shared = AppSettingsImpl()
 
 //    MARK: Public properties
 
-    public var portOfServer: Int = 443
-    public var pathToServer: String = "ultra-dev.typi.team"
+    private var portOfServer: Int = 443
+    private var pathToServer: String = "ultra-dev.typi.team"
 
 //    MARK: Local Singletone properties
     lazy var mediaUtils: MediaUtils = .init()
     lazy var podAsset = PodAsset.bundle(forPod: "UltraCore")
     lazy var version: String = podAsset?.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.2"
-
-    lazy var logger: Logger = {
-        var log = Logger(label: "GRPC")
-        log.logLevel = .debug
-        return log
-    }()
     
     lazy var channel: GRPCChannel = try! GRPCChannelPool.with(target: .host(pathToServer, port: portOfServer),
                                                               transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
@@ -79,18 +76,45 @@ open class AppSettingsImpl:AppSettings  {
                                                                             userByIDInteractor: ContactByUserIdInteractor.init(contactsService: contactsService),
                                                                             deliveredMessageInteractor: DeliveredMessageInteractor.init(messageService: messageService))
     lazy var conversationRespository: ConversationRepository = ConversationRepositoryImpl(conversationService: conversationDBService)
+    
+    func update(ssid: String, callback: @escaping (Error?) -> Void) {
+        let localService = JWTTokenInteractorImpl(authService: authService)
+        _ = localService.executeSingle(params: .with({ $0.sessionID = ssid }))
+            .do(onSuccess: { [weak self] response in
+                guard let `self` = self else { return }
+                self.appStore.store(token: response.token)
+                self.appStore.store(userID: response.userID)
+            }, onError: { callback($0) })
+            .do(onSuccess: { _ in callback(nil) })
+            .subscribe()
+    }
 }
 
-public func entryViewController() -> UIViewController {
-    
-//    UIBarButtonItem.appearance().title = ""
+
+func setupAppearance() {
     UIBarButtonItem.appearance().tintColor = .green500
     UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.font: UIFont.defaultRegularHeadline]
     UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor: UIColor.clear], for: .normal)
     UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor: UIColor.clear], for: UIControlState.highlighted)
+}
 
-    let controller = AppSettingsImpl.shared.appStore.isAuthed ?
-        ConversationsWireframe().viewController : SignUpWireframe().viewController
-    controller.hidesBottomBarWhenPushed = false
-    return controller
+public func entrySignUpViewController()->  UIViewController {
+    setupAppearance()
+    return SignUpWireframe().viewController
+}
+
+public func entryViewController()->  UIViewController {
+    setupAppearance()
+    return AppSettingsImpl.shared.appStore.isAuthed ? ConversationsWireframe().viewController : SignUpWireframe().viewController
+}
+
+public func entryConversationsViewController()->  UIViewController {
+    setupAppearance()
+    return ConversationsWireframe().viewController
+}
+
+
+public func update(sid token: String, with callback: @escaping(Error?) -> Void) {
+    AppSettingsImpl.shared.appStore.ssid = token
+    AppSettingsImpl.shared.update(ssid: token, callback: callback)
 }

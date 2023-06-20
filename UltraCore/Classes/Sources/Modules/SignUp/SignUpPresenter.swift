@@ -40,7 +40,6 @@ final class SignUpPresenter {
 // MARK: - Extensions -
 extension SignUpPresenter: SignUpPresenterInterface {
     
-    
     func login(lastName: String, firstname: String, phone number: String) {
         var params = GetUserIdRequest()
         params.firstname = firstname

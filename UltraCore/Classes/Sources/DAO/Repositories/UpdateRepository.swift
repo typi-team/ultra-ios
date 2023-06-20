@@ -130,6 +130,11 @@ extension UpdateRepositoryImpl: UpdateRepository {
 
                     case let .mediaUploading(pres):
                         PP.debug(pres.textFormatString())
+                    case .callReject:
+                        
+                        PP.debug("callReject")
+                    case .callRequest:
+                        PP.debug("callRequest")
                     }
                 }
             }

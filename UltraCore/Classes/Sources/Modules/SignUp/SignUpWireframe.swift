@@ -23,7 +23,8 @@ final class SignUpWireframe: BaseWireframe<SignUpViewController> {
         let presenter = SignUpPresenter(view: moduleViewController,
                                         appSettingsStore: AppSettingsStoreImpl(),
                                         wireframe: self, jwtInteractor: jwtInteractor, userIdInteractor: userIdInteractor)
-        moduleViewController.presenter = presenter
+        let ffPresenter = FFSignUpPresenter.init(view: moduleViewController, wireframe: self)
+        moduleViewController.presenter = ffPresenter
         
     }
 }
