@@ -12,7 +12,7 @@ final class FFSignUpPresenter {
     private unowned let view: SignUpViewInterface
     fileprivate let wireframe: SignUpWireframeInterface
     
-    // MARK: - Lifecycle -
+    // MARK: - Lifecycle -g
     init(view: SignUpViewInterface,
          wireframe: SignUpWireframeInterface) {
         self.view = view
