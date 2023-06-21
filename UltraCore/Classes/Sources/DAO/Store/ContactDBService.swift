@@ -42,7 +42,7 @@ class ContactDBService {
         return Observable.create { observer in
             let realm = Realm.myRealm()
             let contacts = realm.objects(DBContact.self)
-            let notificationKey = contacts.observe(keyPaths: ["firstName", "lastName", "phone", "userID"]) { changes in
+            let notificationKey = contacts.observe(keyPaths: []) { changes in
                 switch changes {
                 case let .initial(collection):
                     observer.on(.next(collection.map({$0.toProto()})))

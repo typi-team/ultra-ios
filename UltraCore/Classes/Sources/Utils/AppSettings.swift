@@ -16,6 +16,8 @@ protocol AppSettings: Any {
     var contactRepository: ContactsRepository { get }
     var conversationRespository: ConversationRepository { get }
     
+    var contactDBService: ContactDBService { get } 
+    var userService: UserServiceClientProtocol { get }
     var fileService: FileServiceClientProtocol { get }
     var authService: AuthServiceClientProtocol { get }
     var messageService: MessageServiceClientProtocol { get }
@@ -47,6 +49,7 @@ open class AppSettingsImpl: AppSettings  {
 
 //    MARK: GRPC Services
     
+    lazy var userService: UserServiceClientProtocol = UserServiceNIOClient(channel: channel)
     lazy var authService: AuthServiceClientProtocol = AuthServiceNIOClient(channel: channel)
     lazy var fileService: FileServiceClientProtocol = FileServiceNIOClient(channel: fileChannel)
     lazy var messageService: MessageServiceClientProtocol = MessageServiceNIOClient(channel: channel)
@@ -88,33 +91,4 @@ open class AppSettingsImpl: AppSettings  {
             .do(onSuccess: { _ in callback(nil) })
             .subscribe()
     }
-}
-
-
-func setupAppearance() {
-    UIBarButtonItem.appearance().tintColor = .green500
-    UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.font: UIFont.defaultRegularHeadline]
-    UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor: UIColor.clear], for: .normal)
-    UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedStringKey.foregroundColor: UIColor.clear], for: UIControlState.highlighted)
-}
-
-public func entrySignUpViewController()->  UIViewController {
-    setupAppearance()
-    return SignUpWireframe().viewController
-}
-
-public func entryViewController()->  UIViewController {
-    setupAppearance()
-    return AppSettingsImpl.shared.appStore.isAuthed ? ConversationsWireframe().viewController : SignUpWireframe().viewController
-}
-
-public func entryConversationsViewController()->  UIViewController {
-    setupAppearance()
-    return ConversationsWireframe().viewController
-}
-
-
-public func update(sid token: String, with callback: @escaping(Error?) -> Void) {
-    AppSettingsImpl.shared.appStore.ssid = token
-    AppSettingsImpl.shared.update(ssid: token, callback: callback)
 }

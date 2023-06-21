@@ -116,10 +116,11 @@ extension UpdateRepositoryImpl: UpdateRepository {
                         PP.debug(status.textFormatString())
                     }
                 } else if let presence = update.ofPresence {
+                    PP.verbose(update.textFormatString())
                     switch presence {
                     case let .typing(typing):
                         self.handle(user: typing)
-                    case let .audioRecording(pres):
+                    case let .audioRecording(pres): 
                         PP.debug(pres.textFormatString())
                     case let .userStatus(userStatus):
                         guard var contact = self.contactService.contact(id: userStatus.userID)?.toProto() else {
@@ -173,10 +174,9 @@ extension UpdateRepositoryImpl {
         }
     }
     func update(contact: Contact) {
-        self.contactService.save(contact: DBContact.init(from: contact, user: self.appStore.userID()))
+        _ = self.contactService.save(contact: DBContact.init(from: contact, user: self.appStore.userID()))
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .subscribe()
-            .dispose()
     }
 }
 

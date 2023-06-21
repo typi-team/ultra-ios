@@ -34,7 +34,6 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
         super.setupViews()
         self.view.addSubview(tableView)
         self.tableView.rowHeight = 64
-        self.tableView.delegate = self
         self.tableView.sectionHeaderHeight = 0
         self.tableView.registerCell(type: ConversationCell.self)
         self.tableView.backgroundColor = self.view.backgroundColor
@@ -55,6 +54,12 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
     }
     
     override func setupInitialData() {
+        
+        self.presenter?.retrieveContactStatuses()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground(_:)), name: NSNotification.Name.UIApplicationDidEnterBackground, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground(_:)), name: NSNotification.Name.UIApplicationWillEnterForeground, object: nil)
+        
         self.presenter?.setupUpdateSubscription()
         self.presenter?.conversation
             .observe(on: MainScheduler.instance)
@@ -66,7 +71,6 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
                     self.tableView.backgroundView = nil
                 }
             })
-//            .debounce(.milliseconds(500), scheduler: MainScheduler.asyncInstance)
             .bind(to: tableView.rx.items) { tableView, index, model in
                 let cell: ConversationCell = tableView.dequeueCell()
                 cell.setup(conversation: model)
@@ -100,8 +104,16 @@ extension ConversationsViewController {
     }
 }
 
-extension ConversationsViewController: UITableViewDelegate {
+extension ConversationsViewController: ConversationsViewInterface {}
+
+extension ConversationsViewController {
     
-}
-extension ConversationsViewController: ConversationsViewInterface {
+    @objc func willEnterForeground(_ sender: Any) {
+        self.presenter?.updateStatus(is: true)
+        self.presenter?.retrieveContactStatuses()
+    }
+    
+    @objc func didEnterBackground(_ sender: Any) {
+        self.presenter?.updateStatus(is: false)
+    }
 }
