@@ -68,9 +68,6 @@ extension FFSignUpPresenter: SignUpPresenterInterface {
                   "firstname": firstname,
               ]) else { return }
 
-        
-        
-        
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -84,7 +81,7 @@ extension FFSignUpPresenter: SignUpPresenterInterface {
                       let userResponse = try? JSONDecoder().decode(UserResponse.self, from: data) {
                 update(sid: userResponse.sid) { error in
                     if let error = error {
-                        fatalError(error.localizedDescription)
+                        PP.warning(error.localizedDescription)
                     } else {
                         DispatchQueue.main.async {
                             self.view.open(view: entryConversationsViewController())
