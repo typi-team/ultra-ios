@@ -70,18 +70,18 @@ extension ContactsBookPresenter: ContactsBookPresenterInterface {
                 guard let `self` = self else { throw NSError.selfIsNill }
                 return self.contactsRepository.save(contacts: response).map({ response.contacts })
             })
-            .flatMap({ contacts -> Single<[Contact]> in
-                Observable.from(contacts.filter({ $0.hasPhoto }))
+            .asObservable()
+            .flatMap({ contacts -> Observable<[Contact]> in
+                Observable.from(contacts)
                     .flatMap({ [weak self] contact -> Single in
                         guard let `self` = self else { throw NSError.selfIsNill }
                         return self.contactImageDownloadInteractor.executeSingle(params: contact)
                     })
-                    .asSingle()
                     .map({ contacts })
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
-            .subscribe(onSuccess: { contacts in PP.info("Contacts \(contacts.count)pcs saved on db") })
+            .subscribe(onNext: { contacts in PP.info("Contacts \(contacts.count)pcs saved on db") })
             .disposed(by: self.disposeBag)
     }
 }

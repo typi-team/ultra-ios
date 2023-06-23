@@ -12,6 +12,7 @@ import RxSwift
 import RealmSwift
 
 protocol ConversationWireframeInterface: WireframeInterface {
+    func navigateTo(contact: ContactDisplayable)
 }
 
 protocol ConversationViewInterface: ViewInterface {
@@ -29,10 +30,11 @@ struct FileUpload {
 
 protocol ConversationPresenterInterface: PresenterInterface {
     func viewDidLoad()
-    
+    func navigateToContact()
     func typing(is active: Bool)
     func upload(file: FileUpload)
     func send(message text: String)
     func mediaURL(from message: Message) -> URL?
     var messages: Observable<[Message]> { get set }
+    
 }

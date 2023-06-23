@@ -50,7 +50,14 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         $0.textAlignment = .center
         $0.isUserInteractionEnabled = false
     })
-    private lazy var headline: ProfileNavigationView = .init()
+    
+    private lazy var headline: ProfileNavigationView = .init({[weak self] view in
+        guard let `self` = self else { return }
+        view.callback = {[weak self] in
+            self?.presenter?.navigateToContact()
+        }
+    })
+    
     private lazy var messageInputBar: MessageInputBar = .init({ [weak self] inputBar in
         inputBar.delegate = self
     })

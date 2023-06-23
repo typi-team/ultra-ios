@@ -9,15 +9,22 @@ import Foundation
 
 class ProfileNavigationView: UIView {
     
+    var callback: VoidCallback?
+    
     fileprivate var conversation: Conversation?
-    fileprivate let headlineText: HeadlineBody = .init()
-    fileprivate let sublineText: RegularFootnote = .init()
+    fileprivate let headlineText: HeadlineBody = .init({
+        $0.isUserInteractionEnabled = false
+    })
+    fileprivate let sublineText: RegularFootnote = .init({
+        $0.isUserInteractionEnabled = false
+    })
     
     fileprivate let avatarImageView: UIImageView = .init {
         $0.borderWidth = 1
         $0.cornerRadius = 20
         $0.borderColor = .green500
         $0.backgroundColor = .gray100
+        $0.isUserInteractionEnabled = false
         $0.frame.size = .init(width: 40, height: 40)
     }
     
@@ -59,6 +66,8 @@ class ProfileNavigationView: UIView {
         self.addSubview(sublineText)
         self.addSubview(headlineText)
         self.addSubview(avatarImageView)
+        
+        self.addGestureRecognizer(UITapGestureRecognizer.init(target: self, action: #selector(self.tapHandle(_:))))
     }
     
     func setup(conversation: Conversation) {
@@ -85,13 +94,17 @@ class ProfileNavigationView: UIView {
             self.setup(conversation: conversation)
         }
     }
+    
+    @objc private func tapHandle(_ sender: Any) {
+        callback?()
+    }
 }
 
 extension UserStatus {
     var displayText: String {
         switch status {
         case .unknown:
-            return self.lastSeen.date(format: .dayAndHourMinute)
+            return "Неизвестный номер"
         case .online:
             return "онлайн"
         case .offline:

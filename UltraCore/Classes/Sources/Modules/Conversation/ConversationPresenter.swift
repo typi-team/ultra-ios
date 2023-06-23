@@ -89,6 +89,11 @@ final class ConversationPresenter {
 // MARK: - Extensions -
 
 extension ConversationPresenter: ConversationPresenterInterface {
+    func navigateToContact() {
+        guard let contact = self.conversation.peer else { return }
+        self.wireframe.navigateTo(contact: contact)
+    }
+    
     func mediaURL(from message: Message) -> URL? {
         return self.mediaRepository.mediaURL(from: message)
     }
@@ -210,9 +215,4 @@ extension ConversationPresenter: ConversationPresenterInterface {
 
 extension Message {
     var isIncome: Bool { self.receiver.userID == AppSettingsImpl.shared.appStore.userID() }
-}
-
-
-private extension ConversationPresenter {
-    
 }

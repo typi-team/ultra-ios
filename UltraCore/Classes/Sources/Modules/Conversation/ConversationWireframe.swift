@@ -45,4 +45,7 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
 // MARK: - Extensions -
 
 extension ConversationWireframe: ConversationWireframeInterface {
+    func navigateTo(contact: ContactDisplayable) {
+        self.navigationController?.pushWireframe(ContactWireframe(contact: contact), animated: true, removeFromStack: nil)
+    }
 }
