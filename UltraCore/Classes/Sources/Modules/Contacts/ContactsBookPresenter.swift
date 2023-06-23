@@ -20,7 +20,6 @@ final class ContactsBookPresenter: BasePresenter {
     // MARK: - Private properties -
 
     fileprivate let mediaUtils = MediaUtils()
-    fileprivate let disposeBag = DisposeBag()
     fileprivate let appStore: AppSettingsStore
     fileprivate let contactsRepository: ContactsRepository
     fileprivate unowned let view: ContactsBookViewInterface

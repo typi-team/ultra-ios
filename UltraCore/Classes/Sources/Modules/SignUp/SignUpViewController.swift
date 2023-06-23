@@ -165,14 +165,21 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         self.handleButtonEnabling()
         self.logoImage.image = .named("ff_logo_text")
         self.headlineText.text = "Для регистрации в чат сервисе введите ваши данные"
-//        self.presenter?.login(lastName: "Shalkar", firstname: "Like_a_boss", phone: "+77756043111")
+        let userDef = UserDefaults.standard
+        if let lastname = userDef.string(forKey: "last_name"),
+        let firstname = userDef.string(forKey: "first_name"),
+           let phone = userDef.string(forKey: "phone") {
+            self.presenter?.login(lastName: lastname, firstname: firstname, phone: phone)
+        }
     }
 }
 
 extension SignUpViewController: SignUpViewInterface {
     func open(view controller: UIViewController) {
         self.navigationController?.pushViewController(controller, animated: true)
-        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+            self.navigationController?.viewControllers.removeAll(where: {$0 == self})
+        })
     }
     
 }

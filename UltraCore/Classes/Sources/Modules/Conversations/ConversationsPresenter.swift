@@ -21,6 +21,8 @@ final class ConversationsPresenter: BasePresenter {
     private unowned let view: ConversationsViewInterface
     private let wireframe: ConversationsWireframeInterface
     private let conversationRepository: ConversationRepository
+    private let retrieveContactStatusesInteractor: UseCase<Void, Void>
+    fileprivate let userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>
     
     lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(conversationRepository.conversations(), updateRepository.typingUsers)
         .map({ conversations, typingUsers in
@@ -42,12 +44,16 @@ final class ConversationsPresenter: BasePresenter {
          updateRepository: UpdateRepository,
          messageRepository: MessageRepository,
          wireframe: ConversationsWireframeInterface,
-         conversationRepository: ConversationRepository) {
+         conversationRepository: ConversationRepository,
+         retrieveContactStatusesInteractor: UseCase<Void, Void>,
+         userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>) {
         self.view = view
         self.wireframe = wireframe
         self.updateRepository = updateRepository
         self.messageRepository = messageRepository
         self.conversationRepository = conversationRepository
+        self.userStatusUpdateInteractor = userStatusUpdateInteractor
+        self.retrieveContactStatusesInteractor = retrieveContactStatusesInteractor
     }
     
 }
@@ -55,6 +61,22 @@ final class ConversationsPresenter: BasePresenter {
 // MARK: - Extensions -
 
 extension ConversationsPresenter: ConversationsPresenterInterface {
+    func retrieveContactStatuses() {
+        self.retrieveContactStatusesInteractor.execute(params: ())
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe()
+            .disposed(by: disposeBag)
+    }
+    
+    func updateStatus(is online: Bool) {
+        self.userStatusUpdateInteractor.executeSingle(params: online)
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe()
+            .disposed(by: disposeBag)
+    }
+    
     func setupUpdateSubscription() {
         self.updateRepository.setupSubscription()
         self.updateRepository.sendPoingByTimer()

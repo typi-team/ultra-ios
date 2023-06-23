@@ -59,9 +59,19 @@ class ViewController: UITabBarController {
                     self.viewControllers?.append(self.createNavController(for: entrySignUpViewController(), title: NSLocalizedString("Чаты", comment: ""), image: UIImage(named: "chats")!))
                 } else {
                     self.viewControllers?.append(self.createNavController(for: entryConversationsViewController(), title: NSLocalizedString("Чаты", comment: ""), image: UIImage(named: "chats")!))
+                    timer()
                 }
                 self.selectedIndex = 3
             }
         }
+    }
+}
+
+
+func timer() {
+    Timer.scheduledTimer(withTimeInterval: 10, repeats: true) { _ in
+        update(sid: UserDefaults.standard.string(forKey: "K_SID") ?? "", with: { error in
+            print(error?.localizedDescription ?? "without error")
+        })
     }
 }

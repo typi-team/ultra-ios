@@ -41,6 +41,10 @@ extension FFSignUpPresenter: SignUpPresenterInterface {
     
     func login(lastName: String, firstname: String, phone number: String) {
     
+        let userDef = UserDefaults.standard
+        userDef.set(lastName, forKey: "last_name")
+        userDef.set(firstname, forKey: "first_name")
+        userDef.set(number, forKey: "phone")
         struct UserResponse: Codable {
             let sid: String
             let sidExpire: Int

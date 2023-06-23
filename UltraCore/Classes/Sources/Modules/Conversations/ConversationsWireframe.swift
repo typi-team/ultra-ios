@@ -24,7 +24,11 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
                                                updateRepository: appSettings.updateRepository,
                                                messageRepository: appSettings.messageRespository,
                                                wireframe: self,
-                                               conversationRepository: appSettings.conversationRespository)
+                                               conversationRepository: appSettings.conversationRespository,
+                                               retrieveContactStatusesInteractor: RetrieveContactStatusesInteractor.init(appStore: appSettings.appStore,
+                                                                                                                         contactDBService: appSettings.contactDBService,
+                                                                                                                         contactService: appSettings.contactsService),
+                                               userStatusUpdateInteractor: UpdateOnlineInteractor(userService: appSettings.userService))
         moduleViewController.presenter = presenter
     }
 }

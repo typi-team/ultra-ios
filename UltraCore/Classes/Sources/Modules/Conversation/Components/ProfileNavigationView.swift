@@ -91,7 +91,7 @@ extension UserStatus {
     var displayText: String {
         switch status {
         case .unknown:
-            return "Неизвестно"
+            return self.lastSeen.date(format: .dayAndHourMinute)
         case .online:
             return "онлайн"
         case .offline:
