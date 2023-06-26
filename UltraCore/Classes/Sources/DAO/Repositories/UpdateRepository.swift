@@ -36,13 +36,17 @@ struct UserTypingWithDate: Hashable {
 }
 
 protocol UpdateRepository: AnyObject {
+    
     func setupSubscription()
     func sendPoingByTimer()
+    func readAll(in conversation: Conversation)
+    var unreadMessages: BehaviorSubject<[String: Int64]> { get set }
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> { get set }
 }
 
 class UpdateRepositoryImpl {
     
+    var unreadMessages: BehaviorSubject<[String: Int64]> = .init(value: [:])
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> = .init(value: [:])
     
     fileprivate let disposeBag = DisposeBag()
@@ -73,6 +77,13 @@ class UpdateRepositoryImpl {
 }
 
 extension UpdateRepositoryImpl: UpdateRepository {
+    
+    func readAll(in conversation: Conversation) {
+        guard var unread = try? self.unreadMessages.value() else { return }
+        unread.removeValue(forKey: conversation.idintification)
+        self.unreadMessages.on(.next(unread))
+    }
+    
     func sendPoingByTimer() {
         Timer.scheduledTimer(withTimeInterval: 12, repeats: true) { [weak self] timer in
             guard let `self` = self else { return timer.invalidate() }
@@ -91,52 +102,41 @@ extension UpdateRepositoryImpl: UpdateRepository {
     }
     
     func setupSubscription() {
+        self.update
+            .getInitialState(InitialStateRequest(), callOptions: .default())
+            .response
+            .whenComplete { [weak self] result in
+                guard let `self` = self else { return }
+                switch result {
+                case let .failure(error):
+                    PP.warning(error.localizedDescription)
+                case let .success(response):
+                    self.handleUnread(from: response.chats)
+                    self.setupChangesSubscription(with: response.state)
+                }
+            }
+    }
+}
 
-        let state: ListenRequest = .with { $0.localState = .with { $0.state = UInt64(appStore.lastState) } }
+private extension UpdateRepositoryImpl {
+    func handleUnread(from chats: [Chat]) {
+        let unread = chats.reduce(into: [:]) { result, chat in
+            result[chat.chatID] = chat.unread
+        }
+        self.unreadMessages.on(.next(unread))
+    }
+    
+    func setupChangesSubscription(with state: UInt64) {
+        let state: ListenRequest = .with { $0.localState = .with { $0.state = state } }
         let call = self.update.listen(state, callOptions: .default()) { [weak self] response in
             guard let `self` = self else { return }
             self.appStore.store(last: Int64(response.lastState))
             response.updates.forEach { update in
+                PP.info(update.textFormatString())
                 if let ofUpdate = update.ofUpdate {
-                    switch ofUpdate {
-
-                    case let .message(message):
-                        self.update(message: message)
-                    case let .contact(contact):
-                        self.update(contact: contact)
-                    case let .messagesDelivered(message):
-                        self.messagesDelivered(message: message)
-                    case let .messagesRead(message):
-                        self.messagesReaded(message: message)
-                    case let .messagesDeleted(message):
-                        PP.debug(message.textFormatString())
-                    case let .chatDeleted(chat):
-                        PP.debug(chat.textFormatString())
-                    case let .moneyTransferStatus(status):
-                        PP.debug(status.textFormatString())
-                    }
+                    self.handle(of: ofUpdate)
                 } else if let presence = update.ofPresence {
-                    PP.verbose(update.textFormatString())
-                    switch presence {
-                    case let .typing(typing):
-                        self.handle(user: typing)
-                    case let .audioRecording(pres): 
-                        PP.debug(pres.textFormatString())
-                    case let .userStatus(userStatus):
-                        guard var contact = self.contactService.contact(id: userStatus.userID)?.toProto() else {
-                            return
-                        }
-                        contact.status = userStatus
-                        self.update(contact: contact)
-
-                    case let .mediaUploading(pres):
-                        PP.debug(pres.textFormatString())
-                    case .callReject:
-                        
-                        PP.debug("callReject")
-                    case .callRequest:
-                        PP.debug("callRequest")
-                    }
+                    self.handle(of: presence)
                 }
             }
         }
@@ -144,9 +144,57 @@ extension UpdateRepositoryImpl: UpdateRepository {
             print(status)
         }
     }
+    
+    func handle(of presence: Update.OneOf_OfPresence) {
+        switch presence {
+        case let .typing(typing):
+            self.handle(user: typing)
+        case let .audioRecording(pres):
+            PP.debug(pres.textFormatString())
+        case let .userStatus(userStatus):
+            guard var contact = self.contactService.contact(id: userStatus.userID)?.toProto() else {
+                return
+            }
+            contact.status = userStatus
+            self.update(contact: contact)
+        case let .mediaUploading(pres):
+            PP.debug(pres.textFormatString())
+        case .callReject:
+            PP.debug("callReject")
+        case .callRequest:
+            PP.debug("callRequest")
+        }
+    }
+    
+    func handle(of update: Update.OneOf_OfUpdate) {
+        switch update {
+        case let .message(message):
+            self.update(message: message)
+            self.handleNewMessageOnRead(message: message)
+        case let .contact(contact):
+            self.update(contact: contact)
+        case let .messagesDelivered(message):
+            self.messagesDelivered(message: message)
+        case let .messagesRead(message):
+            self.messagesReaded(message: message)
+        case let .messagesDeleted(message):
+            PP.debug(message.textFormatString())
+        case let .chatDeleted(chat):
+            PP.debug(chat.textFormatString())
+        case let .moneyTransferStatus(status):
+            PP.debug(status.textFormatString())
+        }
+    }
 }
 
 extension UpdateRepositoryImpl {
+    
+    func handleNewMessageOnRead(message: Message) {
+        guard var unread = try? self.unreadMessages.value() else { return }
+        unread[message.receiver.chatID] = (unread[message.receiver.chatID] ?? 0) + 1
+        self.unreadMessages.on(.next(unread))
+    }
+    
     func update(message: Message) {
         let contactID = message.peerId(user: self.appStore.userID())
         let contact = self.contactService.contact(id: contactID)
@@ -173,6 +221,7 @@ extension UpdateRepositoryImpl {
                 .dispose()
         }
     }
+    
     func update(contact: Contact) {
         _ = self.contactService.save(contact: DBContact.init(from: contact, user: self.appStore.userID()))
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))

@@ -55,7 +55,9 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
     
     override func setupInitialData() {
         
-        self.presenter?.retrieveContactStatuses()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: {[weak self] in
+            self?.presenter?.retrieveContactStatuses()
+        })
         
         NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground(_:)), name: NSNotification.Name.UIApplicationDidEnterBackground, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground(_:)), name: NSNotification.Name.UIApplicationWillEnterForeground, object: nil)

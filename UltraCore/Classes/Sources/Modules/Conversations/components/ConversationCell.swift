@@ -25,11 +25,12 @@ class ConversationCell: BaseCell {
         $0.textAlignment = .right
     })
     fileprivate let unreadView: LabelWithInsets = .init({
-        $0.font = .defaultRegularFootnote
+        $0.cornerRadius = 9
         $0.textColor = .white
-        $0.textInsets = UIEdgeInsets(top: 2, left: 8, bottom: 2, right: 8)
+        $0.textAlignment = .center
+        $0.font = .defaultRegularFootnote
         $0.backgroundColor = .green500.withAlphaComponent(0.3)
-        $0.cornerRadius = 10
+//        $0.textInsets = UIEdgeInsets(top: 2, left: 8, bottom: 2, right: 8)
     })
     
     
@@ -72,6 +73,8 @@ class ConversationCell: BaseCell {
 
         self.unreadView.snp.makeConstraints { make in
             make.right.equalToSuperview().offset(-kMediumPadding)
+            make.height.equalTo(18)
+            make.width.equalTo(24)
             make.left.equalTo(descriptionView.snp.right).offset(kMediumPadding)
             make.bottom.greaterThanOrEqualTo(self.descriptionView.snp.bottom)
         }
@@ -108,5 +111,6 @@ class ConversationCell: BaseCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         self.avatarView.image = nil
+        self.unreadView.text = ""
     }
 }

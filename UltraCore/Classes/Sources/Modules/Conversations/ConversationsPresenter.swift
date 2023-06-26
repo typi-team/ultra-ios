@@ -24,17 +24,18 @@ final class ConversationsPresenter: BasePresenter {
     private let retrieveContactStatusesInteractor: UseCase<Void, Void>
     fileprivate let userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>
     
-    lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(conversationRepository.conversations(), updateRepository.typingUsers)
-        .map({ conversations, typingUsers in
+    lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(conversationRepository.conversations(), updateRepository.typingUsers, updateRepository.unreadMessages)
+        .map({ conversations, typingUsers, unreadMessages in
             return conversations.map { conversation in
+                var mutable = conversation
                 
                 if let typing = typingUsers[conversation.idintification] {
-                    var mutable = conversation
                     mutable.typingData.removeAll(where: {$0.userId == typing.userId})
                     mutable.typingData.append(typing)
                     return mutable
                 }
-                return conversation
+                mutable.unreadCount = Int(unreadMessages[conversation.idintification] ?? 0)
+                return mutable
             }
         })
     
@@ -83,6 +84,7 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
     }
     
     func navigate(to conversation: Conversation) {
+        self.updateRepository.readAll(in: conversation)
         self.wireframe.navigateToConversation(with: conversation)
     }
     

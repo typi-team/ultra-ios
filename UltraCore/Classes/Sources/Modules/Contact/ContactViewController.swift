@@ -20,6 +20,7 @@ final class ContactViewController: BaseViewController<ContactPresenter> {
     
     fileprivate lazy var headline: HeadlineBody = .init({
         $0.text = "Профиль"
+        $0.font = .systemFont(ofSize: 20, weight: .bold)
         $0.numberOfLines = 0
     })
     
