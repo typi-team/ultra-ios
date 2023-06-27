@@ -112,7 +112,8 @@ extension UpdateRepositoryImpl: UpdateRepository {
                     PP.warning(error.localizedDescription)
                 case let .success(response):
                     self.handleUnread(from: response.chats)
-                    self.setupChangesSubscription(with: response.state)
+                    var state: UInt64 = self.appStore.lastState == 0 ? response.state : UInt64(self.appStore.lastState)
+                    self.setupChangesSubscription(with: state)
                 }
             }
     }
@@ -190,7 +191,8 @@ private extension UpdateRepositoryImpl {
 extension UpdateRepositoryImpl {
     
     func handleNewMessageOnRead(message: Message) {
-        guard var unread = try? self.unreadMessages.value() else { return }
+        guard var unread = try? self.unreadMessages.value(),
+              message.sender.userID != self.appStore.userID() else { return }
         unread[message.receiver.chatID] = (unread[message.receiver.chatID] ?? 0) + 1
         self.unreadMessages.on(.next(unread))
     }

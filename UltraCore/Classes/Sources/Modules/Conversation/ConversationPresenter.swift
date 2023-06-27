@@ -158,6 +158,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 guard let `self` = self else { return }
                 let unreadMessages = messages.filter({ $0.sender.userID != self.appStore.userID() }).filter({ $0.state.read == false })
                 guard let lastUnreadMessage = unreadMessages.last else { return }
+                self.updateRepository.readAll(in: conversation)
                 self.readMessageInteractor.executeSingle(params: lastUnreadMessage)
                     .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
                     .subscribe()

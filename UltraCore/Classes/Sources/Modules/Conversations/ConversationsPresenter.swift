@@ -32,7 +32,6 @@ final class ConversationsPresenter: BasePresenter {
                 if let typing = typingUsers[conversation.idintification] {
                     mutable.typingData.removeAll(where: {$0.userId == typing.userId})
                     mutable.typingData.append(typing)
-                    return mutable
                 }
                 mutable.unreadCount = Int(unreadMessages[conversation.idintification] ?? 0)
                 return mutable

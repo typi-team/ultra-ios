@@ -64,6 +64,7 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
         
         self.presenter?.setupUpdateSubscription()
         self.presenter?.conversation
+            .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
             .do(onNext: {[weak self] conversations in
                 guard let `self` = self else { return }
