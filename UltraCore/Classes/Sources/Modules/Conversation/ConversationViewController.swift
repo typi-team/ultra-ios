@@ -21,6 +21,14 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     fileprivate var isDrawingTable: Bool = false
     
     // MARK: - Views
+    fileprivate lazy var refreshControl = UIRefreshControl{
+        $0.addAction(for: .valueChanged, {[weak self] in
+            guard let `self` = self,
+                  let cell = self.tableView.visibleCells.first as? BaseMessageCell,
+                  let seqNumber = cell.message?.seqNumber else { return }
+            self.presenter?.loadMoreMessages(maxSeqNumber: seqNumber)
+        })
+    }
     
     fileprivate let navigationDivider: UIView = .init({
         $0.backgroundColor = .gray200
@@ -30,6 +38,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         guard let `self` = self else { return }
         tableView.separatorStyle = .none
         tableView.tableFooterView = UIView()
+        tableView.refreshControl = refreshControl
         tableView.registerCell(type: BaseMessageCell.self)
         tableView.registerCell(type: IncomeMessageCell.self)
         tableView.registerCell(type: IncomingPhotoCell.self)
@@ -239,6 +248,12 @@ extension ConversationViewController: MessageInputBarDelegate {
 
 extension ConversationViewController: ConversationViewInterface {
     
+    func stopRefresh(removeController: Bool) {
+        self.refreshControl.endRefreshing()
+        if(removeController) {
+            self.refreshControl.removeFromSuperview()
+        }
+    }
     func display(is typing: UserTypingWithDate) {
         self.headline.setup(user: typing)
     }

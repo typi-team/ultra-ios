@@ -111,8 +111,17 @@ extension UpdateRepositoryImpl: UpdateRepository {
                 case let .failure(error):
                     PP.warning(error.localizedDescription)
                 case let .success(response):
+                    
+                    response.contacts.forEach { contact in
+                        self.update(contact: contact)
+                    }
+                    
+                    response.messages.forEach { message in
+                        self.update(message: message)
+                    }
+                    
                     self.handleUnread(from: response.chats)
-                    var state: UInt64 = self.appStore.lastState == 0 ? response.state : UInt64(self.appStore.lastState)
+                    let state: UInt64 = self.appStore.lastState == 0 ? response.state : UInt64(self.appStore.lastState)
                     self.setupChangesSubscription(with: state)
                 }
             }

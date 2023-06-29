@@ -20,9 +20,10 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
         let moduleViewController = ConversationViewController()
         super.init(viewController: moduleViewController)
         
-        let messageSenderInteractor = SendMessageInteractor.init(messageService: appSettings.messageService)
         let sendTypingInteractor = SendTypingInteractor.init(messageService: appSettings.messageService)
         let readMessageInteractor = ReadMessageInteractor.init(messageService: appSettings.messageService)
+        let messageSenderInteractor = SendMessageInteractor.init(messageService: appSettings.messageService)
+        let archiveMessages = MessagesInteractor(messageDBService: appSettings.messageDBService, messageService: appSettings.messageService)
         
         let presenter = ConversationPresenter(userID: appSettings.appStore.userID(),
                                               appStore: appSettings.appStore,
@@ -34,6 +35,7 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
                                               contactRepository: appSettings.contactRepository,
                                               wireframe: self,
                                               conversationRepository: appSettings.conversationRespository,
+                                              messagesInteractor: archiveMessages,
                                               sendTypingInteractor: sendTypingInteractor,
                                               readMessageInteractor: readMessageInteractor,
                                               messageSenderInteractor: messageSenderInteractor)

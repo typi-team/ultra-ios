@@ -16,7 +16,8 @@ protocol AppSettings: Any {
     var contactRepository: ContactsRepository { get }
     var conversationRespository: ConversationRepository { get }
     
-    var contactDBService: ContactDBService { get } 
+    var contactDBService: ContactDBService { get }
+    var messageDBService: MessageDBService { get } 
     var userService: UserServiceClientProtocol { get }
     var fileService: FileServiceClientProtocol { get }
     var authService: AuthServiceClientProtocol { get }

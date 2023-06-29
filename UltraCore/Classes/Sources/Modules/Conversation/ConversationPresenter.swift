@@ -30,6 +30,7 @@ final class ConversationPresenter {
     fileprivate let conversationRepository: ConversationRepository
     private let sendTypingInteractor: UseCase<String, SendTypingResponse>
     private let readMessageInteractor: UseCase<Message, MessagesReadResponse>
+    private let messagesInteractor: UseCase<GetChatMessagesRequest, [Message]>
     
     private let messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>
 
@@ -37,7 +38,8 @@ final class ConversationPresenter {
     // MARK: - Public properties -
 
     lazy var messages: Observable<[Message]> = messageRepository.messages(chatID: conversation.idintification)
-        .do(onNext: {[weak self ] messages in
+        .map({ $0.sorted(by: { m1, m2 in m1.seqNumber < m2.seqNumber }) })
+        .do(onNext: { [weak self] messages in
             guard let `self` = self else { return }
             let messages = messages.filter({ $0.fileID != nil })
                 .filter({ self.mediaRepository.image(from: $0) == nil })
@@ -52,8 +54,7 @@ final class ConversationPresenter {
                 .observe(on: MainScheduler.instance)
                 .subscribe()
                 .disposed(by: self.disposeBag)
-        
-    })
+        })
 
     // MARK: - Lifecycle -
 
@@ -67,6 +68,7 @@ final class ConversationPresenter {
          contactRepository: ContactsRepository,
          wireframe: ConversationWireframeInterface,
          conversationRepository: ConversationRepository,
+         messagesInteractor: UseCase<GetChatMessagesRequest, [Message]>,
          sendTypingInteractor: UseCase<String, SendTypingResponse>,
          readMessageInteractor: UseCase<Message, MessagesReadResponse>,
          messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>) {
@@ -79,6 +81,7 @@ final class ConversationPresenter {
         self.updateRepository = updateRepository
         self.contactRepository = contactRepository
         self.messageRepository = messageRepository
+        self.messagesInteractor = messagesInteractor
         self.sendTypingInteractor = sendTypingInteractor
         self.readMessageInteractor = readMessageInteractor
         self.conversationRepository = conversationRepository
@@ -89,6 +92,20 @@ final class ConversationPresenter {
 // MARK: - Extensions -
 
 extension ConversationPresenter: ConversationPresenterInterface {
+    func loadMoreMessages(maxSeqNumber: UInt64 ) {
+        self.messagesInteractor
+            .executeSingle(params: .with({
+                $0.chatID = self.conversation.idintification
+                $0.maxSeqNumber = UInt64(maxSeqNumber)
+            }))
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe(onSuccess: {[weak self] message in
+                guard let `self` = self else { return }
+                self.view.stopRefresh(removeController: message.isEmpty)
+            })
+            .disposed(by: disposeBag)
+    }
     func navigateToContact() {
         guard let contact = self.conversation.peer else { return }
         self.wireframe.navigateTo(contact: contact)

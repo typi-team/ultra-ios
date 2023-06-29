@@ -126,4 +126,24 @@ class MessageDBService {
             return Disposables.create()
         }
     }
+    
+    func save(messages: [Message]) -> Single<Void> {
+        return Single.create {[weak self] completable in
+            guard let `self` = self else { return Disposables.create() }
+            do {
+                let realm = Realm.myRealm()
+                try realm.write {
+                    messages.forEach { message in
+                        realm.create(DBMessage.self,
+                                     value: DBMessage(from: message, user: self.userId), update: .all)
+                    }
+                    
+                }
+                completable(.success(()))
+            } catch {
+                completable(.failure(error))
+            }
+            return Disposables.create()
+        }
+    }
 }
