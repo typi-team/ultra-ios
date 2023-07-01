@@ -8,6 +8,8 @@ import Logging
 
 protocol AppSettings: Any {
     
+    var superMessageSaverInteractor: UseCase<MessageData, Conversation?> { get }
+    
     var appStore: AppSettingsStore { get set }
     
     var mediaRepository: MediaRepository { get }
@@ -17,10 +19,12 @@ protocol AppSettings: Any {
     var conversationRespository: ConversationRepository { get }
     
     var contactDBService: ContactDBService { get }
-    var messageDBService: MessageDBService { get } 
+    var messageDBService: MessageDBService { get }
+    
     var userService: UserServiceClientProtocol { get }
     var fileService: FileServiceClientProtocol { get }
     var authService: AuthServiceClientProtocol { get }
+    var deviceService: DeviceServiceClientProtocol { get }
     var messageService: MessageServiceClientProtocol { get }
     var contactsService: ContactServiceClientProtocol { get }
 }
@@ -53,6 +57,7 @@ open class AppSettingsImpl: AppSettings  {
     lazy var userService: UserServiceClientProtocol = UserServiceNIOClient(channel: channel)
     lazy var authService: AuthServiceClientProtocol = AuthServiceNIOClient(channel: channel)
     lazy var fileService: FileServiceClientProtocol = FileServiceNIOClient(channel: fileChannel)
+    lazy var deviceService: DeviceServiceClientProtocol = DeviceServiceNIOClient(channel: channel)
     lazy var messageService: MessageServiceClientProtocol = MessageServiceNIOClient(channel: channel)
     lazy var contactsService: ContactServiceClientProtocol = ContactServiceNIOClient(channel: channel)
     lazy var updateService: UpdatesServiceClientProtocol = UpdatesServiceNIOClient(channel: updateChannel)
@@ -81,9 +86,23 @@ open class AppSettingsImpl: AppSettings  {
                                                                             deliveredMessageInteractor: DeliveredMessageInteractor.init(messageService: messageService))
     lazy var conversationRespository: ConversationRepository = ConversationRepositoryImpl(conversationService: conversationDBService)
     
+    //    MARK: App main interactors, must be create once
+    
+    lazy var superMessageSaverInteractor: UseCase<MessageData, Conversation?> = SuperMessageSaverInteractor.init(appStore: appStore,
+                                                                                                                 contactDBService: contactDBService,
+                                                                                                                 messageDBService: messageDBService,
+                                                                                                                 conversationDBService: conversationDBService,
+                                                                                                                 messageService: messageService,
+                                                                                                                 contactsService: contactsService)
+    
+    
     func update(ssid: String, callback: @escaping (Error?) -> Void) {
         let localService = JWTTokenInteractorImpl(authService: authService)
-        _ = localService.executeSingle(params: .with({ $0.sessionID = ssid }))
+        _ = localService.executeSingle(params: .with({
+            $0.device = .ios
+            $0.sessionID = ssid
+            $0.deviceID = UIDevice.current.identifierForVendor?.uuidString ?? "Ну указано"
+        }))
             .do(onSuccess: { [weak self] response in
                 guard let `self` = self else { return }
                 self.appStore.store(token: response.token)

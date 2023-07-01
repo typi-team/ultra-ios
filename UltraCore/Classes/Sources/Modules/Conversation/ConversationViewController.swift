@@ -140,6 +140,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     
         self.presenter?
             .messages
+            .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
             .do(onNext: {[weak self] messages in
                     self?.messageHeadline.text = messages.isEmpty ? "В этом чате нет сообщений" : ""

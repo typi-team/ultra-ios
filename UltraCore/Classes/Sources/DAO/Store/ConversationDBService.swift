@@ -71,9 +71,21 @@ class ConversationDBService {
     // Получение списка всех чатов
     func getConversations() -> Observable<[DBConversation]> {
         return Observable.deferred {
-            let realm = try Realm()
+            let realm = Realm.myRealm()
             let conversations = Array(realm.objects(DBConversation.self).sorted(byKeyPath: "lastSeen", ascending: false))
             return Observable.just(conversations)
+        }
+    }
+    
+    func conversation(by id: String) -> Single<Conversation?> {
+        return Single.deferred {
+            let realm = Realm.myRealm()
+            var conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: id)
+            if let conversation = conversation {
+                return Single.just(conversation.detached())
+            } else {
+                return Single.just(nil)
+            }
         }
     }
 }
