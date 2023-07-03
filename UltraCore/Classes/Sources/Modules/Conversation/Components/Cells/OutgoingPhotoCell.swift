@@ -30,7 +30,7 @@ class OutgoingPhotoCell: MediaCell {
         self.container.addSubview(deliveryWrapper)
         self.deliveryWrapper.addSubview(statusView)
         self.deliveryWrapper.addSubview(deliveryDateLabel)
-        self.sameProgressInSameTime.bringSubview(toFront: mediaView)
+        self.sameProgressInSameTime.bringSubviewToFront(mediaView)
         
         
     }

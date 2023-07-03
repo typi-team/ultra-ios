@@ -26,9 +26,8 @@ class MediaUtils {
     
     func image(from message: Message) -> UIImage? {
         
-        guard let data = try? readFileWithName(fileName: message.hasPhoto ? message.photo.previewFileIdWithExtensions : message.video.previewVideoFileIdWithExtension),
-              let unWrapData = data else { return nil }
-        return UIImage(data: unWrapData)
+        guard let data = try? readFileWithName(fileName: message.hasPhoto ? message.photo.previewFileIdWithExtensions : message.video.previewVideoFileIdWithExtension) else { return nil }
+        return UIImage(data: data)
     }
     
     func createMessageForUpload(in conversation: Conversation, with userID: String) -> Message {
@@ -74,7 +73,7 @@ class MediaUtils {
                 let imageGenerator = AVAssetImageGenerator(asset: asset)
                 imageGenerator.appliesPreferredTrackTransform = true
                 
-                let cgImage = try imageGenerator.copyCGImage(at: kCMTimeZero,
+                let cgImage = try imageGenerator.copyCGImage(at: CMTime.zero,
                                                              actualTime: nil)
                 observer(.success(UIImage.init(cgImage: cgImage)))
             }catch {

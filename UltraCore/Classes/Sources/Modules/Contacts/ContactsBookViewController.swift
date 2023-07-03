@@ -114,7 +114,7 @@ extension ContactsBookViewController: ContactsBookViewInterface {
                                                                                               headline: "Нет доступа к контактам",
                                                                                               subline: "Нажмите на кнопку ниже и предоставьте доступ к вашим контактам.",
                                                                                               action: {
-                                                                                                  UIApplication.shared.open(URL(string: UIApplicationOpenSettingsURLString)!, options: [:], completionHandler: nil)
+                UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
                                                                                               })
             )
         } else {

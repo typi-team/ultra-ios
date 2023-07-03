@@ -109,7 +109,7 @@ extension UIImage {
         case highest = 1
     }
 
-    func compress(_ jpegQuality: JPEGQuality) -> Data? { UIImageJPEGRepresentation(self, jpegQuality.rawValue) }
+    func compress(_ jpegQuality: JPEGQuality) -> Data? { self.jpegData(compressionQuality: jpegQuality.rawValue) }
 
     static func named(_ name: String) -> UIImage? {
         let bundle = Bundle(for: AppSettingsImpl.self)
@@ -128,7 +128,7 @@ extension UIImage {
         lanczosFilter.setValue(NSNumber(value: reductionAmount), forKey: kCIInputScaleKey)
 
         guard let outputImage = lanczosFilter.outputImage else { return nil }
-        let context = CIContext(options: [kCIContextUseSoftwareRenderer: false])
+        let context = CIContext(options: [CIContextOption.useSoftwareRenderer: false])
         let scaledImage = UIImage(cgImage: context.createCGImage(outputImage, from: outputImage.extent)!)
 
         return scaledImage

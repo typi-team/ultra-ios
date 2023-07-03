@@ -14,19 +14,19 @@ class ElevatedButton: UIButton {
     
     override func contentRect(forBounds bounds: CGRect) -> CGRect {
         // Учитываем отступы для вычисления фактической области содержимого кнопки
-        let newBounds = UIEdgeInsetsInsetRect(bounds, contentInsets)
+        let newBounds = bounds.inset(by: contentInsets)
         return super.contentRect(forBounds: newBounds)
     }
     
     override func titleRect(forContentRect contentRect: CGRect) -> CGRect {
         // Учитываем отступы для вычисления фактической области заголовка кнопки
-        let newContentRect = UIEdgeInsetsInsetRect(contentRect, contentInsets)
+        let newContentRect = contentRect.inset(by: contentInsets)
         return super.titleRect(forContentRect: newContentRect)
     }
     
     override func imageRect(forContentRect contentRect: CGRect) -> CGRect {
         // Учитываем отступы для вычисления фактической области изображения кнопки
-        let newContentRect = UIEdgeInsetsInsetRect(contentRect, contentInsets)
+        let newContentRect = contentRect.inset(by: contentInsets)
         return super.imageRect(forContentRect: newContentRect)
     }
     
@@ -62,7 +62,7 @@ class TextButton: UIButton {
     func setupView() {
         self.setTitleColor(.gray700, for: .normal)
         self.titleLabel?.font = .defaultRegularCallout
-        self.contentHorizontalAlignment = UIControlContentHorizontalAlignment.left
+        self.contentHorizontalAlignment = UIControl.ContentHorizontalAlignment.left
         self.titleEdgeInsets = .init(top: 0, left: kMediumPadding + 2, bottom: 0, right: 0)
     }
 }

@@ -38,7 +38,7 @@ final class ConversationPresenter {
     // MARK: - Public properties -
 
     lazy var messages: Observable<[Message]> = messageRepository.messages(chatID: conversation.idintification)
-        .map({ $0.sorted(by: { m1, m2 in m1.seqNumber < m2.seqNumber }) })
+        .map({ $0.sorted(by: { m1, m2 in m1.meta.created < m2.meta.created }) })
         .do(onNext: { [weak self] messages in
             guard let `self` = self else { return }
             let messages = messages.filter({ $0.fileID != nil })

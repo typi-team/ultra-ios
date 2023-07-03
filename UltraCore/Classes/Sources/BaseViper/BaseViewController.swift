@@ -47,27 +47,27 @@ extension UIViewController {
     
     func showAlert(from message: String, with title: String? = nil) {
         let alert = UIAlertController.init(title: title, message: message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction.init(title: "Закрыть", style: UIAlertActionStyle.destructive))
+        alert.addAction(UIAlertAction.init(title: "Закрыть", style: UIAlertAction.Style.cancel))
         self.present(alert, animated: true)
     }
     
     func showSettingAlert(from message: String, with title: String? = nil) {
         let alert = UIAlertController.init(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction.init(title: "Настройки", style: .default, handler: { _ in
-            UIApplication.shared.open(URL(string: UIApplicationOpenSettingsURLString)!, options: [:], completionHandler: nil)
+            UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
         }))
-        alert.addAction(UIAlertAction.init(title: "Закрыть", style: UIAlertActionStyle.destructive))
+        alert.addAction(UIAlertAction.init(title: "Закрыть", style: UIAlertAction.Style.destructive))
         self.present(alert, animated: true)
     }
     
     @objc func registerKeyboardNotification() {
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: NSNotification.Name.UIKeyboardWillShow, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
 
     @objc func keyboardWillShow(notification: NSNotification) {
         guard let userInfo = notification.userInfo else { return }
-        guard let keyboardFrame = userInfo[UIKeyboardFrameEndUserInfoKey] as? CGRect else { return }
+        guard let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
         self.changed(keyboard: keyboardFrame.height)
     }
     
