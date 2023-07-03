@@ -233,7 +233,17 @@ extension ConversationViewController: MessageInputBarDelegate {
     }
     
     func exchanges() {
-        self.showAlert(from: "Данная функция еще в разработке")
+        let viewController = AdditioanalController()
+        viewController.resultCallback = { [weak self] action in
+            guard let `self` = self else { return }
+            switch action {
+            case .money_tranfer:
+                self.showAlert(from: "Данная функция еще в разработке")
+            }
+        }
+        viewController.modalPresentationStyle = .custom
+        viewController.transitioningDelegate = sheetTransitioningDelegate
+        present(viewController, animated: true)
     }
     
     func micro(isActivated: Bool) {
