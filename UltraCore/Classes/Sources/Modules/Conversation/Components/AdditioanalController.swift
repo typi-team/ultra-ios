@@ -21,13 +21,11 @@ class AdditioanalController: BaseViewController<String> {
     })
 
     fileprivate lazy var takePhoto: TextButton = .init({
-        $0.setImage(.named("conversation_money_logo_icon"), for: .normal)
         $0.titleLabel?.numberOfLines = 0
+        $0.setImage(.named("conversation_money_logo_icon"), for: .normal)
         
-        // Создайте атрибуты шрифта для жирного текста
         let boldFontAttributes: [NSAttributedString.Key: Any] = [ .font: UIFont.defaultRegularBody,
                                                                   .foregroundColor : UIColor.gray700 ]
-
         let smallFontAttributes: [NSAttributedString.Key: Any] = [ .font: UIFont.defaultRegularFootnote,
                                                                    .foregroundColor : UIColor.gray500]
 
@@ -38,9 +36,7 @@ class AdditioanalController: BaseViewController<String> {
         let attributedTitle = NSMutableAttributedString(string: titleText)
         attributedTitle.addAttributes(boldFontAttributes, range: NSRange(location: 0, length: boldText.count))
         attributedTitle.addAttributes(smallFontAttributes, range: NSRange(location: boldText.count + 1, length: smallText.count))
-
         $0.setAttributedTitle(attributedTitle, for: .normal)
-
         $0.addAction { [weak self] in
             guard let `self` = self else { return }
             self.handle(action: .money_tranfer)
@@ -54,7 +50,6 @@ class AdditioanalController: BaseViewController<String> {
         $0.setCustomSpacing(kHeadlinePadding, after: headlineLabel)
         $0.addArrangedSubview(takePhoto)
     }
-    
     
     override func setupViews() {
         super.setupViews()

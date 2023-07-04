@@ -17,6 +17,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     // MARK: - Properties
     
     let sheetTransitioningDelegate = SheetTransitioningDelegate()
+    let moneyTransitioningDelegate = SheetTransitioningDelegate()
     fileprivate var mediaItem: URL?
     fileprivate var isDrawingTable: Bool = false
     
@@ -238,7 +239,7 @@ extension ConversationViewController: MessageInputBarDelegate {
             guard let `self` = self else { return }
             switch action {
             case .money_tranfer:
-                self.showAlert(from: "Данная функция еще в разработке")
+                self.openMoneyTransfer()
             }
         }
         viewController.modalPresentationStyle = .custom
@@ -276,6 +277,14 @@ extension ConversationViewController: ConversationViewInterface {
 
 
 private extension ConversationViewController {
+    
+    func openMoneyTransfer() {
+        let viewController = MoneyTransferConroller()
+        viewController.modalPresentationStyle = .custom
+        viewController.transitioningDelegate = moneyTransitioningDelegate
+        self.present(viewController, animated: true)
+    }
+    
     func openMedia(type: UIImagePickerController.SourceType) {
         self.present(UIImagePickerController({
             $0.delegate = self
