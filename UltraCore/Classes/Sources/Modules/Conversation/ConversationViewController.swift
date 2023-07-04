@@ -280,6 +280,10 @@ private extension ConversationViewController {
     
     func openMoneyTransfer() {
         let viewController = MoneyTransferConroller()
+        viewController.resultCallback = {[weak self] amount in
+            guard let `self` = self else { return }
+            self.presenter?.send(money: amount)
+        }
         viewController.modalPresentationStyle = .custom
         viewController.transitioningDelegate = moneyTransitioningDelegate
         self.present(viewController, animated: true)

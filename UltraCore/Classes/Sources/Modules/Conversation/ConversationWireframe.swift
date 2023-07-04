@@ -38,6 +38,7 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
                                               messagesInteractor: archiveMessages,
                                               sendTypingInteractor: sendTypingInteractor,
                                               readMessageInteractor: readMessageInteractor,
+                                              sendMoneyInteractor: SendMoneyInteractor(),
                                               messageSenderInteractor: messageSenderInteractor)
         moduleViewController.presenter = presenter
     }

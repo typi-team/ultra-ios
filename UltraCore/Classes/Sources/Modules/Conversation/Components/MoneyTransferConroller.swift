@@ -21,25 +21,7 @@ class MoneyTransferConroller: BaseViewController<String> {
         $0.text = "Списать с карты"
     })
     
-    
-    fileprivate lazy var cardButton: TextButton = .init({
-        $0.titleLabel?.numberOfLines = 0
-        $0.setImage(.named("conversation_money_card_icon"), for: .normal)
-        
-        let boldFontAttributes: [NSAttributedString.Key: Any] = [ .font: UIFont.defaultRegularBody,
-                                                                  .foregroundColor : UIColor.gray700 ]
-        let smallFontAttributes: [NSAttributedString.Key: Any] = [ .font: UIFont.defaultRegularFootnote,
-                                                                   .foregroundColor : UIColor.gray500]
-
-        let boldText = "Мультивалю..."
-        let smallText = "5500 13 •••• 0088"
-        let titleText = "\(boldText)\n\(smallText)"
-
-        let attributedTitle = NSMutableAttributedString(string: titleText)
-        attributedTitle.addAttributes(boldFontAttributes, range: NSRange(location: 0, length: boldText.count))
-        attributedTitle.addAttributes(smallFontAttributes, range: NSRange(location: boldText.count + 1, length: smallText.count))
-        $0.setAttributedTitle(attributedTitle, for: .normal)
-    })
+    fileprivate lazy var cardButton: CardButton = .init()
     
     fileprivate lazy var sunInfoLabel: RegularFootnote = .init({
         $0.text = "Сумма перевода"
@@ -52,7 +34,9 @@ class MoneyTransferConroller: BaseViewController<String> {
             guard let `self` = self,
                     let text = self.summTextField.text,
                   let value = Double(text) else { return }
-            self.resultCallback?(value)
+            self.dismiss(animated: true, completion: {
+                self.resultCallback?(value)
+            })
         }
     })
     
