@@ -102,57 +102,59 @@ extension ConversationPresenter: ConversationPresenterInterface {
                                      amount: amount,
                                      currency: "USD")
         
-        var params = MessageSendRequest()
-        
-        params.peer.user = .with({ [weak self] peer in
-            guard let `self` = self else { return }
-            peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
-        })
-
-        params.message.id = UUID().uuidString
-        params.message.meta.created = Date().nanosec
-        
-        var message = Message()
-        message.money = .with({
-            
-        })
-        message.id = params.message.id
-        message.receiver = .with({[weak self] receiver in
-            guard let `self` = self else { return }
-            receiver.chatID = conversation.idintification
-            receiver.userID = self.conversation.peer?.userID ?? ""
-        })
-        message.sender = .with({ $0.userID = self.userID })
-        message.meta = .with({
-            $0.created = Date().nanosec
-        })
-        
-        self.conversationRepository
-            .createIfNotExist(from: message)
-            .flatMap{ self.messageRepository.save(message: message)}
-            .flatMap{self.messageSenderInteractor.executeSingle(params: params)}
-            .flatMap({ [weak self] (response: MessageSendResponse) in
-                guard let `self` = self else {
-                    throw NSError.selfIsNill
-                }
-                message.meta.created = response.meta.created
-                message.state.delivered = false
-                message.state.read = false
-                message.seqNumber = response.seqNumber
-
-                return self.messageRepository.update(message: message)
-            })
-            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
-            .observe(on: MainScheduler.instance)
-            .subscribe()
-            .disposed(by: self.disposeBag)
-        
-        
         self.sendMoneyInteractor
-            .executeSingle(params: params)
-        
-        
-        
+            .executeSingle(params: moneyParams)
+            .flatMap({ [weak self] response in
+                guard let `self` = self else { throw NSError.selfIsNill }
+                
+                var params = MessageSendRequest()
+
+                params.peer.user = .with({ [weak self] peer in
+                    guard let `self` = self else { return }
+                    peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
+                })
+
+                params.message.id = UUID().uuidString
+                params.message.meta.created = Date().nanosec
+
+                var message = Message()
+                message.money = .with({
+                    $0.transactionID = response.transaction_id
+                    $0.money = .with({ money in
+                        money.currencyCode = "USD"
+                        money.units = Int64(amount)
+                    })
+                })
+                message .text = params.textFormatString()
+                message.id = params.message.id
+                message.receiver = .with({ [weak self] receiver in
+                    guard let `self` = self else { return }
+                    receiver.chatID = conversation.idintification
+                    receiver.userID = self.conversation.peer?.userID ?? ""
+                })
+                message.sender = .with({ $0.userID = self.userID })
+                message.meta = .with({
+                    $0.created = Date().nanosec
+                })
+                
+                params.message = message
+                
+                return self.conversationRepository
+                    .createIfNotExist(from: message)
+                    .flatMap { self.messageRepository.save(message: message) }
+                    .flatMap { self.messageSenderInteractor.executeSingle(params: params) }
+                    .flatMap({ [weak self] (response: MessageSendResponse) in
+                        guard let `self` = self else {
+                            throw NSError.selfIsNill
+                        }
+                        message.meta.created = response.meta.created
+                        message.state.delivered = false
+                        message.state.read = false
+                        message.seqNumber = response.seqNumber
+
+                        return self.messageRepository.update(message: message)
+                    })
+            })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()
