@@ -41,6 +41,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.tableFooterView = UIView()
         tableView.refreshControl = refreshControl
         tableView.registerCell(type: BaseMessageCell.self)
+        tableView.registerCell(type: IncomeMoneyCell.self)
+        tableView.registerCell(type: OutcomeMoneyCell.self)
         tableView.registerCell(type: IncomeMessageCell.self)
         tableView.registerCell(type: IncomingPhotoCell.self)
         tableView.registerCell(type: IncomingVideoCell.self)
@@ -162,31 +164,60 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                 })
             })
             .bind(to: tableView.rx.items) { tableView, _, message in
-                if message.isIncome && message.photo.fileID != "" {
-                    let cell: IncomingPhotoCell = tableView.dequeueCell()
-                    cell.setup(message: message)
-                    return cell
-                } else if !message.isIncome && message.photo.fileID != "" {
-                    let cell: OutgoingPhotoCell = tableView.dequeueCell()
-                    cell.setup(message: message)
-                    return cell
-                } else if message.isIncome && message.video.fileID != "" {
-                    let cell: IncomingVideoCell = tableView.dequeueCell()
-                    cell.setup(message: message)
-                    return cell
-                } else if !message.isIncome && message.video.fileID != "" {
-                    let cell: OutgoingVideoCell = tableView.dequeueCell()
-                    cell.setup(message: message)
-                    return cell
-                } else if message.isIncome {
-                    let cell: IncomeMessageCell = tableView.dequeueCell()
-                    cell.setup(message: message)
-                    return cell
-                } else {
-                    let cell: OutgoingMessageCell = tableView.dequeueCell()
+                guard let content = message.content else {
+                    if message.isIncome {
+                        let cell: IncomeMessageCell = tableView.dequeueCell()
+                        cell.setup(message: message)
+                        return cell
+                    } else {
+                        let cell: OutgoingMessageCell = tableView.dequeueCell()
+                        cell.setup(message: message)
+                        return cell
+                    }
+                }
+                
+                switch content {
+                case let .photo(photo):
+                    if message.isIncome {
+                        let cell: IncomingPhotoCell = tableView.dequeueCell()
+                        cell.setup(message: message)
+                        return cell
+                    } else {
+                        let cell: OutgoingPhotoCell = tableView.dequeueCell()
+                        cell.setup(message: message)
+                        return cell
+                    }
+                case let .video(video):
+                    if message.isIncome {
+                        let cell: IncomingVideoCell = tableView.dequeueCell()
+                        cell.setup(message: message)
+                        return cell
+                    } else {
+                        let cell: OutgoingVideoCell = tableView.dequeueCell()
+                        cell.setup(message: message)
+                        return cell
+                    }
+                case .money:
+
+                    if message.isIncome {
+                        let cell: IncomeMoneyCell = tableView.dequeueCell()
+                        cell.setup(message: message)
+                        return cell
+
+                    } else {
+                        let cell: OutcomeMoneyCell = tableView.dequeueCell()
+                        cell.setup(message: message)
+                        return cell
+                    }
+
+                case .location(_), .file(_), .contact(_), .audio(_), .voice:
+                    let cell: BaseMessageCell = tableView.dequeueCell()
                     cell.setup(message: message)
                     return cell
                 }
+                    
+                
+                
             }
             .disposed(by: disposeBag)
         

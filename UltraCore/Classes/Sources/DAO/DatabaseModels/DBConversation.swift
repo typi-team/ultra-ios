@@ -77,14 +77,28 @@ extension DBConversation: Conversation {
     
     var lastMessage: String? {
         get {
-            if let text = self.message?.text, !text.isEmpty {
-                return text
-            } else if message?.toProto().hasPhoto ?? false {
-                return "📷 Фото"
-            }else if message?.toProto().hasVideo ?? false {
-                return "🎥 Видео"
+            if let content = message?.toProto().content {
+                switch content {
+                case .audio(_):
+                    return "🔉 Аудио"
+                case .voice(_):
+                    return "🎤 Голосовое сообщение"
+                case .photo(_):
+                    return "📷 Фото"
+                case .video(_):
+                    return "🎥 Видео"
+                case .money(_):
+                    return "💵 Денежный перевод"
+                case .location(_):
+                    return "📍Локация"
+                case .file(_):
+                    return "📂 Файл"
+                case .contact(_):
+                    return "📇 Контакт"
+                }
+            } else {
+                return self.message?.text
             }
-            return self.message?.text
         }
         set {
             self.message?.text = newValue ?? ""

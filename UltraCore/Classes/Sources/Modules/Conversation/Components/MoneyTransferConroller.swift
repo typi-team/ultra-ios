@@ -42,7 +42,6 @@ class MoneyTransferConroller: BaseViewController<String> {
     
     fileprivate lazy var summTextField: UITextField = .init({
         $0.placeholder = "0.0"
-        $0.text = "0.0"
         $0.keyboardType = .numberPad
         $0.addAction(for: .editingChanged, { [weak self] in
             guard let `self` = self,
@@ -101,6 +100,10 @@ class MoneyTransferConroller: BaseViewController<String> {
         self.continButton.snp.makeConstraints { make in
             make.height.equalTo(56)
         }
+    }
+    
+    override func setupInitialData() {
+        self.summTextField.becomeFirstResponder()
     }
     
     override func changed(keyboard height: CGFloat) {

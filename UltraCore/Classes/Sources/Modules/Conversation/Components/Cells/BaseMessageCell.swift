@@ -24,7 +24,9 @@ class BaseMessageCell: BaseCell {
         $0.numberOfLines = 0
     })
     
-    let deliveryDateLabel: RegularFootnote = .init()
+    let deliveryDateLabel: RegularFootnote = .init({
+        $0.textAlignment = .right
+    })
     
     let container: UIView = .init({
         $0.cornerRadius = 18
