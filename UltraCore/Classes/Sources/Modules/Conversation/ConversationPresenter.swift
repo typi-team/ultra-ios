@@ -21,6 +21,7 @@ final class ConversationPresenter {
     fileprivate let userID: String
     fileprivate let disposeBag = DisposeBag()
     fileprivate let appStore: AppSettingsStore
+    
     fileprivate let mediaRepository: MediaRepository
     fileprivate let updateRepository: UpdateRepository
     private unowned let view: ConversationViewInterface
@@ -28,10 +29,13 @@ final class ConversationPresenter {
     fileprivate let contactRepository: ContactsRepository
     private let wireframe: ConversationWireframeInterface
     fileprivate let conversationRepository: ConversationRepository
+    
+
+    private let deleteMessageInteractor: UseCase<[Message], Void>
     private let sendTypingInteractor: UseCase<String, SendTypingResponse>
     private let readMessageInteractor: UseCase<Message, MessagesReadResponse>
     private let messagesInteractor: UseCase<GetChatMessagesRequest, [Message]>
-    
+    fileprivate let sendMoneyInteractor: UseCase<TransferPayload, TransferResponse>
     private let messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>
 
 
@@ -68,9 +72,11 @@ final class ConversationPresenter {
          contactRepository: ContactsRepository,
          wireframe: ConversationWireframeInterface,
          conversationRepository: ConversationRepository,
+         deleteMessageInteractor: UseCase<[Message], Void>,
          messagesInteractor: UseCase<GetChatMessagesRequest, [Message]>,
          sendTypingInteractor: UseCase<String, SendTypingResponse>,
          readMessageInteractor: UseCase<Message, MessagesReadResponse>,
+         sendMoneyInteractor: UseCase<TransferPayload, TransferResponse>,
          messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>) {
         self.view = view
         self.userID = userID
@@ -82,9 +88,11 @@ final class ConversationPresenter {
         self.contactRepository = contactRepository
         self.messageRepository = messageRepository
         self.messagesInteractor = messagesInteractor
+        self.sendMoneyInteractor = sendMoneyInteractor
         self.sendTypingInteractor = sendTypingInteractor
         self.readMessageInteractor = readMessageInteractor
         self.conversationRepository = conversationRepository
+        self.deleteMessageInteractor = deleteMessageInteractor
         self.messageSenderInteractor = messageSenderInteractor
     }
 }
@@ -92,6 +100,80 @@ final class ConversationPresenter {
 // MARK: - Extensions -
 
 extension ConversationPresenter: ConversationPresenterInterface {
+    func delete(_ messages: [Message]) {
+        self.deleteMessageInteractor.executeSingle(params: messages)
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe()
+            .disposed(by: disposeBag)
+    }
+
+    func send(money amount: Double) {
+        guard let receiver = self.conversation.peer?.userID else { return }
+        let moneyParams = TransferPayload(sender: self.appStore.userID(),
+                                     receiver: receiver,
+                                     amount: amount,
+                                     currency: "USD")
+        
+        self.sendMoneyInteractor
+            .executeSingle(params: moneyParams)
+            .flatMap({ [weak self] response in
+                guard let `self` = self else { throw NSError.selfIsNill }
+                
+                var params = MessageSendRequest()
+
+                params.peer.user = .with({ [weak self] peer in
+                    guard let `self` = self else { return }
+                    peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
+                })
+
+                params.message.id = UUID().uuidString
+                params.message.meta.created = Date().nanosec
+
+                var message = Message()
+                message.money = .with({
+                    $0.transactionID = response.transaction_id
+                    $0.money = .with({ money in
+                        money.currencyCode = "USD"
+                        money.units = Int64(amount)
+                    })
+                })
+                message .text = params.textFormatString()
+                message.id = params.message.id
+                message.receiver = .with({ [weak self] receiver in
+                    guard let `self` = self else { return }
+                    receiver.chatID = conversation.idintification
+                    receiver.userID = self.conversation.peer?.userID ?? ""
+                })
+                message.sender = .with({ $0.userID = self.userID })
+                message.meta = .with({
+                    $0.created = Date().nanosec
+                })
+                
+                params.message = message
+                
+                return self.conversationRepository
+                    .createIfNotExist(from: message)
+                    .flatMap { self.messageRepository.save(message: message) }
+                    .flatMap { self.messageSenderInteractor.executeSingle(params: params) }
+                    .flatMap({ [weak self] (response: MessageSendResponse) in
+                        guard let `self` = self else {
+                            throw NSError.selfIsNill
+                        }
+                        message.meta.created = response.meta.created
+                        message.state.delivered = false
+                        message.state.read = false
+                        message.seqNumber = response.seqNumber
+
+                        return self.messageRepository.update(message: message)
+                    })
+            })
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe()
+            .disposed(by: disposeBag)
+    }
+    
     func loadMoreMessages(maxSeqNumber: UInt64 ) {
         self.messagesInteractor
             .executeSingle(params: .with({

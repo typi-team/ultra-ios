@@ -16,7 +16,8 @@ struct MediaMessageConstants {
 
 class BaseMessageCell: BaseCell {
     var message: Message?
-    var actionCallback: ((Message?) -> Void)?
+    var actionCallback: ((Message) -> Void)?
+    var longTapCallback:((Message) -> Void)?
     lazy var disposeBag: DisposeBag = .init()
     lazy var constants: MediaMessageConstants = .init(maxWidth: 300, maxHeight: 200)
     
@@ -24,7 +25,9 @@ class BaseMessageCell: BaseCell {
         $0.numberOfLines = 0
     })
     
-    let deliveryDateLabel: RegularFootnote = .init()
+    let deliveryDateLabel: RegularFootnote = .init({
+        $0.textAlignment = .right
+    })
     
     let container: UIView = .init({
         $0.cornerRadius = 18
@@ -33,14 +36,28 @@ class BaseMessageCell: BaseCell {
     
     override func setupView() {
         super.setupView()
-        self.addSubview(container)
+        self.contentView.addSubview(container)
         self.backgroundColor = .clear
         self.container.addSubview(textView)
         self.container.addSubview(deliveryDateLabel)
+        
+        self.additioanSetup()
     }
     
     override func additioanSetup() {
         super.additioanSetup()
+        
+        self.selectionStyle = .gray
+        let longTap = UILongPressGestureRecognizer.init(target: self, action: #selector(self.handleLongPress(_:)))
+        longTap.minimumPressDuration = 0.3
+        self.container.addGestureRecognizer(longTap)
+        
+        let tap = UITapGestureRecognizer.init(target: self, action: #selector(self.handleTapPress(_:)))
+        self.container.addGestureRecognizer(tap)
+        
+        self.selectedBackgroundView = UIView({
+            $0.backgroundColor = .clear
+        })
     }
     
     override func setupConstraints() {
@@ -71,5 +88,28 @@ class BaseMessageCell: BaseCell {
         self.message = message
         self.textView.text = message.text
         self.deliveryDateLabel.text = message.meta.created.dateBy(format: .hourAndMinute)
+    }
+}
+
+extension BaseMessageCell {
+    @objc func handleLongPress(_ sender: UILongPressGestureRecognizer) {
+        guard let message = self.message, sender.state == .began else {
+            return
+        }
+        
+        self.longTapCallback?(message)
+     }
+    
+    @objc func handleTapPress(_ sender: UILongPressGestureRecognizer) {
+        guard let message = self.message else {
+            return
+        }
+        self.actionCallback?(message)
+     }
+    
+    override func setEditing(_ editing: Bool, animated: Bool) {
+        super.setEditing(editing, animated: animated)
+        self.container.isUserInteractionEnabled = !editing
+        self.contentView.isUserInteractionEnabled = !editing
     }
 }

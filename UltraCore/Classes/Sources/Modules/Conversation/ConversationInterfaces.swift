@@ -35,8 +35,9 @@ protocol ConversationPresenterInterface: PresenterInterface {
     func typing(is active: Bool)
     func upload(file: FileUpload)
     func send(message text: String)
+    func send(money amount: Double)
+    func delete(_ messages: [Message])
     func loadMoreMessages(maxSeqNumber: UInt64)
     func mediaURL(from message: Message) -> URL?
     var messages: Observable<[Message]> { get set }
-    
 }

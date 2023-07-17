@@ -21,6 +21,7 @@ class DBMessage: Object {
     @objc dynamic var voiceMessage: DBVoiceMessage?
     @objc dynamic var photoMessage: DBPhotoMessage?
     @objc dynamic var videoMessage: DBVideoMessage?
+    @objc dynamic var moneyMessage: DBMoneyMessage?
     @objc dynamic var isIncome: Bool = false
     
     
@@ -46,11 +47,12 @@ class DBMessage: Object {
         case .voice(let voiceMessage):
             self.voiceMessage = .init(fromProto: voiceMessage)
         case .photo(let photoMessage):
-            self.photoMessage = .init(fromProto: photoMessage)
+            self.photoMessage = realm.object(ofType: DBPhotoMessage.self, forPrimaryKey: photoMessage.fileID) ?? .init(fromProto: photoMessage)
         case .video(let videoMessage):
             self.videoMessage = .init(videoMessage: videoMessage)
-        default:
-            break
+        case .money(let moneyMessage):
+            self.moneyMessage = realm.object(ofType: DBMoneyMessage.self, forPrimaryKey: moneyMessage.transactionID) ?? .init(message: moneyMessage)
+        default: break
         }
         
         if let id = id {
@@ -77,6 +79,8 @@ class DBMessage: Object {
             message.content = .photo(photoMessage.toProto())
         } else if let videoMessage = videoMessage {
             message.content = .video(videoMessage.toProto())
+        } else if let moneyMessage = moneyMessage {
+            message.content = .money(moneyMessage.toProto())
         }
         
         return message
@@ -302,6 +306,49 @@ class DBVideoMessage: Object {
         videoMessage.height = self.height
         videoMessage.thumbPreview = self.preview
         return videoMessage
+    }
+}
+
+class DBMoneyMessage: Object {
+    @objc dynamic var currencyCode: String = ""
+    @objc dynamic var units: Int64 = 0
+    @objc dynamic var nanos: Int32 = 0
+    @objc dynamic var updated: Int64 = 0
+
+    @objc dynamic var message: String = ""
+    @objc dynamic var transactionID: String = ""
+    @objc dynamic var status: Int = MoneyStatusEnum.moneyStatusUnknown.rawValue
+
+    override static func primaryKey() -> String? {
+        return "transactionID"
+    }
+
+    convenience init(message money: MoneyMessage) {
+        self.init()
+
+        self.nanos = money.money.nanos
+        self.units = money.money.units
+        self.updated = money.status.updated
+        self.message = money.status.message
+        self.transactionID = money.transactionID
+        self.status = money.status.status.rawValue
+        self.currencyCode = money.money.currencyCode
+    }
+
+    func toProto() -> MoneyMessage {
+        return .with({ money in
+            money.money = .with({
+                $0.currencyCode = currencyCode
+                $0.nanos = Int32(nanos)
+                $0.units = units
+            })
+            money.status = .with({
+                $0.message = message
+                $0.updated = updated
+                $0.status = .init(rawValue: status) ?? .moneyStatusUnknown
+            })
+            money.transactionID = transactionID
+        })
     }
 }
 

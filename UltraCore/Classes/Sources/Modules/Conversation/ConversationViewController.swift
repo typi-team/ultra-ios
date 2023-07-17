@@ -17,6 +17,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     // MARK: - Properties
     
     let sheetTransitioningDelegate = SheetTransitioningDelegate()
+    let moneyTransitioningDelegate = SheetTransitioningDelegate()
     fileprivate var mediaItem: URL?
     fileprivate var isDrawingTable: Bool = false
     
@@ -40,6 +41,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.tableFooterView = UIView()
         tableView.refreshControl = refreshControl
         tableView.registerCell(type: BaseMessageCell.self)
+        tableView.registerCell(type: IncomeMoneyCell.self)
+        tableView.registerCell(type: OutcomeMoneyCell.self)
         tableView.registerCell(type: IncomeMessageCell.self)
         tableView.registerCell(type: IncomingPhotoCell.self)
         tableView.registerCell(type: IncomingVideoCell.self)
@@ -71,18 +74,23 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         inputBar.delegate = self
     })
     
+    private lazy var editInputBar: EditActionBottomBar = .init({ [weak self] inputBar in
+        inputBar.delegate = self
+    })
+    
     // MARK: - Private Methods
     
     override func setupViews() {
         self.handleKeyboardTransmission = true
         super.setupViews()
-        view.addSubview(tableView)
-        view.addSubview(messageHeadline)
-        view.addSubview(messageInputBar)
-        view.addSubview(navigationDivider)
+        self.view.addSubview(tableView)
+        self.view.addSubview(messageHeadline)
+        self.view.addSubview(messageInputBar)
+        self.view.addSubview(navigationDivider)
+        self.view.addSubview(editInputBar)
         
-        navigationItem.leftItemsSupplementBackButton = true
-        navigationItem.leftBarButtonItem = .init(customView: self.headline)
+        self.navigationItem.leftItemsSupplementBackButton = true
+        self.navigationItem.leftBarButtonItem = .init(customView: headline)
     }
     
     override func setupConstraints() {
@@ -112,31 +120,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     
     override func setupInitialData() {
         super.setupInitialData()
-        self.tableView
-            .rx
-            .modelSelected(Message.self)
-            .map({ [weak self] message in
-                return self?.presenter?.mediaURL(from: message)
-            })
-            .compactMap({$0})
-            .subscribe(onNext: { [weak self] url in
-                guard let `self` = self else { return }
-                self.view.endEditing(true)
-                self.mediaItem = url
-                let previewController = QLPreviewController()
-                previewController.dataSource = self
-                previewController.currentPreviewItemIndex = 0
-                self.present(previewController, animated: true)
-            })
-            .disposed(by: disposeBag)
-        
-        self.tableView.rx
-            .itemSelected
-            .asDriver()
-            .drive(onNext: {[weak self] indexPath in
-                self?.tableView.deselectRow(at: indexPath, animated: true)
-            })
-            .disposed(by: disposeBag)
     
         self.presenter?
             .messages
@@ -160,32 +143,17 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                     self.isDrawingTable = false
                 })
             })
-            .bind(to: tableView.rx.items) { tableView, _, message in
-                if message.isIncome && message.photo.fileID != "" {
-                    let cell: IncomingPhotoCell = tableView.dequeueCell()
-                    cell.setup(message: message)
-                    return cell
-                } else if !message.isIncome && message.photo.fileID != "" {
-                    let cell: OutgoingPhotoCell = tableView.dequeueCell()
-                    cell.setup(message: message)
-                    return cell
-                } else if message.isIncome && message.video.fileID != "" {
-                    let cell: IncomingVideoCell = tableView.dequeueCell()
-                    cell.setup(message: message)
-                    return cell
-                } else if !message.isIncome && message.video.fileID != "" {
-                    let cell: OutgoingVideoCell = tableView.dequeueCell()
-                    cell.setup(message: message)
-                    return cell
-                } else if message.isIncome {
-                    let cell: IncomeMessageCell = tableView.dequeueCell()
-                    cell.setup(message: message)
-                    return cell
-                } else {
-                    let cell: OutgoingMessageCell = tableView.dequeueCell()
-                    cell.setup(message: message)
-                    return cell
+            .bind(to: tableView.rx.items) { [weak self] tableView, _,
+                message in
+                guard let `self` = self else {
+                    return UITableViewCell.init()
                 }
+                let cell = self.cell(message, in: tableView)
+                cell.longTapCallback = {[weak self] message in
+                    guard let `self` = self else { return }
+                    self.presentEditController(for: message)
+                }
+                return cell
             }
             .disposed(by: disposeBag)
         
@@ -233,7 +201,17 @@ extension ConversationViewController: MessageInputBarDelegate {
     }
     
     func exchanges() {
-        self.showAlert(from: "Данная функция еще в разработке")
+        let viewController = AdditioanalController()
+        viewController.resultCallback = { [weak self] action in
+            guard let `self` = self else { return }
+            switch action {
+            case .money_tranfer:
+                self.openMoneyTransfer()
+            }
+        }
+        viewController.modalPresentationStyle = .custom
+        viewController.transitioningDelegate = sheetTransitioningDelegate
+        present(viewController, animated: true)
     }
     
     func micro(isActivated: Bool) {
@@ -266,6 +244,18 @@ extension ConversationViewController: ConversationViewInterface {
 
 
 private extension ConversationViewController {
+    
+    func openMoneyTransfer() {
+        let viewController = MoneyTransferConroller()
+        viewController.resultCallback = {[weak self] amount in
+            guard let `self` = self else { return }
+            self.presenter?.send(money: amount)
+        }
+        viewController.modalPresentationStyle = .custom
+        viewController.transitioningDelegate = moneyTransitioningDelegate
+        self.present(viewController, animated: true)
+    }
+    
     func openMedia(type: UIImagePickerController.SourceType) {
         self.present(UIImagePickerController({
             $0.delegate = self
@@ -311,5 +301,108 @@ extension ConversationViewController: QLPreviewControllerDataSource  {
             fatalError(NSError.objectsIsNill.localizedDescription)
         }
         return item as QLPreviewItem
+    }
+}
+
+extension ConversationViewController {
+    func cell(_ message: Message, in tableView: UITableView) -> BaseMessageCell {
+        
+        guard let content = message.content else {
+            if message.isIncome {
+                let cell: IncomeMessageCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            } else {
+                let cell: OutgoingMessageCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            }
+        }
+        
+        switch content {
+        case let .photo(photo):
+            if message.isIncome {
+                let cell: IncomingPhotoCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            } else {
+                let cell: OutgoingPhotoCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            }
+        case let .video(video):
+            if message.isIncome {
+                let cell: IncomingVideoCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            } else {
+                let cell: OutgoingVideoCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            }
+        case .money:
+
+            if message.isIncome {
+                let cell: IncomeMoneyCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+
+            } else {
+                let cell: OutcomeMoneyCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            }
+
+        case .location(_), .file(_), .contact(_), .audio(_), .voice:
+            let cell: BaseMessageCell = tableView.dequeueCell()
+            cell.setup(message: message)
+            return cell
+        }
+    }
+    
+    func presentEditController(for message: Message) {
+        self.tableView.allowsMultipleSelectionDuringEditing = true
+        self.tableView.setEditing(!tableView.isEditing, animated: true)
+        
+        if(tableView.isEditing) {
+            self.view.addSubview(editInputBar)
+            editInputBar.snp.makeConstraints({make in
+                make.edges.equalTo(self.messageInputBar)
+            })
+        } else {
+            self.editInputBar.removeFromSuperview()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: {
+            self.tableView.reloadData()
+        })
+    }
+}
+
+extension ConversationViewController: EditActionBottomBarDelegate {
+    func cancel() {
+        self.editInputBar.removeFromSuperview()
+        self.tableView.setEditing(false, animated: true)
+    }
+    
+    func delete() {
+        
+        let messages = self.tableView.indexPathsForSelectedRows?
+            .map { indexPath in self.tableView.cellForRow(at: indexPath) }
+            .compactMap({ $0 as? BaseMessageCell })
+            .map({ $0.message })
+            .compactMap({ $0 }) ?? []
+        
+        
+        let alert = UIAlertController.init(title: "Вы уверены? \(messages.count)",
+                                           message: "Пожалуйста, обратите внимание, что данные сообщения будут безвозвратно удалены, и восстановление не будет возможным.",
+                                           preferredStyle: .actionSheet)
+        alert.addAction(.init(title: "Удалить", style: .destructive, handler:  {[weak self] _ in
+            guard let `self` = self else { return }
+            self.presenter?.delete(messages)
+            self.cancel()
+        }))
+        
+        alert.addAction(.init(title: "Отменить", style: .cancel))
+        self.present(alert, animated: true)
     }
 }
