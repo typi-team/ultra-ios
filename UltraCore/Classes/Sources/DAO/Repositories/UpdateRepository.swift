@@ -188,7 +188,7 @@ private extension UpdateRepositoryImpl {
         case let .messagesRead(message):
             self.messagesReaded(message: message)
         case let .messagesDeleted(message):
-            PP.debug(message.textFormatString())
+            self.delete(message)
         case let .chatDeleted(chat):
             PP.debug(chat.textFormatString())
         case let .moneyTransferStatus(status):
@@ -241,6 +241,13 @@ extension UpdateRepositoryImpl {
 }
 
 extension UpdateRepositoryImpl {
+    func delete(_ message: MessagesDeleted) {
+        self.messageService.deleteMessages(in: message.chatID, ranges: message.convertToClosedRanges())
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .subscribe()
+            .disposed(by: disposeBag)
+    }
+    
     func handle(user typing: UserTyping) {
         guard var users = try? typingUsers.value() else {
             return
@@ -280,5 +287,23 @@ extension UpdateRepositoryImpl {
             .subscribe()
             .disposed(by: disposeBag)
         
+    }
+}
+
+extension MessagesDeleted {
+    
+    func convertToClosedRanges() -> [ClosedRange<Int64>] {
+        var closedRanges: [ClosedRange<Int64>] = []
+
+        for messagesRange in self.range {
+            if messagesRange.minSeqNumber > messagesRange.maxSeqNumber {
+                continue
+            }
+
+            let closedRange = ClosedRange(uncheckedBounds: (Int64(messagesRange.minSeqNumber), Int64(messagesRange.maxSeqNumber)))
+            closedRanges.append(closedRange)
+        }
+
+        return closedRanges
     }
 }

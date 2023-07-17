@@ -27,6 +27,7 @@ class OutcomeMoneyCell : BaseMessageCell {
         self.container.addSubview(moneyHeadlineLabel)
         self.container.addSubview(moneyCaptionlabel)
         self.container.addSubview(statusView)
+        self.container.backgroundColor = .gray200
     }
     
     override func setupConstraints() {

@@ -47,11 +47,11 @@ class DBMessage: Object {
         case .voice(let voiceMessage):
             self.voiceMessage = .init(fromProto: voiceMessage)
         case .photo(let photoMessage):
-            self.photoMessage = .init(fromProto: photoMessage)
+            self.photoMessage = realm.object(ofType: DBPhotoMessage.self, forPrimaryKey: photoMessage.fileID) ?? .init(fromProto: photoMessage)
         case .video(let videoMessage):
             self.videoMessage = .init(videoMessage: videoMessage)
         case .money(let moneyMessage):
-            self.moneyMessage = .init(message: moneyMessage)
+            self.moneyMessage = realm.object(ofType: DBMoneyMessage.self, forPrimaryKey: moneyMessage.transactionID) ?? .init(message: moneyMessage)
         default: break
         }
         

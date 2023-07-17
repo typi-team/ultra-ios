@@ -21,7 +21,7 @@ class OutgoingPhotoCell: MediaCell {
     fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
     
     override func setupView() {
-        self.addSubview(container)
+        self.contentView.addSubview(container)
         self.backgroundColor = .clear
         self.container.addSubview(mediaView)
         self.mediaView.addSubview(sameProgressInSameTime)
@@ -31,8 +31,7 @@ class OutgoingPhotoCell: MediaCell {
         self.deliveryWrapper.addSubview(statusView)
         self.deliveryWrapper.addSubview(deliveryDateLabel)
         self.sameProgressInSameTime.bringSubviewToFront(mediaView)
-        
-        
+        self.additioanSetup()
     }
     
     override func setupConstraints() {

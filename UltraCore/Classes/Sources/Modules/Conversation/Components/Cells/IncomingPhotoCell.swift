@@ -10,13 +10,14 @@ import UIKit
 class IncomingPhotoCell: MediaCell {
     
     override func setupView() {
-        self.addSubview(container)
+        self.contentView.addSubview(container)
         self.backgroundColor = .clear
         self.container.addSubview(mediaView)
         self.container.addSubview(playView)
         self.container.addSubview(downloadProgress)
         self.container.addSubview(deliveryWrapper)
         self.deliveryWrapper.addSubview(deliveryDateLabel)
+        self.additioanSetup()
     }
     
     override func setupConstraints() {

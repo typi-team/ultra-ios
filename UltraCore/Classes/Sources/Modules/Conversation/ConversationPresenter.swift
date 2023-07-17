@@ -21,6 +21,7 @@ final class ConversationPresenter {
     fileprivate let userID: String
     fileprivate let disposeBag = DisposeBag()
     fileprivate let appStore: AppSettingsStore
+    
     fileprivate let mediaRepository: MediaRepository
     fileprivate let updateRepository: UpdateRepository
     private unowned let view: ConversationViewInterface
@@ -28,6 +29,9 @@ final class ConversationPresenter {
     fileprivate let contactRepository: ContactsRepository
     private let wireframe: ConversationWireframeInterface
     fileprivate let conversationRepository: ConversationRepository
+    
+
+    private let deleteMessageInteractor: UseCase<[Message], Void>
     private let sendTypingInteractor: UseCase<String, SendTypingResponse>
     private let readMessageInteractor: UseCase<Message, MessagesReadResponse>
     private let messagesInteractor: UseCase<GetChatMessagesRequest, [Message]>
@@ -68,6 +72,7 @@ final class ConversationPresenter {
          contactRepository: ContactsRepository,
          wireframe: ConversationWireframeInterface,
          conversationRepository: ConversationRepository,
+         deleteMessageInteractor: UseCase<[Message], Void>,
          messagesInteractor: UseCase<GetChatMessagesRequest, [Message]>,
          sendTypingInteractor: UseCase<String, SendTypingResponse>,
          readMessageInteractor: UseCase<Message, MessagesReadResponse>,
@@ -87,6 +92,7 @@ final class ConversationPresenter {
         self.sendTypingInteractor = sendTypingInteractor
         self.readMessageInteractor = readMessageInteractor
         self.conversationRepository = conversationRepository
+        self.deleteMessageInteractor = deleteMessageInteractor
         self.messageSenderInteractor = messageSenderInteractor
     }
 }
@@ -94,7 +100,14 @@ final class ConversationPresenter {
 // MARK: - Extensions -
 
 extension ConversationPresenter: ConversationPresenterInterface {
-    
+    func delete(_ messages: [Message]) {
+        self.deleteMessageInteractor.executeSingle(params: messages)
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe()
+            .disposed(by: disposeBag)
+    }
+
     func send(money amount: Double) {
         guard let receiver = self.conversation.peer?.userID else { return }
         let moneyParams = TransferPayload(sender: self.appStore.userID(),
