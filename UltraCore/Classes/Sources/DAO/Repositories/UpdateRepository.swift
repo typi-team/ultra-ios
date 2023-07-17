@@ -190,7 +190,7 @@ private extension UpdateRepositoryImpl {
         case let .messagesDeleted(message):
             self.delete(message)
         case let .chatDeleted(chat):
-            PP.debug(chat.textFormatString())
+            self.deleteConversation(chat)
         case let .moneyTransferStatus(status):
             PP.debug(status.textFormatString())
         }
@@ -243,6 +243,13 @@ extension UpdateRepositoryImpl {
 extension UpdateRepositoryImpl {
     func delete(_ message: MessagesDeleted) {
         self.messageService.deleteMessages(in: message.chatID, ranges: message.convertToClosedRanges())
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .subscribe()
+            .disposed(by: disposeBag)
+    }
+    
+    func deleteConversation(_ data: ChatDeleted) {
+        self.conversationService.delete(conversation: data.chatID)
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .subscribe()
             .disposed(by: disposeBag)

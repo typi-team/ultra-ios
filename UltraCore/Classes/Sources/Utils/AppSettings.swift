@@ -20,6 +20,7 @@ protocol AppSettings: Any {
     
     var contactDBService: ContactDBService { get }
     var messageDBService: MessageDBService { get }
+    var conversationDBService: ConversationDBService { get }
     
     var userService: UserServiceClientProtocol { get }
     var fileService: FileServiceClientProtocol { get }
@@ -27,6 +28,7 @@ protocol AppSettings: Any {
     var deviceService: DeviceServiceClientProtocol { get }
     var messageService: MessageServiceClientProtocol { get }
     var contactsService: ContactServiceClientProtocol { get }
+    var conversationService: ChatServiceClientProtocol { get }
 }
 
 open class AppSettingsImpl: AppSettings  {
@@ -61,6 +63,7 @@ open class AppSettingsImpl: AppSettings  {
     lazy var messageService: MessageServiceClientProtocol = MessageServiceNIOClient(channel: channel)
     lazy var contactsService: ContactServiceClientProtocol = ContactServiceNIOClient(channel: channel)
     lazy var updateService: UpdatesServiceClientProtocol = UpdatesServiceNIOClient(channel: updateChannel)
+    lazy var conversationService: ChatServiceClientProtocol = ChatServiceNIOClient.init(channel: channel)
 
 //    MARK: Services
 

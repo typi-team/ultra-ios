@@ -143,7 +143,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                     self.isDrawingTable = false
                 })
             })
-            .bind(to: tableView.rx.items) { [weak self] tableView, _,
+            .bind(to: tableView.rx.items) { [weak self] tableView, indexPath,
                 message in
                 guard let `self` = self else {
                     return UITableViewCell.init()
@@ -151,7 +151,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                 let cell = self.cell(message, in: tableView)
                 cell.longTapCallback = {[weak self] message in
                     guard let `self` = self else { return }
-                    self.presentEditController(for: message)
+                    self.presentEditController(for: message, indexPath: IndexPath(row: indexPath, section: 0))
                 }
                 return cell
             }
@@ -360,7 +360,7 @@ extension ConversationViewController {
         }
     }
     
-    func presentEditController(for message: Message) {
+    func presentEditController(for message: Message, indexPath: IndexPath) {
         self.tableView.allowsMultipleSelectionDuringEditing = true
         self.tableView.setEditing(!tableView.isEditing, animated: true)
         
@@ -374,6 +374,7 @@ extension ConversationViewController {
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: {
             self.tableView.reloadData()
+            self.tableView.selectRow(at: indexPath, animated: true, scrollPosition: .middle)
         })
     }
 }
@@ -392,17 +393,18 @@ extension ConversationViewController: EditActionBottomBarDelegate {
             .map({ $0.message })
             .compactMap({ $0 }) ?? []
         
-        
-        let alert = UIAlertController.init(title: "Вы уверены? \(messages.count)",
-                                           message: "Пожалуйста, обратите внимание, что данные сообщения будут безвозвратно удалены, и восстановление не будет возможным.",
-                                           preferredStyle: .actionSheet)
-        alert.addAction(.init(title: "Удалить", style: .destructive, handler:  {[weak self] _ in
+        let alert = UIAlertController(title: "Вы уверены?", message: "Пожалуйста, обратите внимание, что данные сообщения будут безвозвратно удалены, и восстановление не будет возможным", preferredStyle: .actionSheet)
+        alert.addAction(.init(title: "Удалить для всех", style: .destructive, handler: { [weak self] _ in
             guard let `self` = self else { return }
-            self.presenter?.delete(messages)
+            self.presenter?.delete(messages, all: true)
             self.cancel()
         }))
-        
-        alert.addAction(.init(title: "Отменить", style: .cancel))
+        alert.addAction(.init(title: "Удалить у меня", style: .destructive, handler: { [weak self] _ in
+            guard let `self` = self else { return }
+            self.presenter?.delete(messages, all: false)
+            self.cancel()
+        }))
+        alert.addAction(.init(title: "Отмена", style: .cancel))
         self.present(alert, animated: true)
     }
 }

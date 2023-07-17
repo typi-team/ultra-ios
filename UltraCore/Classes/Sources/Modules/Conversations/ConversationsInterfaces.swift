@@ -27,6 +27,6 @@ protocol ConversationsPresenterInterface: PresenterInterface {
     func setupUpdateSubscription()
     func retrieveContactStatuses()
     func updateStatus(is online: Bool)
-    
+    func delete(_ conversation: Conversation, all: Bool)
     func navigate(to conversation: Conversation)
 }

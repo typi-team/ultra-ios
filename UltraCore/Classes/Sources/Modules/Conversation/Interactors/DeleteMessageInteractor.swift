@@ -7,7 +7,7 @@
 
 import RxSwift
 
-class DeleteMessageInteractor: UseCase<[Message], Void> {
+class DeleteMessageInteractor: UseCase<([Message], Bool), Void> {
     
     fileprivate let messageDBService: MessageDBService
     fileprivate let messageService: MessageServiceClientProtocol
@@ -19,12 +19,12 @@ class DeleteMessageInteractor: UseCase<[Message], Void> {
         self.messageDBService = messageDBService
     }
     
-    override func executeSingle(params: [Message]) -> Single<Void> {
+    override func executeSingle(params: ([Message], Bool)) -> Single<Void> {
         return Single.create(subscribe: { observer -> Disposable in
             let range = MessagesDeleteRequest.with({ request in
-                request.forEveryone = true
-                request.chatID = params.first?.receiver.chatID ?? ""
-                request.range = self.splitToRanges(numbers: params.map({ $0.seqNumber }).sorted(by: { $0 < $1 }))
+                request.forEveryone = params.1
+                request.chatID = params.0.first?.receiver.chatID ?? ""
+                request.range = self.splitToRanges(numbers: params.0.map({ $0.seqNumber }).sorted(by: { $0 < $1 }))
                     .map({ range in
                         MessagesRange.with({
                             $0.maxSeqNumber = range.upperBound
@@ -45,7 +45,7 @@ class DeleteMessageInteractor: UseCase<[Message], Void> {
         })
         .flatMap({ [weak self] in
             guard let `self` = self else { throw NSError.selfIsNill }
-            return self.messageDBService.delete(messages: params, in: params.last?.receiver.chatID)
+            return self.messageDBService.delete(messages: params.0, in: params.0.last?.receiver.chatID)
         })
     }
 

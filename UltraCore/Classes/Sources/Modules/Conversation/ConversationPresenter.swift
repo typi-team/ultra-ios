@@ -31,7 +31,7 @@ final class ConversationPresenter {
     fileprivate let conversationRepository: ConversationRepository
     
 
-    private let deleteMessageInteractor: UseCase<[Message], Void>
+    private let deleteMessageInteractor: UseCase<([Message], Bool), Void>
     private let sendTypingInteractor: UseCase<String, SendTypingResponse>
     private let readMessageInteractor: UseCase<Message, MessagesReadResponse>
     private let messagesInteractor: UseCase<GetChatMessagesRequest, [Message]>
@@ -72,7 +72,7 @@ final class ConversationPresenter {
          contactRepository: ContactsRepository,
          wireframe: ConversationWireframeInterface,
          conversationRepository: ConversationRepository,
-         deleteMessageInteractor: UseCase<[Message], Void>,
+         deleteMessageInteractor: UseCase<([Message], Bool), Void>,
          messagesInteractor: UseCase<GetChatMessagesRequest, [Message]>,
          sendTypingInteractor: UseCase<String, SendTypingResponse>,
          readMessageInteractor: UseCase<Message, MessagesReadResponse>,
@@ -100,8 +100,8 @@ final class ConversationPresenter {
 // MARK: - Extensions -
 
 extension ConversationPresenter: ConversationPresenterInterface {
-    func delete(_ messages: [Message]) {
-        self.deleteMessageInteractor.executeSingle(params: messages)
+    func delete(_ messages: [Message], all: Bool) {
+        self.deleteMessageInteractor.executeSingle(params: (messages, all))
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()
