@@ -22,8 +22,8 @@ class DBMessage: Object {
     @objc dynamic var photoMessage: DBPhotoMessage?
     @objc dynamic var videoMessage: DBVideoMessage?
     @objc dynamic var moneyMessage: DBMoneyMessage?
+    @objc dynamic var fileMessage: DBFileMessage?
     @objc dynamic var isIncome: Bool = false
-    
     
     
     override static func primaryKey() -> String? {
@@ -52,6 +52,8 @@ class DBMessage: Object {
             self.videoMessage = .init(videoMessage: videoMessage)
         case .money(let moneyMessage):
             self.moneyMessage = realm.object(ofType: DBMoneyMessage.self, forPrimaryKey: moneyMessage.transactionID) ?? .init(message: moneyMessage)
+        case .file(let fileMessage) :
+            self.fileMessage = realm.object(ofType: DBFileMessage.self, forPrimaryKey: fileMessage.fileID) ?? DBFileMessage(fileMessage: fileMessage)
         default: break
         }
         
@@ -62,15 +64,17 @@ class DBMessage: Object {
     
     func toProto() -> Message {
         var message = Message()
+        
         message.id = id
-        message.state = state!.toProto()
-        message.chatType = ChatTypeEnum(rawValue: chatType) ?? ChatTypeEnum.peerToPeer
-        message.seqNumber = UInt64(seqNumber)
-        message.type = MessageTypeEnum.init(rawValue: self.type) ?? MessageTypeEnum.text
-        message.receiver = receiver!.toProto()
-        message.sender = sender!.toProto()
-        message.meta = meta!.toProto()
         message.text = self.text
+        message.meta = meta!.toProto()
+        message.state = state!.toProto()
+        message.sender = sender!.toProto()
+        message.seqNumber = UInt64(seqNumber)
+        message.receiver = receiver!.toProto()
+        message.chatType = ChatTypeEnum(rawValue: chatType) ?? ChatTypeEnum.peerToPeer
+        message.type = MessageTypeEnum.init(rawValue: self.type) ?? MessageTypeEnum.text
+
         if let audioMessage = audioMessage {
             message.content = .audio(audioMessage.toProto())
         } else if let voiceMessage = voiceMessage {
@@ -81,6 +85,8 @@ class DBMessage: Object {
             message.content = .video(videoMessage.toProto())
         } else if let moneyMessage = moneyMessage {
             message.content = .money(moneyMessage.toProto())
+        } else if let fileMessage = fileMessage {
+            message.content = .file(fileMessage.toProto())
         }
         
         return message
@@ -349,6 +355,35 @@ class DBMoneyMessage: Object {
             })
             money.transactionID = transactionID
         })
+    }
+}
+
+class DBFileMessage: Object {
+    
+    @objc dynamic var fileID: String = ""
+    @objc dynamic var fileSize: Int64 = 0
+    @objc dynamic var mimeType: String = ""
+    @objc dynamic var fileName: String = ""
+
+    override static func primaryKey() -> String? {
+        return "fileID"
+    }
+
+    convenience init(fileMessage: FileMessage) {
+        self.init()
+        self.fileID = fileMessage.fileID
+        self.fileSize = fileMessage.fileSize
+        self.mimeType = fileMessage.mimeType
+        self.fileName = fileMessage.fileName
+    }
+
+    func toProto() -> FileMessage {
+        return .with { fileMessage in
+            fileMessage.fileID = self.fileID
+            fileMessage.fileSize = self.fileSize
+            fileMessage.mimeType = self.mimeType
+            fileMessage.fileName = self.fileName
+        }
     }
 }
 

@@ -40,6 +40,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.separatorStyle = .none
         tableView.tableFooterView = UIView()
         tableView.refreshControl = refreshControl
+        tableView.registerCell(type: IncomeFileCell.self)
+        tableView.registerCell(type: OutcomeFileCell.self)
         tableView.registerCell(type: BaseMessageCell.self)
         tableView.registerCell(type: IncomeMoneyCell.self)
         tableView.registerCell(type: OutcomeMoneyCell.self)
@@ -120,6 +122,26 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     
     override func setupInitialData() {
         super.setupInitialData()
+        
+        self.tableView
+            .rx
+            .modelSelected(Message.self)
+            .map({ [weak self] message in
+                return self?.presenter?.mediaURL(from: message)
+            })
+            .compactMap({$0})
+            .subscribe(onNext: { [weak self] url in
+                guard let `self` = self else { return }
+                self.view.endEditing(true)
+                self.mediaItem = url
+                let previewController = QLPreviewController()
+                previewController.modalPresentationStyle = .formSheet
+                previewController.dataSource = self
+                previewController.currentPreviewItemIndex = 0
+                self.present(previewController, animated: true)
+            })
+            .disposed(by: disposeBag)
+
     
         self.presenter?
             .messages
@@ -185,6 +207,7 @@ extension ConversationViewController: MessageInputBarDelegate {
             switch action {
             case .fromGallery: self.openMedia(type: .savedPhotosAlbum)
             case .takePhoto: self.openMedia(type: .camera)
+            case .document: self.openDocument()
             }
         }
         viewController.modalPresentationStyle = .custom
@@ -264,6 +287,12 @@ private extension ConversationViewController {
             $0.mediaTypes = ["public.movie", "public.image"]
             $0.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
         }), animated: true)
+    }
+    
+    func openDocument() {
+        let documentPicker = UIDocumentPickerViewController(documentTypes: ["public.content"], in: .import)
+        documentPicker.delegate = self
+        present(documentPicker, animated: true, completion: nil)
     }
 }
 
@@ -352,7 +381,17 @@ extension ConversationViewController {
                 cell.setup(message: message)
                 return cell
             }
-
+            
+        case .file:
+            if message.isIncome {
+                let cell: IncomeFileCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            } else {
+                let cell: OutcomeFileCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            }
         case .location(_), .file(_), .contact(_), .audio(_), .voice:
             let cell: BaseMessageCell = tableView.dequeueCell()
             cell.setup(message: message)
@@ -393,6 +432,8 @@ extension ConversationViewController: EditActionBottomBarDelegate {
             .map({ $0.message })
             .compactMap({ $0 }) ?? []
         
+        guard !messages.isEmpty else { return }
+        
         let alert = UIAlertController(title: "Вы уверены?", message: "Пожалуйста, обратите внимание, что данные сообщения будут безвозвратно удалены, и восстановление не будет возможным", preferredStyle: .actionSheet)
         alert.addAction(.init(title: "Удалить для всех", style: .destructive, handler: { [weak self] _ in
             guard let `self` = self else { return }
@@ -407,4 +448,18 @@ extension ConversationViewController: EditActionBottomBarDelegate {
         alert.addAction(.init(title: "Отмена", style: .cancel))
         self.present(alert, animated: true)
     }
+}
+
+extension ConversationViewController: UIDocumentPickerDelegate {
+        func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+            guard let selectedURL = urls.first,
+                  let data = try? Data(contentsOf: selectedURL) else {
+                return
+            }
+
+            self.presenter?.upload(file: .init(url: selectedURL, data: data, mime: selectedURL.mimeType(), width: 300, height: 300))
+        }
+        
+    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) { }
+    
 }

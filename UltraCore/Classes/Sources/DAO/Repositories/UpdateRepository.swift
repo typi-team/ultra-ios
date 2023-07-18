@@ -102,29 +102,33 @@ extension UpdateRepositoryImpl: UpdateRepository {
     }
     
     func setupSubscription() {
-        self.update
-            .getInitialState(InitialStateRequest(), callOptions: .default())
-            .response
-            .whenComplete { [weak self] result in
-                guard let `self` = self else { return }
-                switch result {
-                case let .failure(error):
-                    PP.warning(error.localizedDescription)
-                case let .success(response):
-                    
-                    response.contacts.forEach { contact in
-                        self.update(contact: contact)
+        if appStore.lastState == 0 {
+            self.update
+                .getInitialState(InitialStateRequest(), callOptions: .default())
+                .response
+                .whenComplete { [weak self] result in
+                    guard let `self` = self else { return }
+                    switch result {
+                    case let .failure(error):
+                        PP.warning(error.localizedDescription)
+                    case let .success(response):
+                        
+                        response.contacts.forEach { contact in
+                            self.update(contact: contact)
+                        }
+                        
+                        response.messages.forEach { message in
+                            self.update(message: message)
+                        }
+                        
+                        self.handleUnread(from: response.chats)
+                        let state: UInt64 = self.appStore.lastState == 0 ? response.state : UInt64(self.appStore.lastState)
+                        self.setupChangesSubscription(with: state)
                     }
-                    
-                    response.messages.forEach { message in
-                        self.update(message: message)
-                    }
-                    
-                    self.handleUnread(from: response.chats)
-                    let state: UInt64 = self.appStore.lastState == 0 ? response.state : UInt64(self.appStore.lastState)
-                    self.setupChangesSubscription(with: state)
                 }
-            }
+        } else {
+            self.setupChangesSubscription(with: UInt64(appStore.lastState))
+        }
     }
 }
 

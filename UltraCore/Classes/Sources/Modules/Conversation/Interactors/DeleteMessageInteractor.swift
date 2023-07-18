@@ -55,7 +55,7 @@ class DeleteMessageInteractor: UseCase<([Message], Bool), Void> {
         var start = numbers.first ?? 0
         var end = numbers.first ?? 0
 
-        for i in 1 ..< numbers.count {
+        for i in 0 ..< numbers.count {
             if numbers[i] == end + 1 {
                 end = numbers[i]
             } else {
