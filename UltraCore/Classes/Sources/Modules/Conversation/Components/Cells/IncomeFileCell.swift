@@ -12,7 +12,7 @@ class IncomeFileCell : BaseMessageCell {
     fileprivate let moneyHeadlineLabel: RegularCallout = .init({ $0.text = "Деньги" })
     fileprivate let moneyCaptionlabel: RegularFootnote = .init({ $0.text = "Файл" })
     fileprivate let moneyAvatarView: UIImageView = .init({
-        $0.image = UIImage.named("conversation_money_icon")
+        $0.image = UIImage.named("contact_file_icon")
         $0.contentMode = .center
     })
     

@@ -41,7 +41,7 @@ class FilesController: BaseViewController<String> {
     })
     
     fileprivate lazy var document: TextButton = .init({
-        $0.setImage(.named("conversation_photo"), for: .normal)
+        $0.setImage(.named("contact_file_icon"), for: .normal)
         $0.setTitle("Выбрать документ", for: .normal)
         $0.addAction { [weak self] in
             guard let `self` = self else { return }

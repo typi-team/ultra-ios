@@ -84,14 +84,15 @@ class MediaUtils {
     }
     
     func mediaURL(from message: Message) -> URL? {
+        guard let originalFileIdWithExtension = message.originalFileIdWithExtension else { return nil }
         let fileManager = FileManager.default
         let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let fileURL = documentsDirectory.appendingPathComponent(message.originalFileIdWithExtension)
+        let fileURL = documentsDirectory.appendingPathComponent(originalFileIdWithExtension)
         
         if fileManager.fileExists(atPath: fileURL.path) {
             return fileURL
         } else {
-            PP.warning("Файл с именем \(message.originalFileIdWithExtension) не найден.")
+            PP.warning("Файл с именем \(originalFileIdWithExtension) не найден.")
             return nil
         }
     }
@@ -136,7 +137,7 @@ extension MimeType {
 }
 
 extension Message {
-    var originalFileIdWithExtension: String {
+    var originalFileIdWithExtension: String? {
         if hasPhoto {
             return photo.originalFileIdWithExtension
         } else if hasVideo {
@@ -144,7 +145,7 @@ extension Message {
         } else if hasFile {
             return file.originalFileIdWithExtension
         } else {
-            return ""
+            return nil
         }
     }
 }

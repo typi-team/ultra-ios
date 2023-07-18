@@ -11,7 +11,7 @@ class OutcomeFileCell : BaseMessageCell {
     
     fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
     fileprivate let moneyAvatarView: UIImageView = .init({
-        $0.image = UIImage.named("conversation_money_icon")
+        $0.image = UIImage.named("contact_file_icon")
         $0.contentMode = .center
     })
     
@@ -73,6 +73,5 @@ class OutcomeFileCell : BaseMessageCell {
         super.setup(message: message)
         self.moneyHeadlineLabel.text = message.file.fileName
         self.statusView.image = .named(message.statusImageName)
-        self.moneyAvatarView.image = self.moneyAvatarView.generateAvatarImage(forUsername: message.file.fileName, size: CGSize.init(width: 60, height: 60))
     }
 }

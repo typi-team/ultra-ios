@@ -122,27 +122,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     
     override func setupInitialData() {
         super.setupInitialData()
-        
-        self.tableView
-            .rx
-            .modelSelected(Message.self)
-            .map({ [weak self] message in
-                return self?.presenter?.mediaURL(from: message)
-            })
-            .compactMap({$0})
-            .subscribe(onNext: { [weak self] url in
-                guard let `self` = self else { return }
-                self.view.endEditing(true)
-                self.mediaItem = url
-                let previewController = QLPreviewController()
-                previewController.modalPresentationStyle = .formSheet
-                previewController.dataSource = self
-                previewController.currentPreviewItemIndex = 0
-                self.present(previewController, animated: true)
-            })
-            .disposed(by: disposeBag)
-
-    
         self.presenter?
             .messages
             .subscribe(on: MainScheduler.instance)
@@ -174,6 +153,18 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                 cell.longTapCallback = {[weak self] message in
                     guard let `self` = self else { return }
                     self.presentEditController(for: message, indexPath: IndexPath(row: indexPath, section: 0))
+                }
+                
+                cell.actionCallback = {[weak self] message in
+                    guard let `self` = self, let url = self.presenter?.mediaURL(from: message) else { return }
+
+                    self.view.endEditing(true)
+                    self.mediaItem = url
+                    let previewController = QLPreviewController()
+                    previewController.modalPresentationStyle = .formSheet
+                    previewController.dataSource = self
+                    previewController.currentPreviewItemIndex = 0
+                    self.present(previewController, animated: true)
                 }
                 return cell
             }
@@ -457,7 +448,7 @@ extension ConversationViewController: UIDocumentPickerDelegate {
                 return
             }
 
-            self.presenter?.upload(file: .init(url: selectedURL, data: data, mime: selectedURL.mimeType(), width: 300, height: 300))
+            self.presenter?.upload(file: .init(url: selectedURL, data: data, mime: selectedURL.mimeType().containsAudio ? "audio/mp3" : selectedURL.mimeType(), width: 300, height: 300))
         }
         
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) { }
