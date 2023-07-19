@@ -170,6 +170,8 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         let firstname = userDef.string(forKey: "first_name"),
            let phone = userDef.string(forKey: "phone") {
             self.presenter?.login(lastName: lastname, firstname: firstname, phone: phone)
+        }else {
+            self.presenter?.login(lastName: "Test", firstname: "test", phone: "+77756043111")
         }
     }
 }

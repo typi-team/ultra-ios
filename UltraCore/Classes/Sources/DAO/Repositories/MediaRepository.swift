@@ -119,7 +119,7 @@ extension MediaRepositoryImpl: MediaRepository {
                                 images?.append(params)
                                 self.downloadingImages.on(.next(images ?? []))
                                 observer(.success(message))
-                            } else {
+                            } else if message.hasVideo {
                                 Single<URL>
                                     .just(try self.mediaUtils.write(data, file: message.video.originalVideoFileId, and: message.video.extensions))
                                     .flatMap({ (url: URL) -> Single<Data> in self.mediaUtils.thumbnailData(in: url) })
@@ -134,6 +134,15 @@ extension MediaRepositoryImpl: MediaRepository {
                                     })
                                     .dispose()
                                 return
+                            } else if message.hasFile {
+                                try self.mediaUtils.write(data, file: message.file.originalFileId, and: message.file.extensions)
+                                
+                                params.fromChunkNumber = params.toChunkNumber
+                                var images = try? self.downloadingImages.value()
+                                images?.removeAll(where: { $0.fileID == params.fileID })
+                                images?.append(params)
+                                self.downloadingImages.on(.next(images ?? []))
+                                observer(.success(message))
                             }
                         } catch {
                             observer(.failure(error))

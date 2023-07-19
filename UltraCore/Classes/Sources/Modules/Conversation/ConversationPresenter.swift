@@ -46,7 +46,7 @@ final class ConversationPresenter {
         .do(onNext: { [weak self] messages in
             guard let `self` = self else { return }
             let messages = messages.filter({ $0.fileID != nil })
-                .filter({ self.mediaRepository.image(from: $0) == nil })
+                .filter({ self.mediaRepository.mediaURL(from: $0) == nil })
             guard !messages.isEmpty else { return }
 
             Observable.from(messages)

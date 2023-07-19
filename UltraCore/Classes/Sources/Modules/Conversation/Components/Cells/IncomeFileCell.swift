@@ -9,6 +9,8 @@ import UIKit
 
 class IncomeFileCell : BaseMessageCell {
     
+    let mediaRepository: MediaRepository = AppSettingsImpl.shared.mediaRepository
+    
     fileprivate let moneyHeadlineLabel: RegularCallout = .init({ $0.text = "Деньги" })
     fileprivate let moneyCaptionlabel: RegularFootnote = .init({ $0.text = "Файл" })
     fileprivate let moneyAvatarView: UIImageView = .init({
@@ -36,7 +38,6 @@ class IncomeFileCell : BaseMessageCell {
         self.moneyHeadlineLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(kMediumPadding)
             make.left.equalToSuperview().offset(kMediumPadding)
-            make.left.equalTo(moneyHeadlineLabel.snp.right).offset(kLowPadding)
         }
         
         self.moneyCaptionlabel.snp.makeConstraints { make in
@@ -46,6 +47,7 @@ class IncomeFileCell : BaseMessageCell {
         }
 
         self.moneyAvatarView.snp.makeConstraints { make in
+            make.left.equalTo(moneyHeadlineLabel.snp.right).offset(kLowPadding)
             make.top.equalToSuperview().offset(kMediumPadding)
             make.right.equalToSuperview().offset(-kMediumPadding)
             make.bottom.equalToSuperview().offset(-kMediumPadding)

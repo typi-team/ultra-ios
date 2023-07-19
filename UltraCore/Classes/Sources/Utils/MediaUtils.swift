@@ -173,7 +173,15 @@ extension PhotoMessage {
 
 extension FileMessage {
     var originalFileId: String { "original_\(fileID)" }
-    var extensions:String { mimeType.components(separatedBy: "/").last ?? ""}
+    var extensions: String {
+        guard let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimeType as CFString, nil)?.takeRetainedValue(),
+              let type = UTTypeCopyPreferredTagWithClass(uti, kUTTagClassFilenameExtension)?.takeRetainedValue() as? String else {
+            return mimeType.components(separatedBy: "/").last ?? ""
+        }
+
+        return type
+    }
+    
     var originalFileIdWithExtension: String { "original_\(fileID).\(extensions)" }
 }
 
@@ -186,7 +194,9 @@ extension Message {
             return photo.fileID
         } else if hasVideo {
             return video.fileID
-        } else {
+        } else if hasFile {
+            return file.fileID
+        }else {
             return nil
         }
     }
