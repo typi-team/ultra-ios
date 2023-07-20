@@ -185,6 +185,13 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin).offset(height > 0 ? -(height - 36) : 0)
         }
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        guard let cell = self.tableView.visibleCells.first as? BaseMessageCell,
+              let seqNumber = cell.message?.seqNumber else { return }
+        self.presenter?.loadMoreMessages(maxSeqNumber: seqNumber)
+    }
 }
 
     // MARK: - UITextViewDelegate
