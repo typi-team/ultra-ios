@@ -12,6 +12,7 @@ import UIKit
 import RxCocoa
 import RxSwift
 import QuickLook
+import ContactsUI
 
 final class ConversationViewController: BaseViewController<ConversationPresenterInterface>, (UIImagePickerControllerDelegate & UINavigationControllerDelegate) {
     // MARK: - Properties
@@ -48,9 +49,11 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.registerCell(type: IncomeMessageCell.self)
         tableView.registerCell(type: IncomingPhotoCell.self)
         tableView.registerCell(type: IncomingVideoCell.self)
-        tableView.registerCell(type: OutgoingMessageCell.self)
         tableView.registerCell(type: OutgoingPhotoCell.self)
+        tableView.registerCell(type: IncomeContactCell.self)
         tableView.registerCell(type: OutgoingVideoCell.self)
+        tableView.registerCell(type: OutcomeContactCell.self)
+        tableView.registerCell(type: OutgoingMessageCell.self)
         tableView.backgroundColor = self.view.backgroundColor
         tableView.contentInset = .init(top: kMediumPadding, left: 0, bottom: 0, right: 0)
         tableView.backgroundView = UIImageView({
@@ -206,6 +209,7 @@ extension ConversationViewController: MessageInputBarDelegate {
             case .fromGallery: self.openMedia(type: .savedPhotosAlbum)
             case .takePhoto: self.openMedia(type: .camera)
             case .document: self.openDocument()
+            case .contact: self.openContact()
             }
         }
         viewController.modalPresentationStyle = .custom
@@ -291,6 +295,12 @@ private extension ConversationViewController {
         let documentPicker = UIDocumentPickerViewController(documentTypes: ["public.content"], in: .import)
         documentPicker.delegate = self
         present(documentPicker, animated: true, completion: nil)
+    }
+    
+    func openContact() {
+        let contactPickerVC = CNContactPickerViewController()
+        contactPickerVC.delegate = self
+        present(contactPickerVC, animated: true)
     }
 }
 
@@ -390,7 +400,17 @@ extension ConversationViewController {
                 cell.setup(message: message)
                 return cell
             }
-        case .location(_), .file(_), .contact(_), .audio(_), .voice:
+        case .contact:
+            if message.isIncome {
+                let cell: IncomeContactCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            } else {
+                let cell: OutcomeContactCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            }
+        case .location(_), .file(_), .audio(_), .voice:
             let cell: BaseMessageCell = tableView.dequeueCell()
             cell.setup(message: message)
             return cell
@@ -459,5 +479,18 @@ extension ConversationViewController: UIDocumentPickerDelegate {
         }
         
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) { }
-    
+}
+
+extension ConversationViewController: CNContactPickerDelegate {
+    func contactPicker(_ picker: CNContactPickerViewController, didSelect contact: CNContact) {
+        for phoneNumber in contact.phoneNumbers {
+            let phoneNumberValue = phoneNumber.value
+            let number = phoneNumberValue.stringValue
+            self.presenter?.send(contact: .with {
+                $0.firstname = contact.givenName
+                $0.lastname = contact.familyName
+                $0.phone = number
+            })
+        }
+    }
 }

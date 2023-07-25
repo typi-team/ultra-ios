@@ -100,6 +100,51 @@ final class ConversationPresenter {
 // MARK: - Extensions -
 
 extension ConversationPresenter: ConversationPresenterInterface {
+    func send(contact: ContactMessage) {
+        var params = MessageSendRequest()
+        
+        params.peer.user = .with({ [weak self] peer in
+            guard let `self` = self else { return }
+            peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
+        })
+
+        var message = Message()
+        message.id = UUID().uuidString
+        message.meta.created = Date().nanosec
+        message.receiver = .with({[weak self] receiver in
+            guard let `self` = self else { return }
+            receiver.chatID = conversation.idintification
+            receiver.userID = self.conversation.peer?.userID ?? ""
+        })
+        message.contact = contact
+        
+        message.sender = .with({ $0.userID = self.userID })
+        message.meta = .with({
+            $0.created = Date().nanosec
+        })
+        
+        params.message = message
+        
+        self.conversationRepository
+            .createIfNotExist(from: message)
+            .flatMap{ self.messageRepository.save(message: message)}
+            .flatMap{self.messageSenderInteractor.executeSingle(params: params)}
+            .flatMap({ [weak self] (response: MessageSendResponse) in
+                guard let `self` = self else {
+                    throw NSError.selfIsNill
+                }
+                message.meta.created = response.meta.created
+                message.state.delivered = false
+                message.state.read = false
+                message.seqNumber = response.seqNumber
+
+                return self.messageRepository.update(message: message)
+            })
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe()
+            .disposed(by: self.disposeBag)
+    }
     func delete(_ messages: [Message], all: Bool) {
         self.deleteMessageInteractor.executeSingle(params: (messages, all))
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
