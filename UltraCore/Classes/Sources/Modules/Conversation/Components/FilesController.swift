@@ -12,6 +12,7 @@ enum FilesAction {
     case document
     case takePhoto
     case fromGallery
+    case location
 }
 
 class FilesController: BaseViewController<String> {
@@ -58,6 +59,15 @@ class FilesController: BaseViewController<String> {
             self.handle(action: .contact)
         }
     })
+    
+    fileprivate lazy var location: TextButton = .init({
+        $0.setImage(.named("conversation_location"), for: .normal)
+        $0.setTitle("Местопложение", for: .normal)
+        $0.addAction { [weak self] in
+            guard let `self` = self else { return }
+            self.handle(action: .location)
+        }
+    })
 
     fileprivate lazy var stackView: UIStackView = .init {
         $0.axis = .vertical
@@ -73,6 +83,8 @@ class FilesController: BaseViewController<String> {
         $0.setCustomSpacing(kLowPadding * 3, after: document)
         $0.addArrangedSubview(contact)
         $0.setCustomSpacing(kLowPadding * 3, after: contact)
+        $0.addArrangedSubview(location)
+        $0.setCustomSpacing(kLowPadding * 3, after: location)
     }
     
     

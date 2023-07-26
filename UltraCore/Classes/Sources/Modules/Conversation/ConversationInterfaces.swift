@@ -36,6 +36,7 @@ protocol ConversationPresenterInterface: PresenterInterface {
     func upload(file: FileUpload)
     func send(message text: String)
     func send(money amount: Double)
+    func send(location: LocationMessage)
     func send(contact: ContactMessage)
     func delete(_ messages: [Message], all: Bool)
     func loadMoreMessages(maxSeqNumber: UInt64)

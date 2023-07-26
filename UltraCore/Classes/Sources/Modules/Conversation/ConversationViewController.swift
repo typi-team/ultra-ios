@@ -14,7 +14,7 @@ import RxSwift
 import QuickLook
 import ContactsUI
 
-final class ConversationViewController: BaseViewController<ConversationPresenterInterface>, (UIImagePickerControllerDelegate & UINavigationControllerDelegate) {
+final class ConversationViewController: BaseViewController<ConversationPresenterInterface> {
     // MARK: - Properties
     
     let sheetTransitioningDelegate = SheetTransitioningDelegate()
@@ -53,6 +53,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.registerCell(type: IncomeContactCell.self)
         tableView.registerCell(type: OutgoingVideoCell.self)
         tableView.registerCell(type: OutcomeContactCell.self)
+        tableView.registerCell(type: IncomeLocationCell.self)
+        tableView.registerCell(type: OutcomeLocationCell.self)
         tableView.registerCell(type: OutgoingMessageCell.self)
         tableView.backgroundColor = self.view.backgroundColor
         tableView.contentInset = .init(top: kMediumPadding, left: 0, bottom: 0, right: 0)
@@ -159,15 +161,27 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                 }
                 
                 cell.actionCallback = {[weak self] message in
-                    guard let `self` = self, let url = self.presenter?.mediaURL(from: message) else { return }
-
-                    self.view.endEditing(true)
-                    self.mediaItem = url
-                    let previewController = QLPreviewController()
-                    previewController.modalPresentationStyle = .formSheet
-                    previewController.dataSource = self
-                    previewController.currentPreviewItemIndex = 0
-                    self.present(previewController, animated: true)
+                    
+                    
+                    guard let `self` = self,
+                          let content = message.content else { return }
+                    
+                    switch content {
+                    case .location(let location):
+                        if let url = URL(string: "maps://?q=\(location.lat),\(location.lon)"),
+                           UIApplication.shared.canOpenURL(url) {
+                            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                        }
+                    default:
+                        guard let url = self.presenter?.mediaURL(from: message) else { return }
+                        self.view.endEditing(true)
+                        self.mediaItem = url
+                        let previewController = QLPreviewController()
+                        previewController.modalPresentationStyle = .formSheet
+                        previewController.dataSource = self
+                        previewController.currentPreviewItemIndex = 0
+                        self.present(previewController, animated: true)
+                    }
                 }
                 return cell
             }
@@ -210,6 +224,7 @@ extension ConversationViewController: MessageInputBarDelegate {
             case .takePhoto: self.openMedia(type: .camera)
             case .document: self.openDocument()
             case .contact: self.openContact()
+            case .location: self.openMap()
             }
         }
         viewController.modalPresentationStyle = .custom
@@ -282,13 +297,13 @@ private extension ConversationViewController {
     }
     
     func openMedia(type: UIImagePickerController.SourceType) {
-        self.present(UIImagePickerController({
-            $0.delegate = self
-            $0.sourceType = type
-            $0.videoQuality = .typeMedium
-            $0.mediaTypes = ["public.movie", "public.image"]
-            $0.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
-        }), animated: true)
+        let controller = UIImagePickerController()
+        controller.delegate = self
+        controller.sourceType = type
+        controller.videoQuality = .typeMedium
+        controller.mediaTypes = ["public.movie", "public.image"]
+        controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
+        self.present(controller, animated: true)
     }
     
     func openDocument() {
@@ -300,28 +315,36 @@ private extension ConversationViewController {
     func openContact() {
         let contactPickerVC = CNContactPickerViewController()
         contactPickerVC.delegate = self
-        present(contactPickerVC, animated: true)
+        self.present(contactPickerVC, animated: true)
+    }
+
+    func openMap() {
+        var mapController = MapController()
+        mapController.locationCallback = { [weak self] message in
+            guard let `self` = self else { return }
+            self.presenter?.send(location: message)
+        }
+        self.present(mapController, animated: true)
     }
 }
 
 
-extension ConversationViewController {
+extension ConversationViewController: (UIImagePickerControllerDelegate & UINavigationControllerDelegate){
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
             dismiss(animated: true, completion: nil)
     }
     
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        if info["UIImagePickerControllerMediaType"] as? String == "public.movie",
-            let url = info["UIImagePickerControllerMediaURL"]  as? URL,
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        if info[UIImagePickerController.InfoKey.mediaType] as? String == "public.movie",
+           let url = info[.mediaURL]  as? URL,
             let data = try? Data(contentsOf: url) {
             picker.dismiss(animated: true)
             self.presenter?.upload(file: .init(url: url, data: data, mime: "video/mp4", width: 300, height: 200))
-        } else if let image = info["UIImagePickerControllerOriginalImage"] as? UIImage,
+        } else if let image = info[.originalImage] as? UIImage,
                   let downsampled = image.downsample(reductionAmount: 0.7),
                   let data = downsampled.pngData() {
             picker.dismiss(animated: true, completion: {
-                
                 self.presenter?.upload(file: .init(url: nil, data: data, mime: "image/png", width: image.size.width, height: image.size.height))
             })
         }
@@ -357,7 +380,7 @@ extension ConversationViewController {
         }
         
         switch content {
-        case let .photo(photo):
+        case  .photo:
             if message.isIncome {
                 let cell: IncomingPhotoCell = tableView.dequeueCell()
                 cell.setup(message: message)
@@ -367,7 +390,7 @@ extension ConversationViewController {
                 cell.setup(message: message)
                 return cell
             }
-        case let .video(video):
+        case .video:
             if message.isIncome {
                 let cell: IncomingVideoCell = tableView.dequeueCell()
                 cell.setup(message: message)
@@ -410,7 +433,17 @@ extension ConversationViewController {
                 cell.setup(message: message)
                 return cell
             }
-        case .location(_), .file(_), .audio(_), .voice:
+        case .location:
+            if message.isIncome {
+                let cell: IncomeLocationCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            } else {
+                let cell: OutcomeLocationCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            }
+        case .audio(_), .voice:
             let cell: BaseMessageCell = tableView.dequeueCell()
             cell.setup(message: message)
             return cell

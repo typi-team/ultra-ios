@@ -17,13 +17,15 @@ class DBMessage: Object {
     @objc dynamic var sender: DBSender? = DBSender()
     @objc dynamic var meta: DBMessageMeta? = DBMessageMeta.init()
     @objc dynamic var text: String = ""
+    
+    @objc dynamic var fileMessage: DBFileMessage?
     @objc dynamic var audioMessage: DBAudioMessage?
     @objc dynamic var voiceMessage: DBVoiceMessage?
     @objc dynamic var photoMessage: DBPhotoMessage?
     @objc dynamic var videoMessage: DBVideoMessage?
     @objc dynamic var moneyMessage: DBMoneyMessage?
-    @objc dynamic var fileMessage: DBFileMessage?
     @objc dynamic var contactMessage: DBContactMessage?
+    @objc dynamic var locationMessage: DBLocationMessage?
     
     @objc dynamic var isIncome: Bool = false
     
@@ -58,6 +60,8 @@ class DBMessage: Object {
             self.fileMessage = realm.object(ofType: DBFileMessage.self, forPrimaryKey: fileMessage.fileID) ?? DBFileMessage(fileMessage: fileMessage)
         case .contact(let contactMessage):
             self.contactMessage = realm.object(ofType: DBContactMessage.self, forPrimaryKey: contactMessage.phone) ?? DBContactMessage(contact: contactMessage, in: realm)
+        case .location(let locationMessage):
+            self.locationMessage = realm.object(ofType: DBLocationMessage.self, forPrimaryKey: locationMessage.desc) ?? DBLocationMessage.init(location: locationMessage)
         default: break
         }
         
@@ -93,6 +97,8 @@ class DBMessage: Object {
             message.content = .file(fileMessage.toProto())
         } else if let contactMessage = contactMessage {
             message.content = .contact(contactMessage.toProto())
+        } else if let locationMessage = locationMessage {
+            message.content = .location(locationMessage.toProto())
         }
         
         return message
@@ -420,6 +426,32 @@ class DBContactMessage: Object {
             message.lastname = lastname
             message.firstname = firstname
             message.photo = photo?.toProto() ?? Photo()
+        }
+    }
+}
+
+class DBLocationMessage: Object {
+    @objc dynamic var lat: Double = 0.0
+    @objc dynamic var long: Double = 0.0
+    @objc dynamic var desc: String = ""
+    
+    
+    override static func primaryKey() -> String? {
+        return "desc"
+    }
+
+    convenience init(location message: LocationMessage) {
+        self.init()
+        self.lat = message.lat
+        self.long = message.lon
+        self.desc = message.desc
+    }
+
+    func toProto() -> LocationMessage {
+        return .with { message in
+            message.lat = lat
+            message.lon = long
+            message.desc = desc
         }
     }
 }
