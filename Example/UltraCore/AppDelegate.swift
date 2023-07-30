@@ -44,7 +44,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         guard let token = Messaging.messaging().fcmToken else { return }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: {
-            update(firebase: token)
+            UltraCoreSettings.update(firebase: token)
         })
     }
 
@@ -58,7 +58,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
 
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         // Обработка нажатия на уведомление
-        handleNotification(data: response.notification.request.content.userInfo) { viewController in
+        UltraCoreSettings.handleNotification(data: response.notification.request.content.userInfo) { viewController in
             guard let viewController = viewController else { return }
             self.window?.rootViewController?.present(UINavigationController(rootViewController: viewController), animated: true)
         }
