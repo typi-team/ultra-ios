@@ -14,7 +14,6 @@ class OutgoingMessageCell: BaseMessageCell {
     override func setupView() {
         super.setupView()
         self.container.addSubview(statusView)
-        self.container.backgroundColor = .gray200
     }
     
     override func setupConstraints() {

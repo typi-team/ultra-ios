@@ -33,12 +33,13 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     }
     
     fileprivate let navigationDivider: UIView = .init({
-        $0.backgroundColor = .gray200
+        $0.backgroundColor = UltraCoreStyle.divederColor.color
     })
     
     private lazy var tableView: UITableView = .init {[weak self] tableView in
         guard let `self` = self else { return }
         tableView.separatorStyle = .none
+        tableView.backgroundColor = .clear
         tableView.tableFooterView = UIView()
         tableView.refreshControl = refreshControl
         tableView.registerCell(type: IncomeFileCell.self)
@@ -56,7 +57,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.registerCell(type: IncomeLocationCell.self)
         tableView.registerCell(type: OutcomeLocationCell.self)
         tableView.registerCell(type: OutgoingMessageCell.self)
-        tableView.backgroundColor = self.view.backgroundColor
         tableView.contentInset = .init(top: kMediumPadding, left: 0, bottom: 0, right: 0)
         tableView.backgroundView = UIImageView({
             $0.contentMode = .scaleAspectFill
@@ -208,6 +208,11 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         guard let cell = self.tableView.visibleCells.first as? BaseMessageCell,
               let seqNumber = cell.message?.seqNumber else { return }
         self.presenter?.loadMoreMessages(maxSeqNumber: seqNumber)
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        self.navigationDivider.backgroundColor = UltraCoreStyle.divederColor.color
     }
 }
 

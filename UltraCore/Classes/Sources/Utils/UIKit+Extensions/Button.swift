@@ -60,9 +60,14 @@ class TextButton: UIButton {
     }
 
     func setupView() {
-        self.setTitleColor(.gray700, for: .normal)
-        self.titleLabel?.font = .defaultRegularCallout
         self.contentHorizontalAlignment = UIControl.ContentHorizontalAlignment.left
         self.titleEdgeInsets = .init(top: 0, left: kMediumPadding + 2, bottom: 0, right: 0)
+        self.traitCollectionDidChange(UIScreen.main.traitCollection)
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        self.titleLabel?.font = UltraCoreStyle.textButtonConfig.font
+        self.setTitleColor(UltraCoreStyle.textButtonConfig.color, for: .normal)
     }
 }

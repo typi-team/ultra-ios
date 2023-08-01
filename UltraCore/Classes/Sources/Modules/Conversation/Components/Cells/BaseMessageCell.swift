@@ -88,6 +88,20 @@ class BaseMessageCell: BaseCell {
         self.message = message
         self.textView.text = message.text
         self.deliveryDateLabel.text = message.meta.created.dateBy(format: .hourAndMinute)
+        self.traitCollectionDidChange(UIScreen.main.traitCollection)
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if let message = message {
+            if message.isIncome {
+                self.container.backgroundColor = UltraCoreStyle.incomeMessageCell.backgroundColor.color
+            } else {
+                self.container.backgroundColor = UltraCoreStyle.outcomeMessageCell.backgroundColor.color
+            }
+        } else {
+            self.container.backgroundColor = UltraCoreStyle.incomeMessageCell.backgroundColor.color
+        }
     }
 }
 

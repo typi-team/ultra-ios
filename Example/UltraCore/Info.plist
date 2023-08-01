@@ -19,8 +19,6 @@
 	<string>NSMicrophoneUsageDescription</string>
 	<key>NSCameraUsageDescription</key>
 	<string>NSCameraUsageDescription</string>
-	<key>UIUserInterfaceStyle</key>
-	<string>Light</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>CFBundleDevelopmentRegion</key>

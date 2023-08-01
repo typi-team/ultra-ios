@@ -36,6 +36,7 @@ final class ContactsBookViewController: BaseViewController<ContactsBookPresenter
         self.view.addSubview(tableView)
         
         self.tableView.rowHeight = 50
+        self.tableView.backgroundColor = .clear
         self.tableView.separatorStyle = .singleLine
         self.tableView.registerCell(type: ContactCell.self)
         self.tableView.separatorInset = .init(top: 0, left: 32, bottom: 0, right: 16)

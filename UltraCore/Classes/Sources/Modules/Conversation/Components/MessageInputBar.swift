@@ -27,7 +27,7 @@ class MessageInputBar: UIView {
     fileprivate let kInputMicroImage: UIImage? = .named("message_input_micro")
     fileprivate let kInputExchangeImage: UIImage? = .named("message_input_exchange")
     
-    private let divider: UIView = .init { $0.backgroundColor = .gray200 }
+    private var divider: UIView = .init { $0.backgroundColor = UltraCoreStyle.divederColor.color }
     
     private let containerStack: UIStackView = .init {
         $0.axis = .horizontal
@@ -89,14 +89,14 @@ class MessageInputBar: UIView {
     }
     
     private func setupViews() {
-        self.backgroundColor = .gray100
+        
         self.addSubview(divider)
         self.addSubview(sendButton)
         self.addSubview(containerStack)
         self.addSubview(exchangesButton)
         self.containerStack.addArrangedSubview(messageTextView)
         self.containerStack.addArrangedSubview(microButton)
-        
+        self.backgroundColor = UltraCoreStyle.controllerBackground.color
     }
     
     private func setupConstraints() {
@@ -134,6 +134,12 @@ class MessageInputBar: UIView {
             make.width.equalTo(36)
             make.bottom.equalToSuperview()
         }
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        self.divider.backgroundColor = UltraCoreStyle.divederColor.color
+        self.backgroundColor = UltraCoreStyle.inputMessageBarBackgroundColor.color
     }
 }
 

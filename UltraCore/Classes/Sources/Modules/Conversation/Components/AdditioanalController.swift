@@ -20,27 +20,15 @@ class AdditioanalController: BaseViewController<String> {
         $0.text = "Отправить"
     })
 
-    fileprivate lazy var takePhoto: TextButton = .init({
+    fileprivate lazy var paymentButton: TextButton = .init({
         $0.titleLabel?.numberOfLines = 0
-        $0.setImage(.named("conversation_money_logo_icon"), for: .normal)
         
-        let boldFontAttributes: [NSAttributedString.Key: Any] = [ .font: UIFont.defaultRegularBody,
-                                                                  .foregroundColor : UIColor.gray700 ]
-        let smallFontAttributes: [NSAttributedString.Key: Any] = [ .font: UIFont.defaultRegularFootnote,
-                                                                   .foregroundColor : UIColor.gray500]
-
-        let boldText = "Внутри Банка"
-        let smallText = "Отправить клиенту FreedomBank"
-        let titleText = "\(boldText)\n\(smallText)"
-
-        let attributedTitle = NSMutableAttributedString(string: titleText)
-        attributedTitle.addAttributes(boldFontAttributes, range: NSRange(location: 0, length: boldText.count))
-        attributedTitle.addAttributes(smallFontAttributes, range: NSRange(location: boldText.count + 1, length: smallText.count))
-        $0.setAttributedTitle(attributedTitle, for: .normal)
         $0.addAction { [weak self] in
             guard let `self` = self else { return }
             self.handle(action: .money_tranfer)
         }
+        
+        $0.setImage(.named("conversation_money_logo_icon"), for: .normal)
     })
 
     fileprivate lazy var stackView: UIStackView = .init {
@@ -48,7 +36,7 @@ class AdditioanalController: BaseViewController<String> {
         $0.spacing = kLowPadding
         $0.addArrangedSubview(headlineLabel)
         $0.setCustomSpacing(kHeadlinePadding, after: headlineLabel)
-        $0.addArrangedSubview(takePhoto)
+        $0.addArrangedSubview(paymentButton)
     }
     
     override func setupViews() {
@@ -64,6 +52,27 @@ class AdditioanalController: BaseViewController<String> {
             make.right.equalToSuperview().offset(-kMediumPadding)
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin).offset(-kLowPadding)
         }
+    }
+    
+    func _buildPaymentDescription() {
+        let boldFontAttributes: [NSAttributedString.Key: Any] = [.font: UltraCoreStyle.textButtonConfig.font,
+                                                                 .foregroundColor: UltraCoreStyle.textButtonConfig.color]
+        let smallFontAttributes: [NSAttributedString.Key: Any] = [.font: UIFont.defaultRegularFootnote,
+                                                                  .foregroundColor: UIColor.gray500]
+
+        let boldText = "Внутри Банка"
+        let smallText = "Отправить клиенту FreedomBank"
+        let titleText = "\(boldText)\n\(smallText)"
+
+        let attributedTitle = NSMutableAttributedString(string: titleText)
+        attributedTitle.addAttributes(boldFontAttributes, range: NSRange(location: 0, length: boldText.count))
+        attributedTitle.addAttributes(smallFontAttributes, range: NSRange(location: boldText.count + 1, length: smallText.count))
+        self.paymentButton.setAttributedTitle(attributedTitle, for: .normal)
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        self._buildPaymentDescription()
     }
 }
 

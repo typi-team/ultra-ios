@@ -30,7 +30,6 @@ class ConversationCell: BaseCell {
         $0.textAlignment = .center
         $0.font = .defaultRegularFootnote
         $0.backgroundColor = .green500.withAlphaComponent(0.3)
-//        $0.textInsets = UIEdgeInsets(top: 2, left: 8, bottom: 2, right: 8)
     })
     
     
