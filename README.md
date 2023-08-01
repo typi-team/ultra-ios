@@ -42,9 +42,9 @@ update(sid: UserDefaults.standard.string(forKey: "K_SID") ?? "") { [weak self] e
     guard let `self` = self else { return }
     DispatchQueue.main.async {
         if let error = error {
-            self.present(viewController: entrySignUpViewController(), animated: true)
+            self.present(viewController: UltraCoreSettings.entrySignUpViewController(), animated: true)
         } else {
-            self.navigationContoller?.push(entryConversationsViewController())
+            self.navigationContoller?.push(UltraCoreSettings.entryConversationsViewController())
         }        
     }
 }
@@ -58,7 +58,7 @@ You need to pass a dictionary to `handleNotification(data: [AnyHashable: Any], c
 
 ```swift
 // Обработка нажатия на уведомление
-handleNotification(data: response.notification.request.content.userInfo) { viewController in
+UltraCoreSettings.handleNotification(data: response.notification.request.content.userInfo) { viewController in
     guard let viewController = viewController else { return }
     self.window?.rootViewController?.present(UINavigationController(rootViewController: viewController), animated: true)
 }
@@ -93,7 +93,7 @@ To update the token for the `UltraCore` application to function properly, you ne
 
 
 ```swift
-update(sid: newSid, with: {_ in })
+UltraCoreSettings.update(sid: newSid, with: {_ in })
 ```
 
 ## Author
