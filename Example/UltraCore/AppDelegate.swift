@@ -20,10 +20,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         FirebaseApp.configure()
         self.setupNotificationSettings(application: application)
+        UltraCoreSettings.set(server: ServerConfig())
+        UltraCoreStyle.controllerBackground = Colors()
         return true
     }
 }
 
+struct Colors: TwiceColor {
+    var defaultColor: UIColor = .red
+    var darkColor: UIColor = .white
+}
+
+struct ServerConfig: ServerConfigurationProtocol {
+    var portOfServer: Int = 443
+    var pathToServer: String = "ultra-dev.typi.team"
+}
 
 extension AppDelegate {
     func setupNotificationSettings(application: UIApplication) {

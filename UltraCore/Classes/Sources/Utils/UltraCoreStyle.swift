@@ -7,22 +7,22 @@
 
 import Foundation
 
-protocol TwiceColor {
+public protocol TwiceColor {
     var defaultColor: UIColor { get set }
     var darkColor: UIColor { get set }
 
     var color: UIColor { get }
 }
 
-protocol LabelConfig: TwiceColor {
+public protocol LabelConfig: TwiceColor {
     var font: UIFont { get set }
 }
 
-protocol MessageCellConfig {
+public protocol MessageCellConfig {
     var backgroundColor: TwiceColor { get set }
 }
 
-extension TwiceColor {
+public extension TwiceColor {
     var color: UIColor {
         if #available(iOS 12.0, *) {
             switch UIScreen.main.traitCollection.userInterfaceStyle {
@@ -73,26 +73,21 @@ private class TwiceColorImpl: TwiceColor {
     }
 }
 
-class UltraCoreStyle {
-    
+public class UltraCoreStyle {
 //    MARK: TextButton
-    static var textButtonConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularBody)
-
+    public static var textButtonConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularBody)
 //    MARK: UILabel
-    static var headlineConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularHeadline)
-    
-    static var subHeadlineConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularSubHeadline)
-    static var regularLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularBody)
-    static var regularCalloutConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularCallout)
-    static var regularFootnoteConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
-    static var regularCaption3Config: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularCaption3)
-    
+    public static var headlineConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularHeadline)
+    public static var subHeadlineConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularSubHeadline)
+    public static var regularLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularBody)
+    public static var regularCalloutConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularCallout)
+    public static var regularFootnoteConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
+    public static var regularCaption3Config: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularCaption3)
 //    MARK: UIViewContoller
-    static var controllerBackground: TwiceColor = TwiceColorImpl(defaultColor: .gray100, darkColor: .gray700)
-    static var inputMessageBarBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .gray100, darkColor: .gray700)
-    static var divederColor: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
-    
+    public static var controllerBackground: TwiceColor = TwiceColorImpl(defaultColor: .gray100, darkColor: .gray700)
+    public static var inputMessageBarBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .gray100, darkColor: .gray700)
+    public static var divederColor: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
 //    MARK: Message cells
-    static var incomeMessageCell: MessageCellConfig = IncomeMessageCellConfigImpl()
-    static var outcomeMessageCell: MessageCellConfig = OutcomeMessageCellConfigImpl()
+    public static var incomeMessageCell: MessageCellConfig = IncomeMessageCellConfigImpl()
+    public static var outcomeMessageCell: MessageCellConfig = OutcomeMessageCellConfigImpl()
 }

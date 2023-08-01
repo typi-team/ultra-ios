@@ -62,6 +62,29 @@ handleNotification(data: response.notification.request.content.userInfo) { viewC
     guard let viewController = viewController else { return }
     self.window?.rootViewController?.present(UINavigationController(rootViewController: viewController), animated: true)
 }
+```   
+### How to set server config:
+
+```swift
+    struct ServerConfig: ServerConfigurationProtocol {
+        var portOfServer: Int = 443
+        var pathToServer: String = "ultra-dev.typi.team"
+    }
+
+    UltraCoreSettings.set(server: ServerConfig())    
+}
+```   
+
+### How to set UIStyleGuide:
+
+```swift
+    struct Colors: TwiceColor {
+        var defaultColor: UIColor = .red
+        var darkColor: UIColor = .white
+    }
+
+    UltraCoreStyle.controllerBackground = Colors()    
+}
 ```        
 
 ### Updating SID:
