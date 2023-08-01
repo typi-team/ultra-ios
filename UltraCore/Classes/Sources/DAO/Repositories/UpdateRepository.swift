@@ -102,29 +102,33 @@ extension UpdateRepositoryImpl: UpdateRepository {
     }
     
     func setupSubscription() {
-        self.update
-            .getInitialState(InitialStateRequest(), callOptions: .default())
-            .response
-            .whenComplete { [weak self] result in
-                guard let `self` = self else { return }
-                switch result {
-                case let .failure(error):
-                    PP.warning(error.localizedDescription)
-                case let .success(response):
-                    
-                    response.contacts.forEach { contact in
-                        self.update(contact: contact)
+        if appStore.lastState == 0 {
+            self.update
+                .getInitialState(InitialStateRequest(), callOptions: .default())
+                .response
+                .whenComplete { [weak self] result in
+                    guard let `self` = self else { return }
+                    switch result {
+                    case let .failure(error):
+                        PP.warning(error.localizedDescription)
+                    case let .success(response):
+                        
+                        response.contacts.forEach { contact in
+                            self.update(contact: contact)
+                        }
+                        
+                        response.messages.forEach { message in
+                            self.update(message: message)
+                        }
+                        
+                        self.handleUnread(from: response.chats)
+                        let state: UInt64 = self.appStore.lastState == 0 ? response.state : UInt64(self.appStore.lastState)
+                        self.setupChangesSubscription(with: state)
                     }
-                    
-                    response.messages.forEach { message in
-                        self.update(message: message)
-                    }
-                    
-                    self.handleUnread(from: response.chats)
-                    let state: UInt64 = self.appStore.lastState == 0 ? response.state : UInt64(self.appStore.lastState)
-                    self.setupChangesSubscription(with: state)
                 }
-            }
+        } else {
+            self.setupChangesSubscription(with: UInt64(appStore.lastState))
+        }
     }
 }
 
@@ -190,7 +194,7 @@ private extension UpdateRepositoryImpl {
         case let .messagesDeleted(message):
             self.delete(message)
         case let .chatDeleted(chat):
-            PP.debug(chat.textFormatString())
+            self.deleteConversation(chat)
         case let .moneyTransferStatus(status):
             PP.debug(status.textFormatString())
         }
@@ -243,6 +247,13 @@ extension UpdateRepositoryImpl {
 extension UpdateRepositoryImpl {
     func delete(_ message: MessagesDeleted) {
         self.messageService.deleteMessages(in: message.chatID, ranges: message.convertToClosedRanges())
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .subscribe()
+            .disposed(by: disposeBag)
+    }
+    
+    func deleteConversation(_ data: ChatDeleted) {
+        self.conversationService.delete(conversation: data.chatID)
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .subscribe()
             .disposed(by: disposeBag)

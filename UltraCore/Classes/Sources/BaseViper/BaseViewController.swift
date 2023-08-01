@@ -40,6 +40,11 @@ class BaseViewController<T>: UIViewController {
     @objc func close(_ sender: Any) {
         self.dismiss(animated: true)
     }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        self.view.backgroundColor = UltraCoreStyle.controllerBackground.color
+    }
 }
 
 
@@ -87,11 +92,12 @@ extension UIViewController {
         
     }
     @objc func setupViews() {
-        self.view.backgroundColor = .gray100
-        self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+        self.view.backgroundColor = UltraCoreStyle.controllerBackground.color
+        
         let yourBackImage = UIImage.named( "icon_back_button")
         self.navigationController?.navigationBar.backIndicatorImage = yourBackImage
         self.navigationController?.navigationBar.backIndicatorTransitionMaskImage = yourBackImage
+        self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         
     }
     @objc func setupConstraints() {}

@@ -31,7 +31,7 @@ final class ConversationPresenter {
     fileprivate let conversationRepository: ConversationRepository
     
 
-    private let deleteMessageInteractor: UseCase<[Message], Void>
+    private let deleteMessageInteractor: UseCase<([Message], Bool), Void>
     private let sendTypingInteractor: UseCase<String, SendTypingResponse>
     private let readMessageInteractor: UseCase<Message, MessagesReadResponse>
     private let messagesInteractor: UseCase<GetChatMessagesRequest, [Message]>
@@ -46,7 +46,7 @@ final class ConversationPresenter {
         .do(onNext: { [weak self] messages in
             guard let `self` = self else { return }
             let messages = messages.filter({ $0.fileID != nil })
-                .filter({ self.mediaRepository.image(from: $0) == nil })
+                .filter({ self.mediaRepository.mediaURL(from: $0) == nil })
             guard !messages.isEmpty else { return }
 
             Observable.from(messages)
@@ -72,7 +72,7 @@ final class ConversationPresenter {
          contactRepository: ContactsRepository,
          wireframe: ConversationWireframeInterface,
          conversationRepository: ConversationRepository,
-         deleteMessageInteractor: UseCase<[Message], Void>,
+         deleteMessageInteractor: UseCase<([Message], Bool), Void>,
          messagesInteractor: UseCase<GetChatMessagesRequest, [Message]>,
          sendTypingInteractor: UseCase<String, SendTypingResponse>,
          readMessageInteractor: UseCase<Message, MessagesReadResponse>,
@@ -100,8 +100,99 @@ final class ConversationPresenter {
 // MARK: - Extensions -
 
 extension ConversationPresenter: ConversationPresenterInterface {
-    func delete(_ messages: [Message]) {
-        self.deleteMessageInteractor.executeSingle(params: messages)
+    func send(location: LocationMessage) {
+        var params = MessageSendRequest()
+        
+        params.peer.user = .with({ [weak self] peer in
+            guard let `self` = self else { return }
+            peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
+        })
+
+        var message = Message()
+        message.id = UUID().uuidString
+        message.meta.created = Date().nanosec
+        message.receiver = .with({[weak self] receiver in
+            guard let `self` = self else { return }
+            receiver.chatID = conversation.idintification
+            receiver.userID = self.conversation.peer?.userID ?? ""
+        })
+        message.location = location
+        
+        message.sender = .with({ $0.userID = self.userID })
+        message.meta = .with({
+            $0.created = Date().nanosec
+        })
+        
+        params.message = message
+        
+        self.conversationRepository
+            .createIfNotExist(from: message)
+            .flatMap{ self.messageRepository.save(message: message)}
+            .flatMap{self.messageSenderInteractor.executeSingle(params: params)}
+            .flatMap({ [weak self] (response: MessageSendResponse) in
+                guard let `self` = self else {
+                    throw NSError.selfIsNill
+                }
+                message.meta.created = response.meta.created
+                message.state.delivered = false
+                message.state.read = false
+                message.seqNumber = response.seqNumber
+
+                return self.messageRepository.update(message: message)
+            })
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe()
+            .disposed(by: self.disposeBag)
+    }
+    
+    func send(contact: ContactMessage) {
+        var params = MessageSendRequest()
+        
+        params.peer.user = .with({ [weak self] peer in
+            guard let `self` = self else { return }
+            peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
+        })
+
+        var message = Message()
+        message.id = UUID().uuidString
+        message.meta.created = Date().nanosec
+        message.receiver = .with({[weak self] receiver in
+            guard let `self` = self else { return }
+            receiver.chatID = conversation.idintification
+            receiver.userID = self.conversation.peer?.userID ?? ""
+        })
+        message.contact = contact
+        
+        message.sender = .with({ $0.userID = self.userID })
+        message.meta = .with({
+            $0.created = Date().nanosec
+        })
+        
+        params.message = message
+        
+        self.conversationRepository
+            .createIfNotExist(from: message)
+            .flatMap{ self.messageRepository.save(message: message)}
+            .flatMap{self.messageSenderInteractor.executeSingle(params: params)}
+            .flatMap({ [weak self] (response: MessageSendResponse) in
+                guard let `self` = self else {
+                    throw NSError.selfIsNill
+                }
+                message.meta.created = response.meta.created
+                message.state.delivered = false
+                message.state.read = false
+                message.seqNumber = response.seqNumber
+
+                return self.messageRepository.update(message: message)
+            })
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe()
+            .disposed(by: self.disposeBag)
+    }
+    func delete(_ messages: [Message], all: Bool) {
+        self.deleteMessageInteractor.executeSingle(params: (messages, all))
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()

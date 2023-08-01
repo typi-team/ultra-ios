@@ -79,12 +79,12 @@ extension FFSignUpPresenter: SignUpPresenterInterface {
                 fatalError(error.localizedDescription)
             } else if let data = data,
                       let userResponse = try? JSONDecoder().decode(UserResponse.self, from: data) {
-                update(sid: userResponse.sid) { error in
+                UltraCoreSettings.update(sid: userResponse.sid) { error in
                     if let error = error {
                         PP.warning(error.localizedDescription)
                     } else {
                         DispatchQueue.main.async {
-                            self.view.open(view: entryConversationsViewController())
+                            self.view.open(view: UltraCoreSettings.entryConversationsViewController())
                         }
                     }
                 }

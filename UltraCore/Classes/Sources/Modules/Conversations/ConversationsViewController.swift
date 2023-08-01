@@ -32,11 +32,12 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
     
     override func setupViews() {
         super.setupViews()
+        
         self.view.addSubview(tableView)
         self.tableView.rowHeight = 64
+        self.tableView.backgroundColor = nil
         self.tableView.sectionHeaderHeight = 0
         self.tableView.registerCell(type: ConversationCell.self)
-        self.tableView.backgroundColor = self.view.backgroundColor
         self.tableView.separatorInset = .init(top: 0, left: kMediumPadding * 2, bottom: 0, right: kMediumPadding)
         self.navigationItem.rightBarButtonItem = .init(image: .named("conversation_new_icon"),
                                                        style: .plain, target: self,
@@ -87,6 +88,23 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
                 guard let `self` = self else { return }
                 self.tableView.deselectRow(at: index, animated: true)
             }
+            .disposed(by: disposeBag)
+        
+        self.tableView
+            .rx
+            .modelDeleted(Conversation.self)
+            .subscribe(onNext: {[weak self] conversation in
+                guard let `self` = self else { return }
+                let alert = UIAlertController.init(title: "Вы уверены?", message: "Пожалуйста, обратите внимание, что данные сообщения будут безвозвратно удалены, и восстановление не будет возможным", preferredStyle: .actionSheet)
+                alert.addAction(.init(title: "Удалить для всех", style: .destructive, handler: { _ in
+                    self.presenter?.delete(conversation, all: true)
+                }))
+                alert.addAction(.init(title: "Удалить у меня", style: .destructive, handler: { _ in
+                    self.presenter?.delete(conversation, all: false)
+                }))
+                alert.addAction(.init(title: "Отмена", style: .cancel))
+                self.present(alert, animated: true)
+            })
             .disposed(by: disposeBag)
         
         self.tableView.rx

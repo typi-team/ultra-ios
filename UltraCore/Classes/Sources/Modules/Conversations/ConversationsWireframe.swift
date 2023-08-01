@@ -20,6 +20,8 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
         let moduleViewController = ConversationsViewController()
         super.init(viewController: moduleViewController)
 
+        let deleteConversationInteractor = DeleteConversationInteractor(conversationDBService: appSettings.conversationDBService,
+                                                                        conversationService: appSettings.conversationService)
         let presenter = ConversationsPresenter(view: moduleViewController,
                                                updateRepository: appSettings.updateRepository,
                                                messageRepository: appSettings.messageRespository,
@@ -28,6 +30,7 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
                                                retrieveContactStatusesInteractor: RetrieveContactStatusesInteractor.init(appStore: appSettings.appStore,
                                                                                                                          contactDBService: appSettings.contactDBService,
                                                                                                                          contactService: appSettings.contactsService),
+                                               deleteConversationInteractor: deleteConversationInteractor,
                                                userStatusUpdateInteractor: UpdateOnlineInteractor(userService: appSettings.userService))
         moduleViewController.presenter = presenter
     }

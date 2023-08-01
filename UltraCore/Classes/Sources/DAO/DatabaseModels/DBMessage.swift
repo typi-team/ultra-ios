@@ -17,13 +17,17 @@ class DBMessage: Object {
     @objc dynamic var sender: DBSender? = DBSender()
     @objc dynamic var meta: DBMessageMeta? = DBMessageMeta.init()
     @objc dynamic var text: String = ""
+    
+    @objc dynamic var fileMessage: DBFileMessage?
     @objc dynamic var audioMessage: DBAudioMessage?
     @objc dynamic var voiceMessage: DBVoiceMessage?
     @objc dynamic var photoMessage: DBPhotoMessage?
     @objc dynamic var videoMessage: DBVideoMessage?
     @objc dynamic var moneyMessage: DBMoneyMessage?
-    @objc dynamic var isIncome: Bool = false
+    @objc dynamic var contactMessage: DBContactMessage?
+    @objc dynamic var locationMessage: DBLocationMessage?
     
+    @objc dynamic var isIncome: Bool = false
     
     
     override static func primaryKey() -> String? {
@@ -52,6 +56,12 @@ class DBMessage: Object {
             self.videoMessage = .init(videoMessage: videoMessage)
         case .money(let moneyMessage):
             self.moneyMessage = realm.object(ofType: DBMoneyMessage.self, forPrimaryKey: moneyMessage.transactionID) ?? .init(message: moneyMessage)
+        case .file(let fileMessage) :
+            self.fileMessage = realm.object(ofType: DBFileMessage.self, forPrimaryKey: fileMessage.fileID) ?? DBFileMessage(fileMessage: fileMessage)
+        case .contact(let contactMessage):
+            self.contactMessage = realm.object(ofType: DBContactMessage.self, forPrimaryKey: contactMessage.phone) ?? DBContactMessage(contact: contactMessage, in: realm)
+        case .location(let locationMessage):
+            self.locationMessage = realm.object(ofType: DBLocationMessage.self, forPrimaryKey: locationMessage.desc) ?? DBLocationMessage.init(location: locationMessage)
         default: break
         }
         
@@ -62,15 +72,17 @@ class DBMessage: Object {
     
     func toProto() -> Message {
         var message = Message()
+        
         message.id = id
-        message.state = state!.toProto()
-        message.chatType = ChatTypeEnum(rawValue: chatType) ?? ChatTypeEnum.peerToPeer
-        message.seqNumber = UInt64(seqNumber)
-        message.type = MessageTypeEnum.init(rawValue: self.type) ?? MessageTypeEnum.text
-        message.receiver = receiver!.toProto()
-        message.sender = sender!.toProto()
-        message.meta = meta!.toProto()
         message.text = self.text
+        message.meta = meta!.toProto()
+        message.state = state!.toProto()
+        message.sender = sender!.toProto()
+        message.seqNumber = UInt64(seqNumber)
+        message.receiver = receiver!.toProto()
+        message.chatType = ChatTypeEnum(rawValue: chatType) ?? ChatTypeEnum.peerToPeer
+        message.type = MessageTypeEnum.init(rawValue: self.type) ?? MessageTypeEnum.text
+        
         if let audioMessage = audioMessage {
             message.content = .audio(audioMessage.toProto())
         } else if let voiceMessage = voiceMessage {
@@ -81,6 +93,12 @@ class DBMessage: Object {
             message.content = .video(videoMessage.toProto())
         } else if let moneyMessage = moneyMessage {
             message.content = .money(moneyMessage.toProto())
+        } else if let fileMessage = fileMessage {
+            message.content = .file(fileMessage.toProto())
+        } else if let contactMessage = contactMessage {
+            message.content = .contact(contactMessage.toProto())
+        } else if let locationMessage = locationMessage {
+            message.content = .location(locationMessage.toProto())
         }
         
         return message
@@ -352,7 +370,96 @@ class DBMoneyMessage: Object {
     }
 }
 
+class DBFileMessage: Object {
+    
+    @objc dynamic var fileID: String = ""
+    @objc dynamic var fileSize: Int64 = 0
+    @objc dynamic var mimeType: String = ""
+    @objc dynamic var fileName: String = ""
+
+    override static func primaryKey() -> String? {
+        return "fileID"
+    }
+
+    convenience init(fileMessage: FileMessage) {
+        self.init()
+        self.fileID = fileMessage.fileID
+        self.fileSize = fileMessage.fileSize
+        self.mimeType = fileMessage.mimeType
+        self.fileName = fileMessage.fileName
+    }
+
+    func toProto() -> FileMessage {
+        return .with { fileMessage in
+            fileMessage.fileID = self.fileID
+            fileMessage.fileSize = self.fileSize
+            fileMessage.mimeType = self.mimeType
+            fileMessage.fileName = self.fileName
+        }
+    }
+}
+
+class DBContactMessage: Object {
+    @objc dynamic var photo: DBPhoto?
+    @objc dynamic var phone: String = ""
+    @objc dynamic var userID: String = ""
+    @objc dynamic var lastname: String = ""
+    @objc dynamic var firstname: String = ""
+    
+    override static func primaryKey() -> String? {
+        return "phone"
+    }
+
+    convenience init(contact message: ContactMessage, in realm: Realm) {
+        self.init()
+        self.phone = message.phone
+        self.userID = message.userID
+        self.photo = realm.object(ofType: DBPhoto.self, forPrimaryKey: message.photo.fileID) ?? DBPhoto(from: message.photo)
+        self.lastname = message.lastname
+        self.firstname = message.firstname
+    }
+
+    func toProto() -> ContactMessage {
+        return .with { message in
+            message.phone = phone
+            message.userID = userID
+            message.lastname = lastname
+            message.firstname = firstname
+            message.photo = photo?.toProto() ?? Photo()
+        }
+    }
+}
+
+class DBLocationMessage: Object {
+    @objc dynamic var lat: Double = 0.0
+    @objc dynamic var long: Double = 0.0
+    @objc dynamic var desc: String = ""
+    
+    
+    override static func primaryKey() -> String? {
+        return "desc"
+    }
+
+    convenience init(location message: LocationMessage) {
+        self.init()
+        self.lat = message.lat
+        self.long = message.lon
+        self.desc = message.desc
+    }
+
+    func toProto() -> LocationMessage {
+        return .with { message in
+            message.lat = lat
+            message.lon = long
+            message.desc = desc
+        }
+    }
+}
+
 
 extension Receiver {
     var id: String { chatID + userID }
 }
+
+
+

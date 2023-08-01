@@ -23,6 +23,7 @@ final class ConversationsPresenter: BasePresenter {
     private let conversationRepository: ConversationRepository
     private let retrieveContactStatusesInteractor: UseCase<Void, Void>
     fileprivate let userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>
+    fileprivate let deleteConversationInteractor: UseCase<(Conversation, Bool), Void>
     
     lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(conversationRepository.conversations(), updateRepository.typingUsers, updateRepository.unreadMessages)
         .map({ conversations, typingUsers, unreadMessages in
@@ -46,6 +47,7 @@ final class ConversationsPresenter: BasePresenter {
          wireframe: ConversationsWireframeInterface,
          conversationRepository: ConversationRepository,
          retrieveContactStatusesInteractor: UseCase<Void, Void>,
+         deleteConversationInteractor: UseCase<(Conversation,Bool), Void>,
          userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>) {
         self.view = view
         self.wireframe = wireframe
@@ -53,6 +55,7 @@ final class ConversationsPresenter: BasePresenter {
         self.messageRepository = messageRepository
         self.conversationRepository = conversationRepository
         self.userStatusUpdateInteractor = userStatusUpdateInteractor
+        self.deleteConversationInteractor = deleteConversationInteractor
         self.retrieveContactStatusesInteractor = retrieveContactStatusesInteractor
     }
     
@@ -61,6 +64,13 @@ final class ConversationsPresenter: BasePresenter {
 // MARK: - Extensions -
 
 extension ConversationsPresenter: ConversationsPresenterInterface {
+    func delete(_ conversation: Conversation, all: Bool) {
+        self.deleteConversationInteractor.executeSingle(params: (conversation, all))
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe()
+            .disposed(by: disposeBag)
+    }
     func retrieveContactStatuses() {
         self.retrieveContactStatusesInteractor.execute(params: ())
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))

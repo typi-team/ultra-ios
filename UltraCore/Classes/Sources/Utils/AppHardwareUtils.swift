@@ -10,7 +10,7 @@ import Foundation
 class AppHardwareUtils {
     static func checkPermissons() -> Bool {
         switch CNContactStore.authorizationStatus(for: .contacts) {
-        case .authorized: return true
+        case .authorized, .notDetermined: return true
         default: return false
         }
     }

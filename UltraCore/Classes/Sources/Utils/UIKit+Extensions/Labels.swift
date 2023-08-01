@@ -22,61 +22,61 @@ class BaseLabel: UILabel {
         textColor = .gray500
         self.numberOfLines = 0
         font = .defaultRegularFootnote
+        self.traitCollectionDidChange(UIScreen.main.traitCollection)
     }
 }
 
 class HeadlineBody: BaseLabel {
-    override func setupView() {
-        super.setupView()
-        self.numberOfLines = 0
-        self.textColor = .black
-        self.font = .defaultRegularHeadline
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        self.font = UltraCoreStyle.headlineConfig.font
+        self.textColor = UltraCoreStyle.headlineConfig.color
     }
 }
 
 class RegularBody: BaseLabel {
-    override func setupView() {
-        super.setupView()
-        self.numberOfLines = 0
-        self.font = .defaultRegularBody
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        self.font = UltraCoreStyle.regularLabelConfig.font
+        self.textColor = UltraCoreStyle.regularLabelConfig.color
     }
 }
 
 class RegularCallout: BaseLabel {
-    override func setupView() {
-        super.setupView()
-        self.numberOfLines = 0
-        self.textColor = .gray700
-        self.font = .defaultRegularCallout
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        self.font = UltraCoreStyle.regularCalloutConfig.font
+        self.textColor = UltraCoreStyle.regularCalloutConfig.color
     }
 }
 
 class RegularFootnote: BaseLabel {
-    override func setupView() {
-        super.setupView()
-        self.numberOfLines = 0
-        self.textColor = .gray500
-        self.font = .defaultRegularFootnote
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        self.font = UltraCoreStyle.regularFootnoteConfig.font
+        self.textColor = UltraCoreStyle.regularFootnoteConfig.color
     }
 }
 
 class RegularCaption3: BaseLabel {
-    override func setupView() {
-        super.setupView()
-        self.font = .defaultRegularCaption3
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        self.font = UltraCoreStyle.regularCaption3Config.font
+        self.textColor = UltraCoreStyle.regularCaption3Config.color
     }
 }
 
 class SubHeadline: BaseLabel {
-    override func setupView() {
-        super.setupView()
-        self.textColor = .gray700
-        self.font = .defaultRegularSubHeadline
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        self.font = UltraCoreStyle.subHeadlineConfig.font
+        self.textColor = UltraCoreStyle.subHeadlineConfig.color
     }
 }
 
 
-class LabelWithInsets: UILabel {
+class LabelWithInsets: BaseLabel {
+    
     var textInsets = UIEdgeInsets.zero {
         didSet { invalidateIntrinsicContentSize() }
     }

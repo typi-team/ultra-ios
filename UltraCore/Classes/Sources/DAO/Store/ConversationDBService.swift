@@ -88,6 +88,27 @@ class ConversationDBService {
             }
         }
     }
+    
+    func delete(conversation id: String) -> Single<Void> {
+        return Single.create(subscribe: {observer in
+            do {
+                let realm = Realm.myRealm()
+                try realm.write({
+                    if let dbConv = realm.object(ofType: DBConversation.self, forPrimaryKey: id) {
+                        realm.delete(dbConv)
+                    }
+                    
+                    let messages = realm.objects(DBMessage.self).where({$0.receiver.chatID == id })
+                    messages.forEach({ realm.delete($0)})
+                })
+                
+            } catch {
+                observer(.failure(error))
+            }
+            return Disposables.create()
+            
+        })
+    }
 }
 
 

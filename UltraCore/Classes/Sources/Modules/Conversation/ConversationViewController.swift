@@ -12,8 +12,9 @@ import UIKit
 import RxCocoa
 import RxSwift
 import QuickLook
+import ContactsUI
 
-final class ConversationViewController: BaseViewController<ConversationPresenterInterface>, (UIImagePickerControllerDelegate & UINavigationControllerDelegate) {
+final class ConversationViewController: BaseViewController<ConversationPresenterInterface> {
     // MARK: - Properties
     
     let sheetTransitioningDelegate = SheetTransitioningDelegate()
@@ -32,24 +33,30 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     }
     
     fileprivate let navigationDivider: UIView = .init({
-        $0.backgroundColor = .gray200
+        $0.backgroundColor = UltraCoreStyle.divederColor.color
     })
     
     private lazy var tableView: UITableView = .init {[weak self] tableView in
         guard let `self` = self else { return }
         tableView.separatorStyle = .none
+        tableView.backgroundColor = .clear
         tableView.tableFooterView = UIView()
         tableView.refreshControl = refreshControl
+        tableView.registerCell(type: IncomeFileCell.self)
+        tableView.registerCell(type: OutcomeFileCell.self)
         tableView.registerCell(type: BaseMessageCell.self)
         tableView.registerCell(type: IncomeMoneyCell.self)
         tableView.registerCell(type: OutcomeMoneyCell.self)
         tableView.registerCell(type: IncomeMessageCell.self)
         tableView.registerCell(type: IncomingPhotoCell.self)
         tableView.registerCell(type: IncomingVideoCell.self)
-        tableView.registerCell(type: OutgoingMessageCell.self)
         tableView.registerCell(type: OutgoingPhotoCell.self)
+        tableView.registerCell(type: IncomeContactCell.self)
         tableView.registerCell(type: OutgoingVideoCell.self)
-        tableView.backgroundColor = self.view.backgroundColor
+        tableView.registerCell(type: OutcomeContactCell.self)
+        tableView.registerCell(type: IncomeLocationCell.self)
+        tableView.registerCell(type: OutcomeLocationCell.self)
+        tableView.registerCell(type: OutgoingMessageCell.self)
         tableView.contentInset = .init(top: kMediumPadding, left: 0, bottom: 0, right: 0)
         tableView.backgroundView = UIImageView({
             $0.contentMode = .scaleAspectFill
@@ -120,7 +127,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     
     override func setupInitialData() {
         super.setupInitialData()
-    
         self.presenter?
             .messages
             .subscribe(on: MainScheduler.instance)
@@ -143,7 +149,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                     self.isDrawingTable = false
                 })
             })
-            .bind(to: tableView.rx.items) { [weak self] tableView, _,
+            .bind(to: tableView.rx.items) { [weak self] tableView, indexPath,
                 message in
                 guard let `self` = self else {
                     return UITableViewCell.init()
@@ -151,7 +157,31 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                 let cell = self.cell(message, in: tableView)
                 cell.longTapCallback = {[weak self] message in
                     guard let `self` = self else { return }
-                    self.presentEditController(for: message)
+                    self.presentEditController(for: message, indexPath: IndexPath(row: indexPath, section: 0))
+                }
+                
+                cell.actionCallback = {[weak self] message in
+                    
+                    
+                    guard let `self` = self,
+                          let content = message.content else { return }
+                    
+                    switch content {
+                    case .location(let location):
+                        if let url = URL(string: "maps://?q=\(location.lat),\(location.lon)"),
+                           UIApplication.shared.canOpenURL(url) {
+                            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                        }
+                    default:
+                        guard let url = self.presenter?.mediaURL(from: message) else { return }
+                        self.view.endEditing(true)
+                        self.mediaItem = url
+                        let previewController = QLPreviewController()
+                        previewController.modalPresentationStyle = .formSheet
+                        previewController.dataSource = self
+                        previewController.currentPreviewItemIndex = 0
+                        self.present(previewController, animated: true)
+                    }
                 }
                 return cell
             }
@@ -172,6 +202,18 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin).offset(height > 0 ? -(height - 36) : 0)
         }
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        guard let cell = self.tableView.visibleCells.first as? BaseMessageCell,
+              let seqNumber = cell.message?.seqNumber else { return }
+        self.presenter?.loadMoreMessages(maxSeqNumber: seqNumber)
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        self.navigationDivider.backgroundColor = UltraCoreStyle.divederColor.color
+    }
 }
 
     // MARK: - UITextViewDelegate
@@ -185,6 +227,9 @@ extension ConversationViewController: MessageInputBarDelegate {
             switch action {
             case .fromGallery: self.openMedia(type: .savedPhotosAlbum)
             case .takePhoto: self.openMedia(type: .camera)
+            case .document: self.openDocument()
+            case .contact: self.openContact()
+            case .location: self.openMap()
             }
         }
         viewController.modalPresentationStyle = .custom
@@ -257,34 +302,54 @@ private extension ConversationViewController {
     }
     
     func openMedia(type: UIImagePickerController.SourceType) {
-        self.present(UIImagePickerController({
-            $0.delegate = self
-            $0.sourceType = type
-            $0.videoQuality = .typeMedium
-            $0.mediaTypes = ["public.movie", "public.image"]
-            $0.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
-        }), animated: true)
+        let controller = UIImagePickerController()
+        controller.delegate = self
+        controller.sourceType = type
+        controller.videoQuality = .typeMedium
+        controller.mediaTypes = ["public.movie", "public.image"]
+        controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
+        self.present(controller, animated: true)
+    }
+    
+    func openDocument() {
+        let documentPicker = UIDocumentPickerViewController(documentTypes: ["public.content"], in: .import)
+        documentPicker.delegate = self
+        present(documentPicker, animated: true, completion: nil)
+    }
+    
+    func openContact() {
+        let contactPickerVC = CNContactPickerViewController()
+        contactPickerVC.delegate = self
+        self.present(contactPickerVC, animated: true)
+    }
+
+    func openMap() {
+        var mapController = MapController()
+        mapController.locationCallback = { [weak self] message in
+            guard let `self` = self else { return }
+            self.presenter?.send(location: message)
+        }
+        self.present(mapController, animated: true)
     }
 }
 
 
-extension ConversationViewController {
+extension ConversationViewController: (UIImagePickerControllerDelegate & UINavigationControllerDelegate){
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
             dismiss(animated: true, completion: nil)
     }
     
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
-        if info["UIImagePickerControllerMediaType"] as? String == "public.movie",
-            let url = info["UIImagePickerControllerMediaURL"]  as? URL,
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        if info[UIImagePickerController.InfoKey.mediaType] as? String == "public.movie",
+           let url = info[.mediaURL]  as? URL,
             let data = try? Data(contentsOf: url) {
             picker.dismiss(animated: true)
             self.presenter?.upload(file: .init(url: url, data: data, mime: "video/mp4", width: 300, height: 200))
-        } else if let image = info["UIImagePickerControllerOriginalImage"] as? UIImage,
+        } else if let image = info[.originalImage] as? UIImage,
                   let downsampled = image.downsample(reductionAmount: 0.7),
                   let data = downsampled.pngData() {
             picker.dismiss(animated: true, completion: {
-                
                 self.presenter?.upload(file: .init(url: nil, data: data, mime: "image/png", width: image.size.width, height: image.size.height))
             })
         }
@@ -320,7 +385,7 @@ extension ConversationViewController {
         }
         
         switch content {
-        case let .photo(photo):
+        case  .photo:
             if message.isIncome {
                 let cell: IncomingPhotoCell = tableView.dequeueCell()
                 cell.setup(message: message)
@@ -330,7 +395,7 @@ extension ConversationViewController {
                 cell.setup(message: message)
                 return cell
             }
-        case let .video(video):
+        case .video:
             if message.isIncome {
                 let cell: IncomingVideoCell = tableView.dequeueCell()
                 cell.setup(message: message)
@@ -352,15 +417,45 @@ extension ConversationViewController {
                 cell.setup(message: message)
                 return cell
             }
-
-        case .location(_), .file(_), .contact(_), .audio(_), .voice:
+            
+        case .file:
+            if message.isIncome {
+                let cell: IncomeFileCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            } else {
+                let cell: OutcomeFileCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            }
+        case .contact:
+            if message.isIncome {
+                let cell: IncomeContactCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            } else {
+                let cell: OutcomeContactCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            }
+        case .location:
+            if message.isIncome {
+                let cell: IncomeLocationCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            } else {
+                let cell: OutcomeLocationCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            }
+        case .audio(_), .voice:
             let cell: BaseMessageCell = tableView.dequeueCell()
             cell.setup(message: message)
             return cell
         }
     }
     
-    func presentEditController(for message: Message) {
+    func presentEditController(for message: Message, indexPath: IndexPath) {
         self.tableView.allowsMultipleSelectionDuringEditing = true
         self.tableView.setEditing(!tableView.isEditing, animated: true)
         
@@ -374,6 +469,7 @@ extension ConversationViewController {
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: {
             self.tableView.reloadData()
+            self.tableView.selectRow(at: indexPath, animated: true, scrollPosition: .middle)
         })
     }
 }
@@ -392,17 +488,47 @@ extension ConversationViewController: EditActionBottomBarDelegate {
             .map({ $0.message })
             .compactMap({ $0 }) ?? []
         
+        guard !messages.isEmpty else { return }
         
-        let alert = UIAlertController.init(title: "Вы уверены? \(messages.count)",
-                                           message: "Пожалуйста, обратите внимание, что данные сообщения будут безвозвратно удалены, и восстановление не будет возможным.",
-                                           preferredStyle: .actionSheet)
-        alert.addAction(.init(title: "Удалить", style: .destructive, handler:  {[weak self] _ in
+        let alert = UIAlertController(title: "Вы уверены?", message: "Пожалуйста, обратите внимание, что данные сообщения будут безвозвратно удалены, и восстановление не будет возможным", preferredStyle: .actionSheet)
+        alert.addAction(.init(title: "Удалить для всех", style: .destructive, handler: { [weak self] _ in
             guard let `self` = self else { return }
-            self.presenter?.delete(messages)
+            self.presenter?.delete(messages, all: true)
             self.cancel()
         }))
-        
-        alert.addAction(.init(title: "Отменить", style: .cancel))
+        alert.addAction(.init(title: "Удалить у меня", style: .destructive, handler: { [weak self] _ in
+            guard let `self` = self else { return }
+            self.presenter?.delete(messages, all: false)
+            self.cancel()
+        }))
+        alert.addAction(.init(title: "Отмена", style: .cancel))
         self.present(alert, animated: true)
+    }
+}
+
+extension ConversationViewController: UIDocumentPickerDelegate {
+        func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+            guard let selectedURL = urls.first,
+                  let data = try? Data(contentsOf: selectedURL) else {
+                return
+            }
+
+            self.presenter?.upload(file: .init(url: selectedURL, data: data, mime: selectedURL.mimeType().containsAudio ? "audio/mp3" : selectedURL.mimeType(), width: 300, height: 300))
+        }
+        
+    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) { }
+}
+
+extension ConversationViewController: CNContactPickerDelegate {
+    func contactPicker(_ picker: CNContactPickerViewController, didSelect contact: CNContact) {
+        for phoneNumber in contact.phoneNumbers {
+            let phoneNumberValue = phoneNumber.value
+            let number = phoneNumberValue.stringValue
+            self.presenter?.send(contact: .with {
+                $0.firstname = contact.givenName
+                $0.lastname = contact.familyName
+                $0.phone = number
+            })
+        }
     }
 }

@@ -52,14 +52,15 @@ class ViewController: UITabBarController {
        }
     
     func setupSID() {
-        update(sid: UserDefaults.standard.string(forKey: "K_SID") ?? "") { [weak self] error in
+        UltraCoreSettings.set(server: nil)
+        UltraCoreSettings.update(sid: UserDefaults.standard.string(forKey: "K_SID") ?? "") { [weak self] error in
             guard let `self` = self else { return }
             DispatchQueue.main.async {
                 if let error = error {
-                    self.viewControllers?.append(self.createNavController(for: entrySignUpViewController(), title: NSLocalizedString("Чаты", comment: ""), image: UIImage(named: "chats")!))
+                    self.viewControllers?.append(self.createNavController(for: UltraCoreSettings.entrySignUpViewController(), title: NSLocalizedString("Чаты", comment: ""), image: UIImage(named: "chats")!))
                     self.timer()
                 } else {
-                    self.viewControllers?.append(self.createNavController(for: entryConversationsViewController(), title: NSLocalizedString("Чаты", comment: ""), image: UIImage(named: "chats")!))
+                    self.viewControllers?.append(self.createNavController(for: UltraCoreSettings.entryConversationsViewController(), title: NSLocalizedString("Чаты", comment: ""), image: UIImage(named: "chats")!))
                 }
                 self.selectedIndex = 3
             }
@@ -117,7 +118,7 @@ class ViewController: UITabBarController {
         let task = URLSession.shared.dataTask(with: request) {(data, response, error) in
              if let data = data,
                       let userResponse = try? JSONDecoder().decode(UserResponse.self, from: data) {
-                 update(sid: userResponse.sid, with: {_ in })
+                 UltraCoreSettings.update(sid: userResponse.sid, with: {_ in })
             }
         }
         

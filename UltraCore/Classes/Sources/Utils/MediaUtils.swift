@@ -8,7 +8,6 @@
 
 import UIKit
 import RxSwift
-import SDWebImage
 import AVFoundation
 import MobileCoreServices
 
@@ -84,14 +83,15 @@ class MediaUtils {
     }
     
     func mediaURL(from message: Message) -> URL? {
+        guard let originalFileIdWithExtension = message.originalFileIdWithExtension else { return nil }
         let fileManager = FileManager.default
         let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let fileURL = documentsDirectory.appendingPathComponent(message.originalFileIdWithExtension)
+        let fileURL = documentsDirectory.appendingPathComponent(originalFileIdWithExtension)
         
         if fileManager.fileExists(atPath: fileURL.path) {
             return fileURL
         } else {
-            PP.warning("Файл с именем \(message.originalFileIdWithExtension) не найден.")
+            PP.warning("Файл с именем \(originalFileIdWithExtension) не найден.")
             return nil
         }
     }
@@ -136,11 +136,15 @@ extension MimeType {
 }
 
 extension Message {
-    var originalFileIdWithExtension: String {
+    var originalFileIdWithExtension: String? {
         if hasPhoto {
             return photo.originalFileIdWithExtension
-        }else {
+        } else if hasVideo {
             return video.originalVideoFileIdWithExtension
+        } else if hasFile {
+            return file.originalFileIdWithExtension
+        } else {
+            return nil
         }
     }
 }
@@ -166,7 +170,22 @@ extension PhotoMessage {
     var originalFileIdWithExtension: String { "original_\(fileID).\(extensions)" }
 }
 
+extension FileMessage {
+    var originalFileId: String { "original_\(fileID)" }
+    var extensions: String {
+        guard let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mimeType as CFString, nil)?.takeRetainedValue(),
+              let type = UTTypeCopyPreferredTagWithClass(uti, kUTTagClassFilenameExtension)?.takeRetainedValue() as? String else {
+            return mimeType.components(separatedBy: "/").last ?? ""
+        }
+
+        return type
+    }
+    
+    var originalFileIdWithExtension: String { "original_\(fileID).\(extensions)" }
+}
+
 extension Message {
+    var hasFile: Bool { self.file.fileID != "" }
     var hasPhoto: Bool { self.photo.fileID != "" }
     var hasVideo: Bool { self.video.fileID != "" }
     var fileID: String? {
@@ -174,7 +193,9 @@ extension Message {
             return photo.fileID
         } else if hasVideo {
             return video.fileID
-        } else {
+        } else if hasFile {
+            return file.fileID
+        }else {
             return nil
         }
     }
