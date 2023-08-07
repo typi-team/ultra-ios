@@ -14,21 +14,21 @@ class MoneyTransferConroller: BaseViewController<String> {
 
     fileprivate let headlineLabel: HeadlineBody = .init({
         $0.textAlignment = .left
-        $0.text = "Внутри банка"
+        $0.text = ConversationStrings.insideTheBank.localized
     })
 
     fileprivate let titleLabel: RegularFootnote = .init({
-        $0.text = "Списать с карты"
+        $0.text = ConversationStrings.writeOffTheCard.localized
     })
     
     fileprivate lazy var cardButton: CardButton = .init()
     
     fileprivate lazy var sunInfoLabel: RegularFootnote = .init({
-        $0.text = "Сумма перевода"
+        $0.text = ConversationStrings.transferAmount.localized
     })
     
     fileprivate lazy var continButton: ElevatedButton = .init({
-        $0.setTitle("Продолжить", for: .normal)
+        $0.setTitle(ConversationStrings.continue.localized, for: .normal)
         $0.addAction {[weak self] in
             self?.view.endEditing(true)
             guard let `self` = self,

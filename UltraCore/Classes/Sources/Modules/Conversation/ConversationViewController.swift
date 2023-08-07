@@ -65,7 +65,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     }
     
     fileprivate lazy var messageHeadline: SubHeadline = .init({
-        $0.textColor = .gray500
         $0.textAlignment = .center
         $0.isUserInteractionEnabled = false
     })
@@ -132,7 +131,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
             .do(onNext: {[weak self] messages in
-                    self?.messageHeadline.text = messages.isEmpty ? "В этом чате нет сообщений" : ""
+                self?.messageHeadline.text = messages.isEmpty ? ConversationStrings.thereAreNoMessagesInThisChat.localized : ""
             })
             .do(onNext: { [weak self] result in
                 guard let `self` = self, !self.isDrawingTable else {

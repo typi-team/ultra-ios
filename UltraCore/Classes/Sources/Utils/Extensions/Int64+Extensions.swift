@@ -52,19 +52,19 @@ func getTimeText(start: Date, end: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "dd/MM/yy"
         let dateString = formatter.string(from: start)
-        return "был(а) \(dateString)"
+        return "\(ContactsStrings.was.localized) \(dateString)"
     } else if days == 1 {
         let formatter = DateFormatter()
-        formatter.dateFormat = "вчера в HH:mm"
-        return "был(а) \(formatter.string(from: start))"
+        formatter.dateFormat = "\(ContactsStrings.yesterday.localized) в HH:mm"
+        return "\(ContactsStrings.was.localized) \(formatter.string(from: start))"
     } else if hours > 0 {
         let hourString = pluralize(value: hours, singularForm: "час", pluralForm: "часа", pluralForm2: "часов")
-        return "был(а) \(hourString) назад"
+        return "\(ContactsStrings.was.localized) \(hourString) \(ContactsStrings.backward.localized)"
     } else if minutes > 0 {
         let minuteString = pluralize(value: minutes, singularForm: "минуту", pluralForm: "минуты", pluralForm2: "минут")
-        return "был(а) \(minuteString) назад"
+        return "\(ContactsStrings.was.localized) \(minuteString) \(ContactsStrings.backward.localized)"
     } else {
-        return "был(а) только что"
+        return "\(ContactsStrings.was.localized) \(ContactsStrings.justNow.localized)"
     }
 }
 
@@ -80,15 +80,4 @@ func pluralize(value: Int, singularForm: String, pluralForm: String, pluralForm2
     } else {
         return "\(value) \(pluralForm2)"
     }
-}
-
-enum ContactString: String {
-    case seenNMinutesAgo = "last seen %d minutes ago"
-    case nHourAgo = "last seen %d hours ago"
-}
-
-extension String {
-    var localized: String {
-       return NSLocalizedString(self, comment: self)
-   }
 }

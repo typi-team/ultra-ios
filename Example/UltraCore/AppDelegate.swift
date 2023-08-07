@@ -17,18 +17,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
         FirebaseApp.configure()
-        self.setupNotificationSettings(application: application)
         UltraCoreSettings.set(server: ServerConfig())
-        UltraCoreStyle.controllerBackground = Colors()
+        self.setupNotificationSettings(application: application)
         return true
     }
-}
-
-struct Colors: TwiceColor {
-    var defaultColor: UIColor = .red
-    var darkColor: UIColor = .white
 }
 
 struct ServerConfig: ServerConfigurationProtocol {

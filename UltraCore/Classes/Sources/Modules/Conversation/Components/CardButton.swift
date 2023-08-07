@@ -20,11 +20,11 @@ class CardButton: UIView {
         $0.setImage(.named("conversation_money_card_icon"), for: .normal)
         
         let boldFontAttributes: [NSAttributedString.Key: Any] = [ .font: UIFont.defaultRegularBody,
-                                                                  .foregroundColor : UIColor.gray700 ]
+                                                                  .foregroundColor : UltraCoreStyle.textButtonConfig.color ]
         let smallFontAttributes: [NSAttributedString.Key: Any] = [ .font: UIFont.defaultRegularFootnote,
                                                                    .foregroundColor : UIColor.gray500]
 
-        let boldText = "Мультивалю..."
+        let boldText = ConversationStrings.multivalue.localized
         let smallText = "5500 13 •••• 0088"
         let titleText = "\(boldText)\n\(smallText)"
 

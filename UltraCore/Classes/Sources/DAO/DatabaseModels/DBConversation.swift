@@ -80,21 +80,21 @@ extension DBConversation: Conversation {
             if let content = message?.toProto().content {
                 switch content {
                 case .audio(_):
-                    return "🔉 Аудио"
+                    return MessageStrings.audio.localized
                 case .voice(_):
-                    return "🎤 Голосовое сообщение"
+                    return MessageStrings.voice.localized
                 case .photo(_):
-                    return "📷 Фото"
+                    return MessageStrings.photo.localized
                 case .video(_):
-                    return "🎥 Видео"
+                    return MessageStrings.photo.localized
                 case .money(_):
-                    return "💵 Денежный перевод"
+                    return MessageStrings.money.localized
                 case .location(_):
-                    return "📍Локация"
+                    return MessageStrings.location.localized
                 case .file(_):
-                    return "📂 Файл"
+                    return MessageStrings.file.localized
                 case .contact(_):
-                    return "📇 Контакт"
+                    return MessageStrings.contact.localized
                 }
             } else {
                 return self.message?.text

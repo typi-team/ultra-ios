@@ -15,14 +15,11 @@ class ViewController: UITabBarController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        if #available(iOS 13.0, *) {
-            self.view.backgroundColor = .systemBackground
-            self.tabBar.tintColor =  UIColor(red: 34.0 / 255.0, green: 197.0 / 255.0, blue: 94.0 / 255.0, alpha: 1.0)
-            self.setupVCs()
-            self.selectedIndex = 3
-            self.setupSID()
-        }
+        self.view.backgroundColor = .lightGray
+        self.tabBar.tintColor = UIColor(red: 34.0 / 255.0, green: 197.0 / 255.0, blue: 94.0 / 255.0, alpha: 1.0)
+        self.setupVCs()
+        self.selectedIndex = 3
+        self.setupSID()
     }
     
     fileprivate func createNavController(for rootViewController: UIViewController,
@@ -52,15 +49,15 @@ class ViewController: UITabBarController {
        }
     
     func setupSID() {
-        UltraCoreSettings.set(server: nil)
         UltraCoreSettings.update(sid: UserDefaults.standard.string(forKey: "K_SID") ?? "") { [weak self] error in
             guard let `self` = self else { return }
             DispatchQueue.main.async {
-                if let error = error {
-                    self.viewControllers?.append(self.createNavController(for: UltraCoreSettings.entrySignUpViewController(), title: NSLocalizedString("Чаты", comment: ""), image: UIImage(named: "chats")!))
+                if error != nil {
+                    self.viewControllers?.append(self.createNavController(for: UltraCoreSettings.entrySignUpViewController(), title: NSLocalizedString("conversations.chats", comment: ""), image: UIImage(named: "chats")!))
                     self.timer()
+                    UltraCoreSettings.printAllLocalizableStrings()
                 } else {
-                    self.viewControllers?.append(self.createNavController(for: UltraCoreSettings.entryConversationsViewController(), title: NSLocalizedString("Чаты", comment: ""), image: UIImage(named: "chats")!))
+                    self.viewControllers?.append(self.createNavController(for: UltraCoreSettings.entryConversationsViewController(), title: NSLocalizedString("conversations.chats", comment: ""), image: UIImage(named: "chats")!))
                 }
                 self.selectedIndex = 3
             }

@@ -18,6 +18,16 @@ public class UltraCoreSettings {
 }
 
 public extension UltraCoreSettings {
+    
+    static func printAllLocalizableStrings() {
+        print("================= Localizable =======================")
+        print(ConversationsStrings.allCases.map({"\"\($0.descrition)\" = \"\($0.localized)\";"}).joined(separator: "\n"))
+        print(ContactsStrings.allCases.map({"\"\($0.descrition)\" = \"\($0.localized)\";"}).joined(separator: "\n"))
+        print(ConversationStrings.allCases.map({"\"\($0.descrition)\" = \"\($0.localized)\";"}).joined(separator: "\n"))
+        print(MessageStrings.allCases.map({"\"\($0.descrition)\" = \"\($0.localized)\";"}).joined(separator: "\n"))
+        print("=================             =======================")
+    }
+    
      static func set(server config: ServerConfigurationProtocol?) {
          AppSettingsImpl.shared.serverConfig = config ?? ServerConfiguration()
      }
