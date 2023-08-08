@@ -323,7 +323,7 @@ private extension ConversationViewController {
     }
 
     func openMap() {
-        var mapController = MapController()
+        let mapController = MapController()
         mapController.locationCallback = { [weak self] message in
             guard let `self` = self else { return }
             self.presenter?.send(location: message)

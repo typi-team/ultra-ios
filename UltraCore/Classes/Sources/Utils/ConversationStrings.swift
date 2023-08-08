@@ -31,6 +31,7 @@ enum ConversationStrings: String, StringLocalizable {
     case `continue`
     case money
     case thereAreNoMessagesInThisChat
+    case insertText
     
     var prefixOfTemplate: String { "conversation" }
     var localizableValue: String { rawValue }

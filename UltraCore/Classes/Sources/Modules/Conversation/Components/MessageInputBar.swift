@@ -40,7 +40,7 @@ class MessageInputBar: UIView {
         textView.delegate = self
         textView.backgroundColor = .gray200
         textView.cornerRadius = kLowPadding
-        textView.placeholder = "Введите текст..."
+        textView.placeholder = "\(ConversationStrings.insertText.localized)..."
     }
     
     private lazy var sendButton: UIButton = .init {[weak self] button in
@@ -124,10 +124,10 @@ class MessageInputBar: UIView {
         }
 
         self.sendButton.snp.makeConstraints { make in
-            make.trailing.equalToSuperview().offset(-kLowPadding)
+            make.right.equalToSuperview().offset(-kLowPadding)
             make.height.width.equalTo(36)
             make.bottom.equalTo(messageTextView.snp.bottom)
-            make.leading.equalTo(containerStack.snp.trailing).offset(kLowPadding)
+            make.left.equalTo(containerStack.snp.right).offset(kLowPadding)
         }
         
         self.microButton.snp.makeConstraints { make in

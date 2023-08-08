@@ -20,9 +20,9 @@ final class SignUpWireframe: BaseWireframe<SignUpViewController> {
         super.init(viewController: moduleViewController)
         let userIdInteractor = UserIdInteractorImpl.init(authService: appSettings.authService)
         let jwtInteractor = JWTTokenInteractorImpl.init(authService: appSettings.authService)
-        let presenter = SignUpPresenter(view: moduleViewController,
-                                        appSettingsStore: AppSettingsStoreImpl(),
-                                        wireframe: self, jwtInteractor: jwtInteractor, userIdInteractor: userIdInteractor)
+//        let presenter = SignUpPresenter(view: moduleViewController,
+//                                        appSettingsStore: AppSettingsStoreImpl(),
+//                                        wireframe: self, jwtInteractor: jwtInteractor, userIdInteractor: userIdInteractor)
         let ffPresenter = FFSignUpPresenter.init(view: moduleViewController, wireframe: self)
         moduleViewController.presenter = ffPresenter
         
