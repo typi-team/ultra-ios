@@ -90,4 +90,26 @@ public class UltraCoreStyle {
 //    MARK: Message cells
     public static var incomeMessageCell: MessageCellConfig = IncomeMessageCellConfigImpl()
     public static var outcomeMessageCell: MessageCellConfig = OutcomeMessageCellConfigImpl()
+//    MARK: VoiceBarView config
+    public static var voiceInputBarConfig: VoiceInputBarConfig = VoiceInputBarConfigImpl()
+}
+
+
+public protocol VoiceInputBarConfig {
+    var background: TwiceColor { get set }
+    var waveBackground: TwiceColor { get set }
+    var durationLabel: LabelConfig { get set }
+    var recordBackground: TwiceColor { get set }
+    var roundedViewBackground: TwiceColor { get set }
+    var removeButtonBackground: TwiceColor { get set }
+}
+
+
+private class VoiceInputBarConfigImpl: VoiceInputBarConfig {
+    var background: TwiceColor = TwiceColorImpl(defaultColor: .gray100, darkColor: .white)
+    var waveBackground: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
+    var recordBackground: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
+    var roundedViewBackground: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray100)
+    var removeButtonBackground: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
+    var durationLabel: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray500, font: .defaultRegularBody)
 }

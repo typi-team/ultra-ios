@@ -84,6 +84,10 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         inputBar.delegate = self
     })
     
+    private lazy var voiceInputBar: VoiceInputBar = .init({ [weak self] inputBar in
+        inputBar.delegate = self
+    })
+    
     // MARK: - Private Methods
     
     override func setupViews() {
@@ -94,6 +98,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.view.addSubview(messageInputBar)
         self.view.addSubview(navigationDivider)
         self.view.addSubview(editInputBar)
+        self.view.addSubview(voiceInputBar)
         
         self.navigationItem.leftItemsSupplementBackButton = true
         self.navigationItem.leftBarButtonItem = .init(customView: headline)
@@ -259,7 +264,10 @@ extension ConversationViewController: MessageInputBarDelegate {
     }
     
     func micro(isActivated: Bool) {
-        self.showAlert(from: "Данная функция еще в разработке")
+        self.view.addSubview(voiceInputBar)
+        self.voiceInputBar.snp.makeConstraints({make in
+            make.edges.equalTo(self.messageInputBar)
+        })
     }
     
     func message(text: String) {
@@ -516,6 +524,16 @@ extension ConversationViewController: UIDocumentPickerDelegate {
         }
         
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) { }
+}
+
+extension ConversationViewController: VoiceInputBarDelegate {
+    func cancelVoiceRecording() {
+        self.voiceInputBar.removeFromSuperview()
+    }
+    
+    func recordedVoice(url: URL) {
+        self.voiceInputBar.removeFromSuperview()
+    }
 }
 
 extension ConversationViewController: CNContactPickerDelegate {
