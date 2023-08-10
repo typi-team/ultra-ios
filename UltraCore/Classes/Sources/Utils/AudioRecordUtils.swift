@@ -9,7 +9,7 @@ import UIKit
 import AVFoundation
 
 protocol AudioRecordUtilsDelegate: AnyObject {
-    func recordedVoice(url: URL)
+    func recordedVoice(url: URL, in duration: TimeInterval)
     func requestRecordPermissionIsFalse()
     func recordingVoice(average power: Float)
     func recodedDuration(time interal: TimeInterval)
@@ -21,6 +21,7 @@ class AudioRecordUtils: NSObject {
     
     private var timer: Timer?
     private var audioURL: URL?
+    private var fireDate = Date()
     private var audioRecorder: AVAudioRecorder?
 
     func requestRecordPermission() {
@@ -60,14 +61,14 @@ class AudioRecordUtils: NSObject {
         self.audioRecorder?.isMeteringEnabled = true
         self.audioRecorder?.prepareToRecord()
     }
-
     
     func startRecording() {
-        let fireDate = Date()
+        self.fireDate = Date()
         self.timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true, block: { [weak self] timer in
-            self?.delegate?.recodedDuration(time: Date().timeIntervalSince(fireDate))
-            self?.audioRecorder?.updateMeters()
-            self?.delegate?.recordingVoice(average: self?.audioRecorder?.averagePower(forChannel: 0 ) ?? 0)
+            guard let `self` = self else { return }
+            self.delegate?.recodedDuration(time: Date().timeIntervalSince(self.fireDate))
+            self.audioRecorder?.updateMeters()
+            self.delegate?.recordingVoice(average: self.audioRecorder?.averagePower(forChannel: 0 ) ?? 0)
         })
         self.audioRecorder?.record()
         
@@ -98,7 +99,7 @@ extension AudioRecordUtils: AVAudioRecorderDelegate {
     func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
         guard let audioURL = self.audioURL else { return }
         if flag {
-            self.delegate?.recordedVoice(url: audioURL)
+            self.delegate?.recordedVoice(url: audioURL, in: Date().timeIntervalSince(self.fireDate))
         } else {
             self.delegate?.requestRecordPermissionIsFalse()
         }

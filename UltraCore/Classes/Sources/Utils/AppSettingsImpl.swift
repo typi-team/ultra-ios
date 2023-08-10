@@ -74,6 +74,7 @@ open class AppSettingsImpl: AppSettings  {
 
 //    MARK: Repositories
 
+    lazy var voiceRepository: VoiceRepository = VoiceRepository.init(mediaUtils: mediaUtils)
     lazy var mediaRepository: MediaRepository = MediaRepositoryImpl(mediaUtils: mediaUtils,
                                                                     uploadFileInteractor: UploadFileInteractor(fileService: fileService),
                                                                     fileService: fileService,

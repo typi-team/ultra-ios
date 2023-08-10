@@ -20,6 +20,7 @@ public protocol LabelConfig: TwiceColor {
 
 public protocol MessageCellConfig {
     var backgroundColor: TwiceColor { get set }
+    var sildirBackgroundColor: TwiceColor { get set }
 }
 
 public extension TwiceColor {
@@ -41,10 +42,12 @@ public extension TwiceColor {
 
 private class IncomeMessageCellConfigImpl: MessageCellConfig {
     var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white, darkColor: .gray500)
+    var sildirBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
 }
 
 private class OutcomeMessageCellConfigImpl: MessageCellConfig {
     var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray900)
+    var sildirBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
 }
 
 

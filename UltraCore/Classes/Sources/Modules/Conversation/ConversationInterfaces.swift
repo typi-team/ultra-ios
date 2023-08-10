@@ -27,6 +27,8 @@ struct FileUpload {
     let mime: MimeType
     let width: CGFloat
     let height: CGFloat
+    
+    var duration: TimeInterval = 0.0
 }
 
 protocol ConversationPresenterInterface: PresenterInterface {

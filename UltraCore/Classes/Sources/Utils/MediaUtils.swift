@@ -150,6 +150,8 @@ extension Message {
             return video.originalVideoFileIdWithExtension
         } else if hasFile {
             return file.originalFileIdWithExtension
+        } else if hasVoice {
+            return voice.originalFileIdWithExtension
         } else {
             return nil
         }
@@ -168,7 +170,8 @@ extension VideoMessage {
 
 extension VoiceMessage {
     var extensions:String { mimeType.components(separatedBy: "/").last ?? ""}
-    var originalVoiceFileId: String { "original_video_\(fileID)" }
+    var originalVoiceFileId: String { "original_voice\(fileID)" }
+    var originalFileIdWithExtension: String { "\(originalVoiceFileId).\(extensions)" }
 }
 
 extension PhotoMessage {
@@ -201,6 +204,7 @@ extension Message {
     var hasPhoto: Bool { self.photo.fileID != "" }
     var hasVideo: Bool { self.video.fileID != "" }
     var hasVoice: Bool { self.voice.fileID != "" }
+    
     var fileID: String? {
         if hasPhoto {
             return photo.fileID

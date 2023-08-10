@@ -49,7 +49,7 @@ class DBMessage: Object {
         case .audio(let audioMessage):
             self.audioMessage = .init(fromProto: audioMessage)
         case .voice(let voiceMessage):
-            self.voiceMessage = .init(fromProto: voiceMessage)
+            self.voiceMessage = realm.object(ofType: DBVoiceMessage.self, forPrimaryKey: voiceMessage.fileID) ?? .init(fromProto: voiceMessage)
         case .photo(let photoMessage):
             self.photoMessage = realm.object(ofType: DBPhotoMessage.self, forPrimaryKey: photoMessage.fileID) ?? .init(fromProto: photoMessage)
         case .video(let videoMessage):

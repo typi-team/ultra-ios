@@ -28,6 +28,7 @@ class MediaRepositoryImpl {
     fileprivate let uploadFileInteractor: UseCase<[FileChunk], Void>
     fileprivate let createFileSpaceInteractor: UseCase<(data: Data, extens: String), [FileChunk]>
     
+    var currentVoice: BehaviorSubject<[VoiceMessage]> = .init(value: [])
     var uploadingMedias: BehaviorSubject<[FileDownloadRequest]> = .init(value: [])
     var downloadingImages: BehaviorSubject<[FileDownloadRequest]> = .init(value: [])
     
@@ -111,7 +112,15 @@ extension MediaRepositoryImpl: MediaRepository {
                     switch result {
                     case .success:
                         do {
-                            if message.hasPhoto {
+                            if message.hasVoice {
+                                try self.mediaUtils.write(data, file: message.voice.originalVoiceFileId, and: message.voice.extensions)
+                                params.fromChunkNumber = params.toChunkNumber
+                                var images = try? self.downloadingImages.value()
+                                images?.removeAll(where: { $0.fileID == params.fileID })
+                                images?.append(params)
+                                self.downloadingImages.on(.next(images ?? []))
+                                observer(.success(message))
+                            } else if message.hasPhoto {
                                 try self.mediaUtils.write(data, file: message.photo.originalFileId, and: message.photo.extensions)
                                 try self.mediaUtils.write(data, file: message.photo.previewFileId, and: message.photo.extensions)
                                 
@@ -424,10 +433,10 @@ private extension MediaRepositoryImpl {
         var message = self.mediaUtils.createMessageForUpload(in: conversation, with: appStore.userID())
         
         message.voice = .with({ photo in
-            photo.fileName = ""
-            photo.fileSize = Int64(file.data.count)
             photo.mimeType = file.mime
-            photo.duration = 12
+            photo.duration = file.duration.nanosec
+            photo.fileSize = Int64(file.data.count)
+            photo.fileName = file.url?.lastPathComponent ?? ""
         })
 
         return self.createFileSpaceInteractor

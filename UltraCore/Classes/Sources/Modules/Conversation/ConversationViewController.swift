@@ -45,6 +45,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.registerCell(type: IncomeFileCell.self)
         tableView.registerCell(type: OutcomeFileCell.self)
         tableView.registerCell(type: BaseMessageCell.self)
+        tableView.registerCell(type: IncomeVoiceCell.self)
+        tableView.registerCell(type: OutcomeVoiceCell.self)
         tableView.registerCell(type: IncomeMoneyCell.self)
         tableView.registerCell(type: OutcomeMoneyCell.self)
         tableView.registerCell(type: IncomeMessageCell.self)
@@ -456,9 +458,15 @@ extension ConversationViewController {
                 return cell
             }
         case .voice:
-            let cell: BaseMessageCell = tableView.dequeueCell()
-            cell.setup(message: message)
-            return cell
+            if message.isIncome {
+                let cell: IncomeVoiceCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            } else {
+                let cell: OutcomeVoiceCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            }
         case .audio(_):
             let cell: BaseMessageCell = tableView.dequeueCell()
             cell.setup(message: message)
@@ -531,9 +539,10 @@ extension ConversationViewController: UIDocumentPickerDelegate {
 }
 
 extension ConversationViewController: VoiceInputBarDelegate {
-    func recordedVoice(url: URL) {
-        guard let data = try? Data(contentsOf: url) else { return }
-        self.presenter?.upload(file: FileUpload(url: nil, data: data, mime: "audio/mp4", width: 0, height: 0))
+    func recordedVoice(url: URL, in duration: TimeInterval) {
+        guard duration > 2,
+              let data = try? Data(contentsOf: url) else { return }
+        self.presenter?.upload(file: FileUpload(url: nil, data: data, mime: "audio/mp3", width: 0, height: 0, duration: duration))
     }
 }
 

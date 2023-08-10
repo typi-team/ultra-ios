@@ -8,7 +8,7 @@
 import Foundation
 
 protocol VoiceInputBarDelegate: AnyObject {
-    func recordedVoice(url: URL)
+    func recordedVoice(url: URL, in duration: TimeInterval)
 }
 
 class VoiceInputBar: UIView {
@@ -123,23 +123,16 @@ extension VoiceInputBar: AudioRecordUtilsDelegate {
     }
     
     func recodedDuration(time interal: TimeInterval) {
-        self.durationLabel.text = convertTimeIntervalToMinutesAndSeconds(timeInterval: interal)
+        self.durationLabel.text = interal.formatSeconds
     }
     
     func requestRecordPermissionIsFalse() {
         self.removeFromSuperview()
     }
     
-    func recordedVoice(url: URL) {
+    func recordedVoice(url: URL, in duration: TimeInterval) {
         self.removeFromSuperview()
-        self.delegate?.recordedVoice(url: url)
-    }
-    
-    func convertTimeIntervalToMinutesAndSeconds(timeInterval: TimeInterval) -> String {
-        let totalSeconds = Int(timeInterval)
-        let minutes = totalSeconds / 60
-        let remainingSeconds = totalSeconds % 60
-        return "\(minutes):\(String(format: "%02d", remainingSeconds))"
+        self.delegate?.recordedVoice(url: url, in: duration)
     }
 }
 

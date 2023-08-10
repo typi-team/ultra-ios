@@ -26,18 +26,7 @@ class AudioVisualizerView: UIView {
     
     
     func visualizeAudio(withPath audioFileURL: URL) {
-        do {
-            let audioFile = try AVAudioFile(forReading: audioFileURL)
-            let buffer = AVAudioPCMBuffer(pcmFormat: audioFile.processingFormat, frameCapacity: AVAudioFrameCount(audioFile.length))
-            try audioFile.read(into: buffer!)
-            
-            for frame in 0..<Int(buffer!.frameLength) {
-                let value = buffer!.floatChannelData!.pointee[frame]
-                appendWave(value: value)
-            }
-        } catch {
-            print("Error reading audio file: \(error.localizedDescription)")
-        }
+        
     }
     
     func appendWave(value: Float) {
@@ -118,8 +107,8 @@ private extension AudioVisualizerView {
     }
 
     func setupView() {
-        self.backgroundColor = .black
         self.clipsToBounds = true
+        self.backgroundColor = .clear
         self.waveformLayer = createWaveformLayer(position: CGPoint(x: frame.width / 2, y: frame.height / 2), width: frame.width)
         self.layer.addSublayer(waveformLayer)
     }
