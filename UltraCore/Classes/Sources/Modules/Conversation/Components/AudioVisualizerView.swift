@@ -9,6 +9,7 @@ import AVFoundation
 
 class AudioVisualizerView: UIView {
     
+    private var wavePowers: [Float] = []
     private var waveformLayer: CAShapeLayer!
     fileprivate var internalLineWidth: CGFloat = 2.0
     fileprivate var internalLineSeperation: CGFloat = 1.0
@@ -39,14 +40,11 @@ class AudioVisualizerView: UIView {
         }
     }
     
-    private var wavePowers: [Float] = []
-    
     func appendWave(value: Float) {
         self.wavePowers.append(value)
         self.updateWaveform(wavePowers: convertArray(wavePowers,
                                                      fromRange: -160.0...0.0,
                                                      toRange: 0.0...21.0))
-        print(wavePowers.count)
     }
     
     func clearWaves() {

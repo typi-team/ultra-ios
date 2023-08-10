@@ -455,7 +455,11 @@ extension ConversationViewController {
                 cell.setup(message: message)
                 return cell
             }
-        case .audio(_), .voice:
+        case .voice:
+            let cell: BaseMessageCell = tableView.dequeueCell()
+            cell.setup(message: message)
+            return cell
+        case .audio(_):
             let cell: BaseMessageCell = tableView.dequeueCell()
             cell.setup(message: message)
             return cell
@@ -527,12 +531,9 @@ extension ConversationViewController: UIDocumentPickerDelegate {
 }
 
 extension ConversationViewController: VoiceInputBarDelegate {
-    func cancelVoiceRecording() {
-        self.voiceInputBar.removeFromSuperview()
-    }
-    
     func recordedVoice(url: URL) {
-        self.voiceInputBar.removeFromSuperview()
+        guard let data = try? Data(contentsOf: url) else { return }
+        self.presenter?.upload(file: FileUpload(url: nil, data: data, mime: "audio/mp4", width: 0, height: 0))
     }
 }
 

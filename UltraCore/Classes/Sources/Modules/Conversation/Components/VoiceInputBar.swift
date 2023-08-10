@@ -8,7 +8,6 @@
 import Foundation
 
 protocol VoiceInputBarDelegate: AnyObject {
-    func cancelVoiceRecording()
     func recordedVoice(url: URL)
 }
 
@@ -31,7 +30,7 @@ class VoiceInputBar: UIView {
         $0.tintColor = self.voiceInputBarConfig.removeButtonBackground.color
         $0.setImage(.named("conversation_voice_delete_icon"), for: .normal)
         $0.addAction {[weak self] in
-            self?.delegate?.cancelVoiceRecording()
+            self?.removeFromSuperview()
         }
     })
     
@@ -109,6 +108,12 @@ class VoiceInputBar: UIView {
             make.bottom.equalToSuperview().offset(-(kLowPadding - 2))
         }
     }
+    
+    override func removeFromSuperview() {
+        super.removeFromSuperview()
+        self.waveView.clearWaves()
+        self.durationLabel.text = 0.00.description
+    }
 }
 
 
@@ -122,21 +127,20 @@ extension VoiceInputBar: AudioRecordUtilsDelegate {
     }
     
     func requestRecordPermissionIsFalse() {
-        self.delegate?.cancelVoiceRecording()
+        self.removeFromSuperview()
     }
     
     func recordedVoice(url: URL) {
-        self.delegate?.cancelVoiceRecording()
+        self.removeFromSuperview()
+        self.delegate?.recordedVoice(url: url)
     }
     
     func convertTimeIntervalToMinutesAndSeconds(timeInterval: TimeInterval) -> String {
         let totalSeconds = Int(timeInterval)
         let minutes = totalSeconds / 60
         let remainingSeconds = totalSeconds % 60
-        
         return "\(minutes):\(String(format: "%02d", remainingSeconds))"
     }
-
 }
 
 private extension VoiceInputBar {
@@ -146,12 +150,11 @@ private extension VoiceInputBar {
 
     @objc func stopRecording() {
         self.audioRecordUtils.stopRecording()
-        self.waveView.clearWaves()
+        self.removeFromSuperview()
     }
 
     @objc func cancelRecording() {
         self.audioRecordUtils.cancelRecording()
-        self.delegate?.cancelVoiceRecording()
-        self.waveView.clearWaves()
+        self.removeFromSuperview()
     }
 }
