@@ -270,6 +270,7 @@ extension ConversationViewController: MessageInputBarDelegate {
         self.voiceInputBar.snp.makeConstraints({make in
             make.edges.equalTo(self.messageInputBar)
         })
+        self.voiceInputBar.setActiveRecord()
     }
     
     func message(text: String) {
@@ -542,7 +543,7 @@ extension ConversationViewController: VoiceInputBarDelegate {
     func recordedVoice(url: URL, in duration: TimeInterval) {
         guard duration > 2,
               let data = try? Data(contentsOf: url) else { return }
-        self.presenter?.upload(file: FileUpload(url: nil, data: data, mime: "audio/mp3", width: 0, height: 0, duration: duration))
+        self.presenter?.upload(file: FileUpload(url: nil, data: data, mime: "audio/wav", width: 0, height: 0, duration: duration))
     }
 }
 

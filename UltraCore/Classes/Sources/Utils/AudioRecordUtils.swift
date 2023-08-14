@@ -43,9 +43,9 @@ class AudioRecordUtils: NSObject {
     // MARK: - Audio Recording
     
     func setupAudioRecorder() throws {
-        guard let audioFilename = FileManager.default
-            .urls(for: .documentDirectory, in: .userDomainMask).first?
-            .appendingPathComponent("voice_\(Date().nanosec).wav") else { return }
+        let audioFilename = FileManager.default
+            .temporaryDirectory
+            .appendingPathComponent("voice_\(Date().nanosec).wav")
         self.audioURL = audioFilename
          
 

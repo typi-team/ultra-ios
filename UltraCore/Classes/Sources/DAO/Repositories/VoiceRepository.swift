@@ -42,15 +42,13 @@ class VoiceRepository: NSObject {
     func play(message: Message) {
         guard let soundURL = self.mediaUtils.mediaURL(from: message) else { return }
         do {
-            self.timer?.invalidate()
-            self.audioPlayer?.stop()
+            self.stop()
             try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
             try AVAudioSession.sharedInstance().setActive(true)
             let audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
             audioPlayer.prepareToPlay()
             audioPlayer.delegate = self
             audioPlayer.play()
-            print(audioPlayer.duration)
             
             self.timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(updateTime), userInfo: nil, repeats: true)
             self.audioPlayer = audioPlayer
@@ -77,7 +75,6 @@ extension VoiceRepository: AVAudioPlayerDelegate {
 private extension VoiceRepository {
     @objc func updateTime() {
         guard let currentTime = self.audioPlayer?.currentTime else { return }
-        PP.info(currentTime.description)
         try? self.currentVoice.value()?.currentTime = currentTime
         self.currentVoice.on(.next(try? self.currentVoice.value()))
     }

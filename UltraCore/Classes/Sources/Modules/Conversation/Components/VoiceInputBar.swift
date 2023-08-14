@@ -114,6 +114,16 @@ class VoiceInputBar: UIView {
         self.waveView.clearWaves()
         self.durationLabel.text = 0.00.description
     }
+    
+    func setActiveRecord() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: {
+            self.recordingButton.isHighlighted = true
+            self.recordingButton.sendActions(for: .touchDown)
+            self.recordingButton.becomeFirstResponder()
+            self.recordingButton.setNeedsFocusUpdate()
+            
+        })
+    }
 }
 
 

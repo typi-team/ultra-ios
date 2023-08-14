@@ -69,9 +69,9 @@ class MessageInputBar: UIView {
     private lazy var microButton: UIButton = .init {[weak self] button in
         guard let `self` = self else { return }
         button.setImage(self.kInputMicroImage, for: .normal)
-        button.addAction {
+        button.addAction(for: .touchDown, {
             self.delegate?.micro(isActivated: false)
-        }
+        })
     }
     
 //    MARK: Public properties
