@@ -44,7 +44,7 @@ class AudioRecordUtils: NSObject {
     // MARK: - Audio Recording
     
     func setupAudioRecorder() throws -> Bool {
-        try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
+        try AVAudioSession.sharedInstance().setCategory(.playAndRecord, mode: .default, options: [.mixWithOthers])
         try AVAudioSession.sharedInstance().setActive(true)
         
         let audioFilename = FileManager.default
