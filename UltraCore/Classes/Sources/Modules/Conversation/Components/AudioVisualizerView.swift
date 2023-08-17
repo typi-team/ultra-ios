@@ -68,7 +68,7 @@ private extension AudioVisualizerView {
 
         let columnLayer = CAShapeLayer()
         columnLayer.path = columnPath.cgPath
-        columnLayer.fillColor = UIColor.blue.cgColor
+        columnLayer.fillColor = UIColor.green500.cgColor
 
         let columnX = position.x - width / 2.0
         let columnY = position.y

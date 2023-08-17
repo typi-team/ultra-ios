@@ -30,16 +30,14 @@ class VoiceInputBar: UIView {
         $0.tintColor = self.voiceInputBarConfig.removeButtonBackground.color
         $0.setImage(.named("conversation_voice_delete_icon"), for: .normal)
         $0.addAction {[weak self] in
-            self?.removeFromSuperview()
+            self?.cancelRecording()
         }
     })
     
     fileprivate lazy var recordingButton: UIButton = .init({
         $0.tintColor = self.voiceInputBarConfig.recordBackground.color
-        $0.setImage(.named("conversation_voice_recording_icon"), for: .normal)
-        $0.addTarget(self, action: #selector(startRecording), for: .touchDown)
+        $0.setImage(.named("conversation_send"), for: .normal)
         $0.addTarget(self, action: #selector(stopRecording), for: .touchUpInside)
-        $0.addTarget(self, action: #selector(cancelRecording), for: .touchUpOutside)
     })
     
     fileprivate lazy var waveView: AudioVisualizerView = .init({
@@ -116,13 +114,7 @@ class VoiceInputBar: UIView {
     }
     
     func setActiveRecord() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: {
-            self.recordingButton.isHighlighted = true
-            self.recordingButton.sendActions(for: .touchDown)
-            self.recordingButton.becomeFirstResponder()
-            self.recordingButton.setNeedsFocusUpdate()
-            
-        })
+        self.audioRecordUtils.requestRecordPermission()
     }
 }
 
@@ -147,10 +139,6 @@ extension VoiceInputBar: AudioRecordUtilsDelegate {
 }
 
 private extension VoiceInputBar {
-    @objc func startRecording() {
-        self.audioRecordUtils.requestRecordPermission()
-    }
-
     @objc func stopRecording() {
         self.audioRecordUtils.stopRecording()
         self.removeFromSuperview()
