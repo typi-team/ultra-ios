@@ -15,6 +15,8 @@ class ViewController: UITabBarController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        UltraCoreSettings.delegate = self
         self.view.backgroundColor = .lightGray
         self.tabBar.tintColor = UIColor(red: 34.0 / 255.0, green: 197.0 / 255.0, blue: 94.0 / 255.0, alpha: 1.0)
         self.setupVCs()
@@ -122,4 +124,20 @@ class ViewController: UITabBarController {
         task.resume()
     }
 
+}
+
+extension ViewController: UltraCoreSettingsDelegate {
+
+    func serverConfig() -> ServerConfigurationProtocol? {
+        return nil
+    }
+    
+    func moneyViewController(callback: @escaping MoneyCallback) -> UIViewController? {
+        return nil
+    }
+}
+
+struct ServerConfig: ServerConfigurationProtocol {
+    var portOfServer: Int = 443
+    var pathToServer: String = "ultra-dev.typi.team"
 }

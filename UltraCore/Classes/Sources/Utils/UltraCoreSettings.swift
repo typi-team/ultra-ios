@@ -7,14 +7,21 @@
 import RxSwift
 import UIKit
 
+public protocol UltraCoreSettingsDelegate: AnyObject {
+    func moneyViewController(callback: @escaping MoneyCallback) -> UIViewController?
+    func serverConfig() -> ServerConfigurationProtocol?
+}
+
 public class UltraCoreSettings {
+    
+    public static weak var delegate: UltraCoreSettingsDelegate?
+    
     static func setupAppearance() {
         UIBarButtonItem.appearance().tintColor = .green500
         UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.font: UIFont.defaultRegularHeadline]
         UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedString.Key.foregroundColor: UIColor.clear], for: .normal)
         UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedString.Key.foregroundColor: UIColor.clear], for: UIControl.State.highlighted)
     }
-    
 }
 
 public extension UltraCoreSettings {
@@ -27,19 +34,10 @@ public extension UltraCoreSettings {
         print(MessageStrings.allCases.map({"\"\($0.descrition)\" = \"\($0.localized)\";"}).joined(separator: "\n"))
         print("=================             =======================")
     }
-    
-     static func set(server config: ServerConfigurationProtocol?) {
-         AppSettingsImpl.shared.serverConfig = config ?? ServerConfiguration()
-     }
 
      static func entrySignUpViewController() -> UIViewController {
          setupAppearance()
          return SignUpWireframe().viewController
-     }
-
-     static func entryViewController() -> UIViewController {
-         setupAppearance()
-         return AppSettingsImpl.shared.appStore.isAuthed ? ConversationsWireframe().viewController : SignUpWireframe().viewController
      }
 
      static func entryConversationsViewController() -> UIViewController {

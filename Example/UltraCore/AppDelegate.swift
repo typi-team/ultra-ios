@@ -18,15 +18,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         FirebaseApp.configure()
-        UltraCoreSettings.set(server: ServerConfig())
         self.setupNotificationSettings(application: application)
         return true
     }
-}
-
-struct ServerConfig: ServerConfigurationProtocol {
-    var portOfServer: Int = 443
-    var pathToServer: String = "ultra-dev.typi.team"
 }
 
 extension AppDelegate {
