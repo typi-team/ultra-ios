@@ -15,7 +15,7 @@ protocol ContactsRepository {
     func contacts() -> Observable<[Contact]>
     func contact(id: String) -> DBContact?
     func save(contact: DBContact) -> Single<Void>
-    func save(contacts: ContactImportResponse) -> Single<Void>
+    func save(contacts: [IContact]) -> Single<Void>
     func delete(contact: DBContact) -> Single<Void>
 }
 
@@ -40,14 +40,13 @@ class ContactsRepositoryImpl: ContactsRepository {
         return self.contactDBService.save(contact: contact)
     }
     
-    func save(contacts: ContactImportResponse) -> Single<Void> {
-        return self.contactDBService.save(contacts: contacts)
-    }
-    
     func delete(contact: DBContact) -> Single<Void> {
         return self.contactDBService.delete(contact: contact)
     }
     
+    func save(contacts: [IContact]) -> Single<Void> {
+        return self.contactDBService.save(contacts: contacts)
+    }
 }
 
 extension Realm {

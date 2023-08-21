@@ -9,6 +9,7 @@ import UIKit
 
 public protocol UltraCoreSettingsDelegate: AnyObject {
     func moneyViewController(callback: @escaping MoneyCallback) -> UIViewController?
+    func contactsViewController(callback: @escaping ContactsCallback) -> UIViewController?
     func serverConfig() -> ServerConfigurationProtocol?
 }
 
@@ -42,7 +43,7 @@ public extension UltraCoreSettings {
 
      static func entryConversationsViewController() -> UIViewController {
          setupAppearance()
-         return ConversationsWireframe().viewController
+         return ConversationsWireframe(appDelegate: UltraCoreSettings.delegate).viewController
      }
 
      static func update(sid token: String, with callback: @escaping (Error?) -> Void) {

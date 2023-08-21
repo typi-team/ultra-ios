@@ -127,6 +127,9 @@ class ViewController: UITabBarController {
 }
 
 extension ViewController: UltraCoreSettingsDelegate {
+    func contactsViewController(callback: @escaping ContactsCallback) -> UIViewController? {
+        return nil
+    }
 
     func serverConfig() -> ServerConfigurationProtocol? {
         return nil

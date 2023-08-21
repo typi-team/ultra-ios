@@ -18,6 +18,8 @@ final class ContactsBookPresenter: BasePresenter {
     lazy var contacts: Observable<[Contact]> = contactsRepository.contacts()
 
     // MARK: - Private properties -
+    
+    fileprivate let contactsCallback: ContactsCallback
 
     fileprivate let mediaUtils = MediaUtils()
     fileprivate let appStore: AppSettingsStore
@@ -34,6 +36,7 @@ final class ContactsBookPresenter: BasePresenter {
          view: ContactsBookViewInterface,
          contactsRepository: ContactsRepository,
          wireframe: ContactsBookWireframeInterface,
+         contactsCallback: @escaping ContactsCallback,
          contactImageDownloadInteractor: UseCase<Contact, Void>,
          syncContact: UseCase<ContactsImportRequest, ContactImportResponse>,
          bookContacts: UseCase<Void, ContactsBookInteractor.Contacts>) {
@@ -42,6 +45,7 @@ final class ContactsBookPresenter: BasePresenter {
         self.wireframe = wireframe
         self.syncContact = syncContact
         self.bookContacts = bookContacts
+        self.contactsCallback = contactsCallback
         self.contactsRepository = contactsRepository
         self.contactImageDownloadInteractor = contactImageDownloadInteractor
     }
@@ -66,9 +70,10 @@ extension ContactsBookPresenter: ContactsBookPresenterInterface {
                 request.contacts = result.contacts
                 return self.syncContact.executeSingle(params: request)
             })
-            .flatMap({ [weak self] response -> Single<[Contact]> in
-                guard let `self` = self else { throw NSError.selfIsNill }
-                return self.contactsRepository.save(contacts: response).map({ response.contacts })
+            .map({ $0.contacts })
+            .do(onSuccess: { [weak self] response in
+                guard let `self` = self else { return }
+                self.contactsCallback(response)
             })
             .asObservable()
             .flatMap({ contacts -> Observable<[Contact]> in

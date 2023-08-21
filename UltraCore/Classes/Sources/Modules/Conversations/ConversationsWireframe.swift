@@ -13,23 +13,28 @@ import UIKit
 final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
 
     // MARK: - Private properties -
+    fileprivate weak var delegate: UltraCoreSettingsDelegate?
 
     // MARK: - Module setup -
 
-    init() {
+    init(appDelegate: UltraCoreSettingsDelegate?) {
+        self.delegate = appDelegate
         let moduleViewController = ConversationsViewController()
         super.init(viewController: moduleViewController)
 
         let deleteConversationInteractor = DeleteConversationInteractor(conversationDBService: appSettings.conversationDBService,
                                                                         conversationService: appSettings.conversationService)
+        
+        let retrieveContactStatusesInteractor = RetrieveContactStatusesInteractor.init(appStore: appSettings.appStore,
+                                                                                       contactDBService: appSettings.contactDBService,
+                                                                                       contactService: appSettings.contactsService)
         let presenter = ConversationsPresenter(view: moduleViewController,
                                                updateRepository: appSettings.updateRepository,
                                                messageRepository: appSettings.messageRespository,
+                                               contactsRepository: appSettings.contactRepository,
                                                wireframe: self,
                                                conversationRepository: appSettings.conversationRespository,
-                                               retrieveContactStatusesInteractor: RetrieveContactStatusesInteractor.init(appStore: appSettings.appStore,
-                                                                                                                         contactDBService: appSettings.contactDBService,
-                                                                                                                         contactService: appSettings.contactsService),
+                                               retrieveContactStatusesInteractor: retrieveContactStatusesInteractor,
                                                deleteConversationInteractor: deleteConversationInteractor,
                                                userStatusUpdateInteractor: UpdateOnlineInteractor(userService: appSettings.userService))
         moduleViewController.presenter = presenter
@@ -40,8 +45,12 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
 
 extension ConversationsWireframe: ConversationsWireframeInterface {
     
-    func navigateToContacts() {
-        self.navigationController?.presentWireframeWithNavigation(ContactsBookWireframe())
+    func navigateToContacts(contactsCallback: @escaping ContactsCallback) {
+        if let contactsViewController = self.delegate?.contactsViewController(callback: contactsCallback) {
+            self.navigationController?.pushViewController(contactsViewController, animated: true)
+        }else {
+            self.navigationController?.presentWireframeWithNavigation(ContactsBookWireframe(contactsCallback: contactsCallback))
+        }
     }
     
     func navigateToConversation(with data: Conversation) {

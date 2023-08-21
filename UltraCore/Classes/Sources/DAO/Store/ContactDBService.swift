@@ -14,30 +14,6 @@ class ContactDBService {
         self.userID = userID
     }
     
-    func save(contacts: ContactImportResponse) -> Single<Void> {
-
-        return Single.create {[weak self] observer -> Disposable in
-            guard let `self` = self else { return Disposables.create() }
-            do {
-                
-                let dbContacts = contacts.contacts.map { contact -> DBContact in
-                    return DBContact.init(from: contact,user: self.userID)
-                }
-                
-                let realm = Realm.myRealm()
-                try realm.write {
-                    dbContacts.forEach {
-                        realm.create(DBContact.self, value: $0, update: .all)
-                    }
-                }
-                observer(.success(()))
-            } catch {
-                observer(.failure(error))
-            }
-            return Disposables.create()
-        }
-    }
-    
     func contacts() -> Observable<[Contact]> {
         return Observable.create { observer in
             let realm = Realm.myRealm()
@@ -60,6 +36,29 @@ class ContactDBService {
     
     func contact(id: String) -> DBContact? {
         return Realm.myRealm().object(ofType: DBContact.self, forPrimaryKey: id)
+    }
+    
+    func save(contacts: [IContact]) -> Single<Void> {
+        return Single.create { [weak self] observer -> Disposable in
+            guard let `self` = self else { return Disposables.create() }
+            do {
+                let dbContacts = contacts.compactMap({$0 as? Contact})
+                    .map { contact -> DBContact in
+                    DBContact(from: contact, user: self.userID)
+                }
+
+                let realm = Realm.myRealm()
+                try realm.write {
+                    dbContacts.forEach {
+                        realm.create(DBContact.self, value: $0, update: .all)
+                    }
+                }
+                observer(.success(()))
+            } catch {
+                observer(.failure(error))
+            }
+            return Disposables.create()
+        }
     }
     
     func save( contact: DBContact) -> Single<Void> {
