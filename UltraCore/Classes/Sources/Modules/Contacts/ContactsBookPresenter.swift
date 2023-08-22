@@ -90,3 +90,4 @@ extension ContactsBookPresenter: ContactsBookPresenterInterface {
             .disposed(by: self.disposeBag)
     }
 }
+extension Contact: IContact {}

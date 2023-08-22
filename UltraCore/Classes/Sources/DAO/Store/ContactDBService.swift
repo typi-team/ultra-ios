@@ -42,16 +42,13 @@ class ContactDBService {
         return Single.create { [weak self] observer -> Disposable in
             guard let `self` = self else { return Disposables.create() }
             do {
-                let dbContacts = contacts.compactMap({$0 as? Contact})
-                    .map { contact -> DBContact in
-                    DBContact(from: contact, user: self.userID)
-                }
 
                 let realm = Realm.myRealm()
                 try realm.write {
-                    dbContacts.forEach {
-                        realm.create(DBContact.self, value: $0, update: .all)
-                    }
+                    contacts.map({DBContact.init(inner: $0)})
+                        .forEach {
+                            realm.create(DBContact.self, value: $0, update: .all)
+                        }
                 }
                 observer(.success(()))
             } catch {

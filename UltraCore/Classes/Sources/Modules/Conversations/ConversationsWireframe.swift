@@ -44,11 +44,10 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
 // MARK: - Extensions -
 
 extension ConversationsWireframe: ConversationsWireframeInterface {
-    
-    func navigateToContacts(contactsCallback: @escaping ContactsCallback) {
-        if let contactsViewController = self.delegate?.contactsViewController(callback: contactsCallback) {
+    func navigateToContacts(contactsCallback: @escaping ContactsCallback, userID: @escaping UserIDCallback) {
+        if let contactsViewController = self.delegate?.contactsViewController(callback: contactsCallback, userCallback: userID) {
             self.navigationController?.pushViewController(contactsViewController, animated: true)
-        }else {
+        } else {
             self.navigationController?.presentWireframeWithNavigation(ContactsBookWireframe(contactsCallback: contactsCallback))
         }
     }

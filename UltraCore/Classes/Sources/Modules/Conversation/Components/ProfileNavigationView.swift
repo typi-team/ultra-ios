@@ -80,10 +80,10 @@ class ProfileNavigationView: UIView {
             self.avatarImageView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
         }
         
-        if let contact = conversation.peer {
-            self.sublineText.text = contact.status.displayText
-            self.sublineText.textColor = contact.status.color
-        }
+//        if let contact = conversation.peer {
+//            self.sublineText.text = contact.status.displayText
+//            self.sublineText.textColor = contact.status.color
+//        }
     }
     
     func setup(user typing: UserTypingWithDate) {

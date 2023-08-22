@@ -14,8 +14,5 @@ public protocol IContact {
     var firstname: String { get set }
 }
 
-extension Contact: IContact {}
-
+public typealias UserIDCallback = (String) -> Void
 public typealias ContactsCallback = ([IContact]) -> Void
-
-

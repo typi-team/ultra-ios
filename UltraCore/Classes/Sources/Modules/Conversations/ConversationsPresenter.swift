@@ -110,6 +110,11 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
                 .observe(on: ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe()
                 .disposed(by: disposeBag)
+        }, userID: {[weak self] userID in
+            guard let `self` = self, let dbContact = self.contactsRepository.contact(id: userID) else { return }
+            DispatchQueue.main.async {
+                self.wireframe.navigateToConversation(with: ConversationImpl(contact: dbContact))
+            }
         })
     }
 }

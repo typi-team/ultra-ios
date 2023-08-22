@@ -14,7 +14,7 @@ import RxSwift
 
 protocol ConversationsWireframeInterface: WireframeInterface {
     func navigateToConversation(with data: Conversation)
-    func navigateToContacts(contactsCallback: @escaping ContactsCallback)
+    func navigateToContacts(contactsCallback: @escaping ContactsCallback, userID: @escaping UserIDCallback)
 }
 
 protocol ConversationsViewInterface: ViewInterface {
