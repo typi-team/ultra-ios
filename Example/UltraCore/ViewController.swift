@@ -128,11 +128,7 @@ class ViewController: UITabBarController {
 
 extension ViewController: UltraCoreSettingsDelegate {
     func contactsViewController(callback: @escaping UltraCore.ContactsCallback, userCallback: @escaping UltraCore.UserIDCallback) -> UIViewController? {
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: {
-            userCallback("umy2ejWfmIsnE")
-        })
-        return UIViewController()
+       return nil
     }
 
     func serverConfig() -> ServerConfigurationProtocol? {
