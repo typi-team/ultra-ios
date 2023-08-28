@@ -133,6 +133,13 @@ extension MimeType {
         }
         return UTTypeConformsTo(uti, kUTTypeMovie)
     }
+    
+    var containsVoice: Bool {
+        guard let uti = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, self as CFString, nil)?.takeRetainedValue() else {
+            return false
+        }
+        return UTTypeConformsTo(uti, kUTTypeAudio)
+    }
 }
 
 extension Message {
@@ -143,6 +150,8 @@ extension Message {
             return video.originalVideoFileIdWithExtension
         } else if hasFile {
             return file.originalFileIdWithExtension
+        } else if hasVoice {
+            return voice.originalFileIdWithExtension
         } else {
             return nil
         }
@@ -157,6 +166,12 @@ extension VideoMessage {
     
     var previewVideoFileIdWithExtension: String { "preview_video_\(fileID).png" }
     var originalVideoFileIdWithExtension: String { "original_video_\(fileID).\(extensions)" }
+}
+
+extension VoiceMessage {
+    var extensions:String { mimeType.components(separatedBy: "/").last ?? ""}
+    var originalVoiceFileId: String { "original_voice\(fileID)" }
+    var originalFileIdWithExtension: String { "\(originalVoiceFileId).\(extensions)" }
 }
 
 extension PhotoMessage {
@@ -188,6 +203,8 @@ extension Message {
     var hasFile: Bool { self.file.fileID != "" }
     var hasPhoto: Bool { self.photo.fileID != "" }
     var hasVideo: Bool { self.video.fileID != "" }
+    var hasVoice: Bool { self.voice.fileID != "" }
+    
     var fileID: String? {
         if hasPhoto {
             return photo.fileID
@@ -195,7 +212,9 @@ extension Message {
             return video.fileID
         } else if hasFile {
             return file.fileID
-        }else {
+        } else if hasVoice {
+            return voice.fileID
+        } else {
             return nil
         }
     }

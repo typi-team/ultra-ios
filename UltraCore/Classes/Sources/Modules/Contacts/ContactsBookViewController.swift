@@ -14,6 +14,20 @@ import RxSwift
 import RealmSwift
 import RxDataSources
 
+struct ContactSection {
+    var header: String
+    var items: [Contact]
+}
+
+extension ContactSection: SectionModelType {
+    typealias Item = Contact
+
+    init(original: ContactSection, items: [Contact]) {
+        self = original
+        self.items = items
+    }
+}
+
 final class ContactsBookViewController: BaseViewController<ContactsBookPresenterInterface> {
 
     // MARK: - Public properties -
@@ -26,11 +40,18 @@ final class ContactsBookViewController: BaseViewController<ContactsBookPresenter
         }
     }()
     
+    fileprivate let dataSource = RxTableViewSectionedReloadDataSource<ContactSection>(
+        configureCell: { dataSource, tableView, indexPath, item in
+            let cell: ContactCell = tableView.dequeueCell()
+            cell.setup(contact: item)
+            return cell
+        }, titleForHeaderInSection: { data, index in data[index].header })
+
     // MARK: - Lifecycle -
     
     override func setupViews() {
         super.setupViews()
-        self.navigationItem.title = "Новый чат"
+        self.navigationItem.title = ContactsStrings.newChat.localized
         self.navigationItem.rightBarButtonItem = .init(image: .named("icon_close"), style: .plain, target: self, action: #selector(close(_:)))
         
         self.view.addSubview(tableView)
@@ -44,7 +65,7 @@ final class ContactsBookViewController: BaseViewController<ContactsBookPresenter
         self.presenter?
             .contacts
             .debounce(.milliseconds(300), scheduler: MainScheduler.instance)
-            .do(onNext: {[weak self] contacts in
+            .do(onNext: { [weak self] contacts in
                 guard let `self` = self else { return }
                 if contacts.isEmpty && !AppHardwareUtils.checkPermissons() {
                     self.permission(is: true)
@@ -57,11 +78,13 @@ final class ContactsBookViewController: BaseViewController<ContactsBookPresenter
                     self.tableView.backgroundView = nil
                 }
             })
-            .bind(to: tableView.rx.items) { tableView, _, contact in
-                let cell: ContactCell = tableView.dequeueCell()
-                cell.setup(contact: contact)
-                return cell
-            }
+            .map({ contacts in
+                return Dictionary(grouping: contacts){ String($0.displaName.prefix(1)).uppercased()}
+                    .map { key, value in
+                        return ContactSection(header: key, items: value.sorted(by: { $0.displaName < $1.displaName }))
+                    }.sorted(by: { $0.header < $1.header })
+            })
+            .bind(to: tableView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
         
         self.tableView

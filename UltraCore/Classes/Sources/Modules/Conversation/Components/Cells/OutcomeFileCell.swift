@@ -15,8 +15,8 @@ class OutcomeFileCell : BaseMessageCell {
         $0.contentMode = .center
     })
     
-    fileprivate let moneyHeadlineLabel: RegularCallout = .init({ $0.text = "Деньги" })
-    fileprivate let moneyCaptionlabel: RegularFootnote = .init({ $0.text = "Файл" })
+    fileprivate let moneyHeadlineLabel: RegularCallout = .init({ $0.text = ConversationStrings.money.localized })
+    fileprivate let moneyCaptionlabel: RegularFootnote = .init({ $0.text = MessageStrings.fileWithoutSmile.localized })
     
     override func setupView() {
         super.setupView()

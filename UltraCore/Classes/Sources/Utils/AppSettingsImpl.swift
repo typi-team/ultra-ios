@@ -19,40 +19,25 @@ open class AppSettingsImpl: AppSettings  {
 
 //    MARK: Public properties
 
-    var serverConfig: ServerConfigurationProtocol?
+    lazy var serverConfig: ServerConfigurationProtocol = {
+        return UltraCoreSettings.delegate?.serverConfig() ?? ServerConfiguration()
+    }()
 
 //    MARK: Local Singletone properties
     lazy var mediaUtils: MediaUtils = .init()
     lazy var podAsset = PodAsset.bundle(forPod: "UltraCore")
     lazy var version: String = podAsset?.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.2"
     
-    lazy var channel: GRPCChannel = {
-        guard let serverConfig = self.serverConfig else {
-            fatalError("Init AppSettingsImpl.shared.serverConfig before call this config or set(server config: ServerConfigurationProtocol?) ")
-        }
+    lazy var channel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
+                                                                            port: serverConfig.portOfServer),
+                                                              transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
+    lazy var fileChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
+                                                                               port: serverConfig.portOfServer),
+                                                                 transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
 
-        return try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
-                                                       port: serverConfig.portOfServer),
-                                         transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
-    }()
-
-    lazy var fileChannel: GRPCChannel = {
-        guard let serverConfig = self.serverConfig else {
-            fatalError("Init AppSettingsImpl.shared.serverConfig before call this config or set(server config: ServerConfigurationProtocol?)")
-        }
-        return try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
-                                                       port: serverConfig.portOfServer),
-                                         transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
-    }()
-
-    lazy var updateChannel: GRPCChannel = {
-        guard let serverConfig = self.serverConfig else {
-            fatalError("Init AppSettingsImpl.shared.serverConfig before call this config or set(server config: ServerConfigurationProtocol?)")
-        }
-        return try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
-                                                       port: serverConfig.portOfServer),
-                                         transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
-    }()
+    lazy var updateChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
+                                                                                  port: serverConfig.portOfServer),
+                                                                    transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
 
 //    MARK: GRPC Services
     
@@ -74,6 +59,7 @@ open class AppSettingsImpl: AppSettings  {
 
 //    MARK: Repositories
 
+    lazy var voiceRepository: VoiceRepository = VoiceRepository.init(mediaUtils: mediaUtils)
     lazy var mediaRepository: MediaRepository = MediaRepositoryImpl(mediaUtils: mediaUtils,
                                                                     uploadFileInteractor: UploadFileInteractor(fileService: fileService),
                                                                     fileService: fileService,

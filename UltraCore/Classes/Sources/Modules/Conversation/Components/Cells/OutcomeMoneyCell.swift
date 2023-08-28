@@ -16,8 +16,8 @@ class OutcomeMoneyCell : BaseMessageCell {
     })
     
     fileprivate let moneyAmountLabel: RegularCallout = .init({ $0.text = "10.00₸" })
-    fileprivate let moneyHeadlineLabel: RegularCallout = .init({ $0.text = "Деньги" })
-    fileprivate let moneyCaptionlabel: RegularFootnote = .init({ $0.text = "Перевод" })
+    fileprivate let moneyHeadlineLabel: RegularCallout = .init({ $0.text = ConversationStrings.money.localized })
+    fileprivate let moneyCaptionlabel: RegularFootnote = .init({ $0.text = MessageStrings.moneyTransfer.localized })
     
     override func setupView() {
         super.setupView()

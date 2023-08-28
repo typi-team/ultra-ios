@@ -17,7 +17,7 @@ class AdditioanalController: BaseViewController<String> {
 
     fileprivate let headlineLabel: HeadlineBody = .init({
         $0.textAlignment = .left
-        $0.text = "Отправить"
+        $0.text = ConversationStrings.send.localized
     })
 
     fileprivate lazy var paymentButton: TextButton = .init({
@@ -60,8 +60,8 @@ class AdditioanalController: BaseViewController<String> {
         let smallFontAttributes: [NSAttributedString.Key: Any] = [.font: UIFont.defaultRegularFootnote,
                                                                   .foregroundColor: UIColor.gray500]
 
-        let boldText = "Внутри Банка"
-        let smallText = "Отправить клиенту FreedomBank"
+        let boldText = ConversationStrings.insideTheBank.localized
+        let smallText = ConversationStrings.sendToBankCustomer.localized
         let titleText = "\(boldText)\n\(smallText)"
 
         let attributedTitle = NSMutableAttributedString(string: titleText)

@@ -20,9 +20,9 @@ final class SignUpWireframe: BaseWireframe<SignUpViewController> {
         super.init(viewController: moduleViewController)
         let userIdInteractor = UserIdInteractorImpl.init(authService: appSettings.authService)
         let jwtInteractor = JWTTokenInteractorImpl.init(authService: appSettings.authService)
-        let presenter = SignUpPresenter(view: moduleViewController,
-                                        appSettingsStore: AppSettingsStoreImpl(),
-                                        wireframe: self, jwtInteractor: jwtInteractor, userIdInteractor: userIdInteractor)
+//        let presenter = SignUpPresenter(view: moduleViewController,
+//                                        appSettingsStore: AppSettingsStoreImpl(),
+//                                        wireframe: self, jwtInteractor: jwtInteractor, userIdInteractor: userIdInteractor)
         let ffPresenter = FFSignUpPresenter.init(view: moduleViewController, wireframe: self)
         moduleViewController.presenter = ffPresenter
         
@@ -32,7 +32,7 @@ final class SignUpWireframe: BaseWireframe<SignUpViewController> {
 // MARK: - Extensions -
 extension SignUpWireframe: SignUpWireframeInterface {
     func navigateToContacts() {
-        let wireframe = ConversationsWireframe()
+        let wireframe = ConversationsWireframe(appDelegate: UltraCoreSettings.delegate)
         let presentController = wireframe.viewController
         self.navigationController?.pushViewController(presentController, animated: true)
         self.navigationController?.viewControllers.removeAll(where: {$0 == self.viewController})

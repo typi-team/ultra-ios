@@ -16,21 +16,24 @@ final class ContactsBookWireframe: BaseWireframe<ContactsBookViewController> {
 
     // MARK: - Module setup -
 
-    init() {
+    init(contactsCallback: @escaping ContactsCallback) {
         let moduleViewController = ContactsBookViewController()
+
         super.init(viewController: moduleViewController)
-        
-//        let imageDownloadInteractor = ImageDownloadInteractor.init(client: appSettings.fileService)
-        let syncInteractor = SyncContactsInteractor.init(contactsService: appSettings.contactsService)
+
+        let syncInteractor = SyncContactsInteractor(contactsService: appSettings.contactsService)
+        let contactImageInteractor = ContactDownloadInteractor(mediaUtils: MediaUtils(), appStore: appSettings.appStore)
+
         let presenter = ContactsBookPresenter(appStore: appSettings.appStore,
-                                              view: moduleViewController, contactsRepository: appSettings.contactRepository,
+                                              view: moduleViewController,
+                                              contactsRepository: appSettings.contactRepository,
                                               wireframe: self,
-                                              contactImageDownloadInteractor: ContactDownloadInteractor.init(mediaUtils: MediaUtils(), appStore: appSettings.appStore),
+                                              contactsCallback: contactsCallback,
+                                              contactImageDownloadInteractor: contactImageInteractor,
                                               syncContact: syncInteractor,
                                               bookContacts: ContactsBookInteractor())
         moduleViewController.presenter = presenter
     }
-
 }
 
 // MARK: - Extensions -

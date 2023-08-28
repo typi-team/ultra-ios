@@ -15,6 +15,7 @@
 		607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDE1AFB9204008FA782 /* LaunchScreen.xib */; };
 		607FACEC1AFB9204008FA782 /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACEB1AFB9204008FA782 /* Tests.swift */; };
 		75794F8D2A4EB6060035EE06 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75794F8C2A4EB6060035EE06 /* GoogleService-Info.plist */; };
+		75C7BEEE2A80CF5300BB2A51 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75C7BEF02A80CF5300BB2A51 /* Localizable.strings */; };
 		D217EB00A7E40F89662286C7 /* Pods_UltraCore_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CA35F0593F1D1D9C631C98AB /* Pods_UltraCore_Example.framework */; };
 /* End PBXBuildFile section */
 
@@ -46,6 +47,8 @@
 		75479E1029EE9E3400B8906B /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		75794F8C2A4EB6060035EE06 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		75794F8E2A4ECD5E0035EE06 /* UltraCore_Example.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = UltraCore_Example.entitlements; sourceTree = "<group>"; };
+		75C7BEEF2A80CF5300BB2A51 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		75CF6D0A2A82029F0072EB6E /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		7F2E9F2B595B90FFFE9063BD /* Pods_UltraCore_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_UltraCore_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		9ACC75A95FCD6143B50737AA /* Pods-UltraCore_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UltraCore_Example.debug.xcconfig"; path = "Target Support Files/Pods-UltraCore_Example/Pods-UltraCore_Example.debug.xcconfig"; sourceTree = "<group>"; };
 		BD196FB9E8A2A9A31AABF2DB /* Pods-UltraCore_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UltraCore_Example.release.xcconfig"; path = "Target Support Files/Pods-UltraCore_Example/Pods-UltraCore_Example.release.xcconfig"; sourceTree = "<group>"; };
@@ -106,6 +109,7 @@
 				607FACDC1AFB9204008FA782 /* Images.xcassets */,
 				607FACDE1AFB9204008FA782 /* LaunchScreen.xib */,
 				607FACD31AFB9204008FA782 /* Supporting Files */,
+				75C7BEF02A80CF5300BB2A51 /* Localizable.strings */,
 			);
 			name = "Example for UltraCore";
 			path = UltraCore;
@@ -257,6 +261,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				75C7BEEE2A80CF5300BB2A51 /* Localizable.strings in Resources */,
 				607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */,
 				75794F8D2A4EB6060035EE06 /* GoogleService-Info.plist in Resources */,
 				607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */,
@@ -475,6 +480,15 @@
 				75479E1029EE9E3400B8906B /* ru */,
 			);
 			name = LaunchScreen.xib;
+			sourceTree = "<group>";
+		};
+		75C7BEF02A80CF5300BB2A51 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				75C7BEEF2A80CF5300BB2A51 /* en */,
+				75CF6D0A2A82029F0072EB6E /* ru */,
+			);
+			name = Localizable.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

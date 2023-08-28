@@ -7,34 +7,44 @@
 import RxSwift
 import UIKit
 
+public protocol UltraCoreSettingsDelegate: AnyObject {
+    func serverConfig() -> ServerConfigurationProtocol?
+    func moneyViewController(callback: @escaping MoneyCallback) -> UIViewController?
+    func contactsViewController(callback: @escaping ContactsCallback,
+                                userCallback: @escaping UserIDCallback) -> UIViewController?
+}
+
 public class UltraCoreSettings {
+    
+    public static weak var delegate: UltraCoreSettingsDelegate?
+    
     static func setupAppearance() {
         UIBarButtonItem.appearance().tintColor = .green500
         UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.font: UIFont.defaultRegularHeadline]
         UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedString.Key.foregroundColor: UIColor.clear], for: .normal)
         UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedString.Key.foregroundColor: UIColor.clear], for: UIControl.State.highlighted)
     }
-    
 }
 
 public extension UltraCoreSettings {
-     static func set(server config: ServerConfigurationProtocol?) {
-         AppSettingsImpl.shared.serverConfig = config ?? ServerConfiguration()
-     }
+    
+    static func printAllLocalizableStrings() {
+        print("================= Localizable =======================")
+        print(ConversationsStrings.allCases.map({"\"\($0.descrition)\" = \"\($0.localized)\";"}).joined(separator: "\n"))
+        print(ContactsStrings.allCases.map({"\"\($0.descrition)\" = \"\($0.localized)\";"}).joined(separator: "\n"))
+        print(ConversationStrings.allCases.map({"\"\($0.descrition)\" = \"\($0.localized)\";"}).joined(separator: "\n"))
+        print(MessageStrings.allCases.map({"\"\($0.descrition)\" = \"\($0.localized)\";"}).joined(separator: "\n"))
+        print("=================             =======================")
+    }
 
      static func entrySignUpViewController() -> UIViewController {
          setupAppearance()
          return SignUpWireframe().viewController
      }
 
-     static func entryViewController() -> UIViewController {
-         setupAppearance()
-         return AppSettingsImpl.shared.appStore.isAuthed ? ConversationsWireframe().viewController : SignUpWireframe().viewController
-     }
-
      static func entryConversationsViewController() -> UIViewController {
          setupAppearance()
-         return ConversationsWireframe().viewController
+         return ConversationsWireframe(appDelegate: UltraCoreSettings.delegate).viewController
      }
 
      static func update(sid token: String, with callback: @escaping (Error?) -> Void) {

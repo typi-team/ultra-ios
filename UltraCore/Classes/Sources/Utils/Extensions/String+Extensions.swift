@@ -21,4 +21,6 @@ extension String {
     var isValidPhone: Bool {
         return self.starts(with: "+7") && count == 12
     }
+    
+    var localized: String { NSLocalizedString(self, comment: self) }
 }

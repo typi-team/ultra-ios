@@ -28,6 +28,7 @@ class MediaRepositoryImpl {
     fileprivate let uploadFileInteractor: UseCase<[FileChunk], Void>
     fileprivate let createFileSpaceInteractor: UseCase<(data: Data, extens: String), [FileChunk]>
     
+    var currentVoice: BehaviorSubject<[VoiceMessage]> = .init(value: [])
     var uploadingMedias: BehaviorSubject<[FileDownloadRequest]> = .init(value: [])
     var downloadingImages: BehaviorSubject<[FileDownloadRequest]> = .init(value: [])
     
@@ -62,7 +63,9 @@ extension MediaRepositoryImpl: MediaRepository {
             return self.uploadImage(by: file, in: conversation)
         } else if file.mime.containsVideo {
             return self.uploadVideo(by: file, in: conversation)
-        } else {
+        } else if file.mime.containsAudio{
+            return self.uploadVoice(by: file, in: conversation)
+        }else {
             return self.uploadFile(by: file, in: conversation)
         }
     }
@@ -109,7 +112,15 @@ extension MediaRepositoryImpl: MediaRepository {
                     switch result {
                     case .success:
                         do {
-                            if message.hasPhoto {
+                            if message.hasVoice {
+                                try self.mediaUtils.write(data, file: message.voice.originalVoiceFileId, and: message.voice.extensions)
+                                params.fromChunkNumber = params.toChunkNumber
+                                var images = try? self.downloadingImages.value()
+                                images?.removeAll(where: { $0.fileID == params.fileID })
+                                images?.append(params)
+                                self.downloadingImages.on(.next(images ?? []))
+                                observer(.success(message))
+                            } else if message.hasPhoto {
                                 try self.mediaUtils.write(data, file: message.photo.originalFileId, and: message.photo.extensions)
                                 try self.mediaUtils.write(data, file: message.photo.previewFileId, and: message.photo.extensions)
                                 
@@ -184,8 +195,8 @@ private extension MediaRepositoryImpl {
             .map({ [weak self] chunks in
                 guard let `self` = self else { throw NSError.selfIsNill }
                 message.photo.fileID = chunks.first?.fileID ?? ""
-                try self.mediaUtils.write(file.data, file: message.photo.previewFileId, and: message.photo.extensions)
-                try self.mediaUtils.write(file.data, file: message.photo.originalFileId, and: message.photo.extensions)
+                try self.mediaUtils.write(file.data, file: message.voice.originalVoiceFileId, and: message.voice.extensions)
+                
                 return chunks
             })
             .do(onSuccess: { [weak self] _ in
@@ -233,7 +244,6 @@ private extension MediaRepositoryImpl {
                 process.removeAll(where: { $0.fileID == message.photo.fileID })
                 self.uploadingMedias.on(.next(process))
             }, onError: {[weak self] (error: Error) in
-                
                 PP.warning(error.localizedDescription)
                 guard let `self` = self, var process = try? self.uploadingMedias.value() else { return }
                 process.removeAll(where: { $0.fileID == message.photo.fileID })
@@ -414,6 +424,87 @@ private extension MediaRepositoryImpl {
             .do(onSuccess: { [weak self] _ in
                 guard let `self` = self, var process = try? self.uploadingMedias.value() else { return }
                 process.removeAll(where: { $0.fileID == message.fileID })
+                self.uploadingMedias.on(.next(process))
+            })
+    }
+    
+    func uploadVoice(by file: FileUpload, in conversation: Conversation) -> Single<MessageSendRequest> {
+
+        var message = self.mediaUtils.createMessageForUpload(in: conversation, with: appStore.userID())
+        
+        message.voice = .with({ photo in
+            photo.mimeType = file.mime
+            photo.duration = file.duration.nanosec
+            photo.fileSize = Int64(file.data.count)
+            photo.fileName = file.url?.lastPathComponent ?? ""
+        })
+
+        return self.createFileSpaceInteractor
+            .executeSingle(params: (file.data, message.voice.mimeType))
+            .do(onSuccess: { [weak self] chunks in
+                guard let `self` = self else { return }
+                var images = try self.uploadingMedias.value()
+                images.append(FileDownloadRequest.with({
+                    $0.fileID = chunks.first?.fileID ?? ""
+                    $0.fromChunkNumber = 0
+                    $0.toChunkNumber = Int64(chunks.count)
+                }))
+                self.uploadingMedias.on(.next(images))
+            })
+            .map({ [weak self] chunks in
+                guard let `self` = self else { throw NSError.selfIsNill }
+                message.voice.fileID = chunks.first?.fileID ?? ""
+                try self.mediaUtils.write(file.data, file: message.voice.originalVoiceFileId, and: message.voice.extensions)
+                return chunks
+            })
+            .do(onSuccess: { [weak self] _ in
+                guard let `self` = self,
+                      let process = try? self.uploadingMedias.value(),
+                      var file = process.first(where: { $0.fileID == message.fileID }) else { return }
+                file.fromChunkNumber = file.toChunkNumber - ((file.toChunkNumber * 80) / 100)
+                self.uploadingMedias.on(.next(process))
+            })
+            .flatMap({ [weak self] response -> Single<[FileChunk]> in
+                guard let `self` = self else { throw NSError.selfIsNill }
+                return self.messageDBService.save(message: message).map({ response })
+            })
+            .do(onSuccess: { [weak self] _ in
+                guard let `self` = self,
+                      let process = try? self.uploadingMedias.value(),
+                      var file = process.first(where: { $0.fileID == message.fileID }) else { return }
+                file.fromChunkNumber = file.toChunkNumber - ((file.toChunkNumber * 60) / 100)
+                self.uploadingMedias.on(.next(process))
+            })
+            .flatMap({ [weak self] response -> Single<Void> in
+                guard let `self` = self else {
+                    throw NSError.selfIsNill
+                }
+                return self.uploadFileInteractor.executeSingle(params: response)
+            })
+            .do(onSuccess: { [weak self] _ in
+                guard let `self` = self,
+                      let process = try? self.uploadingMedias.value(),
+                      var file = process.first(where: { $0.fileID == message.fileID }) else { return }
+                file.fromChunkNumber = file.toChunkNumber - ((file.toChunkNumber * 80) / 100)
+                self.uploadingMedias.on(.next(process))
+            })
+            .map({ _ -> MessageSendRequest in
+                MessageSendRequest.with({ req in
+                    req.peer.user = .with({ peer in
+                        peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
+                    })
+                    req.message = message
+                })
+            })
+            .do(onSuccess: { [weak self] _ in
+                guard let `self` = self, var process = try? self.uploadingMedias.value() else { return }
+                process.removeAll(where: { $0.fileID == message.photo.fileID })
+                self.uploadingMedias.on(.next(process))
+            }, onError: {[weak self] (error: Error) in
+                
+                PP.warning(error.localizedDescription)
+                guard let `self` = self, var process = try? self.uploadingMedias.value() else { return }
+                process.removeAll(where: { $0.fileID == message.photo.fileID })
                 self.uploadingMedias.on(.next(process))
             })
     }

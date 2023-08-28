@@ -20,6 +20,7 @@ final class ConversationsPresenter: BasePresenter {
     private let messageRepository: MessageRepository
     private unowned let view: ConversationsViewInterface
     private let wireframe: ConversationsWireframeInterface
+    fileprivate let contactsRepository: ContactsRepository
     private let conversationRepository: ConversationRepository
     private let retrieveContactStatusesInteractor: UseCase<Void, Void>
     fileprivate let userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>
@@ -44,6 +45,7 @@ final class ConversationsPresenter: BasePresenter {
     init(view: ConversationsViewInterface,
          updateRepository: UpdateRepository,
          messageRepository: MessageRepository,
+         contactsRepository: ContactsRepository,
          wireframe: ConversationsWireframeInterface,
          conversationRepository: ConversationRepository,
          retrieveContactStatusesInteractor: UseCase<Void, Void>,
@@ -53,6 +55,7 @@ final class ConversationsPresenter: BasePresenter {
         self.wireframe = wireframe
         self.updateRepository = updateRepository
         self.messageRepository = messageRepository
+        self.contactsRepository = contactsRepository
         self.conversationRepository = conversationRepository
         self.userStatusUpdateInteractor = userStatusUpdateInteractor
         self.deleteConversationInteractor = deleteConversationInteractor
@@ -99,6 +102,19 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
     
     
     func navigateToContacts() {
-        self.wireframe.navigateToContacts()
+        self.wireframe.navigateToContacts(contactsCallback: {[weak self] contacts in
+            guard let `self` = self else { return }
+            self.contactsRepository
+                .save(contacts: contacts)
+                .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+                .observe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+                .subscribe()
+                .disposed(by: disposeBag)
+        }, userID: {[weak self] userID in
+            guard let `self` = self, let dbContact = self.contactsRepository.contact(id: userID) else { return }
+            DispatchQueue.main.async {
+                self.wireframe.navigateToConversation(with: ConversationImpl(contact: dbContact))
+            }
+        })
     }
 }

@@ -18,7 +18,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     // MARK: - Properties
     
     let sheetTransitioningDelegate = SheetTransitioningDelegate()
-    let moneyTransitioningDelegate = SheetTransitioningDelegate()
     fileprivate var mediaItem: URL?
     fileprivate var isDrawingTable: Bool = false
     
@@ -45,6 +44,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.registerCell(type: IncomeFileCell.self)
         tableView.registerCell(type: OutcomeFileCell.self)
         tableView.registerCell(type: BaseMessageCell.self)
+        tableView.registerCell(type: IncomeVoiceCell.self)
+        tableView.registerCell(type: OutcomeVoiceCell.self)
         tableView.registerCell(type: IncomeMoneyCell.self)
         tableView.registerCell(type: OutcomeMoneyCell.self)
         tableView.registerCell(type: IncomeMessageCell.self)
@@ -65,7 +66,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     }
     
     fileprivate lazy var messageHeadline: SubHeadline = .init({
-        $0.textColor = .gray500
         $0.textAlignment = .center
         $0.isUserInteractionEnabled = false
     })
@@ -85,6 +85,10 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         inputBar.delegate = self
     })
     
+    private lazy var voiceInputBar: VoiceInputBar = .init({ [weak self] inputBar in
+        inputBar.delegate = self
+    })
+    
     // MARK: - Private Methods
     
     override func setupViews() {
@@ -95,6 +99,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.view.addSubview(messageInputBar)
         self.view.addSubview(navigationDivider)
         self.view.addSubview(editInputBar)
+        self.view.addSubview(voiceInputBar)
         
         self.navigationItem.leftItemsSupplementBackButton = true
         self.navigationItem.leftBarButtonItem = .init(customView: headline)
@@ -132,7 +137,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
             .do(onNext: {[weak self] messages in
-                    self?.messageHeadline.text = messages.isEmpty ? "В этом чате нет сообщений" : ""
+                self?.messageHeadline.text = messages.isEmpty ? ConversationStrings.thereAreNoMessagesInThisChat.localized : ""
             })
             .do(onNext: { [weak self] result in
                 guard let `self` = self, !self.isDrawingTable else {
@@ -260,7 +265,11 @@ extension ConversationViewController: MessageInputBarDelegate {
     }
     
     func micro(isActivated: Bool) {
-        self.showAlert(from: "Данная функция еще в разработке")
+        self.view.addSubview(voiceInputBar)
+        self.voiceInputBar.snp.makeConstraints({make in
+            make.edges.equalTo(self.messageInputBar)
+        })
+        self.voiceInputBar.setActiveRecord()
     }
     
     func message(text: String) {
@@ -291,14 +300,7 @@ extension ConversationViewController: ConversationViewInterface {
 private extension ConversationViewController {
     
     func openMoneyTransfer() {
-        let viewController = MoneyTransferConroller()
-        viewController.resultCallback = {[weak self] amount in
-            guard let `self` = self else { return }
-            self.presenter?.send(money: amount)
-        }
-        viewController.modalPresentationStyle = .custom
-        viewController.transitioningDelegate = moneyTransitioningDelegate
-        self.present(viewController, animated: true)
+        self.presenter?.openMoneyController()
     }
     
     func openMedia(type: UIImagePickerController.SourceType) {
@@ -324,7 +326,7 @@ private extension ConversationViewController {
     }
 
     func openMap() {
-        var mapController = MapController()
+        let mapController = MapController()
         mapController.locationCallback = { [weak self] message in
             guard let `self` = self else { return }
             self.presenter?.send(location: message)
@@ -448,7 +450,17 @@ extension ConversationViewController {
                 cell.setup(message: message)
                 return cell
             }
-        case .audio(_), .voice:
+        case .voice:
+            if message.isIncome {
+                let cell: IncomeVoiceCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            } else {
+                let cell: OutcomeVoiceCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            }
+        case .audio(_):
             let cell: BaseMessageCell = tableView.dequeueCell()
             cell.setup(message: message)
             return cell
@@ -517,6 +529,14 @@ extension ConversationViewController: UIDocumentPickerDelegate {
         }
         
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) { }
+}
+
+extension ConversationViewController: VoiceInputBarDelegate {
+    func recordedVoice(url: URL, in duration: TimeInterval) {
+        guard duration > 2,
+              let data = try? Data(contentsOf: url) else { return }
+        self.presenter?.upload(file: FileUpload(url: nil, data: data, mime: "audio/wav", width: 0, height: 0, duration: duration))
+    }
 }
 
 extension ConversationViewController: CNContactPickerDelegate {

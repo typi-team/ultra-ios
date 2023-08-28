@@ -32,6 +32,19 @@ class DBContact: Object {
         
     }
     
+    convenience init(inner contact: IContact, user id: String = AppSettingsImpl.shared.appStore.userID()) {
+        self.init()
+        self.phone = contact.phone
+        self.userID = contact.userID
+        self.lastName = contact.lastname
+        self.firstName = contact.firstname
+        self.photo = nil
+        self.lastseen = 0
+        self.statusValue = 0
+        self.chatID = "p\(id >= contact.userID ? id + contact.userID : contact.userID + id)"
+        
+    }
+    
     override static func primaryKey() -> String? {
         return "userID"
     }

@@ -80,16 +80,16 @@ class ProfileNavigationView: UIView {
             self.avatarImageView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
         }
         
-        if let contact = conversation.peer {
-            self.sublineText.text = contact.status.displayText
-            self.sublineText.textColor = contact.status.color
-        }
+//        if let contact = conversation.peer {
+//            self.sublineText.text = contact.status.displayText
+//            self.sublineText.textColor = contact.status.color
+//        }
     }
     
     func setup(user typing: UserTypingWithDate) {
         if typing.isTyping {
             self.sublineText.textColor = .gray500
-            self.sublineText.text = "печатает..."
+            self.sublineText.text = "\(ConversationStrings.prints.localized)..."
         } else if let conversation = self.conversation {
             self.setup(conversation: conversation)
         }
@@ -104,9 +104,9 @@ extension UserStatus {
     var displayText: String {
         switch status {
         case .unknown:
-            return "Неизвестный номер"
+            return ConversationStrings.unknowNumber.localized
         case .online:
-            return "онлайн"
+            return ConversationStrings.online.localized
         case .offline:
             return self.lastSeen.date(format: .dayAndHourMinute)
         case .away:

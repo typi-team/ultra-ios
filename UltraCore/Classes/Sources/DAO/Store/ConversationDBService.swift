@@ -80,7 +80,7 @@ class ConversationDBService {
     func conversation(by id: String) -> Single<Conversation?> {
         return Single.deferred {
             let realm = Realm.myRealm()
-            var conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: id)
+            let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: id)
             if let conversation = conversation {
                 return Single.just(conversation.detached())
             } else {

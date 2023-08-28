@@ -1,0 +1,50 @@
+/*
+  Localizable.strings
+  UltraCore
+
+  Created by Slam on 8/7/23.
+  Copyright © 2023 CocoaPods. All rights reserved.
+*/
+
+// MARK: Conversations page
+"conversations.chats" = "Chats";
+// MARK: Contacts page
+"contacts.newChat" = "New chat";
+"contacts.was" = "was";
+"contacts.justNow" = "just now";
+"contacts.backward" = "back";
+"contacts.yesterday" = "yesterday";
+// MARK: Conversation page
+"conversation.money" = "Money";
+"conversation.online" = "online";
+"conversation.unknowNumber" = "Unknown number";
+"conversation.prints" = "prints";
+"conversation.moneyTransfer" = "Transfer";
+"conversation.insertMoney" = "";
+"conversation.send" = "Send";
+"conversation.insideTheBank" = "Inside the Bank";
+"conversation.sendToBankCustomer" = "Send to bank customer";
+"conversation.addAttachment" = "Add attachment";
+"conversation.toMakeAPhoto" = "To make photo";
+"conversation.selectionFromLibrary" = "Select from library";
+"conversation.selectDocument" = "Select document";
+"conversation.contact" = "Contact";
+"conversation.location" = "Location";
+"conversation.transferAmount" = "Transfer amount";
+"conversation.writeOffTheCard" = "Write off the card";
+"conversation.continue" = "Continue";
+"conversation.multivalue" = "Multivalue...";
+"conversation.thereAreNoMessagesInThisChat" = "There are no messages in this chat";
+"conversation.insertText" = "insert text";
+// MARK: Messages page
+"message.audio" = "🔉 Audio";
+"message.voice" = "🎤 Voice";
+"message.photo" = "📷 Photo";
+"message.video" = "🎥 Video";
+"message.money" = "💵 Money transfer";
+"message.location" = "📍Location";
+"message.file" = "📂 File";
+"message.fileWithoutSmile" = "File";
+"message.contact" = "📇 Contact";
+"message.moneyTransfer" = "Transfer";
+"message.uploadingInProgress" = "Uploading in progress";

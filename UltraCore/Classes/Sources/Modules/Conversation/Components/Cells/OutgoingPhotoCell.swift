@@ -14,7 +14,7 @@ class OutgoingPhotoCell: MediaCell {
         $0.isHidden = true
         $0.cornerRadius = 4
         $0.textAlignment = .left
-        $0.text = "  Идет выгрузка...  "
+        $0.text = "  \(MessageStrings.uploadingInProgress.localized)...  "
         $0.backgroundColor = UIColor.white.withAlphaComponent(0.7)
     })
     

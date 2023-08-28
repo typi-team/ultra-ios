@@ -43,7 +43,7 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
                                                        style: .plain, target: self,
                                                        action: #selector(self.openContacts))
         
-        self.navigationItem.title = "Список чатов"
+        self.navigationItem.title = ConversationsStrings.chats.localized
         self.hidesBottomBarWhenPushed = false
     }
     

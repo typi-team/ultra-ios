@@ -11,8 +11,8 @@ class IncomeFileCell : BaseMessageCell {
     
     let mediaRepository: MediaRepository = AppSettingsImpl.shared.mediaRepository
     
-    fileprivate let moneyHeadlineLabel: RegularCallout = .init({ $0.text = "Деньги" })
-    fileprivate let moneyCaptionlabel: RegularFootnote = .init({ $0.text = "Файл" })
+    fileprivate let moneyHeadlineLabel: RegularCallout = .init({ $0.text = ConversationStrings.money.localized })
+    fileprivate let moneyCaptionlabel: RegularFootnote = .init({ $0.text = MessageStrings.fileWithoutSmile.localized })
     fileprivate let moneyAvatarView: UIImageView = .init({
         $0.image = UIImage.named("contact_file_icon")
         $0.contentMode = .center
