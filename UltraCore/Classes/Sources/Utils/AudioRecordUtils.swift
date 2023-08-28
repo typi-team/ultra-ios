@@ -36,7 +36,9 @@ class AudioRecordUtils: NSObject {
                     print(error.localizedDescription)
                 }
             } else {
-                self.delegate?.requestRecordPermissionIsFalse()
+                DispatchQueue.main.async {
+                    self.delegate?.requestRecordPermissionIsFalse()
+                }
             }
         }
     }

@@ -159,4 +159,9 @@ class OutcomeVoiceCell: IncomeVoiceCell {
             make.centerY.equalTo(self.deliveryDateLabel.snp.centerY)
         }
     }
+    
+    override func setup(message: Message) {
+        super.setup(message: message)
+        self.statusView.image = .named(message.statusImageName)
+    }
 }
