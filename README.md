@@ -96,6 +96,43 @@ To update the token for the `UltraCore` application to function properly, you ne
 UltraCoreSettings.update(sid: newSid, with: {_ in })
 ```
 
+###  How to Replace Pages with Yours
+To implement this approach, you need to implement the protocol `UltraCoreSettingsDelegate`. 
+
+
+```swift
+/// Метод для реализаций страницы контактов
+/// - Parameters:
+///   - callback: для сохранения контактов, можно использовать для сохранения массива контактной книги или одиночной сохранения контакта, перед началом переписки
+///   - userCallback: для начало переписки, перед вызовом надо скрыть ваш контроллер
+/// - Returns: Контроллер для отображения ваших контактов или передайте nil и отобразитсья личный контроллер
+
+func contactsViewController(callback: @escaping UltraCore.ContactsCallback, userCallback: @escaping UltraCore.UserIDCallback) -> UIViewController?
+```
+
+Similarly, you can replace the money transfer page, you need to transmit
+
+```swift
+public struct MoneyTransfer {
+    let amout: Int64
+    let currency: String
+    let transactionID: String
+}
+```
+
+The one that needs to be passed to the delegate method
+
+```swift 
+/// Метод для реализаций страницы передачи денег
+/// - Parameter callback: для передачи сообщения о переводе денег
+/// - Returns: Контроллер для передачи денег с указаннием суммы
+func moneyViewController(callback: @escaping MoneyCallback) -> UIViewController?
+```
+
+```swift
+
+```
+
 ## Author
 
 rakish.shalkar@gmail.com, Rakish.Shalkar

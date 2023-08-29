@@ -127,6 +127,12 @@ class ViewController: UITabBarController {
 }
 
 extension ViewController: UltraCoreSettingsDelegate {
+    
+    /// Метод для реализаций страницы контактов
+    /// - Parameters:
+    ///   - callback: для сохранения контактов, можно использовать для сохранения массива контактной книги или одиночной сохранения контакта, перед началом переписки
+    ///   - userCallback: для начало переписки, перед вызовом надо скрыть ваш контроллер
+    /// - Returns: Контроллер для отображения ваших контактов
     func contactsViewController(callback: @escaping UltraCore.ContactsCallback, userCallback: @escaping UltraCore.UserIDCallback) -> UIViewController? {
        return nil
     }
@@ -135,6 +141,9 @@ extension ViewController: UltraCoreSettingsDelegate {
         return nil
     }
     
+    /// Метод для реализаций страницы передачи денег
+    /// - Parameter callback: для передачи сообщения о переводе денег
+    /// - Returns: Контроллер для передачи денег с указаннием суммы
     func moneyViewController(callback: @escaping MoneyCallback) -> UIViewController? {
         return nil
     }

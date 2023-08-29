@@ -13,9 +13,7 @@ import Foundation
 public struct MoneyTransfer {
     let amout: Int64
     let currency: String
-    let receiverID: String
     let transactionID: String
-    let conversationID: String
 }
 
 public typealias MoneyCallback = (MoneyTransfer) -> Void
@@ -69,9 +67,7 @@ final class MoneyTransferPresenter {
                 guard let `self` = self else { return }
                 let value: MoneyTransfer = .init(amout: Int64(amount),
                                                  currency: currency,
-                                                 receiverID: receiver,
-                                                 transactionID: response.transaction_id,
-                                                 conversationID: conversation.idintification)
+                                                 transactionID: response.transaction_id)
                 self.resultCallback(value)
                 callback()
             })

@@ -201,11 +201,12 @@ extension ConversationPresenter: ConversationPresenterInterface {
     
     func openMoneyController() {
         self.wireframe.openMoneyController(callback: { [weak self] value in
-            guard let `self` = self else { return }
+            guard let `self` = self,
+                  let receiverID = self.conversation.peer?.userID else { return }
             var params = MessageSendRequest()
 
             params.peer.user = .with({ peer in
-                peer.userID = value.receiverID
+                peer.userID = receiverID
             })
 
             params.message.id = UUID().uuidString
@@ -222,8 +223,8 @@ extension ConversationPresenter: ConversationPresenterInterface {
             message .text = params.textFormatString()
             message.id = params.message.id
             message.receiver = .with({ receiver in
-                receiver.userID = value.receiverID
-                receiver.chatID = value.conversationID
+                receiver.userID = receiverID
+                receiver.chatID = self.conversation.idintification
             })
             message.sender = .with({ $0.userID = self.userID })
             message.meta = .with({ $0.created = Date().nanosec })
