@@ -22,6 +22,7 @@ protocol AppSettings: Any {
     var messageDBService: MessageDBService { get }
     var conversationDBService: ConversationDBService { get }
     
+    var callService: CallServiceClientProtocol { get }
     var userService: UserServiceClientProtocol { get }
     var fileService: FileServiceClientProtocol { get }
     var authService: AuthServiceClientProtocol { get }

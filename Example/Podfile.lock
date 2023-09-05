@@ -63,6 +63,11 @@ PODS:
   - IGListDiffKit (4.0.0)
   - IGListKit (4.0.0):
     - IGListDiffKit (= 4.0.0)
+  - LiveKitClient (1.0.13):
+    - Logging
+    - PromisesSwift
+    - SwiftProtobuf
+    - WebRTC-SDK (~> 104.5112.17)
   - Logging (1.4.0)
   - nanopb (2.30909.0):
     - nanopb/decode (= 2.30909.0)
@@ -71,6 +76,8 @@ PODS:
   - nanopb/encode (2.30909.0)
   - PodAsset (1.3.0)
   - PromisesObjC (2.2.0)
+  - PromisesSwift (2.2.0):
+    - PromisesObjC (= 2.2.0)
   - Protobuf (3.23.2)
   - Realm (10.40.0):
     - Realm/Headers (= 10.40.0)
@@ -225,6 +232,7 @@ PODS:
   - UltraCore (0.1.3):
     - gRPC-Swift
     - IGListKit
+    - LiveKitClient
     - PodAsset
     - Protobuf
     - RealmSwift
@@ -232,6 +240,7 @@ PODS:
     - RxSwift
     - SDWebImage
     - SnapKit
+  - WebRTC-SDK (104.5112.17)
 
 DEPENDENCIES:
   - FirebaseMessaging
@@ -259,10 +268,12 @@ SPEC REPOS:
     - gRPC-Swift
     - IGListDiffKit
     - IGListKit
+    - LiveKitClient
     - Logging
     - nanopb
     - PodAsset
     - PromisesObjC
+    - PromisesSwift
     - Protobuf
     - Realm
     - RealmSwift
@@ -286,6 +297,7 @@ SPEC REPOS:
     - SwiftNIOTLS
     - SwiftNIOTransportServices
     - SwiftProtobuf
+    - WebRTC-SDK
 
 EXTERNAL SOURCES:
   UltraCore:
@@ -311,10 +323,12 @@ SPEC CHECKSUMS:
   gRPC-Swift: 74adcaaa62ac5e0a018938840328cb1fdfb09e7b
   IGListDiffKit: 665d6cf43ce726e676013db9c7d6c4294259b6b2
   IGListKit: fd5a5d21935298f5849fa49d426843cff97b77c7
+  LiveKitClient: c5d736f1b7f17b15419b170d0616974761ca73b5
   Logging: beeb016c9c80cf77042d62e83495816847ef108b
   nanopb: b552cce312b6c8484180ef47159bc0f65a1f0431
   PodAsset: 161b57cdf4d7307b0fb652cccab32fa8d5dc580b
   PromisesObjC: 09985d6d70fbe7878040aa746d78236e6946d2ef
+  PromisesSwift: cf9eb58666a43bbe007302226e510b16c1e10959
   Protobuf: 5df4e9d2abd535fb675c68d171f6bc87983d27a6
   Realm: 67e2bc963e693a787961bd81d0594f2410615d9e
   RealmSwift: 39622fdcd18d54e0ba49a7d31e9662404595e998
@@ -338,8 +352,9 @@ SPEC CHECKSUMS:
   SwiftNIOTLS: 598af547490133e9aac52aed0c23c4a90c31dcfc
   SwiftNIOTransportServices: 0b2b407819d82eb63af558c5396e33c945759503
   SwiftProtobuf: afced68785854575756db965e9da52bbf3dc45e7
-  UltraCore: fffb642bd3041e6ebf6f88c64714f16e5efd9e9d
+  UltraCore: eec455f3923ef7b61e1b65aae63fca27754c5aed
+  WebRTC-SDK: 082ae4893212534a779ca233f19a9df8efd5f3bd
 
-PODFILE CHECKSUM: ff697990069a85ca3a9ec730a3d59212535be22b
+PODFILE CHECKSUM: 05a3927b15bbe6caf93b241464429054c7b34ff0
 
 COCOAPODS: 1.12.0

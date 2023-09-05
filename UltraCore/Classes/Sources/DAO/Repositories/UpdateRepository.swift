@@ -173,11 +173,42 @@ private extension UpdateRepositoryImpl {
             self.update(contact: contact)
         case let .mediaUploading(pres):
             PP.debug(pres.textFormatString())
-        case .callReject:
-            PP.debug("callReject")
-        case .callRequest:
-            PP.debug("callRequest")
+        case let .callReject(reject):
+            self.dissmissCall(in: reject.room)
+        case let .callRequest(callRequest):
+            self.handleIncoming(callRequest: callRequest)
+        case let .callCancel(callrequest):
+            self.dissmissCall(in: callrequest.room)
         }
+    }
+    
+    func dissmissCall(in room: String) {
+        DispatchQueue.main.async {
+            if var topController = UIApplication.shared.windows.filter({ $0.isKeyWindow }).first?.rootViewController {
+                while let presentedViewController = topController.presentedViewController {
+                    topController = presentedViewController
+                }
+                if topController is IncomingCallViewController {
+                    topController.dismiss(animated: true)
+                }
+            }
+        }
+    }
+    
+    func handleIncoming(callRequest: CallRequest) {
+        self.contactByIDInteractor
+            .executeSingle(params: callRequest.sender)
+            .flatMap({ self.contactService.save(contact: DBContact(from: $0, user: self.appStore.userID())) })
+            .observe(on: MainScheduler.instance)
+            .subscribe(onSuccess: { () in
+                if var topController = UIApplication.shared.windows.filter({ $0.isKeyWindow }).first?.rootViewController {
+                    while let presentedViewController = topController.presentedViewController {
+                        topController = presentedViewController
+                    }
+                    topController.presentWireframe(IncomingCallWireframe(call: callRequest))
+                }
+            })
+            .disposed(by: disposeBag)
     }
     
     func handle(of update: Update.OneOf_OfUpdate) {

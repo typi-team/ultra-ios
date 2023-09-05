@@ -70,6 +70,7 @@ struct GetUserIdResponse {
   init() {}
 }
 
+/// Comment
 struct IssueJwtResponse {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for

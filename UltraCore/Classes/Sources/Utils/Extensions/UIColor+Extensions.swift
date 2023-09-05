@@ -64,5 +64,21 @@ extension UIColor {
   @nonobjc class var gray200: UIColor {
       return UIColor(red: 229.0 / 255.0, green: 231.0 / 255.0, blue: 235.0 / 255.0, alpha: 1.0)
   }
+    
+    @nonobjc class var gray400: UIColor { UIColor.from(hex: "#9CA3AF") }
+    
+    static func from(hex: String) -> UIColor {
+        var formattedString = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+            formattedString = formattedString.replacingOccurrences(of: "#", with: "")
 
+            var hex: UInt64 = 0
+
+            Scanner(string: formattedString).scanHexInt64(&hex)
+
+            let red = CGFloat((hex & 0xFF0000) >> 16) / 255.0
+            let green = CGFloat((hex & 0x00FF00) >> 8) / 255.0
+            let blue = CGFloat(hex & 0x0000FF) / 255.0
+
+            return UIColor(red: red, green: green, blue: blue, alpha: 1.0)
+    }
 }

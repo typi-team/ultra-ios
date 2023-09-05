@@ -40,7 +40,7 @@ open class AppSettingsImpl: AppSettings  {
                                                                     transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
 
 //    MARK: GRPC Services
-    
+    lazy var callService: CallServiceClientProtocol = CallServiceNIOClient(channel: channel)
     lazy var userService: UserServiceClientProtocol = UserServiceNIOClient(channel: channel)
     lazy var authService: AuthServiceClientProtocol = AuthServiceNIOClient(channel: channel)
     lazy var fileService: FileServiceClientProtocol = FileServiceNIOClient(channel: fileChannel)

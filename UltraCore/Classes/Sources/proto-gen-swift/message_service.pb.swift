@@ -236,6 +236,32 @@ struct MessagesDeleteResponse {
   init() {}
 }
 
+struct ComplainRequest {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var chatID: String = String()
+
+  var messageID: String = String()
+
+  var type: ComplainTypeEnum = .abuse
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct ComplainResponse {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 struct SendTypingRequest {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -317,6 +343,8 @@ extension MessagesReadRequest: @unchecked Sendable {}
 extension MessagesReadResponse: @unchecked Sendable {}
 extension MessagesDeleteRequest: @unchecked Sendable {}
 extension MessagesDeleteResponse: @unchecked Sendable {}
+extension ComplainRequest: @unchecked Sendable {}
+extension ComplainResponse: @unchecked Sendable {}
 extension SendTypingRequest: @unchecked Sendable {}
 extension SendTypingResponse: @unchecked Sendable {}
 extension SendAudioRecordingRequest: @unchecked Sendable {}
@@ -777,6 +805,69 @@ extension MessagesDeleteResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageI
   }
 
   static func ==(lhs: MessagesDeleteResponse, rhs: MessagesDeleteResponse) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension ComplainRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "ComplainRequest"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "chat_id"),
+    2: .standard(proto: "message_id"),
+    3: .same(proto: "type"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.chatID) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.messageID) }()
+      case 3: try { try decoder.decodeSingularEnumField(value: &self.type) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.chatID.isEmpty {
+      try visitor.visitSingularStringField(value: self.chatID, fieldNumber: 1)
+    }
+    if !self.messageID.isEmpty {
+      try visitor.visitSingularStringField(value: self.messageID, fieldNumber: 2)
+    }
+    if self.type != .abuse {
+      try visitor.visitSingularEnumField(value: self.type, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: ComplainRequest, rhs: ComplainRequest) -> Bool {
+    if lhs.chatID != rhs.chatID {return false}
+    if lhs.messageID != rhs.messageID {return false}
+    if lhs.type != rhs.type {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension ComplainResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "ComplainResponse"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let _ = try decoder.nextFieldNumber() {
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: ComplainResponse, rhs: ComplainResponse) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
