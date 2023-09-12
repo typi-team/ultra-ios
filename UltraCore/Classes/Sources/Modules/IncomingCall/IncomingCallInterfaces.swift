@@ -10,14 +10,32 @@
 
 import UIKit
 
-enum CallStatus  {
-    case incoming(CallRequest)
-    case outcoming(CallRequest)
+protocol CallInformation {
+    var sender: String { get set }
+    var room: String { get set }
+    var accessToken: String { get set }
+    var host: String { get set }
+    var video: Bool { get set }
+}
+
+extension CallRequest: CallInformation {}
+
+struct CallOutging: CallInformation {
+    var video: Bool
+    var host: String
+    var room: String
+    var sender: String
+    var accessToken: String
+}
+
+enum CallStatus {
+    case incoming(CallInformation)
+    case outcoming(CallInformation)
     
-    var callInfo: CallRequest {
+    var callInfo: CallInformation {
         switch self {
-        case .outcoming(let callRequest),
-                .incoming(let callRequest):
+        case let .outcoming(callRequest),
+             let .incoming(callRequest):
             return callRequest
         }
     }

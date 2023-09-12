@@ -205,7 +205,7 @@ private extension UpdateRepositoryImpl {
                     while let presentedViewController = topController.presentedViewController {
                         topController = presentedViewController
                     }
-                    topController.presentWireframe(IncomingCallWireframe(call: callRequest))
+                    topController.presentWireframe(IncomingCallWireframe(call:.incoming(callRequest)))
                 }
             })
             .disposed(by: disposeBag)

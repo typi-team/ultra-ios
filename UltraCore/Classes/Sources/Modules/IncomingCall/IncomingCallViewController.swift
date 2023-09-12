@@ -14,6 +14,9 @@ import LiveKitClient
 final class IncomingCallViewController: BaseViewController<IncomingCallPresenterInterface> {
     
     fileprivate lazy var room = Room(delegate: self)
+    fileprivate lazy var timer: Timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true, block: {[weak self] timer in
+        self?.dutationLabel.text = timer.tolerance.description
+    })
 
     fileprivate lazy var localVideoView: VideoView = .init({
         $0.cornerRadius = kLowPadding
@@ -198,10 +201,9 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
 extension IncomingCallViewController: IncomingCallViewInterface {
     func disconnectRoom() {
         self.room.disconnect().then({[weak self] () in
-            self?.dismiss(animated: true)
+            self?.navigationController?.popViewController(animated: true)
         }).catch { [weak self] error  in
-            self?.dismiss(animated: true)
-            PP.error(error.localizedDescription)
+            self?.navigationController?.popViewController(animated: true)
         }
     }
     
@@ -216,6 +218,12 @@ extension IncomingCallViewController: RoomDelegateObjC {
     func room(_ room: Room, didUpdate connectionState: ConnectionStateObjC, oldValue oldConnectionState: ConnectionStateObjC) {
         DispatchQueue.main.async {
             self.dutationLabel.text = connectionState.desctiption
+            switch connectionState {
+            case .disconnected, .connecting, .reconnecting:
+                self.timer.invalidate()
+            case .connected:
+                self.timer.fire()
+            }
         }
     }
     
@@ -243,7 +251,7 @@ extension IncomingCallViewController: RoomDelegateObjC {
 }
 
 private extension IncomingCallViewController {
-    func connect(with callInfo: CallRequest) {
+    func connect(with callInfo: CallInformation) {
         self.room.connect(callInfo.host, callInfo.accessToken).then { [weak self] room in
             guard let `self` = self else { return }
             

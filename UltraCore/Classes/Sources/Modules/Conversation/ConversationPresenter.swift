@@ -22,6 +22,8 @@ final class ConversationPresenter {
     fileprivate let disposeBag = DisposeBag()
     fileprivate let appStore: AppSettingsStore
     
+    fileprivate let callService: CallServiceClientProtocol
+    
     fileprivate let mediaRepository: MediaRepository
     fileprivate let updateRepository: UpdateRepository
     private unowned let view: ConversationViewInterface
@@ -67,6 +69,7 @@ final class ConversationPresenter {
          conversation: Conversation,
          view: ConversationViewInterface,
          mediaRepository: MediaRepository,
+         callService: CallServiceClientProtocol,
          updateRepository: UpdateRepository,
          messageRepository: MessageRepository,
          contactRepository: ContactsRepository,
@@ -82,6 +85,7 @@ final class ConversationPresenter {
         self.userID = userID
         self.appStore = appStore
         self.wireframe = wireframe
+        self.callService = callService
         self.conversation = conversation
         self.mediaRepository = mediaRepository
         self.updateRepository = updateRepository
@@ -100,6 +104,34 @@ final class ConversationPresenter {
 // MARK: - Extensions -
 
 extension ConversationPresenter: ConversationPresenterInterface {
+    func callVideo() {
+        self.createCall(with: true)
+    }
+    
+    func callVoice() {
+        self.createCall()
+    }
+    
+    func createCall(with video: Bool = false) {
+        guard let user = self.conversation.peer?.userID else { return }
+        self.callService.create(.with({
+            $0.users = [user]
+            $0.video = video
+        }), callOptions: .default())
+            .response
+            .whenComplete({ [weak self] result in
+                guard let `self` = self else { return }
+                switch result {
+                case let .success(response):
+                    DispatchQueue.main.async {
+                        self.wireframe.navigateToCall(response: response, isVideo: video)
+                    }
+                case let .failure(error):
+                    PP.error(error.localizedDescription)
+                }
+            })
+    }
+    
     func send(location: LocationMessage) {
         var params = MessageSendRequest()
         

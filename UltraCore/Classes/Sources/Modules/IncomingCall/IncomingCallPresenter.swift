@@ -32,7 +32,7 @@ final class IncomingCallPresenter {
     // MARK: - Lifecycle -
 
     init(userId: String,
-         callStatus: CallStatus,
+         callInformation: CallStatus,
          view: IncomingCallViewInterface,
          contactService: ContactDBService,
          callService: CallServiceClientProtocol,
@@ -41,9 +41,9 @@ final class IncomingCallPresenter {
         self.view = view
         self.userId = userId
         self.wireframe = wireframe
-        self.callStatus = callStatus
         self.callService = callService
         self.contactService = contactService
+        self.callStatus = callInformation
         self.contactInteractor = contactInteractor
     }
 }
@@ -76,31 +76,28 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
             $0.room = self.callStatus.callInfo.room
         }), callOptions: .default()).response.whenComplete( {[weak self] result  in
             guard let `self` = self else { return }
-            self.view.disconnectRoom()
             switch result {
-            case .success(let response):
-                PP.info(response.textFormatString())
+            case .success:
+                self.view.disconnectRoom()
             case .failure(let error):
                 PP.error(error.localizedDescription)
+                self.view.disconnectRoom()
             }
         })
     }
     
     func viewDidLoad() -> CallStatus {
-
-        if let contact = self.contactService.contact(id: callStatus.callInfo.sender) {
+        if let contact = self.contactService.contact(id: self.callStatus.callInfo.sender) {
             self.view.dispay(view: contact)
         } else {
             self.contactInteractor
-                .executeSingle(params: callStatus.callInfo.sender)
-
+                .executeSingle(params: self.callStatus.callInfo.sender)
                 .flatMap({ self.contactService.save(contact: DBContact(from: $0, user: self.userId)).map({ $0 }) })
                 .observe(on: ConcurrentDispatchQueueScheduler(qos: .background))
                 .subscribe(on: MainScheduler.asyncInstance)
                 .subscribe(onSuccess: { [weak self] contact in
                     guard let `self` = self, let contact = self.contactService.contact(id: callStatus.callInfo.sender) else { return }
                     self.view.dispay(view: contact)
-
                 })
                 .disposed(by: disposeBag)
         }

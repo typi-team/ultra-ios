@@ -16,12 +16,12 @@ final class IncomingCallWireframe: BaseWireframe<IncomingCallViewController> {
 
     // MARK: - Module setup -
 
-    init(call request: CallRequest) {
+    init(call status: CallStatus) {
         let moduleViewController = IncomingCallViewController()
         super.init(viewController: moduleViewController)
 
         let presenter = IncomingCallPresenter.init(userId: appSettings.appStore.userID(),
-                                                   callStatus: CallStatus.incoming(request),
+                                                   callInformation: status,
                                                    view: moduleViewController,
                                                    contactService: appSettings.contactDBService,
                                                    callService: appSettings.callService,

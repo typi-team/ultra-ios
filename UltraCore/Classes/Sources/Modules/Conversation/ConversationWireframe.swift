@@ -37,7 +37,7 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
                                               appStore: appSettings.appStore,
                                               conversation: conversation,
                                               view: moduleViewController,
-                                              mediaRepository: appSettings.mediaRepository,
+                                              mediaRepository: appSettings.mediaRepository, callService: appSettings.callService,
                                               updateRepository: appSettings.updateRepository,
                                               messageRepository: appSettings.messageRespository,
                                               contactRepository: appSettings.contactRepository,
@@ -57,6 +57,12 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
 // MARK: - Extensions -
 
 extension ConversationWireframe: ConversationWireframeInterface {
+    func navigateToCall(response: CreateCallResponse, isVideo: Bool) {
+        guard let reciever = self.conversation.peer?.userID else { return }
+        let info = CallOutging(video: isVideo, host: response.host, room: response.room, sender: reciever, accessToken: response.accessToken)
+        self.navigationController?.pushWireframe(IncomingCallWireframe(call: .outcoming(info)), animated: true, removeFromStack: nil)
+    }
+    
     func navigateTo(contact: ContactDisplayable) {
         self.navigationController?.pushWireframe(ContactWireframe(contact: contact), animated: true, removeFromStack: nil)
     }

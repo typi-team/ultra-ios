@@ -94,6 +94,10 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     override func setupViews() {
         self.handleKeyboardTransmission = true
         super.setupViews()
+        self.navigationItem.rightBarButtonItems = [.init(image: .named("conversation_video_camera_icon"),
+                                                         style: .done, target: self, action: #selector(self.callWithVideo(_:))),
+                                                   .init(image: .named("conversation_phone_icon"),
+                                                         style: .done, target: self, action: #selector(self.callWithVoice(_:)))]
         self.view.addSubview(tableView)
         self.view.addSubview(messageHeadline)
         self.view.addSubview(messageInputBar)
@@ -372,6 +376,14 @@ extension ConversationViewController: QLPreviewControllerDataSource  {
 }
 
 extension ConversationViewController {
+    @objc func callWithVideo(_ sender: UIBarButtonItem) {
+        self.presenter?.callVideo()
+    }
+    
+    @objc func callWithVoice(_ sender: UIBarButtonItem) {
+        self.presenter?.callVoice()
+    }
+    
     func cell(_ message: Message, in tableView: UITableView) -> BaseMessageCell {
         
         guard let content = message.content else {
