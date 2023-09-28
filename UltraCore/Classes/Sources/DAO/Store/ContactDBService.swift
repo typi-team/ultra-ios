@@ -35,7 +35,10 @@ class ContactDBService {
     }
     
     func contact(id: String) -> DBContact? {
-        return Realm.myRealm().object(ofType: DBContact.self, forPrimaryKey: id)
+        if let contact = Realm.myRealm().object(ofType: DBContact.self, forPrimaryKey: id) {
+            return DBContact(value: contact)
+        }
+        return nil
     }
     
     func save( contact: DBContact) -> Single<Void> {

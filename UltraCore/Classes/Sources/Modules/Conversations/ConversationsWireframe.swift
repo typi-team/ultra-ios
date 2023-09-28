@@ -28,15 +28,18 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
         let retrieveContactStatusesInteractor = RetrieveContactStatusesInteractor.init(appStore: appSettings.appStore,
                                                                                        contactDBService: appSettings.contactDBService,
                                                                                        contactService: appSettings.contactsService)
+        let contactByUserIdInteractor = ContactByUserIdInteractor.init(contactsService: appSettings.contactsService)
+        
+        let contactToCreateChatByPhoneInteractor = ContactToCreateChatByPhoneInteractor.init(integrateService: appSettings.integrateService)
         let presenter = ConversationsPresenter(view: moduleViewController,
                                                updateRepository: appSettings.updateRepository,
                                                messageRepository: appSettings.messageRespository,
                                                contactsRepository: appSettings.contactRepository,
                                                wireframe: self,
                                                conversationRepository: appSettings.conversationRespository,
-                                               integrateService: appSettings.integrateService,
+                                               contactByUserIdInteractor: contactByUserIdInteractor,
                                                retrieveContactStatusesInteractor: retrieveContactStatusesInteractor,
-                                               deleteConversationInteractor: deleteConversationInteractor,
+                                               deleteConversationInteractor: deleteConversationInteractor, contactToCreateChatByPhoneInteractor: contactToCreateChatByPhoneInteractor,
                                                userStatusUpdateInteractor: UpdateOnlineInteractor(userService: appSettings.userService))
         moduleViewController.presenter = presenter
     }

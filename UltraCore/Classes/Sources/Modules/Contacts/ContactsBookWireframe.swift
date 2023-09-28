@@ -41,7 +41,4 @@ final class ContactsBookWireframe: BaseWireframe<ContactsBookViewController> {
 // MARK: - Extensions -
 
 extension ContactsBookWireframe: ContactsBookWireframeInterface {
-    func openConversation(with contact: ContactDisplayable) {
-        self.navigationController?.pushWireframe(ConversationWireframe(with: ConversationImpl(contact: contact)))
-    }
 }

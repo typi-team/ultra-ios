@@ -12,9 +12,7 @@ import RxSwift
 import RealmSwift
 
 
-protocol ContactsBookWireframeInterface: WireframeInterface {
-    func openConversation(with contact: ContactDisplayable)
-}
+protocol ContactsBookWireframeInterface: WireframeInterface { }
 
 protocol ContactsBookViewInterface: ViewInterface {
     func permission(is denied: Bool)

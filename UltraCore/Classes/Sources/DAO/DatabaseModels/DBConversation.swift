@@ -28,7 +28,7 @@ class DBConversation: Object {
         if let contact = conversation.peer as? DBContact {
             self.contact = contact
         } else if let contact = conversation.peer as? Contact {
-            self.contact = DBContact.init(from: contact, chatId: conversation.idintification)
+            self.contact = DBContact.init(from: contact)
         } else {
             fatalError("handle this case")
         }
@@ -56,7 +56,7 @@ extension DBConversation: Conversation {
             if let contact = newValue as? DBContact {
                 self.contact = contact
             } else if let contact = newValue as? Contact {
-                self.contact = DBContact.init(from: contact, chatId: self.idintification)
+                self.contact = DBContact.init(from: contact)
             } else {
                 fatalError("handle this case")
             }

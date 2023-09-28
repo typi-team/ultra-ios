@@ -58,10 +58,14 @@ final class ContactsBookPresenter: BasePresenter {
 
 extension ContactsBookPresenter: ContactsBookPresenterInterface {
     func openConversation(with contact: ContactDisplayable) {
-        self.openConversationCallback(Contact.with({
-            $0.phone = contact.phone
-            $0.firstname = contact.displaName
-        }))
+        
+        self.wireframe.dissmiss(completion: {[weak self] in
+            guard let `self` = self else { return }
+            self.openConversationCallback(Contact.with({
+                $0.phone = contact.phone
+                $0.firstname = contact.displaName
+            }))
+        })
     }
     
     func initial() {

@@ -1,6 +1,7 @@
 import UIKit
 
 protocol WireframeInterface: AnyObject {
+    func dissmiss(completion:@escaping VoidCallback)
 }
 
 class BaseWireframe<ViewController> where ViewController: UIViewController {
@@ -20,7 +21,9 @@ class BaseWireframe<ViewController> where ViewController: UIViewController {
 }
 
 extension BaseWireframe: WireframeInterface {
-
+    func dissmiss(completion:@escaping VoidCallback) {
+        self.viewController.dismiss(animated: true , completion: completion)
+    }
 }
 
 extension BaseWireframe {
