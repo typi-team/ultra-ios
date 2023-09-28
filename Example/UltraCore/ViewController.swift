@@ -133,8 +133,8 @@ extension ViewController: UltraCoreSettingsDelegate {
     ///   - callback: для сохранения контактов, можно использовать для сохранения массива контактной книги или одиночной сохранения контакта, перед началом переписки
     ///   - userCallback: для начало переписки, перед вызовом надо скрыть ваш контроллер
     /// - Returns: Контроллер для отображения ваших контактов
-    func contactsViewController(callback: @escaping UltraCore.ContactsCallback, userCallback: @escaping UltraCore.UserIDCallback) -> UIViewController? {
-       return nil
+    func contactsViewController(contactsCallback: @escaping ContactsCallback, openConverationCallback: @escaping UserIDCallback) -> UIViewController? {
+        return nil
     }
 
     func serverConfig() -> ServerConfigurationProtocol? {

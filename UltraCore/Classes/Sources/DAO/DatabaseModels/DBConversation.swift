@@ -22,13 +22,13 @@ class DBConversation: Object {
         return "idintification"
     }
     
-    convenience init(conversation: Conversation, user id: String?) {
+    convenience init(conversation: Conversation) {
         self.init()
         self.message = nil
         if let contact = conversation.peer as? DBContact {
             self.contact = contact
-        } else if let contact = conversation.peer as? Contact, let id = id {
-            self.contact = DBContact.init(from: contact, user: id)
+        } else if let contact = conversation.peer as? Contact {
+            self.contact = DBContact.init(from: contact, chatId: conversation.idintification)
         } else {
             fatalError("handle this case")
         }
@@ -56,7 +56,7 @@ extension DBConversation: Conversation {
             if let contact = newValue as? DBContact {
                 self.contact = contact
             } else if let contact = newValue as? Contact {
-                self.contact = DBContact.init(from: contact)
+                self.contact = DBContact.init(from: contact, chatId: self.idintification)
             } else {
                 fatalError("handle this case")
             }

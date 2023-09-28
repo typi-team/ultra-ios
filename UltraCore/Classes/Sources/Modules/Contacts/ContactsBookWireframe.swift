@@ -16,12 +16,13 @@ final class ContactsBookWireframe: BaseWireframe<ContactsBookViewController> {
 
     // MARK: - Module setup -
 
-    init(contactsCallback: @escaping ContactsCallback) {
+    init(contactsCallback: @escaping ContactsCallback,
+         openConversationCallback: @escaping UserIDCallback) {
         let moduleViewController = ContactsBookViewController()
 
         super.init(viewController: moduleViewController)
 
-        let syncInteractor = SyncContactsInteractor(contactsService: appSettings.contactsService)
+        let syncInteractor = SyncFreedomContactsInteractor(appStore: appSettings.appStore)
         let contactImageInteractor = ContactDownloadInteractor(mediaUtils: MediaUtils(), appStore: appSettings.appStore)
 
         let presenter = ContactsBookPresenter(appStore: appSettings.appStore,
@@ -29,6 +30,7 @@ final class ContactsBookWireframe: BaseWireframe<ContactsBookViewController> {
                                               contactsRepository: appSettings.contactRepository,
                                               wireframe: self,
                                               contactsCallback: contactsCallback,
+                                              openConversationCallback: openConversationCallback,
                                               contactImageDownloadInteractor: contactImageInteractor,
                                               syncContact: syncInteractor,
                                               bookContacts: ContactsBookInteractor())

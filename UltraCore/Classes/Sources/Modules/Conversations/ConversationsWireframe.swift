@@ -34,6 +34,7 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
                                                contactsRepository: appSettings.contactRepository,
                                                wireframe: self,
                                                conversationRepository: appSettings.conversationRespository,
+                                               integrateService: appSettings.integrateService,
                                                retrieveContactStatusesInteractor: retrieveContactStatusesInteractor,
                                                deleteConversationInteractor: deleteConversationInteractor,
                                                userStatusUpdateInteractor: UpdateOnlineInteractor(userService: appSettings.userService))
@@ -44,11 +45,12 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
 // MARK: - Extensions -
 
 extension ConversationsWireframe: ConversationsWireframeInterface {
-    func navigateToContacts(contactsCallback: @escaping ContactsCallback, userID: @escaping UserIDCallback) {
-        if let contactsViewController = self.delegate?.contactsViewController(callback: contactsCallback, userCallback: userID) {
+    func navigateToContacts(contactsCallback: @escaping ContactsCallback, openConverationCallback: @escaping UserIDCallback) {
+        if let contactsViewController = self.delegate?.contactsViewController(contactsCallback: contactsCallback,
+                                                                              openConverationCallback: openConverationCallback) {
             self.navigationController?.pushViewController(contactsViewController, animated: true)
         } else {
-            self.navigationController?.presentWireframeWithNavigation(ContactsBookWireframe(contactsCallback: contactsCallback))
+            self.navigationController?.presentWireframeWithNavigation(ContactsBookWireframe(contactsCallback: contactsCallback, openConversationCallback: openConverationCallback))
         }
     }
     

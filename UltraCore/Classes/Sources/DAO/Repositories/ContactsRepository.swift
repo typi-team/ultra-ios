@@ -15,7 +15,6 @@ protocol ContactsRepository {
     func contacts() -> Observable<[Contact]>
     func contact(id: String) -> DBContact?
     func save(contact: DBContact) -> Single<Void>
-    func save(contacts: [IContact]) -> Single<Void>
     func delete(contact: DBContact) -> Single<Void>
 }
 
@@ -42,10 +41,6 @@ class ContactsRepositoryImpl: ContactsRepository {
     
     func delete(contact: DBContact) -> Single<Void> {
         return self.contactDBService.delete(contact: contact)
-    }
-    
-    func save(contacts: [IContact]) -> Single<Void> {
-        return self.contactDBService.save(contacts: contacts)
     }
 }
 

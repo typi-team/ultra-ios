@@ -23,8 +23,10 @@ final class ConversationsPresenter: BasePresenter {
     fileprivate let contactsRepository: ContactsRepository
     private let conversationRepository: ConversationRepository
     private let retrieveContactStatusesInteractor: UseCase<Void, Void>
+    fileprivate let contactByUserIdInteractor: ContactByUserIdInteractor
     fileprivate let userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>
     fileprivate let deleteConversationInteractor: UseCase<(Conversation, Bool), Void>
+    fileprivate let contactToCreateChatByPhoneInteractor: ContactToCreateChatByPhoneInteractor
     
     lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(conversationRepository.conversations(), updateRepository.typingUsers, updateRepository.unreadMessages)
         .map({ conversations, typingUsers, unreadMessages in
@@ -48,8 +50,10 @@ final class ConversationsPresenter: BasePresenter {
          contactsRepository: ContactsRepository,
          wireframe: ConversationsWireframeInterface,
          conversationRepository: ConversationRepository,
+         contactByUserIdInteractor: ContactByUserIdInteractor,
          retrieveContactStatusesInteractor: UseCase<Void, Void>,
          deleteConversationInteractor: UseCase<(Conversation,Bool), Void>,
+         contactToCreateChatByPhoneInteractor: ContactToCreateChatByPhoneInteractor,
          userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>) {
         self.view = view
         self.wireframe = wireframe
@@ -57,11 +61,12 @@ final class ConversationsPresenter: BasePresenter {
         self.messageRepository = messageRepository
         self.contactsRepository = contactsRepository
         self.conversationRepository = conversationRepository
+        self.contactByUserIdInteractor = contactByUserIdInteractor
         self.userStatusUpdateInteractor = userStatusUpdateInteractor
         self.deleteConversationInteractor = deleteConversationInteractor
         self.retrieveContactStatusesInteractor = retrieveContactStatusesInteractor
+        self.contactToCreateChatByPhoneInteractor = contactToCreateChatByPhoneInteractor
     }
-    
 }
 
 // MARK: - Extensions -
@@ -102,19 +107,42 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
     
     
     func navigateToContacts() {
-        self.wireframe.navigateToContacts(contactsCallback: {[weak self] contacts in
+        self.wireframe.navigateToContacts(contactsCallback: { [weak self] contacts in
             guard let `self` = self else { return }
-            self.contactsRepository
-                .save(contacts: contacts)
-                .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
-                .observe(on: ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribe()
-                .disposed(by: disposeBag)
-        }, userID: {[weak self] userID in
-            guard let `self` = self, let dbContact = self.contactsRepository.contact(id: userID) else { return }
-            DispatchQueue.main.async {
-                self.wireframe.navigateToConversation(with: ConversationImpl(contact: dbContact))
-            }
+//            self.contactsRepository
+//                .save(contacts: contacts)
+//                .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+//                .observe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+//                .subscribe()
+//                .disposed(by: disposeBag)
+        }, openConverationCallback: { [weak self] userID in
+            guard let `self` = self else { return }
+            self.createChatBy(contact: userID)
+//            guard let `self` = self, let dbContact = self.contactsRepository.contact(id: userID) else { return }
+//            DispatchQueue.main.async {
+
+//            }
         })
+    }
+    
+    func createChatBy(contact: IContact) {
+        self.contactToCreateChatByPhoneInteractor.executeSingle(params: contact)
+            .flatMap({ contactByPhone in
+                self.contactByUserIdInteractor.executeSingle(params: contactByPhone.userID)
+                    .flatMap({ contact in
+                        self.contactsRepository.save(contact: .init(from: contact, chatId: contactByPhone.chatID))
+                    }).map({ _ -> DBContact? in
+                        self.contactsRepository.contact(id: contactByPhone.userID)
+                    })
+            })
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe(onSuccess: { contact in
+                guard let contact = contact else {
+                    return
+                }
+                self.wireframe.navigateToConversation(with: ConversationImpl(contact: contact))
+            })
+            .disposed(by: disposeBag)
     }
 }

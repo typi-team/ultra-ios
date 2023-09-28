@@ -30,4 +30,5 @@ protocol AppSettings: Any {
     var messageService: MessageServiceClientProtocol { get }
     var contactsService: ContactServiceClientProtocol { get }
     var conversationService: ChatServiceClientProtocol { get }
+    var integrateService: IntegrationServiceClientProtocol { get }
 }

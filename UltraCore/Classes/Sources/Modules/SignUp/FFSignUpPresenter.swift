@@ -61,10 +61,11 @@ extension FFSignUpPresenter: SignUpPresenterInterface {
             }
         }
         
-        guard let url = URL(string: "http://ultra-dev.typi.team:8086/v1/auth"),
+        guard let url = URL(string: "https://ultra-dev.typi.team/mock/v1/auth"),
               let jsonData = try? JSONSerialization.data(withJSONObject: [
                   "phone": number,
                   "lastname": lastName,
+                  "nickname": lastName,
                   "firstname": firstname,
               ]) else { return }
 

@@ -90,16 +90,16 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
         if let contact = self.contactService.contact(id: self.callStatus.callInfo.sender) {
             self.view.dispay(view: contact)
         } else {
-            self.contactInteractor
-                .executeSingle(params: self.callStatus.callInfo.sender)
-                .flatMap({ self.contactService.save(contact: DBContact(from: $0, user: self.userId)).map({ $0 }) })
-                .observe(on: ConcurrentDispatchQueueScheduler(qos: .background))
-                .subscribe(on: MainScheduler.asyncInstance)
-                .subscribe(onSuccess: { [weak self] contact in
-                    guard let `self` = self, let contact = self.contactService.contact(id: callStatus.callInfo.sender) else { return }
-                    self.view.dispay(view: contact)
-                })
-                .disposed(by: disposeBag)
+//            self.contactInteractor
+//                .executeSingle(params: self.callStatus.callInfo.sender)
+//                .flatMap({ self.contactService.save(contact: DBContact(from: $0, chatId: )).map({ $0 }) })
+//                .observe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+//                .subscribe(on: MainScheduler.asyncInstance)
+//                .subscribe(onSuccess: { [weak self] contact in
+//                    guard let `self` = self, let contact = self.contactService.contact(id: callStatus.callInfo.sender) else { return }
+//                    self.view.dispay(view: contact)
+//                })
+//                .disposed(by: disposeBag)
         }
         return self.callStatus
     }

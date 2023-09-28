@@ -39,12 +39,14 @@ class RetrieveContactStatusesInteractor: UseCase<Void, Void> {
             }
             .asObservable()
             .flatMap { user -> Observable<Void> in
+                
                 return Observable<UserStatus>
                     .from(user.statuses)
                     .flatMap { userStatus -> Single<Void> in
                         if var contact = self.contactDBService.contact(id: userStatus.userID)?.toProto() {
                             contact.status = userStatus
-                            return self.contactDBService.save(contact: DBContact(from: contact, user: self.appStore.userID()))
+                            fatalError()
+//                            return self.contactDBService.save(contact: DBContact(from: contact, chatId: ))
                         } else {
                             return Single.just(())
                         }

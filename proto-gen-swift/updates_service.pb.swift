@@ -34,6 +34,8 @@ struct ListenRequest {
   /// Clears the value of `localState`. Subsequent reads from it will return its default value.
   mutating func clearLocalState() {self._localState = nil}
 
+  var userStatus: UserStatusEnum = .unknown
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -107,6 +109,7 @@ extension ListenRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   static let protoMessageName: String = "ListenRequest"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "local_state"),
+    2: .standard(proto: "user_status"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -116,6 +119,7 @@ extension ListenRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularMessageField(value: &self._localState) }()
+      case 2: try { try decoder.decodeSingularEnumField(value: &self.userStatus) }()
       default: break
       }
     }
@@ -129,11 +133,15 @@ extension ListenRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     try { if let v = self._localState {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
     } }()
+    if self.userStatus != .unknown {
+      try visitor.visitSingularEnumField(value: self.userStatus, fieldNumber: 2)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ListenRequest, rhs: ListenRequest) -> Bool {
     if lhs._localState != rhs._localState {return false}
+    if lhs.userStatus != rhs.userStatus {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

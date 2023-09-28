@@ -15,11 +15,12 @@ final class ContactsBookPresenter: BasePresenter {
     
     // MARK: - Public properties -
 
-    lazy var contacts: Observable<[Contact]> = contactsRepository.contacts()
+    lazy var contacts: BehaviorSubject<[Contact]> = .init(value: [])
 
     // MARK: - Private properties -
     
     fileprivate let contactsCallback: ContactsCallback
+    fileprivate let openConversationCallback: UserIDCallback
 
     fileprivate let mediaUtils = MediaUtils()
     fileprivate let appStore: AppSettingsStore
@@ -37,6 +38,7 @@ final class ContactsBookPresenter: BasePresenter {
          contactsRepository: ContactsRepository,
          wireframe: ContactsBookWireframeInterface,
          contactsCallback: @escaping ContactsCallback,
+         openConversationCallback:@escaping UserIDCallback,
          contactImageDownloadInteractor: UseCase<Contact, Void>,
          syncContact: UseCase<ContactsImportRequest, ContactImportResponse>,
          bookContacts: UseCase<Void, ContactsBookInteractor.Contacts>) {
@@ -47,6 +49,7 @@ final class ContactsBookPresenter: BasePresenter {
         self.bookContacts = bookContacts
         self.contactsCallback = contactsCallback
         self.contactsRepository = contactsRepository
+        self.openConversationCallback = openConversationCallback
         self.contactImageDownloadInteractor = contactImageDownloadInteractor
     }
 }
@@ -55,7 +58,10 @@ final class ContactsBookPresenter: BasePresenter {
 
 extension ContactsBookPresenter: ContactsBookPresenterInterface {
     func openConversation(with contact: ContactDisplayable) {
-        self.wireframe.openConversation(with: contact)
+        self.openConversationCallback(Contact.with({
+            $0.phone = contact.phone
+            $0.firstname = contact.displaName
+        }))
     }
     
     func initial() {
@@ -75,6 +81,10 @@ extension ContactsBookPresenter: ContactsBookPresenterInterface {
                 guard let `self` = self else { return }
                 self.contactsCallback(response)
             })
+            .do(onSuccess: {[weak self] contacts in
+                guard let `self` = self else { return }
+                self.contacts.on(.next(contacts))
+            })
             .asObservable()
             .flatMap({ contacts -> Observable<[Contact]> in
                 Observable.from(contacts)
@@ -84,6 +94,11 @@ extension ContactsBookPresenter: ContactsBookPresenterInterface {
                     })
                     .map({ contacts })
             })
+            .do(onNext: {[weak self] contacts in
+                guard let `self` = self else { return }
+                self.contacts.on(.next(contacts))
+            })
+                
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe(onNext: { contacts in PP.info("Contacts \(contacts.count)pcs saved on db") })

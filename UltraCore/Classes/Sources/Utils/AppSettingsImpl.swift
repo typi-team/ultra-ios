@@ -49,6 +49,7 @@ open class AppSettingsImpl: AppSettings  {
     lazy var contactsService: ContactServiceClientProtocol = ContactServiceNIOClient(channel: channel)
     lazy var updateService: UpdatesServiceClientProtocol = UpdatesServiceNIOClient(channel: updateChannel)
     lazy var conversationService: ChatServiceClientProtocol = ChatServiceNIOClient.init(channel: channel)
+    lazy var integrateService: IntegrationServiceClientProtocol = IntegrationServiceNIOClient.init(channel: channel, defaultCallOptions: .default())
 
 //    MARK: Services
 

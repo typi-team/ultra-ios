@@ -10,8 +10,8 @@ import UIKit
 public protocol UltraCoreSettingsDelegate: AnyObject {
     func serverConfig() -> ServerConfigurationProtocol?
     func moneyViewController(callback: @escaping MoneyCallback) -> UIViewController?
-    func contactsViewController(callback: @escaping ContactsCallback,
-                                userCallback: @escaping UserIDCallback) -> UIViewController?
+    func contactsViewController(contactsCallback: @escaping ContactsCallback,
+                                openConverationCallback: @escaping UserIDCallback) -> UIViewController?
 }
 
 public class UltraCoreSettings {
