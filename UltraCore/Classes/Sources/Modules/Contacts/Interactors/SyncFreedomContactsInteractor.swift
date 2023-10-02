@@ -85,15 +85,17 @@ extension Contact: Encodable, Decodable {
     
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        firstname = try container.decode(String.self, forKey: .firstname)
-        lastname = try container.decode(String.self, forKey: .lastname)
-        phone = try container.decode(String.self, forKey: .phone)
+        firstname = try container.decode(String.self, forKey: .nickname)
+        lastname = try container.decode(String.self, forKey: .firstname)
+        phone = try container.decode(String.self, forKey: .user_id)
     }
 
     enum CodingKeys: String, CodingKey {
         case firstname
         case lastname
         case phone
+        case nickname
+        case user_id
     }
 
 }
