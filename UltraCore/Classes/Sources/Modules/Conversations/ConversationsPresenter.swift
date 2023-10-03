@@ -107,26 +107,16 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
     
     
     func navigateToContacts() {
-        self.wireframe.navigateToContacts(contactsCallback: { [weak self] contacts in
-            guard let `self` = self else { return }
-//            self.contactsRepository
-//                .save(contacts: contacts)
-//                .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
-//                .observe(on: ConcurrentDispatchQueueScheduler(qos: .background))
-//                .subscribe()
-//                .disposed(by: disposeBag)
-        }, openConverationCallback: { [weak self] userID in
-            guard let `self` = self else { return }
-            self.createChatBy(contact: userID)
-//            guard let `self` = self, let dbContact = self.contactsRepository.contact(id: userID) else { return }
-//            DispatchQueue.main.async {
-
-//            }
-        })
+        self.wireframe.navigateToContacts(contactsCallback: { contacts in },
+                                          openConverationCallback: { [weak self] userID in
+                                              guard let `self` = self else { return }
+                                              self.createChatBy(contact: userID)
+                                          })
     }
     
     func createChatBy(contact: IContact) {
-        self.contactToCreateChatByPhoneInteractor.executeSingle(params: contact)
+        self.contactToCreateChatByPhoneInteractor
+            .executeSingle(params: contact)
             .flatMap({ contactByPhone -> Single<Conversation?> in
                 self.contactByUserIdInteractor.executeSingle(params: contactByPhone.userID)
                     .flatMap({ contact in
