@@ -68,8 +68,8 @@ class ViewController: UITabBarController {
     
     var timerUpdate: Timer?
     func timer() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 180, execute: {
-            self.timerUpdate = Timer.scheduledTimer(timeInterval: 120, target: self, selector: #selector(self.runTimedCode), userInfo: nil, repeats: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 60, execute: {
+            self.timerUpdate = Timer.scheduledTimer(timeInterval: 60, target: self, selector: #selector(self.runTimedCode), userInfo: nil, repeats: true)
             self.timerUpdate?.fire()
         })
     }
@@ -107,6 +107,7 @@ class ViewController: UITabBarController {
                   "phone": number,
                   "lastname": lastName,
                   "firstname": firstname,
+                  "nickname": firstname,
               ]) else { return }
 
         var request = URLRequest(url: url)
