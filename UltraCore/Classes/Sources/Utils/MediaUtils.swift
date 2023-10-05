@@ -24,8 +24,7 @@ class MediaUtils {
     }
     
     func image(from message: Message) -> UIImage? {
-        
-        guard let data = try? readFileWithName(fileName: message.hasPhoto ? message.photo.previewFileIdWithExtensions : message.video.previewVideoFileIdWithExtension) else { return nil }
+        guard let data = try? readFileWithName(fileName: message.hasPhoto ? message.photo.originalFileIdWithExtension : message.video.previewVideoFileIdWithExtension) else { return nil }
         return UIImage(data: data)
     }
     

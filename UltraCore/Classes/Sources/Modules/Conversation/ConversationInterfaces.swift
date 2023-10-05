@@ -14,6 +14,7 @@ import RealmSwift
 protocol ConversationWireframeInterface: WireframeInterface {
     func navigateTo(contact: ContactDisplayable)
     func openMoneyController(callback: @escaping MoneyCallback)
+    func navigateToCall(response: CreateCallResponse, isVideo: Bool)
 }
 
 protocol ConversationViewInterface: ViewInterface {
@@ -45,4 +46,7 @@ protocol ConversationPresenterInterface: PresenterInterface {
     func mediaURL(from message: Message) -> URL?
     var messages: Observable<[Message]> { get set }
     func openMoneyController()
+    
+    func callVideo()
+    func callVoice()
 }

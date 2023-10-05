@@ -9,10 +9,8 @@ import Foundation
 
 public protocol IContact {
     var phone: String { get set }
-    var userID: String { get set }
-    var lastname: String { get set }
     var firstname: String { get set }
 }
 
-public typealias UserIDCallback = (String) -> Void
+public typealias UserIDCallback = (IContact) -> Void
 public typealias ContactsCallback = ([IContact]) -> Void

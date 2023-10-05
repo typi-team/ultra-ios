@@ -25,9 +25,10 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         $0.setTitle("Продолжить", for: .normal)
         $0.addAction {[weak self] in
             guard let `self` = self,
-            let phone = self.phoneTextField.text,
-            let firstname = self.firstTextField.text,
-                let lastname = self.lastTextField.text else { return }
+                  let phone = self.phoneTextField.text,
+                  let lastname = self.lastTextField.text,
+                  let firstname = self.firstTextField.text,
+                  !firstname.isEmpty, !lastname.isEmpty else { return }
             self.presenter?.login(lastName: lastname, firstname: firstname, phone: phone)
         }
     })
@@ -57,7 +58,7 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         $0.returnKeyType = .done
         $0.backgroundColor = .white
         $0.font = .defaultRegularBody
-        $0.placeholder = "Ваша фамилия"
+        $0.placeholder = "Никнейм"
         $0.placeholderColor = .gray500
         $0.addAction(for: .editingDidEndOnExit) {[weak self] in
             self?.view.endEditing(true)
@@ -104,7 +105,7 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         
         self.stackView.addArrangedSubview(lastTextField)
         self.stackView.setCustomSpacing(kLowPadding, after: lastTextField)
-        let lastHint = RegularFootnote({ $0.text = "       " + "Например Иванов" })
+        let lastHint = RegularFootnote({ $0.text = "       " + "nickname_ff" })
         self.stackView.addArrangedSubview(lastHint)
         self.stackView.setCustomSpacing(kHeadlinePadding * 2, after: lastHint)
         
@@ -167,11 +168,11 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         self.headlineText.text = "Для регистрации в чат сервисе введите ваши данные"
         let userDef = UserDefaults.standard
         if let lastname = userDef.string(forKey: "last_name"),
-        let firstname = userDef.string(forKey: "first_name"),
+           let firstname = userDef.string(forKey: "first_name"),
            let phone = userDef.string(forKey: "phone") {
             self.presenter?.login(lastName: lastname, firstname: firstname, phone: phone)
         } else {
-            self.presenter?.login(lastName: "Test", firstname: "test", phone: "+77756043111")
+//            self.presenter?.login(lastName: "Test", firstname: "test", phone: "+77756043111")
         }
     }
 }

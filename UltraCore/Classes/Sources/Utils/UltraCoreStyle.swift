@@ -95,6 +95,8 @@ public class UltraCoreStyle {
     public static var outcomeMessageCell: MessageCellConfig = OutcomeMessageCellConfigImpl()
 //    MARK: VoiceBarView config
     public static var voiceInputBarConfig: VoiceInputBarConfig = VoiceInputBarConfigImpl()
+//    MARK: Calling page config
+    public static var callingConfig: CallPageStyle = CallPageStyleImpl()
 }
 
 
@@ -116,3 +118,53 @@ private class VoiceInputBarConfigImpl: VoiceInputBarConfig {
     var removeButtonBackground: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
     var durationLabel: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray500, font: .defaultRegularBody)
 }
+
+
+public protocol CallPageStyle {
+    var background: TwiceColor { get set }
+    
+    var companionConfig: LabelConfig { get set }
+    var durationConfig: LabelConfig { get set }
+    
+    var mouthpieceOnImage: UIImage { get set }
+    
+    var mouthpieceOffImage: UIImage { get set }
+    
+    var micOnImage: UIImage { get set }
+    var micOffImage: UIImage { get set }
+    
+    var cameraOnImage: UIImage { get set }
+    var cameraOffImage: UIImage { get set }
+    
+    var answerImage: UIImage { get set }
+    var declineImage: UIImage { get set }
+}
+
+private class CallPageStyleImpl: CallPageStyle {
+    
+//    var background: TwiceColor = TwiceColorImpl(defaultColor: .from(hex: "#0F141B"), darkColor: .from(hex: "#0F141B"))
+    var background: TwiceColor = TwiceColorImpl(defaultColor: .black, darkColor: .black)
+    
+    var companionConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .white, font: .defaultRegularHeadline)
+    
+    var durationConfig: LabelConfig = LabelConfigImpl(darkColor: .gray400, defaultColor: .gray400, font: .defaultRegularBody)
+    
+    var mouthpieceOnImage: UIImage = .named("calling.mouthpieceOn")!
+    
+    var mouthpieceOffImage: UIImage = .named("calling.mouthpieceOff")!
+    
+    var micOnImage: UIImage = .named("calling.micOn")!
+    
+    var micOffImage: UIImage = .named("calling.micOff")!
+    
+    var cameraOnImage: UIImage = .named("calling.cameraOn")!
+    
+    var cameraOffImage: UIImage = .named("calling.cameraOff")!
+    
+    var answerImage: UIImage = .named("calling.answer")!
+    
+    var declineImage: UIImage = .named("calling.decline")!
+    
+    var closeImage: UIImage = .named("calling.close")!
+}
+

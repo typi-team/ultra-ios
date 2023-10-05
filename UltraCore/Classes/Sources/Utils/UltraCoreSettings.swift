@@ -10,8 +10,8 @@ import UIKit
 public protocol UltraCoreSettingsDelegate: AnyObject {
     func serverConfig() -> ServerConfigurationProtocol?
     func moneyViewController(callback: @escaping MoneyCallback) -> UIViewController?
-    func contactsViewController(callback: @escaping ContactsCallback,
-                                userCallback: @escaping UserIDCallback) -> UIViewController?
+    func contactsViewController(contactsCallback: @escaping ContactsCallback,
+                                openConverationCallback: @escaping UserIDCallback) -> UIViewController?
 }
 
 public class UltraCoreSettings {
@@ -30,6 +30,7 @@ public extension UltraCoreSettings {
     
     static func printAllLocalizableStrings() {
         print("================= Localizable =======================")
+        print(CallStrings.allCases.map({"\"\($0.descrition)\" = \"\($0.localized)\";"}).joined(separator: "\n"))
         print(ConversationsStrings.allCases.map({"\"\($0.descrition)\" = \"\($0.localized)\";"}).joined(separator: "\n"))
         print(ContactsStrings.allCases.map({"\"\($0.descrition)\" = \"\($0.localized)\";"}).joined(separator: "\n"))
         print(ConversationStrings.allCases.map({"\"\($0.descrition)\" = \"\($0.localized)\";"}).joined(separator: "\n"))

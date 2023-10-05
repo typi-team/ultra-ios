@@ -100,7 +100,7 @@ extension MediaRepositoryImpl: MediaRepository {
                 .download(params, callOptions: .default(), handler: { chunk in
                     data.append(chunk.data)
                     params.fromChunkNumber = chunk.seqNum
-                    PP.warning((Float(params.fromChunkNumber) / Float(params.toChunkNumber)).description)
+                    PP.info((Float(params.fromChunkNumber) / Float(params.toChunkNumber)).description)
                     var images = try? self.downloadingImages.value()
                     images?.removeAll(where: {$0.fileID == chunk.fileID})
                     images?.append(params)
@@ -192,12 +192,10 @@ private extension MediaRepositoryImpl {
                 }))
                 self.uploadingMedias.on(.next(images))
             })
-            .map({ [weak self] chunks in
+            .do(onSuccess: { [weak self] chunks in
                 guard let `self` = self else { throw NSError.selfIsNill }
                 message.photo.fileID = chunks.first?.fileID ?? ""
-                try self.mediaUtils.write(file.data, file: message.voice.originalVoiceFileId, and: message.voice.extensions)
-                
-                return chunks
+                try self.mediaUtils.write(file.data, file: message.photo.originalFileId, and: message.photo.extensions)
             })
             .do(onSuccess: { [weak self] _ in
                 guard let `self` = self,

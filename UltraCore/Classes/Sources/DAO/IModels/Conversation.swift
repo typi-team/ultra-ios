@@ -28,10 +28,10 @@ class ConversationImpl: Conversation {
     var peer: ContactDisplayable?
     var typingData: [UserTypingWithDate] = []
     
-    init(contact: ContactDisplayable ) {
+    init(contact: ContactDisplayable, idintification: String ) {
         self.peer = contact
         self.title = contact.displaName
         self.lastMessage = contact.phone
-        self.idintification = contact.chatID
+        self.idintification = idintification
     }
 }

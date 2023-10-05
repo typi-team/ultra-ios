@@ -68,8 +68,8 @@ class ViewController: UITabBarController {
     
     var timerUpdate: Timer?
     func timer() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 180, execute: {
-            self.timerUpdate = Timer.scheduledTimer(timeInterval: 120, target: self, selector: #selector(self.runTimedCode), userInfo: nil, repeats: true)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 60, execute: {
+            self.timerUpdate = Timer.scheduledTimer(timeInterval: 60, target: self, selector: #selector(self.runTimedCode), userInfo: nil, repeats: true)
             self.timerUpdate?.fire()
         })
     }
@@ -102,11 +102,12 @@ class ViewController: UITabBarController {
             }
         }
         
-        guard let url = URL(string: "http://ultra-dev.typi.team:8086/v1/auth"),
+        guard let url = URL(string: "https://ultra-dev.typi.team/mock/v1/auth"),
               let jsonData = try? JSONSerialization.data(withJSONObject: [
                   "phone": number,
                   "lastname": lastName,
                   "firstname": firstname,
+                  "nickname": firstname,
               ]) else { return }
 
         var request = URLRequest(url: url)
@@ -133,8 +134,8 @@ extension ViewController: UltraCoreSettingsDelegate {
     ///   - callback: для сохранения контактов, можно использовать для сохранения массива контактной книги или одиночной сохранения контакта, перед началом переписки
     ///   - userCallback: для начало переписки, перед вызовом надо скрыть ваш контроллер
     /// - Returns: Контроллер для отображения ваших контактов
-    func contactsViewController(callback: @escaping UltraCore.ContactsCallback, userCallback: @escaping UltraCore.UserIDCallback) -> UIViewController? {
-       return nil
+    func contactsViewController(contactsCallback: @escaping ContactsCallback, openConverationCallback: @escaping UserIDCallback) -> UIViewController? {
+        return nil
     }
 
     func serverConfig() -> ServerConfigurationProtocol? {

@@ -35,27 +35,10 @@ class ContactDBService {
     }
     
     func contact(id: String) -> DBContact? {
-        return Realm.myRealm().object(ofType: DBContact.self, forPrimaryKey: id)
-    }
-    
-    func save(contacts: [IContact]) -> Single<Void> {
-        return Single.create { [weak self] observer -> Disposable in
-            guard let `self` = self else { return Disposables.create() }
-            do {
-
-                let realm = Realm.myRealm()
-                try realm.write {
-                    contacts.map({DBContact.init(inner: $0)})
-                        .forEach {
-                            realm.create(DBContact.self, value: $0, update: .all)
-                        }
-                }
-                observer(.success(()))
-            } catch {
-                observer(.failure(error))
-            }
-            return Disposables.create()
+        if let contact = Realm.myRealm().object(ofType: DBContact.self, forPrimaryKey: id) {
+            return DBContact(value: contact)
         }
+        return nil
     }
     
     func save( contact: DBContact) -> Single<Void> {

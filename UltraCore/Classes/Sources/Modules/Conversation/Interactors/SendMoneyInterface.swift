@@ -28,7 +28,7 @@ class SendMoneyInteractor: UseCase<TransferPayload, TransferResponse> {
                 observer(.failure(NSError.objectsIsNill))
                 return Disposables.create()
             }
-            let url = URL(string: "http://ultra-dev.typi.team:8086/v1/transfer")!
+            let url = URL(string: "https://ultra-dev.typi.team/mock/v1/transfer")!
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
             request.addValue("application/json", forHTTPHeaderField: "Content-Type")

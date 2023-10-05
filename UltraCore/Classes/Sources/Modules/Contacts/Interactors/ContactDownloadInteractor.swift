@@ -21,7 +21,7 @@ class ContactDownloadInteractor: UseCase<Contact, Void> {
     override func executeSingle(params: Contact) -> Single<Void> {
         return Single<Void>.create(subscribe: { [weak self] observer -> Disposable in
             guard let `self` = self,
-                  let url = URL(string: "http://ultra-dev.typi.team:8086/v1/profile/get-avatar?phone=\(params.phone)") else {
+                  let url = URL(string: "https://ultra-dev.typi.team/mock/v1/profile/get-avatar?phone=\(params.phone)") else {
                 return Disposables.create()
             }
 

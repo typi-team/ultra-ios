@@ -28,14 +28,18 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
         let retrieveContactStatusesInteractor = RetrieveContactStatusesInteractor.init(appStore: appSettings.appStore,
                                                                                        contactDBService: appSettings.contactDBService,
                                                                                        contactService: appSettings.contactsService)
+        let contactByUserIdInteractor = ContactByUserIdInteractor.init(contactsService: appSettings.contactsService)
+        
+        let contactToCreateChatByPhoneInteractor = ContactToCreateChatByPhoneInteractor.init(integrateService: appSettings.integrateService)
         let presenter = ConversationsPresenter(view: moduleViewController,
                                                updateRepository: appSettings.updateRepository,
                                                messageRepository: appSettings.messageRespository,
                                                contactsRepository: appSettings.contactRepository,
                                                wireframe: self,
                                                conversationRepository: appSettings.conversationRespository,
+                                               contactByUserIdInteractor: contactByUserIdInteractor,
                                                retrieveContactStatusesInteractor: retrieveContactStatusesInteractor,
-                                               deleteConversationInteractor: deleteConversationInteractor,
+                                               deleteConversationInteractor: deleteConversationInteractor, contactToCreateChatByPhoneInteractor: contactToCreateChatByPhoneInteractor,
                                                userStatusUpdateInteractor: UpdateOnlineInteractor(userService: appSettings.userService))
         moduleViewController.presenter = presenter
     }
@@ -44,11 +48,12 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
 // MARK: - Extensions -
 
 extension ConversationsWireframe: ConversationsWireframeInterface {
-    func navigateToContacts(contactsCallback: @escaping ContactsCallback, userID: @escaping UserIDCallback) {
-        if let contactsViewController = self.delegate?.contactsViewController(callback: contactsCallback, userCallback: userID) {
+    func navigateToContacts(contactsCallback: @escaping ContactsCallback, openConverationCallback: @escaping UserIDCallback) {
+        if let contactsViewController = self.delegate?.contactsViewController(contactsCallback: contactsCallback,
+                                                                              openConverationCallback: openConverationCallback) {
             self.navigationController?.pushViewController(contactsViewController, animated: true)
         } else {
-            self.navigationController?.presentWireframeWithNavigation(ContactsBookWireframe(contactsCallback: contactsCallback))
+            self.navigationController?.presentWireframeWithNavigation(ContactsBookWireframe(contactsCallback: contactsCallback, openConversationCallback: openConverationCallback))
         }
     }
     
