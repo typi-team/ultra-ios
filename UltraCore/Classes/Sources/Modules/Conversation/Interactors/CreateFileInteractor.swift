@@ -33,7 +33,7 @@ class CreateFileInteractor: UseCase<(data: Data, extens: String), [FileChunk]> {
                     guard let `self` = self else { return observer(.failure(NSError.selfIsNill)) }
                     switch result {
                     case let .success(response):
-                        observer(.success(splitDataIntoChunks(data: params.data, file: response)))
+                        observer(.success(self.splitDataIntoChunks(data: params.data, file: response)))
                     case let .failure(error):
                         observer(.failure(error))
                     }

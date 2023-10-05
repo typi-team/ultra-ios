@@ -27,12 +27,12 @@ class IncomeVoiceCell: MediaCell {
         $0.setImage(playImage, for: .normal)
         $0.addAction {[weak self] in
             guard let `self` = self, let message = self.message else { return }
-            let fileID = try? voiceRepository.currentVoice.value()?.voiceMessage.fileID
+            let fileID = try? self.voiceRepository.currentVoice.value()?.voiceMessage.fileID
             if  message.voice.fileID == fileID {
                 self.voiceRepository.stop()
-                self.controllerView.setImage(playImage, for: .normal)
+                self.controllerView.setImage(self.playImage, for: .normal)
             } else {
-                self.controllerView.setImage(pauseImage, for: .normal)
+                self.controllerView.setImage(self.pauseImage, for: .normal)
                 self.voiceRepository.play(message: message)
             }
             
@@ -94,10 +94,10 @@ class IncomeVoiceCell: MediaCell {
                     let value = (voice.currentTime / duration)
 
                     self.slider.setValue(Float(value), animated: true)
-                    self.controllerView.setImage(value == 0 ? playImage : pauseImage, for: .normal)
+                    self.controllerView.setImage(value == 0 ? self.playImage : self.pauseImage, for: .normal)
                 } else {
                     self.slider.setValue(0.0, animated: true)
-                    self.controllerView.setImage(playImage, for: .normal)
+                    self.controllerView.setImage(self.playImage, for: .normal)
                 }
             })
             .disposed(by: disposeBag)
@@ -109,7 +109,7 @@ class IncomeVoiceCell: MediaCell {
         
         self.slider.setValue(0.0, animated: true)
         self.durationLabel.text = 0.0.description
-        self.controllerView.setImage(playImage, for: .normal)
+        self.controllerView.setImage(self.playImage, for: .normal)
     }
 }
 
