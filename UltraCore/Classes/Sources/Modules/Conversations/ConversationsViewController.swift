@@ -70,7 +70,7 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
             .do(onNext: {[weak self] conversations in
                 guard let `self` = self else { return }
                 if conversations.isEmpty {
-                    self.tableView.backgroundView = backgroundView
+                    self.tableView.backgroundView = self.backgroundView
                 } else {
                     self.tableView.backgroundView = nil
                 }

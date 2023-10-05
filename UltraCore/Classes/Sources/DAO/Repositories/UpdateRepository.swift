@@ -309,7 +309,7 @@ extension UpdateRepositoryImpl {
                   Date().timeIntervalSince(createdAt) > kTypingMinInterval else {
                 return
             }
-            typingUsers.on(.next(users))
+            self.typingUsers.on(.next(users))
         }
     }
     

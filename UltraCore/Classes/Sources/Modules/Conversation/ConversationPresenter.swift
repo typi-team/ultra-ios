@@ -334,6 +334,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
     
     func viewDidLoad() {
         self.view.setup(conversation: conversation)
+        
         self.updateRepository.typingUsers
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
@@ -367,7 +368,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 guard let `self` = self else { return }
                 let unreadMessages = messages.filter({ $0.sender.userID != self.appStore.userID() }).filter({ $0.state.read == false })
                 guard let lastUnreadMessage = unreadMessages.last else { return }
-                self.updateRepository.readAll(in: conversation)
+                self.updateRepository.readAll(in: self.conversation)
                 self.readMessageInteractor.executeSingle(params: lastUnreadMessage)
                     .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
                     .subscribe()
@@ -382,7 +383,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
         
         params.peer.user = .with({ [weak self] peer in
             guard let `self` = self else { return }
-            peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
+            peer.userID = self.conversation.peer?.userID ?? "u1FNOmSc0DAwM"
         })
         params.message.text = text
         params.message.id = UUID().uuidString
@@ -393,7 +394,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
         message.id = params.message.id
         message.receiver = .with({[weak self] receiver in
             guard let `self` = self else { return }
-            receiver.chatID = conversation.idintification
+            receiver.chatID = self.conversation.idintification
             receiver.userID = self.conversation.peer?.userID ?? ""
         })
         message.sender = .with({ $0.userID = self.userID })

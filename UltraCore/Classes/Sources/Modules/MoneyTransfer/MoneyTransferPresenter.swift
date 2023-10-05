@@ -66,7 +66,7 @@ final class MoneyTransferPresenter {
             .do(onSuccess: { [weak self] response in
                 guard let `self` = self else { return }
                 let value: MoneyTransfer = .init(amout: Int64(amount),
-                                                 currency: currency,
+                                                 currency: self.currency,
                                                  transactionID: response.transaction_id)
                 self.resultCallback(value)
                 callback()
