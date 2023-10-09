@@ -72,7 +72,8 @@ open class AppSettingsImpl: AppSettings  {
                                                                             contactService: contactDBService,
                                                                             update: updateService,
                                                                             conversationService: conversationDBService,
-                                                                            userByIDInteractor: ContactByUserIdInteractor.init(contactsService: contactsService),
+                                                                            userByIDInteractor: ContactByUserIdInteractor.init(delegate: UltraCoreSettings.delegate,
+                                                                                                                               contactsService: contactsService),
                                                                             deliveredMessageInteractor: DeliveredMessageInteractor.init(messageService: messageService))
     lazy var conversationRespository: ConversationRepository = ConversationRepositoryImpl(conversationService: conversationDBService)
     

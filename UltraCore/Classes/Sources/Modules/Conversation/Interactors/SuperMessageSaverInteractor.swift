@@ -36,7 +36,8 @@ class SuperMessageSaverInteractor: UseCase<MessageData, Conversation?> {
         self.messageDBService = messageDBService
         self.conversationDBService = conversationDBService
         
-        self.contactByUserIdInteractor = .init(contactsService: contactsService)
+        self.contactByUserIdInteractor = .init(delegate: UltraCoreSettings.delegate,
+                                               contactsService: contactsService)
     }
     
     override func executeSingle(params: MessageData) -> Single<Conversation?> {

@@ -28,7 +28,8 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
         let retrieveContactStatusesInteractor = RetrieveContactStatusesInteractor.init(appStore: appSettings.appStore,
                                                                                        contactDBService: appSettings.contactDBService,
                                                                                        contactService: appSettings.contactsService)
-        let contactByUserIdInteractor = ContactByUserIdInteractor.init(contactsService: appSettings.contactsService)
+        let contactByUserIdInteractor = ContactByUserIdInteractor.init(delegate: UltraCoreSettings.delegate,
+                                                                       contactsService: appSettings.contactsService)
         
         let contactToCreateChatByPhoneInteractor = ContactToCreateChatByPhoneInteractor.init(integrateService: appSettings.integrateService)
         let presenter = ConversationsPresenter(view: moduleViewController,

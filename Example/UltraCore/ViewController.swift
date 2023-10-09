@@ -128,6 +128,9 @@ class ViewController: UITabBarController {
 }
 
 extension ViewController: UltraCoreSettingsDelegate {
+    func info(from id: String) -> UltraCore.IContactInfo? {
+        return nil
+    }
     
     /// Метод для реализаций страницы контактов
     /// - Parameters:
@@ -153,4 +156,10 @@ extension ViewController: UltraCoreSettingsDelegate {
 struct ServerConfig: ServerConfigurationProtocol {
     var portOfServer: Int = 443
     var pathToServer: String = "ultra-dev.typi.team"
+}
+
+struct Contact: IContactInfo {
+    var phone: String
+    var lastname: String
+    var firstname: String
 }

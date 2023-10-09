@@ -84,6 +84,7 @@ extension ContactsBookPresenter: ContactsBookPresenterInterface {
             .do(onSuccess: { [weak self] response in
                 guard let `self` = self else { return }
                 self.contactsCallback(response)
+                try? UltraCoreSettings.update(contacts: response)
             })
             .do(onSuccess: {[weak self] contacts in
                 guard let `self` = self else { return }
