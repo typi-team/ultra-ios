@@ -8,13 +8,12 @@ import RxSwift
 import Foundation
 
 class SyncFreedomContactsInteractor: UseCase<ContactsImportRequest, ContactImportResponse> {
-    
     fileprivate let appStore: AppSettingsStore
-    
+
     init(appStore: AppSettingsStore) {
         self.appStore = appStore
     }
-    
+
     override func executeSingle(params: ContactsImportRequest) -> Single<ContactImportResponse> {
         return Single.create(subscribe: { [weak self] observer in
             guard let `self` = self,
@@ -25,15 +24,15 @@ class SyncFreedomContactsInteractor: UseCase<ContactsImportRequest, ContactImpor
 
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
+            request.httpBody = httpBody
             request.addValue(self.appStore.ssid, forHTTPHeaderField: "SID")
             request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-            
-            request.httpBody = httpBody
 
             let task = URLSession.shared.dataTask(with: request) { data, response, error in
-                if let data = data, let responseObject = try? JSONDecoder().decode(ContactImportResponse.self, from: data) {
+                if let data = data,
+                   let responseObject = try? JSONDecoder().decode(ContactImportResponse.self, from: data) {
                     observer(.success(responseObject))
-                }else if let error = error {
+                } else if let error = error {
                     observer(.failure(error))
                 } else {
                     observer(.failure(NSError.objectsIsNill))
@@ -46,8 +45,6 @@ class SyncFreedomContactsInteractor: UseCase<ContactsImportRequest, ContactImpor
             }
         })
     }
-    
-
 }
 
 extension ContactsImportRequest: Encodable {

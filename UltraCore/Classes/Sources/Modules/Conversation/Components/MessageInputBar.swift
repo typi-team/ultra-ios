@@ -64,6 +64,10 @@ class MessageInputBar: UIView {
         button.addAction {
             self.delegate?.exchanges()
         }
+        
+        if let availableToSendMoney = self.futureDelegate?.availableToSendMoney() {
+            button.isHidden = !availableToSendMoney
+        }
     }
     
     private lazy var microButton: UIButton = .init {[weak self] button in
@@ -77,6 +81,7 @@ class MessageInputBar: UIView {
 //    MARK: Public properties
     
     weak var delegate: MessageInputBarDelegate?
+    weak var futureDelegate: UltraCoreFutureDelegate? = UltraCoreSettings.futureDelegate
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -100,11 +105,15 @@ class MessageInputBar: UIView {
     }
     
     private func setupConstraints() {
+        
+        let availableToSendMoney = self.futureDelegate?.availableToSendMoney() ?? true
+        
         self.exchangesButton.snp.makeConstraints { make in
             make.height.equalTo(36)
-            make.width.equalTo(kHeadlinePadding * 2)
+            
             make.leading.equalToSuperview().offset(kLowPadding)
             make.bottom.equalTo(messageTextView.snp.bottom)
+            make.width.equalTo(availableToSendMoney ? kHeadlinePadding * 2 : 0)
         }
 
         self.divider.snp.makeConstraints { make in

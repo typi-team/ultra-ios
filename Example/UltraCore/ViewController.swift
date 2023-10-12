@@ -17,6 +17,7 @@ class ViewController: UITabBarController {
         super.viewDidLoad()
         
         UltraCoreSettings.delegate = self
+        UltraCoreSettings.futureDelegate = self
         self.view.backgroundColor = .lightGray
         self.tabBar.tintColor = UIColor(red: 34.0 / 255.0, green: 197.0 / 255.0, blue: 94.0 / 255.0, alpha: 1.0)
         self.setupVCs()
@@ -127,6 +128,12 @@ class ViewController: UITabBarController {
 
 }
 
+extension ViewController: UltraCoreFutureDelegate {
+    func availableToSendMoney() -> Bool {
+        return true
+    }
+}
+
 extension ViewController: UltraCoreSettingsDelegate {
     func info(from id: String) -> UltraCore.IContactInfo? {
         return nil
@@ -149,7 +156,17 @@ extension ViewController: UltraCoreSettingsDelegate {
     /// - Parameter callback: для передачи сообщения о переводе денег
     /// - Returns: Контроллер для передачи денег с указаннием суммы
     func moneyViewController(callback: @escaping MoneyCallback) -> UIViewController? {
-        return nil
+        return UIViewController({
+            $0.title = "Страница передачи денег"
+            $0.view.backgroundColor = .white
+        })
+    }
+    
+    func contactViewController(contact id: String) -> UIViewController? {
+        return UIViewController({
+            $0.title = "Страница детали контакта"
+            $0.view.backgroundColor = .white
+        })
     }
 }
 
@@ -159,6 +176,7 @@ struct ServerConfig: ServerConfigurationProtocol {
 }
 
 struct Contact: IContactInfo {
+    var userID: String
     var phone: String
     var lastname: String
     var firstname: String

@@ -7,9 +7,14 @@
 import RxSwift
 import UIKit
 
+public protocol UltraCoreFutureDelegate: AnyObject {
+    func availableToSendMoney() -> Bool
+}
+
 public protocol UltraCoreSettingsDelegate: AnyObject {
     func info(from id: String) -> IContactInfo?
     func serverConfig() -> ServerConfigurationProtocol?
+    func contactViewController(contact id: String) -> UIViewController?
     func moneyViewController(callback: @escaping MoneyCallback) -> UIViewController?
     func contactsViewController(contactsCallback: @escaping ContactsCallback,
                                 openConverationCallback: @escaping UserIDCallback) -> UIViewController?
@@ -21,6 +26,7 @@ private let interactor = ContactsBookInteractor()
 public class UltraCoreSettings {
     
     public static weak var delegate: UltraCoreSettingsDelegate?
+    public static weak var futureDelegate: UltraCoreFutureDelegate?
     
     static func setupAppearance() {
         UIBarButtonItem.appearance().tintColor = .green500
