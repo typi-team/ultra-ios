@@ -78,6 +78,12 @@ class MessageInputBar: UIView {
         })
     }
     
+    private lazy var blockLabel: LabelWithInsets = .init {
+        $0.textAlignment = .center
+        $0.backgroundColor = UltraCoreStyle.inputMessageBarBackgroundColor.color
+        $0.text = "Простите, но вы заблокировали этот чат. Если у вас есть вопросы или вам необходима помощь, пожалуйста, обратитесь к нашей службе поддержки."
+    }
+    
 //    MARK: Public properties
     
     weak var delegate: MessageInputBarDelegate?
@@ -149,6 +155,8 @@ class MessageInputBar: UIView {
         super.traitCollectionDidChange(previousTraitCollection)
         self.divider.backgroundColor = UltraCoreStyle.divederColor.color
         self.backgroundColor = UltraCoreStyle.inputMessageBarBackgroundColor.color
+        self.blockLabel.backgroundColor = UltraCoreStyle.inputMessageBarBackgroundColor.color
+        self.blockLabel.textColor = UltraCoreStyle.inputMessageBarBackgroundColor.color
     }
 }
 
@@ -239,4 +247,17 @@ extension UITextView: NSTextStorageDelegate {
     }
 }
 
-
+extension MessageInputBar {
+    func block(_ isBlocked: Bool) {
+        self.blockLabel.snp.makeConstraints { make in
+            if isBlocked {
+                self.addSubview(blockLabel)
+                self.blockLabel.snp.makeConstraints { make in
+                    make.edges.equalToSuperview()
+                }
+            } else {
+                self.blockLabel.removeFromSuperview()
+            }
+        }
+    }
+}

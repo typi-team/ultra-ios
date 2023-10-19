@@ -104,6 +104,52 @@ final class ConversationPresenter {
 // MARK: - Extensions -
 
 extension ConversationPresenter: ConversationPresenterInterface {
+    func isBlock() -> Bool {
+        return self.conversation.peer?.isBlocked ?? false
+    }
+    
+    func block() {
+        guard let contact = self.conversation.peer else { return }
+        let userId = contact.userID
+        if contact.isBlocked {
+            AppSettingsImpl.shared.conversationService.unblockUser(.with({
+                $0.userID = userId
+                $0.chatID = self.conversation.idintification
+            }), callOptions: .default()).response.whenComplete({[weak self] result in
+                guard let `self` = self else { return }
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success:
+                        self.update(block: false, user: userId)
+                    case .failure(let error):
+                        self.view.show(error: error.localizedDescription)
+                    }
+                }
+            })
+        } else {
+            AppSettingsImpl.shared.conversationService.blockUser(.with({
+                $0.chatID = self.conversation.idintification
+                $0.userID = userId
+            }), callOptions: .default()).response.whenComplete({[weak self] result in
+                guard let `self` = self else { return }
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success:
+                        self.update(block: true, user: userId)
+                    case .failure(let error):
+                        self.view.show(error: error.localizedDescription)
+                    }
+                }
+            })
+        }
+    }
+    
+    private func update(block: Bool, user id: String) {
+        self.contactRepository.block(user: id, blocked: block)
+            .subscribe()
+            .disposed(by: self.disposeBag)
+    }
+    
     func report(_ messages: [Message]) {
         guard !messages.isEmpty else { return }
         
@@ -376,6 +422,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 .subscribe(onNext: { [weak self] contact in
                     guard let `self` = self else { return }
                     self.conversation.peer = contact
+                    self.view.blocked(is: contact.isBlocked)
                     self.view.setup(conversation: self.conversation)
                 })
                 .disposed(by: disposeBag)

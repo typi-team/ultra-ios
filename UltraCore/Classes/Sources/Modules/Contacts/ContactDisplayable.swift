@@ -11,6 +11,7 @@ import Foundation
 protocol ContactDisplayable: Any {
     var phone: String { get }
     var userID: String { get }
+    var isBlocked: Bool { get }
     var displaName: String { get }
     var status: UserStatus { get }
     

@@ -180,10 +180,16 @@ private extension UpdateRepositoryImpl {
             self.handleIncoming(callRequest: callRequest)
         case let .callCancel(callrequest):
             self.dissmissCall(in: callrequest.room)
-        case .block(_):
-            break
-        case .unblock(_):
-            break
+        case .block(let blockMessage):
+            self.contactService
+                .block(user: blockMessage.user, blocked: blockMessage.state)
+                .subscribe()
+                .disposed(by: disposeBag)
+        case .unblock(let blockMessage):
+            self.contactService
+                .block(user: blockMessage.user, blocked: blockMessage.state)
+                .subscribe()
+                .disposed(by: disposeBag)
         }
     }
     

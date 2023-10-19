@@ -34,6 +34,25 @@ class ContactDBService {
         }
     }
     
+    func block(user id: String, blocked: Bool) -> Single<Void> {
+        Single.create { observer in
+            do {
+                let realm = Realm.myRealm()
+                try realm.write({
+                    if let contact = realm.object(ofType: DBContact.self, forPrimaryKey: id) {
+                        contact.isBlocked = blocked
+                        realm.add(contact, update: .all)
+                    }
+
+                    observer(.success(()))
+                })
+            } catch {
+                observer(.failure(error))
+            }
+            return Disposables.create()
+        }
+    }
+    
     func contact(id: String) -> DBContact? {
         if let contact = Realm.myRealm().object(ofType: DBContact.self, forPrimaryKey: id) {
             return DBContact(value: contact)

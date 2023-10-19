@@ -22,6 +22,7 @@ protocol ConversationViewInterface: ViewInterface {
     func stopRefresh(removeController: Bool)
     func display(is typing: UserTypingWithDate)
     func reported()
+    func blocked(is blocked: Bool)
 }
 
 struct FileUpload {
@@ -35,7 +36,9 @@ struct FileUpload {
 }
 
 protocol ConversationPresenterInterface: PresenterInterface {
+    func block()
     func viewDidLoad()
+    func isBlock() -> Bool
     func navigateToContact()
     func typing(is active: Bool)
     func upload(file: FileUpload)

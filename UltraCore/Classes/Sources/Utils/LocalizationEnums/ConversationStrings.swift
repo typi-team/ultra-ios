@@ -25,6 +25,8 @@ enum ConversationStrings: String, StringLocalizable {
     case location
     case prints
     case multivalue
+    case block
+    case unblock
     
     case transferAmount
     case writeOffTheCard

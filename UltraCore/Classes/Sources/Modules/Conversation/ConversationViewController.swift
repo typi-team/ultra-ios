@@ -95,10 +95,14 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.handleKeyboardTransmission = true
         super.setupViews()
 //        MARK: Must be hide
-//        self.navigationItem.rightBarButtonItems = [.init(image: .named("conversation_video_camera_icon"),
+        self.navigationItem.rightBarButtonItems = [
+//                                                    .init(image: .named("conversation_video_camera_icon"),
 //                                                         style: .done, target: self, action: #selector(self.callWithVideo(_:))),
 //                                                   .init(image: .named("conversation_phone_icon"),
-//                                                         style: .done, target: self, action: #selector(self.callWithVoice(_:)))]
+//                                                         style: .done, target: self, action: #selector(self.callWithVoice(_:)))
+                                                               .init(image: .named("conversation.dots"),
+                                                         style: .done, target: self, action: #selector(self.more(_:)))
+        ]
         self.view.addSubview(tableView)
         self.view.addSubview(messageHeadline)
         self.view.addSubview(messageInputBar)
@@ -285,6 +289,10 @@ extension ConversationViewController: MessageInputBarDelegate {
 // MARK: - Extensions -
 
 extension ConversationViewController: ConversationViewInterface {
+    func blocked(is blocked: Bool) {
+        self.messageInputBar.block(blocked)
+    }
+    
     func reported() {
         self.showAlert(from: "Запрос отправлен!")
     }
@@ -387,6 +395,25 @@ extension ConversationViewController {
     
     @objc func callWithVoice(_ sender: UIBarButtonItem) {
         self.presenter?.callVoice()
+    }
+    
+    @objc func more(_ sender: UIBarButtonItem) {
+        guard let blocked = self.presenter?.isBlock() else { return }
+        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        if blocked {
+            alert.addAction(.init(title: ConversationStrings.unblock.localized.capitalized, style: .default, handler: { [weak self] _ in
+                guard let `self` = self else { return }
+                self.presenter?.block()
+            }))
+        } else {
+            alert.addAction(.init(title: ConversationStrings.block.localized.capitalized, style: .destructive, handler: { [weak self] _ in
+                guard let `self` = self else { return }
+                self.presenter?.block()
+            }))
+        }
+
+        alert.addAction(.init(title: EditActionStrings.cancel.localized.capitalized, style: .cancel))
+        self.present(alert, animated: true)
     }
     
     func cell(_ message: Message, in tableView: UITableView) -> BaseMessageCell {

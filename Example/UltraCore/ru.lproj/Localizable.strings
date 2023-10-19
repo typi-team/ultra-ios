@@ -39,6 +39,8 @@
 "conversation.cancel" = "отменить";
 "conversation.delete" = "удалить";
 "conversation.report" = "пожаловаться";
+"conversation.block" = "Заблокировать";
+"conversation.unblock" = "Разблокировать";
 // MARK: Messages page
 "message.audio" = "🔉 Аудио";
 "message.voice" = "🎤 Голосовое сообщение";
