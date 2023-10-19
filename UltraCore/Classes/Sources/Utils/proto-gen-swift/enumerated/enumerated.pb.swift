@@ -123,6 +123,8 @@ enum MessageTypeEnum: SwiftProtobuf.Enum {
   case money // = 6
   case contact // = 7
   case location // = 8
+  case stock // = 9
+  case coin // = 10
   case UNRECOGNIZED(Int)
 
   init() {
@@ -140,6 +142,8 @@ enum MessageTypeEnum: SwiftProtobuf.Enum {
     case 6: self = .money
     case 7: self = .contact
     case 8: self = .location
+    case 9: self = .stock
+    case 10: self = .coin
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -155,6 +159,8 @@ enum MessageTypeEnum: SwiftProtobuf.Enum {
     case .money: return 6
     case .contact: return 7
     case .location: return 8
+    case .stock: return 9
+    case .coin: return 10
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -175,6 +181,8 @@ extension MessageTypeEnum: CaseIterable {
     .money,
     .contact,
     .location,
+    .stock,
+    .coin,
   ]
 }
 
@@ -373,6 +381,102 @@ extension MoneyStatusEnum: CaseIterable {
 
 #endif  // swift(>=4.2)
 
+enum StockStatusEnum: SwiftProtobuf.Enum {
+  typealias RawValue = Int
+  case stockStatusUnknown // = 0
+  case stockStatusInProgress // = 1
+  case stockStatusCompleted // = 2
+  case stockStatusRejected // = 3
+  case UNRECOGNIZED(Int)
+
+  init() {
+    self = .stockStatusUnknown
+  }
+
+  init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .stockStatusUnknown
+    case 1: self = .stockStatusInProgress
+    case 2: self = .stockStatusCompleted
+    case 3: self = .stockStatusRejected
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  var rawValue: Int {
+    switch self {
+    case .stockStatusUnknown: return 0
+    case .stockStatusInProgress: return 1
+    case .stockStatusCompleted: return 2
+    case .stockStatusRejected: return 3
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+}
+
+#if swift(>=4.2)
+
+extension StockStatusEnum: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static let allCases: [StockStatusEnum] = [
+    .stockStatusUnknown,
+    .stockStatusInProgress,
+    .stockStatusCompleted,
+    .stockStatusRejected,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
+enum CoinStatusEnum: SwiftProtobuf.Enum {
+  typealias RawValue = Int
+  case coinStatusUnknown // = 0
+  case coinStatusInProgress // = 1
+  case coinStatusCompleted // = 2
+  case coinStatusRejected // = 3
+  case UNRECOGNIZED(Int)
+
+  init() {
+    self = .coinStatusUnknown
+  }
+
+  init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .coinStatusUnknown
+    case 1: self = .coinStatusInProgress
+    case 2: self = .coinStatusCompleted
+    case 3: self = .coinStatusRejected
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  var rawValue: Int {
+    switch self {
+    case .coinStatusUnknown: return 0
+    case .coinStatusInProgress: return 1
+    case .coinStatusCompleted: return 2
+    case .coinStatusRejected: return 3
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+}
+
+#if swift(>=4.2)
+
+extension CoinStatusEnum: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static let allCases: [CoinStatusEnum] = [
+    .coinStatusUnknown,
+    .coinStatusInProgress,
+    .coinStatusCompleted,
+    .coinStatusRejected,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
 enum ComplainMessageEnum: SwiftProtobuf.Enum {
   typealias RawValue = Int
   case received // = 0
@@ -532,6 +636,8 @@ extension UserStatusEnum: @unchecked Sendable {}
 extension UserTypeEnum: @unchecked Sendable {}
 extension MediaTypeEnum: @unchecked Sendable {}
 extension MoneyStatusEnum: @unchecked Sendable {}
+extension StockStatusEnum: @unchecked Sendable {}
+extension CoinStatusEnum: @unchecked Sendable {}
 extension ComplainMessageEnum: @unchecked Sendable {}
 extension ComplainTypeEnum: @unchecked Sendable {}
 extension PhotoSize: @unchecked Sendable {}
@@ -567,6 +673,8 @@ extension MessageTypeEnum: SwiftProtobuf._ProtoNameProviding {
     6: .same(proto: "MONEY"),
     7: .same(proto: "CONTACT"),
     8: .same(proto: "LOCATION"),
+    9: .same(proto: "STOCK"),
+    10: .same(proto: "COIN"),
   ]
 }
 
@@ -603,6 +711,24 @@ extension MoneyStatusEnum: SwiftProtobuf._ProtoNameProviding {
     1: .same(proto: "IN_PROGRESS"),
     2: .same(proto: "COMPLETED"),
     3: .same(proto: "REJECTED"),
+  ]
+}
+
+extension StockStatusEnum: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "STOCK_STATUS_UNKNOWN"),
+    1: .same(proto: "STOCK_STATUS_IN_PROGRESS"),
+    2: .same(proto: "STOCK_STATUS_COMPLETED"),
+    3: .same(proto: "STOCK_STATUS_REJECTED"),
+  ]
+}
+
+extension CoinStatusEnum: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "COIN_STATUS_UNKNOWN"),
+    1: .same(proto: "COIN_STATUS_IN_PROGRESS"),
+    2: .same(proto: "COIN_STATUS_COMPLETED"),
+    3: .same(proto: "COIN_STATUS_REJECTED"),
   ]
 }
 

@@ -95,6 +95,10 @@ extension DBConversation: Conversation {
                     return MessageStrings.file.localized
                 case .contact(_):
                     return MessageStrings.contact.localized
+                case .stock(_):
+                    return MessageStrings.moneyTransfer.localized
+                case .coin(_):
+                    return MessageStrings.moneyTransfer.localized
                 }
             } else {
                 return self.message?.text

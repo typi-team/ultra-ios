@@ -104,6 +104,25 @@ final class ConversationPresenter {
 // MARK: - Extensions -
 
 extension ConversationPresenter: ConversationPresenterInterface {
+    func report(_ messages: [Message]) {
+        guard !messages.isEmpty else { return }
+        
+        AppSettingsImpl.shared.messageService.complain(.with({
+            $0.chatID = self.conversation.idintification
+            $0.messageID = messages.first!.id
+        }), callOptions: .default()).response
+            .whenComplete({[weak self] result in
+                guard let `self` = self else { return }
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success:
+                        self.view.reported()
+                    case let .failure(error):
+                        self.view.show(error: error.localizedDescription)
+                    }
+                }
+            })
+    }
     func callVideo() {
         self.createCall(with: true)
     }

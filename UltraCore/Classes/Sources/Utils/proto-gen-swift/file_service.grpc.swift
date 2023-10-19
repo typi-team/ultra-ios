@@ -25,6 +25,11 @@ internal protocol FileServiceClientProtocol: GRPCClient {
     callOptions: CallOptions?
   ) -> ClientStreamingCall<FileChunk, FileUploadResponse>
 
+  func uploadChunks(
+    _ request: FileUploadChunksRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<FileUploadChunksRequest, FileUploadResponse>
+
   func getUploadedChunks(
     _ request: GetUploadedChunksRequest,
     callOptions: CallOptions?
@@ -81,6 +86,24 @@ extension FileServiceClientProtocol {
       path: FileServiceClientMetadata.Methods.upload.path,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeUploadInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to UploadChunks
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to UploadChunks.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  internal func uploadChunks(
+    _ request: FileUploadChunksRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<FileUploadChunksRequest, FileUploadResponse> {
+    return self.makeUnaryCall(
+      path: FileServiceClientMetadata.Methods.uploadChunks.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUploadChunksInterceptors() ?? []
     )
   }
 
@@ -216,6 +239,11 @@ internal protocol FileServiceAsyncClientProtocol: GRPCClient {
     callOptions: CallOptions?
   ) -> GRPCAsyncClientStreamingCall<FileChunk, FileUploadResponse>
 
+  func makeUploadChunksCall(
+    _ request: FileUploadChunksRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<FileUploadChunksRequest, FileUploadResponse>
+
   func makeGetUploadedChunksCall(
     _ request: GetUploadedChunksRequest,
     callOptions: CallOptions?
@@ -261,6 +289,18 @@ extension FileServiceAsyncClientProtocol {
       path: FileServiceClientMetadata.Methods.upload.path,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeUploadInterceptors() ?? []
+    )
+  }
+
+  internal func makeUploadChunksCall(
+    _ request: FileUploadChunksRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<FileUploadChunksRequest, FileUploadResponse> {
+    return self.makeAsyncUnaryCall(
+      path: FileServiceClientMetadata.Methods.uploadChunks.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUploadChunksInterceptors() ?? []
     )
   }
 
@@ -339,6 +379,18 @@ extension FileServiceAsyncClientProtocol {
     )
   }
 
+  internal func uploadChunks(
+    _ request: FileUploadChunksRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> FileUploadResponse {
+    return try await self.performAsyncUnaryCall(
+      path: FileServiceClientMetadata.Methods.uploadChunks.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUploadChunksInterceptors() ?? []
+    )
+  }
+
   internal func getUploadedChunks(
     _ request: GetUploadedChunksRequest,
     callOptions: CallOptions? = nil
@@ -401,6 +453,9 @@ internal protocol FileServiceClientInterceptorFactoryProtocol: Sendable {
   /// - Returns: Interceptors to use when invoking 'upload'.
   func makeUploadInterceptors() -> [ClientInterceptor<FileChunk, FileUploadResponse>]
 
+  /// - Returns: Interceptors to use when invoking 'uploadChunks'.
+  func makeUploadChunksInterceptors() -> [ClientInterceptor<FileUploadChunksRequest, FileUploadResponse>]
+
   /// - Returns: Interceptors to use when invoking 'getUploadedChunks'.
   func makeGetUploadedChunksInterceptors() -> [ClientInterceptor<GetUploadedChunksRequest, GetUploadedChunksResponse>]
 
@@ -418,6 +473,7 @@ internal enum FileServiceClientMetadata {
     methods: [
       FileServiceClientMetadata.Methods.create,
       FileServiceClientMetadata.Methods.upload,
+      FileServiceClientMetadata.Methods.uploadChunks,
       FileServiceClientMetadata.Methods.getUploadedChunks,
       FileServiceClientMetadata.Methods.download,
       FileServiceClientMetadata.Methods.downloadPhoto,
@@ -435,6 +491,12 @@ internal enum FileServiceClientMetadata {
       name: "Upload",
       path: "/FileService/Upload",
       type: GRPCCallType.clientStreaming
+    )
+
+    internal static let uploadChunks = GRPCMethodDescriptor(
+      name: "UploadChunks",
+      path: "/FileService/UploadChunks",
+      type: GRPCCallType.unary
     )
 
     internal static let getUploadedChunks = GRPCMethodDescriptor(
@@ -464,6 +526,8 @@ internal protocol FileServiceProvider: CallHandlerProvider {
   func create(request: FileCreateRequest, context: StatusOnlyCallContext) -> EventLoopFuture<FileCreateResponse>
 
   func upload(context: UnaryResponseCallContext<FileUploadResponse>) -> EventLoopFuture<(StreamEvent<FileChunk>) -> Void>
+
+  func uploadChunks(request: FileUploadChunksRequest, context: StatusOnlyCallContext) -> EventLoopFuture<FileUploadResponse>
 
   func getUploadedChunks(request: GetUploadedChunksRequest, context: StatusOnlyCallContext) -> EventLoopFuture<GetUploadedChunksResponse>
 
@@ -500,6 +564,15 @@ extension FileServiceProvider {
         responseSerializer: ProtobufSerializer<FileUploadResponse>(),
         interceptors: self.interceptors?.makeUploadInterceptors() ?? [],
         observerFactory: self.upload(context:)
+      )
+
+    case "UploadChunks":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<FileUploadChunksRequest>(),
+        responseSerializer: ProtobufSerializer<FileUploadResponse>(),
+        interceptors: self.interceptors?.makeUploadChunksInterceptors() ?? [],
+        userFunction: self.uploadChunks(request:context:)
       )
 
     case "GetUploadedChunks":
@@ -548,6 +621,11 @@ internal protocol FileServiceAsyncProvider: CallHandlerProvider, Sendable {
 
   func upload(
     requestStream: GRPCAsyncRequestStream<FileChunk>,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> FileUploadResponse
+
+  func uploadChunks(
+    request: FileUploadChunksRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> FileUploadResponse
 
@@ -606,6 +684,15 @@ extension FileServiceAsyncProvider {
         wrapping: { try await self.upload(requestStream: $0, context: $1) }
       )
 
+    case "UploadChunks":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<FileUploadChunksRequest>(),
+        responseSerializer: ProtobufSerializer<FileUploadResponse>(),
+        interceptors: self.interceptors?.makeUploadChunksInterceptors() ?? [],
+        wrapping: { try await self.uploadChunks(request: $0, context: $1) }
+      )
+
     case "GetUploadedChunks":
       return GRPCAsyncServerHandler(
         context: context,
@@ -649,6 +736,10 @@ internal protocol FileServiceServerInterceptorFactoryProtocol: Sendable {
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeUploadInterceptors() -> [ServerInterceptor<FileChunk, FileUploadResponse>]
 
+  /// - Returns: Interceptors to use when handling 'uploadChunks'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeUploadChunksInterceptors() -> [ServerInterceptor<FileUploadChunksRequest, FileUploadResponse>]
+
   /// - Returns: Interceptors to use when handling 'getUploadedChunks'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeGetUploadedChunksInterceptors() -> [ServerInterceptor<GetUploadedChunksRequest, GetUploadedChunksResponse>]
@@ -669,6 +760,7 @@ internal enum FileServiceServerMetadata {
     methods: [
       FileServiceServerMetadata.Methods.create,
       FileServiceServerMetadata.Methods.upload,
+      FileServiceServerMetadata.Methods.uploadChunks,
       FileServiceServerMetadata.Methods.getUploadedChunks,
       FileServiceServerMetadata.Methods.download,
       FileServiceServerMetadata.Methods.downloadPhoto,
@@ -686,6 +778,12 @@ internal enum FileServiceServerMetadata {
       name: "Upload",
       path: "/FileService/Upload",
       type: GRPCCallType.clientStreaming
+    )
+
+    internal static let uploadChunks = GRPCMethodDescriptor(
+      name: "UploadChunks",
+      path: "/FileService/UploadChunks",
+      type: GRPCCallType.unary
     )
 
     internal static let getUploadedChunks = GRPCMethodDescriptor(

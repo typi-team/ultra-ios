@@ -180,7 +180,7 @@ extension MessageServiceClientProtocol {
     )
   }
 
-  /// Chat presences
+  /// Unary call to SendTyping
   ///
   /// - Parameters:
   ///   - request: Request to send to SendTyping.
@@ -770,7 +770,6 @@ internal protocol MessageServiceProvider: CallHandlerProvider {
 
   func complain(request: ComplainRequest, context: StatusOnlyCallContext) -> EventLoopFuture<ComplainResponse>
 
-  /// Chat presences
   func sendTyping(request: SendTypingRequest, context: StatusOnlyCallContext) -> EventLoopFuture<SendTypingResponse>
 
   func sendAudioRecording(request: SendAudioRecordingRequest, context: StatusOnlyCallContext) -> EventLoopFuture<SendAudioRecordingResponse>
@@ -929,7 +928,6 @@ internal protocol MessageServiceAsyncProvider: CallHandlerProvider, Sendable {
     context: GRPCAsyncServerCallContext
   ) async throws -> ComplainResponse
 
-  /// Chat presences
   func sendTyping(
     request: SendTypingRequest,
     context: GRPCAsyncServerCallContext

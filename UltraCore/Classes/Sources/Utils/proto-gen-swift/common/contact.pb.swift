@@ -51,6 +51,8 @@ struct Contact {
   /// Clears the value of `status`. Subsequent reads from it will return its default value.
   mutating func clearStatus() {self._status = nil}
 
+  var isBlocked: Bool = false
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -74,6 +76,7 @@ extension Contact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     4: .standard(proto: "user_id"),
     5: .same(proto: "photo"),
     6: .same(proto: "status"),
+    7: .standard(proto: "is_blocked"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -88,6 +91,7 @@ extension Contact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
       case 4: try { try decoder.decodeSingularStringField(value: &self.userID) }()
       case 5: try { try decoder.decodeSingularMessageField(value: &self._photo) }()
       case 6: try { try decoder.decodeSingularMessageField(value: &self._status) }()
+      case 7: try { try decoder.decodeSingularBoolField(value: &self.isBlocked) }()
       default: break
       }
     }
@@ -116,6 +120,9 @@ extension Contact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     try { if let v = self._status {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
     } }()
+    if self.isBlocked != false {
+      try visitor.visitSingularBoolField(value: self.isBlocked, fieldNumber: 7)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -126,6 +133,7 @@ extension Contact: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     if lhs.userID != rhs.userID {return false}
     if lhs._photo != rhs._photo {return false}
     if lhs._status != rhs._status {return false}
+    if lhs.isBlocked != rhs.isBlocked {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -37,6 +37,16 @@ internal protocol UserServiceClientProtocol: GRPCClient {
     _ request: UpdateStatusRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<UpdateStatusRequest, UpdateStatusResponse>
+
+  func blockUser(
+    _ request: BlockUnblockRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<BlockUnblockRequest, BlockUnblockResponse>
+
+  func unblockUser(
+    _ request: BlockUnblockRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<BlockUnblockRequest, BlockUnblockResponse>
 }
 
 extension UserServiceClientProtocol {
@@ -115,6 +125,42 @@ extension UserServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeSetStatusInterceptors() ?? []
+    )
+  }
+
+  /// Block user by id
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to BlockUser.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  internal func blockUser(
+    _ request: BlockUnblockRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<BlockUnblockRequest, BlockUnblockResponse> {
+    return self.makeUnaryCall(
+      path: UserServiceClientMetadata.Methods.blockUser.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeBlockUserInterceptors() ?? []
+    )
+  }
+
+  /// Unblock user by id
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to UnblockUser.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  internal func unblockUser(
+    _ request: BlockUnblockRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<BlockUnblockRequest, BlockUnblockResponse> {
+    return self.makeUnaryCall(
+      path: UserServiceClientMetadata.Methods.unblockUser.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnblockUserInterceptors() ?? []
     )
   }
 }
@@ -201,6 +247,16 @@ internal protocol UserServiceAsyncClientProtocol: GRPCClient {
     _ request: UpdateStatusRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<UpdateStatusRequest, UpdateStatusResponse>
+
+  func makeBlockUserCall(
+    _ request: BlockUnblockRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<BlockUnblockRequest, BlockUnblockResponse>
+
+  func makeUnblockUserCall(
+    _ request: BlockUnblockRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<BlockUnblockRequest, BlockUnblockResponse>
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -260,6 +316,30 @@ extension UserServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeSetStatusInterceptors() ?? []
     )
   }
+
+  internal func makeBlockUserCall(
+    _ request: BlockUnblockRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<BlockUnblockRequest, BlockUnblockResponse> {
+    return self.makeAsyncUnaryCall(
+      path: UserServiceClientMetadata.Methods.blockUser.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeBlockUserInterceptors() ?? []
+    )
+  }
+
+  internal func makeUnblockUserCall(
+    _ request: BlockUnblockRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<BlockUnblockRequest, BlockUnblockResponse> {
+    return self.makeAsyncUnaryCall(
+      path: UserServiceClientMetadata.Methods.unblockUser.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnblockUserInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -311,6 +391,30 @@ extension UserServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeSetStatusInterceptors() ?? []
     )
   }
+
+  internal func blockUser(
+    _ request: BlockUnblockRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> BlockUnblockResponse {
+    return try await self.performAsyncUnaryCall(
+      path: UserServiceClientMetadata.Methods.blockUser.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeBlockUserInterceptors() ?? []
+    )
+  }
+
+  internal func unblockUser(
+    _ request: BlockUnblockRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> BlockUnblockResponse {
+    return try await self.performAsyncUnaryCall(
+      path: UserServiceClientMetadata.Methods.unblockUser.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnblockUserInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -343,6 +447,12 @@ internal protocol UserServiceClientInterceptorFactoryProtocol: Sendable {
 
   /// - Returns: Interceptors to use when invoking 'setStatus'.
   func makeSetStatusInterceptors() -> [ClientInterceptor<UpdateStatusRequest, UpdateStatusResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'blockUser'.
+  func makeBlockUserInterceptors() -> [ClientInterceptor<BlockUnblockRequest, BlockUnblockResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'unblockUser'.
+  func makeUnblockUserInterceptors() -> [ClientInterceptor<BlockUnblockRequest, BlockUnblockResponse>]
 }
 
 internal enum UserServiceClientMetadata {
@@ -354,6 +464,8 @@ internal enum UserServiceClientMetadata {
       UserServiceClientMetadata.Methods.getUser,
       UserServiceClientMetadata.Methods.uploadProfilePhoto,
       UserServiceClientMetadata.Methods.setStatus,
+      UserServiceClientMetadata.Methods.blockUser,
+      UserServiceClientMetadata.Methods.unblockUser,
     ]
   )
 
@@ -381,6 +493,18 @@ internal enum UserServiceClientMetadata {
       path: "/UserService/SetStatus",
       type: GRPCCallType.unary
     )
+
+    internal static let blockUser = GRPCMethodDescriptor(
+      name: "BlockUser",
+      path: "/UserService/BlockUser",
+      type: GRPCCallType.unary
+    )
+
+    internal static let unblockUser = GRPCMethodDescriptor(
+      name: "UnblockUser",
+      path: "/UserService/UnblockUser",
+      type: GRPCCallType.unary
+    )
   }
 }
 
@@ -403,6 +527,12 @@ internal protocol UserServiceProvider: CallHandlerProvider {
   /// user have connection and goes offline. Client can change that by calling
   /// this method
   func setStatus(request: UpdateStatusRequest, context: StatusOnlyCallContext) -> EventLoopFuture<UpdateStatusResponse>
+
+  /// Block user by id
+  func blockUser(request: BlockUnblockRequest, context: StatusOnlyCallContext) -> EventLoopFuture<BlockUnblockResponse>
+
+  /// Unblock user by id
+  func unblockUser(request: BlockUnblockRequest, context: StatusOnlyCallContext) -> EventLoopFuture<BlockUnblockResponse>
 }
 
 extension UserServiceProvider {
@@ -453,6 +583,24 @@ extension UserServiceProvider {
         userFunction: self.setStatus(request:context:)
       )
 
+    case "BlockUser":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<BlockUnblockRequest>(),
+        responseSerializer: ProtobufSerializer<BlockUnblockResponse>(),
+        interceptors: self.interceptors?.makeBlockUserInterceptors() ?? [],
+        userFunction: self.blockUser(request:context:)
+      )
+
+    case "UnblockUser":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<BlockUnblockRequest>(),
+        responseSerializer: ProtobufSerializer<BlockUnblockResponse>(),
+        interceptors: self.interceptors?.makeUnblockUserInterceptors() ?? [],
+        userFunction: self.unblockUser(request:context:)
+      )
+
     default:
       return nil
     }
@@ -492,6 +640,18 @@ internal protocol UserServiceAsyncProvider: CallHandlerProvider, Sendable {
     request: UpdateStatusRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> UpdateStatusResponse
+
+  /// Block user by id
+  func blockUser(
+    request: BlockUnblockRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> BlockUnblockResponse
+
+  /// Unblock user by id
+  func unblockUser(
+    request: BlockUnblockRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> BlockUnblockResponse
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -549,6 +709,24 @@ extension UserServiceAsyncProvider {
         wrapping: { try await self.setStatus(request: $0, context: $1) }
       )
 
+    case "BlockUser":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<BlockUnblockRequest>(),
+        responseSerializer: ProtobufSerializer<BlockUnblockResponse>(),
+        interceptors: self.interceptors?.makeBlockUserInterceptors() ?? [],
+        wrapping: { try await self.blockUser(request: $0, context: $1) }
+      )
+
+    case "UnblockUser":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<BlockUnblockRequest>(),
+        responseSerializer: ProtobufSerializer<BlockUnblockResponse>(),
+        interceptors: self.interceptors?.makeUnblockUserInterceptors() ?? [],
+        wrapping: { try await self.unblockUser(request: $0, context: $1) }
+      )
+
     default:
       return nil
     }
@@ -572,6 +750,14 @@ internal protocol UserServiceServerInterceptorFactoryProtocol: Sendable {
   /// - Returns: Interceptors to use when handling 'setStatus'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeSetStatusInterceptors() -> [ServerInterceptor<UpdateStatusRequest, UpdateStatusResponse>]
+
+  /// - Returns: Interceptors to use when handling 'blockUser'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeBlockUserInterceptors() -> [ServerInterceptor<BlockUnblockRequest, BlockUnblockResponse>]
+
+  /// - Returns: Interceptors to use when handling 'unblockUser'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeUnblockUserInterceptors() -> [ServerInterceptor<BlockUnblockRequest, BlockUnblockResponse>]
 }
 
 internal enum UserServiceServerMetadata {
@@ -583,6 +769,8 @@ internal enum UserServiceServerMetadata {
       UserServiceServerMetadata.Methods.getUser,
       UserServiceServerMetadata.Methods.uploadProfilePhoto,
       UserServiceServerMetadata.Methods.setStatus,
+      UserServiceServerMetadata.Methods.blockUser,
+      UserServiceServerMetadata.Methods.unblockUser,
     ]
   )
 
@@ -608,6 +796,18 @@ internal enum UserServiceServerMetadata {
     internal static let setStatus = GRPCMethodDescriptor(
       name: "SetStatus",
       path: "/UserService/SetStatus",
+      type: GRPCCallType.unary
+    )
+
+    internal static let blockUser = GRPCMethodDescriptor(
+      name: "BlockUser",
+      path: "/UserService/BlockUser",
+      type: GRPCCallType.unary
+    )
+
+    internal static let unblockUser = GRPCMethodDescriptor(
+      name: "UnblockUser",
+      path: "/UserService/UnblockUser",
       type: GRPCCallType.unary
     )
   }

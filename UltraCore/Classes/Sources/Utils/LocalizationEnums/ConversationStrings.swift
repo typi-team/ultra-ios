@@ -36,3 +36,13 @@ enum ConversationStrings: String, StringLocalizable {
     var prefixOfTemplate: String { "conversation" }
     var localizableValue: String { rawValue }
 }
+
+
+enum EditActionStrings: String, StringLocalizable {
+    case cancel
+    case delete
+    case report
+    
+    var prefixOfTemplate: String { "conversation" }
+    var localizableValue: String { rawValue }
+}

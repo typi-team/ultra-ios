@@ -285,6 +285,10 @@ extension ConversationViewController: MessageInputBarDelegate {
 // MARK: - Extensions -
 
 extension ConversationViewController: ConversationViewInterface {
+    func reported() {
+        self.showAlert(from: "Запрос отправлен!")
+    }
+    
     
     func stopRefresh(removeController: Bool) {
         self.refreshControl.endRefreshing()
@@ -477,6 +481,12 @@ extension ConversationViewController {
             let cell: BaseMessageCell = tableView.dequeueCell()
             cell.setup(message: message)
             return cell
+        case .stock(_):
+            let cell: BaseMessageCell = tableView.dequeueCell()
+             return cell
+        case .coin(_):
+            let cell: BaseMessageCell = tableView.dequeueCell()
+             return cell
         }
     }
     
@@ -500,6 +510,25 @@ extension ConversationViewController {
 }
 
 extension ConversationViewController: EditActionBottomBarDelegate {
+    func report() {
+        let messages = self.tableView.indexPathsForSelectedRows?
+            .map { indexPath in self.tableView.cellForRow(at: indexPath) }
+            .compactMap({ $0 as? BaseMessageCell })
+            .map({ $0.message })
+            .compactMap({ $0 }) ?? []
+        
+        guard !messages.isEmpty else { return }
+        
+        let alert = UIAlertController(title: "Вы уверены?", message: " Если сообщение содержит угрозы, неподходящий контент или нарушает какие-либо правила платформы или сообщества, оно может быть обжаловано и подлежит удалению. Восстановление такого сообщения может быть невозможным.", preferredStyle: .actionSheet)
+        alert.addAction(.init(title: EditActionStrings.report.localized.capitalized, style: .destructive, handler: { [weak self] _ in
+            guard let `self` = self else { return }
+            self.presenter?.report(messages)
+            self.cancel()
+        }))
+       
+        alert.addAction(.init(title: EditActionStrings.cancel.localized, style: .cancel))
+        self.present(alert, animated: true)
+    }
     func cancel() {
         self.editInputBar.removeFromSuperview()
         self.tableView.setEditing(false, animated: true)

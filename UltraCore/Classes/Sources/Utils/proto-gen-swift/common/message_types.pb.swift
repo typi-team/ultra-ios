@@ -77,6 +77,38 @@ struct MoneyStatus {
   init() {}
 }
 
+struct StockStatus {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var status: StockStatusEnum = .stockStatusUnknown
+
+  var message: String = String()
+
+  var updated: Int64 = 0
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct CoinStatus {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var status: CoinStatusEnum = .coinStatusUnknown
+
+  var message: String = String()
+
+  var updated: Int64 = 0
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 struct MessageMeta {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -263,6 +295,128 @@ struct MoneyMessage {
 
   fileprivate var _money: Money? = nil
   fileprivate var _status: MoneyStatus? = nil
+}
+
+struct StockInfo {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var logo: String = String()
+
+  var name: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct CoinInfo {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var logo: String = String()
+
+  var name: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct StockMessage {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Uniq transaction ID for this stock transfer.
+  /// Field can be empty if integration with third party is in backend,
+  /// in that case transaction_id will be delivered as "update". In case
+  /// integration is in client side then client should send it
+  var transactionID: String = String()
+
+  var status: StockStatus {
+    get {return _status ?? StockStatus()}
+    set {_status = newValue}
+  }
+  /// Returns true if `status` has been explicitly set.
+  var hasStatus: Bool {return self._status != nil}
+  /// Clears the value of `status`. Subsequent reads from it will return its default value.
+  mutating func clearStatus() {self._status = nil}
+
+  var amount: Money {
+    get {return _amount ?? Money()}
+    set {_amount = newValue}
+  }
+  /// Returns true if `amount` has been explicitly set.
+  var hasAmount: Bool {return self._amount != nil}
+  /// Clears the value of `amount`. Subsequent reads from it will return its default value.
+  mutating func clearAmount() {self._amount = nil}
+
+  var info: StockInfo {
+    get {return _info ?? StockInfo()}
+    set {_info = newValue}
+  }
+  /// Returns true if `info` has been explicitly set.
+  var hasInfo: Bool {return self._info != nil}
+  /// Clears the value of `info`. Subsequent reads from it will return its default value.
+  mutating func clearInfo() {self._info = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _status: StockStatus? = nil
+  fileprivate var _amount: Money? = nil
+  fileprivate var _info: StockInfo? = nil
+}
+
+struct CoinMessage {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Uniq transaction ID for this coin transfer.
+  /// Field can be empty if integration with third party is in backend,
+  /// in that case transaction_id will be delivered as "update". In case
+  /// integration is in client side then client should send it
+  var transactionID: String = String()
+
+  var status: CoinStatus {
+    get {return _status ?? CoinStatus()}
+    set {_status = newValue}
+  }
+  /// Returns true if `status` has been explicitly set.
+  var hasStatus: Bool {return self._status != nil}
+  /// Clears the value of `status`. Subsequent reads from it will return its default value.
+  mutating func clearStatus() {self._status = nil}
+
+  var amount: Money {
+    get {return _amount ?? Money()}
+    set {_amount = newValue}
+  }
+  /// Returns true if `amount` has been explicitly set.
+  var hasAmount: Bool {return self._amount != nil}
+  /// Clears the value of `amount`. Subsequent reads from it will return its default value.
+  mutating func clearAmount() {self._amount = nil}
+
+  var info: CoinInfo {
+    get {return _info ?? CoinInfo()}
+    set {_info = newValue}
+  }
+  /// Returns true if `info` has been explicitly set.
+  var hasInfo: Bool {return self._info != nil}
+  /// Clears the value of `info`. Subsequent reads from it will return its default value.
+  mutating func clearInfo() {self._info = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _status: CoinStatus? = nil
+  fileprivate var _amount: Money? = nil
+  fileprivate var _info: CoinInfo? = nil
 }
 
 struct VideoMessage {
@@ -456,6 +610,22 @@ struct Message {
     set {_uniqueStorage()._content = .contact(newValue)}
   }
 
+  var stock: StockMessage {
+    get {
+      if case .stock(let v)? = _storage._content {return v}
+      return StockMessage()
+    }
+    set {_uniqueStorage()._content = .stock(newValue)}
+  }
+
+  var coin: CoinMessage {
+    get {
+      if case .coin(let v)? = _storage._content {return v}
+      return CoinMessage()
+    }
+    set {_uniqueStorage()._content = .coin(newValue)}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   enum OneOf_Content: Equatable {
@@ -467,6 +637,8 @@ struct Message {
     case location(LocationMessage)
     case file(FileMessage)
     case contact(ContactMessage)
+    case stock(StockMessage)
+    case coin(CoinMessage)
 
   #if !swift(>=4.1)
     static func ==(lhs: Message.OneOf_Content, rhs: Message.OneOf_Content) -> Bool {
@@ -506,6 +678,14 @@ struct Message {
         guard case .contact(let l) = lhs, case .contact(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
+      case (.stock, .stock): return {
+        guard case .stock(let l) = lhs, case .stock(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.coin, .coin): return {
+        guard case .coin(let l) = lhs, case .coin(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
       default: return false
       }
     }
@@ -542,6 +722,8 @@ struct MessagesRange {
 extension MessageState: @unchecked Sendable {}
 extension Money: @unchecked Sendable {}
 extension MoneyStatus: @unchecked Sendable {}
+extension StockStatus: @unchecked Sendable {}
+extension CoinStatus: @unchecked Sendable {}
 extension MessageMeta: @unchecked Sendable {}
 extension TextMessage: @unchecked Sendable {}
 extension AudioMessage: @unchecked Sendable {}
@@ -551,6 +733,10 @@ extension FileMessage: @unchecked Sendable {}
 extension LocationMessage: @unchecked Sendable {}
 extension ContactMessage: @unchecked Sendable {}
 extension MoneyMessage: @unchecked Sendable {}
+extension StockInfo: @unchecked Sendable {}
+extension CoinInfo: @unchecked Sendable {}
+extension StockMessage: @unchecked Sendable {}
+extension CoinMessage: @unchecked Sendable {}
 extension VideoMessage: @unchecked Sendable {}
 extension Sender: @unchecked Sendable {}
 extension Receiver: @unchecked Sendable {}
@@ -685,6 +871,94 @@ extension MoneyStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 
   static func ==(lhs: MoneyStatus, rhs: MoneyStatus) -> Bool {
+    if lhs.status != rhs.status {return false}
+    if lhs.message != rhs.message {return false}
+    if lhs.updated != rhs.updated {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension StockStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "StockStatus"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "status"),
+    2: .same(proto: "message"),
+    3: .same(proto: "updated"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.status) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.message) }()
+      case 3: try { try decoder.decodeSingularInt64Field(value: &self.updated) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.status != .stockStatusUnknown {
+      try visitor.visitSingularEnumField(value: self.status, fieldNumber: 1)
+    }
+    if !self.message.isEmpty {
+      try visitor.visitSingularStringField(value: self.message, fieldNumber: 2)
+    }
+    if self.updated != 0 {
+      try visitor.visitSingularInt64Field(value: self.updated, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: StockStatus, rhs: StockStatus) -> Bool {
+    if lhs.status != rhs.status {return false}
+    if lhs.message != rhs.message {return false}
+    if lhs.updated != rhs.updated {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension CoinStatus: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "CoinStatus"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "status"),
+    2: .same(proto: "message"),
+    3: .same(proto: "updated"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.status) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.message) }()
+      case 3: try { try decoder.decodeSingularInt64Field(value: &self.updated) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.status != .coinStatusUnknown {
+      try visitor.visitSingularEnumField(value: self.status, fieldNumber: 1)
+    }
+    if !self.message.isEmpty {
+      try visitor.visitSingularStringField(value: self.message, fieldNumber: 2)
+    }
+    if self.updated != 0 {
+      try visitor.visitSingularInt64Field(value: self.updated, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: CoinStatus, rhs: CoinStatus) -> Bool {
     if lhs.status != rhs.status {return false}
     if lhs.message != rhs.message {return false}
     if lhs.updated != rhs.updated {return false}
@@ -1139,6 +1413,190 @@ extension MoneyMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
+extension StockInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "StockInfo"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "logo"),
+    2: .same(proto: "name"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.logo) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.name) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.logo.isEmpty {
+      try visitor.visitSingularStringField(value: self.logo, fieldNumber: 1)
+    }
+    if !self.name.isEmpty {
+      try visitor.visitSingularStringField(value: self.name, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: StockInfo, rhs: StockInfo) -> Bool {
+    if lhs.logo != rhs.logo {return false}
+    if lhs.name != rhs.name {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension CoinInfo: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "CoinInfo"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "logo"),
+    2: .same(proto: "name"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.logo) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.name) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.logo.isEmpty {
+      try visitor.visitSingularStringField(value: self.logo, fieldNumber: 1)
+    }
+    if !self.name.isEmpty {
+      try visitor.visitSingularStringField(value: self.name, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: CoinInfo, rhs: CoinInfo) -> Bool {
+    if lhs.logo != rhs.logo {return false}
+    if lhs.name != rhs.name {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension StockMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "StockMessage"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "transaction_id"),
+    2: .same(proto: "status"),
+    3: .same(proto: "amount"),
+    4: .same(proto: "info"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.transactionID) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._status) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._amount) }()
+      case 4: try { try decoder.decodeSingularMessageField(value: &self._info) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.transactionID.isEmpty {
+      try visitor.visitSingularStringField(value: self.transactionID, fieldNumber: 1)
+    }
+    try { if let v = self._status {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._amount {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._info {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: StockMessage, rhs: StockMessage) -> Bool {
+    if lhs.transactionID != rhs.transactionID {return false}
+    if lhs._status != rhs._status {return false}
+    if lhs._amount != rhs._amount {return false}
+    if lhs._info != rhs._info {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension CoinMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "CoinMessage"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "transaction_id"),
+    2: .same(proto: "status"),
+    3: .same(proto: "amount"),
+    4: .same(proto: "info"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.transactionID) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._status) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._amount) }()
+      case 4: try { try decoder.decodeSingularMessageField(value: &self._info) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.transactionID.isEmpty {
+      try visitor.visitSingularStringField(value: self.transactionID, fieldNumber: 1)
+    }
+    try { if let v = self._status {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._amount {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._info {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: CoinMessage, rhs: CoinMessage) -> Bool {
+    if lhs.transactionID != rhs.transactionID {return false}
+    if lhs._status != rhs._status {return false}
+    if lhs._amount != rhs._amount {return false}
+    if lhs._info != rhs._info {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension VideoMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "VideoMessage"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -1315,6 +1773,8 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     15: .same(proto: "location"),
     16: .same(proto: "file"),
     17: .same(proto: "contact"),
+    18: .same(proto: "stock"),
+    19: .same(proto: "coin"),
   ]
 
   fileprivate class _StorageClass {
@@ -1475,6 +1935,32 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
             _storage._content = .contact(v)
           }
         }()
+        case 18: try {
+          var v: StockMessage?
+          var hadOneofValue = false
+          if let current = _storage._content {
+            hadOneofValue = true
+            if case .stock(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._content = .stock(v)
+          }
+        }()
+        case 19: try {
+          var v: CoinMessage?
+          var hadOneofValue = false
+          if let current = _storage._content {
+            hadOneofValue = true
+            if case .coin(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._content = .coin(v)
+          }
+        }()
         default: break
         }
       }
@@ -1546,6 +2032,14 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
       case .contact?: try {
         guard case .contact(let v)? = _storage._content else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 17)
+      }()
+      case .stock?: try {
+        guard case .stock(let v)? = _storage._content else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 18)
+      }()
+      case .coin?: try {
+        guard case .coin(let v)? = _storage._content else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 19)
       }()
       case nil: break
       }
