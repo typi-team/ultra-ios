@@ -69,6 +69,10 @@ class EditActionBottomBar: UIView {
         self.setupViews()
         self.setupConstraints()
     }
+    
+    func hideReport(isHidden: Bool) {
+        self.reportButton.isHidden = isHidden
+    }
 }
 
 private extension EditActionBottomBar {

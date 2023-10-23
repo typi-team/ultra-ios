@@ -201,6 +201,24 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             }
             .disposed(by: disposeBag)
         
+        self.tableView
+            .rx
+            .itemSelected
+            .subscribe({ [weak self] _ in
+                guard let `self` = self, let rows = self.tableView.indexPathsForSelectedRows else { return }
+                self.editInputBar.hideReport(isHidden: rows.count > 1)
+            })
+            .disposed(by: disposeBag)
+        
+        self.tableView
+            .rx
+            .itemDeselected
+            .subscribe({ [weak self] _ in
+                guard let `self` = self, let rows = self.tableView.indexPathsForSelectedRows else { return }
+                self.editInputBar.hideReport(isHidden: rows.count > 1)
+            })
+            .disposed(by: disposeBag)
+        
         self.presenter?.viewDidLoad()
     }
     
