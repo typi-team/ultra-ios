@@ -33,11 +33,10 @@ class MessageInputBar: UIView {
     private var style: MessageInputBarConfig { UltraCoreStyle.mesageInputBarConfig }
     private lazy var divider: UIView = .init { $0.backgroundColor = style.dividerColor.color }
     
-    private let containerStack: UIStackView = .init {
-        $0.axis = .horizontal
-        $0.clipsToBounds = false
-        $0.spacing = kMediumPadding
+    private let containerStack: UIView = .init {
         $0.cornerRadius = kLowPadding
+        $0.clipsToBounds = false
+
     }
     
     private lazy var messageTextView: UITextView = MessageTextView.init {[weak self] textView in
@@ -132,8 +131,8 @@ class MessageInputBar: UIView {
         self.addSubview(containerStack)
         self.addSubview(exchangesButton)
         self.addSubview(recordView)
-        self.containerStack.addArrangedSubview(messageTextView)
-        self.containerStack.addArrangedSubview(microButton)
+        self.containerStack.addSubview(messageTextView)
+        self.containerStack.addSubview(microButton)
         
         self.backgroundColor = UltraCoreStyle.controllerBackground.color
     }
@@ -164,6 +163,8 @@ class MessageInputBar: UIView {
         self.messageTextView.snp.makeConstraints { make in
             make.height.equalTo(35)
             make.left.equalToSuperview().offset(kLowPadding)
+            make.bottom.equalToSuperview().offset(-kLowPadding)
+            make.top.equalToSuperview().offset(kLowPadding)
         }
 
         self.sendButton.snp.makeConstraints { make in
@@ -174,15 +175,17 @@ class MessageInputBar: UIView {
         }
         
         self.microButton.snp.makeConstraints { make in
-            make.width.equalTo(36)
-            make.bottom.equalToSuperview()
+            make.width.height.equalTo(36)
+            make.bottom.equalToSuperview().offset(-kLowPadding)
+            make.right.equalToSuperview().offset(-kLowPadding)
+            make.left.equalTo(messageTextView.snp.right).offset(kLowPadding)
         }
         
         self.recordView.snp.makeConstraints { make in
             make.top.equalToSuperview()
             make.bottom.equalToSuperview()
             make.left.equalToSuperview().offset(kMediumPadding)
-            make.right.equalTo(microButton.snp.left).offset(-kMediumPadding)
+            make.right.equalTo(microButton.snp.left).offset(-kHeadlinePadding)
         }
     }
     
