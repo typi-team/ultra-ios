@@ -291,14 +291,6 @@ extension ConversationViewController: MessageInputBarDelegate {
         present(viewController, animated: true)
     }
     
-    func micro(isActivated: Bool) {
-        self.view.addSubview(voiceInputBar)
-        self.voiceInputBar.snp.makeConstraints({make in
-            make.edges.equalTo(self.messageInputBar)
-        })
-        self.voiceInputBar.setActiveRecord()
-    }
-    
     func message(text: String) {
         self.presenter?.send(message: text)
     }
@@ -619,6 +611,10 @@ extension ConversationViewController: UIDocumentPickerDelegate {
 }
 
 extension ConversationViewController: VoiceInputBarDelegate {
+    func showVoiceError() {
+        showSettingAlert(from: "Дайте разрешение на запись голоса")
+    }
+    
     func recordedVoice(url: URL, in duration: TimeInterval) {
         guard duration > 2,
               let data = try? Data(contentsOf: url) else { return }

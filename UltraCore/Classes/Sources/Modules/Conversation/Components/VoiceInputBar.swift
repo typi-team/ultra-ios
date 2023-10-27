@@ -8,6 +8,7 @@
 import Foundation
 
 protocol VoiceInputBarDelegate: AnyObject {
+    func showVoiceError()
     func recordedVoice(url: URL, in duration: TimeInterval)
 }
 

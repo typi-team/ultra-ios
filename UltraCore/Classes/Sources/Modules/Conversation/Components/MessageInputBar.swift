@@ -7,11 +7,10 @@
 
 import Foundation
 
-protocol MessageInputBarDelegate: AnyObject {
+protocol MessageInputBarDelegate: VoiceInputBarDelegate {
     func exchanges()
     func message(text: String)
     func typing(is active: Bool)
-    func micro(isActivated: Bool)
     func pressedDone(in view: MessageInputBar)
     func pressedPlus(in view: MessageInputBar)
 }
@@ -27,18 +26,22 @@ class MessageInputBar: UIView {
     fileprivate let kInputMicroImage: UIImage? = .named("message_input_micro")
     fileprivate let kInputExchangeImage: UIImage? = .named("message_input_exchange")
     
-    private var divider: UIView = .init { $0.backgroundColor = UltraCoreStyle.divederColor.color }
+    fileprivate lazy var audioRecordUtils: AudioRecordUtils = .init({
+        $0.delegate = self
+    })
+    
+    private var style: MessageInputBarConfig { UltraCoreStyle.mesageInputBarConfig }
+    private lazy var divider: UIView = .init { $0.backgroundColor = style.dividerColor.color }
     
     private let containerStack: UIStackView = .init {
         $0.axis = .horizontal
+        $0.clipsToBounds = false
         $0.spacing = kMediumPadding
         $0.cornerRadius = kLowPadding
-        $0.backgroundColor = .gray200
     }
     
     private lazy var messageTextView: UITextView = MessageTextView.init {[weak self] textView in
         textView.delegate = self
-        textView.backgroundColor = .gray200
         textView.cornerRadius = kLowPadding
         textView.placeholder = "\(ConversationStrings.insertText.localized)..."
     }
@@ -70,17 +73,21 @@ class MessageInputBar: UIView {
         }
     }
     
-    private lazy var microButton: UIButton = .init {[weak self] button in
+    private lazy var recordView: RecordView = .init({
+        $0.delegate = self
+        $0.isHidden = true
+        $0.isUserInteractionEnabled = false
+        $0.slideToCancelText = EditActionStrings.cancel.localized.capitalized
+    })
+    
+    private lazy var microButton: RecordButton = .init {[weak self] button in
         guard let `self` = self else { return }
-        button.setImage(self.kInputMicroImage, for: .normal)
-        button.addAction(for: .touchDown, {
-            self.delegate?.micro(isActivated: false)
-        })
+        button.recordView = self.recordView
+        button.clipsToBounds = false
     }
     
     private lazy var blockLabel: LabelWithInsets = .init {
         $0.textAlignment = .center
-        $0.backgroundColor = UltraCoreStyle.inputMessageBarBackgroundColor.color
         $0.text = "Простите, но вы заблокировали этот чат. Если у вас есть вопросы или вам необходима помощь, пожалуйста, обратитесь к нашей службе поддержки."
     }
     
@@ -93,20 +100,41 @@ class MessageInputBar: UIView {
         super.init(frame: frame)
         self.setupViews()
         self.setupConstraints()
+        self.setupStyle()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+    private func setupStyle() {
+        self.backgroundColor = style.background.color
+        self.microButton.tintColor = style.recordViewTint.color
+        self.divider.backgroundColor = style.dividerColor.color
+        self.blockLabel.backgroundColor = style.background.color
+        self.sendButton.tintColor = style.sendMessageViewTint.color
+        self.exchangesButton.tintColor = style.sendMoneyViewTint.color
+        self.containerStack.backgroundColor = style.messageContainerBackground.color
+        self.messageTextView.backgroundColor = style.messageContainerBackground.color
+    }
+    
+    private func hideOrShowAllViewInRecording(visibility: Bool) {
+        self.sendButton.isHidden = !visibility
+        self.exchangesButton.isHidden = !visibility
+        self.messageTextView.alpha = !visibility ?  0 : 1
+        self.containerStack.backgroundColor = visibility ? style.messageContainerBackground.color : style.background.color
+        self.messageTextView.backgroundColor = visibility ? style.messageContainerBackground.color : style.background.color
+    }
+    
     private func setupViews() {
-        
         self.addSubview(divider)
         self.addSubview(sendButton)
         self.addSubview(containerStack)
         self.addSubview(exchangesButton)
+        self.addSubview(recordView)
         self.containerStack.addArrangedSubview(messageTextView)
         self.containerStack.addArrangedSubview(microButton)
+        
         self.backgroundColor = UltraCoreStyle.controllerBackground.color
     }
     
@@ -149,14 +177,18 @@ class MessageInputBar: UIView {
             make.width.equalTo(36)
             make.bottom.equalToSuperview()
         }
+        
+        self.recordView.snp.makeConstraints { make in
+            make.top.equalToSuperview()
+            make.bottom.equalToSuperview()
+            make.left.equalToSuperview().offset(kMediumPadding)
+            make.right.equalTo(microButton.snp.left).offset(-kMediumPadding)
+        }
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
-        self.divider.backgroundColor = UltraCoreStyle.divederColor.color
-        self.backgroundColor = UltraCoreStyle.inputMessageBarBackgroundColor.color
-        self.blockLabel.backgroundColor = UltraCoreStyle.inputMessageBarBackgroundColor.color
-        self.blockLabel.textColor = UltraCoreStyle.inputMessageBarBackgroundColor.color
+        self.setupStyle()
     }
 }
 
@@ -259,5 +291,48 @@ extension MessageInputBar {
                 self.blockLabel.removeFromSuperview()
             }
         }
+    }
+}
+
+extension MessageInputBar: AudioRecordUtilsDelegate {
+    func recordedVoice(url: URL, in duration: TimeInterval) {
+        self.delegate?.recordedVoice(url: url, in: duration)
+    }
+    
+    func requestRecordPermissionIsFalse() {
+        self.delegate?.showVoiceError()
+    }
+    
+    func recordingVoice(average power: Float) {
+        
+    }
+    
+    func recodedDuration(time interal: TimeInterval) {
+        
+    }
+}
+
+extension MessageInputBar: RecordViewDelegate {
+    func onStart() {
+        self.recordView.isHidden = false
+        self.recordView.bringSubviewToFront(self)
+        self.recordView.isUserInteractionEnabled = true
+        self.hideOrShowAllViewInRecording(visibility: false)
+        self.audioRecordUtils.requestRecordPermission()
+    }
+    
+    func onCancel() {
+        self.recordView.isHidden = true
+        self.recordView.isUserInteractionEnabled = false
+        self.hideOrShowAllViewInRecording(visibility: true)
+        self.audioRecordUtils.cancelRecording()
+    }
+    
+    func onFinished(duration: CGFloat) {
+        self.recordView.isHidden = true
+        self.recordView.isUserInteractionEnabled = false
+        self.recordView.sendSubviewToBack(self)
+        self.hideOrShowAllViewInRecording(visibility: true)
+        self.audioRecordUtils.stopRecording()
     }
 }
