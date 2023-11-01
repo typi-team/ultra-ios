@@ -7,16 +7,26 @@
 import RxSwift
 import UIKit
 
+public protocol UltraCoreFutureDelegate: AnyObject {
+    func availableToSendMoney() -> Bool
+}
+
 public protocol UltraCoreSettingsDelegate: AnyObject {
+    func info(from id: String) -> IContactInfo?
     func serverConfig() -> ServerConfigurationProtocol?
+    func contactViewController(contact id: String) -> UIViewController?
     func moneyViewController(callback: @escaping MoneyCallback) -> UIViewController?
     func contactsViewController(contactsCallback: @escaping ContactsCallback,
                                 openConverationCallback: @escaping UserIDCallback) -> UIViewController?
 }
 
+private let disposeBag = DisposeBag()
+private let interactor = ContactsBookInteractor()
+
 public class UltraCoreSettings {
     
     public static weak var delegate: UltraCoreSettingsDelegate?
+    public static weak var futureDelegate: UltraCoreFutureDelegate?
     
     static func setupAppearance() {
         UIBarButtonItem.appearance().tintColor = .green500
@@ -27,6 +37,23 @@ public class UltraCoreSettings {
 }
 
 public extension UltraCoreSettings {
+    
+    static func update(contacts: [IContactInfo]) throws {
+        try AppSettingsImpl.shared.contactDBService.update(contacts: contacts)
+    }
+    
+    static func allContactsIn(callback: @escaping ([IContactInfo]) -> Void) {
+        interactor
+            .executeSingle(params: ())
+            .subscribe(onSuccess: { response in
+                switch response {
+                case let .authorized(contacts: contacts):
+                    callback(contacts)
+                case .denied: break
+                }
+            })
+            .disposed(by: disposeBag)
+    }
     
     static func printAllLocalizableStrings() {
         print("================= Localizable =======================")

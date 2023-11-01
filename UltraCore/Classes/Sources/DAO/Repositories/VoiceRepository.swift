@@ -39,7 +39,7 @@ class VoiceRepository: NSObject {
         try? AVAudioSession.sharedInstance().setActive(false)
     }
     
-    func play(message: Message) {
+    func play(message: Message, atTime: TimeInterval = .zero) {
         guard let soundURL = self.mediaUtils.mediaURL(from: message) else { return }
         do {
             self.stop()
@@ -48,11 +48,12 @@ class VoiceRepository: NSObject {
             let audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
             audioPlayer.prepareToPlay()
             audioPlayer.delegate = self
+            audioPlayer.currentTime = atTime
             audioPlayer.play()
             
             self.timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(updateTime), userInfo: nil, repeats: true)
             self.audioPlayer = audioPlayer
-            self.currentVoice.on(.next(.init(voiceMessage: message.voice, currentTime: 0.0)))
+            self.currentVoice.on(.next(.init(voiceMessage: message.voice, currentTime: atTime)))
         } catch {
             self.stop()
             PP.error(error.localizedDescription)

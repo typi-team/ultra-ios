@@ -54,6 +54,20 @@ struct FileCreateRequest {
   init() {}
 }
 
+struct FileUploadChunksRequest {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var fileID: String = String()
+
+  var chunks: [FileChunk] = []
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 struct FileDownloadRequest {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -149,6 +163,7 @@ struct PhotoDownloadRequest {
 #if swift(>=5.5) && canImport(_Concurrency)
 extension FileChunk: @unchecked Sendable {}
 extension FileCreateRequest: @unchecked Sendable {}
+extension FileUploadChunksRequest: @unchecked Sendable {}
 extension FileDownloadRequest: @unchecked Sendable {}
 extension FileCreateResponse: @unchecked Sendable {}
 extension FileUploadAcceptedChunks: @unchecked Sendable {}
@@ -248,6 +263,44 @@ extension FileCreateRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if lhs.name != rhs.name {return false}
     if lhs.size != rhs.size {return false}
     if lhs.mimeType != rhs.mimeType {return false}
+    if lhs.chunks != rhs.chunks {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension FileUploadChunksRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "FileUploadChunksRequest"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "file_id"),
+    2: .same(proto: "chunks"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.fileID) }()
+      case 2: try { try decoder.decodeRepeatedMessageField(value: &self.chunks) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.fileID.isEmpty {
+      try visitor.visitSingularStringField(value: self.fileID, fieldNumber: 1)
+    }
+    if !self.chunks.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.chunks, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: FileUploadChunksRequest, rhs: FileUploadChunksRequest) -> Bool {
+    if lhs.fileID != rhs.fileID {return false}
     if lhs.chunks != rhs.chunks {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

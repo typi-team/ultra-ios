@@ -21,6 +21,8 @@ protocol ConversationViewInterface: ViewInterface {
     func setup(conversation: Conversation)
     func stopRefresh(removeController: Bool)
     func display(is typing: UserTypingWithDate)
+    func reported()
+    func blocked(is blocked: Bool)
 }
 
 struct FileUpload {
@@ -34,13 +36,16 @@ struct FileUpload {
 }
 
 protocol ConversationPresenterInterface: PresenterInterface {
+    func block()
     func viewDidLoad()
+    func isBlock() -> Bool
     func navigateToContact()
     func typing(is active: Bool)
     func upload(file: FileUpload)
     func send(message text: String)
     func send(location: LocationMessage)
     func send(contact: ContactMessage)
+    func report(_ messages: [Message])
     func delete(_ messages: [Message], all: Bool)
     func loadMoreMessages(maxSeqNumber: UInt64)
     func mediaURL(from message: Message) -> URL?

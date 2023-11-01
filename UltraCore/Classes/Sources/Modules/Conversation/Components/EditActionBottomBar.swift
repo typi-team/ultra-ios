@@ -9,6 +9,7 @@ import Foundation
 protocol EditActionBottomBarDelegate: AnyObject {
     func delete()
     func cancel()
+    func report()
 }
 
 class EditActionBottomBar: UIView {
@@ -22,7 +23,7 @@ class EditActionBottomBar: UIView {
     })
     
     fileprivate lazy var deleteButton: UIButton = .init({
-        $0.setTitle("Удалить", for: .normal)
+        $0.setTitle(EditActionStrings.delete.localized.capitalized, for: .normal)
         $0.titleLabel?.font = .defaultRegularCallout
         $0.setTitleColor(.red500, for: .normal)
         $0.addAction {[weak self] in
@@ -33,8 +34,20 @@ class EditActionBottomBar: UIView {
         }
     })
     
+    fileprivate lazy var reportButton: UIButton = .init({
+        $0.setTitle(EditActionStrings.report.localized.capitalized, for: .normal)
+        $0.titleLabel?.font = .defaultRegularCallout
+        $0.setTitleColor(.red500, for: .normal)
+        $0.addAction {[weak self] in
+            guard let `self` = self else {
+                 return
+            }
+            self.delegate?.report()
+        }
+    })
+    
     fileprivate lazy var cancelButton: UIButton = .init({
-        $0.setTitle("Отменить", for: .normal)
+        $0.setTitle(EditActionStrings.cancel.localized.capitalized, for: .normal)
         $0.titleLabel?.font = .defaultRegularCallout
         $0.setTitleColor(.gray900, for: .normal)
         $0.addAction {[weak self] in
@@ -56,6 +69,10 @@ class EditActionBottomBar: UIView {
         self.setupViews()
         self.setupConstraints()
     }
+    
+    func hideReport(isHidden: Bool) {
+        self.reportButton.isHidden = isHidden
+    }
 }
 
 private extension EditActionBottomBar {
@@ -63,6 +80,7 @@ private extension EditActionBottomBar {
         self.addSubview(stackView)
         self.backgroundColor = .gray100
         self.stackView.addArrangedSubview(self.deleteButton)
+        self.stackView.addArrangedSubview(self.reportButton)
         self.stackView.addArrangedSubview(self.cancelButton)
     }
     

@@ -161,6 +161,7 @@ private extension UpdateRepositoryImpl {
     
     func handle(of presence: Update.OneOf_OfPresence) {
         switch presence {
+
         case let .typing(typing):
             self.handle(user: typing)
         case let .audioRecording(pres):
@@ -179,6 +180,16 @@ private extension UpdateRepositoryImpl {
             self.handleIncoming(callRequest: callRequest)
         case let .callCancel(callrequest):
             self.dissmissCall(in: callrequest.room)
+        case .block(let blockMessage):
+            self.contactService
+                .block(user: blockMessage.user, blocked: blockMessage.state)
+                .subscribe()
+                .disposed(by: disposeBag)
+        case .unblock(let blockMessage):
+            self.contactService
+                .block(user: blockMessage.user, blocked: blockMessage.state)
+                .subscribe()
+                .disposed(by: disposeBag)
         }
     }
     
@@ -228,6 +239,10 @@ private extension UpdateRepositoryImpl {
             self.deleteConversation(chat)
         case let .moneyTransferStatus(status):
             PP.debug(status.textFormatString())
+        case .stockTransferStatus(let data):
+            PP.debug(data.textFormatString())
+        case .coinTransferStatus(let data):
+            PP.debug(data.textFormatString())
         }
     }
 }

@@ -36,6 +36,11 @@
 "conversation.multivalue" = "Multivalue...";
 "conversation.thereAreNoMessagesInThisChat" = "There are no messages in this chat";
 "conversation.insertText" = "insert text";
+"conversation.cancel" = "cancel";
+"conversation.delete" = "delete";
+"conversation.report" = "report";
+"conversation.block" = "Block";
+"conversation.unblock" = "Unblock";
 // MARK: Messages page
 "message.audio" = "🔉 Audio";
 "message.voice" = "🎤 Voice";

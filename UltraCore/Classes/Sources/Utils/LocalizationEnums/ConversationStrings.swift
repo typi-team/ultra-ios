@@ -25,6 +25,8 @@ enum ConversationStrings: String, StringLocalizable {
     case location
     case prints
     case multivalue
+    case block
+    case unblock
     
     case transferAmount
     case writeOffTheCard
@@ -32,6 +34,16 @@ enum ConversationStrings: String, StringLocalizable {
     case money
     case thereAreNoMessagesInThisChat
     case insertText
+    
+    var prefixOfTemplate: String { "conversation" }
+    var localizableValue: String { rawValue }
+}
+
+
+enum EditActionStrings: String, StringLocalizable {
+    case cancel
+    case delete
+    case report
     
     var prefixOfTemplate: String { "conversation" }
     var localizableValue: String { rawValue }

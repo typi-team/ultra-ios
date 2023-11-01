@@ -215,10 +215,13 @@ struct MessagesDeleteRequest {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
+  /// Chat to delete message
   var chatID: String = String()
 
+  /// Message range
   var range: [MessagesRange] = []
 
+  /// 'true' to delete message for everyone in chat
   var forEveryone: Bool = false
 
   var unknownFields = SwiftProtobuf.UnknownStorage()

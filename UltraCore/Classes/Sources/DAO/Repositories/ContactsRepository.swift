@@ -16,6 +16,7 @@ protocol ContactsRepository {
     func contact(id: String) -> DBContact?
     func save(contact: DBContact) -> Single<Void>
     func delete(contact: DBContact) -> Single<Void>
+    func block(user id: String, blocked: Bool) -> Single<Void>
 }
 
 
@@ -41,6 +42,10 @@ class ContactsRepositoryImpl: ContactsRepository {
     
     func delete(contact: DBContact) -> Single<Void> {
         return self.contactDBService.delete(contact: contact)
+    }
+    
+    func block(user id: String, blocked: Bool) -> Single<Void> {
+        return self.contactDBService.block(user: id, blocked: blocked)
     }
 }
 

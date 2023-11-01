@@ -17,13 +17,16 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
     // MARK: - Module setup -
 
     fileprivate weak var delegate: UltraCoreSettingsDelegate?
+    fileprivate weak var futureDelegate: UltraCoreFutureDelegate?
     
     fileprivate let conversation: Conversation
     
     init(with conversation: Conversation,
-         delegate: UltraCoreSettingsDelegate? = UltraCoreSettings.delegate) {
+         delegate: UltraCoreSettingsDelegate? = UltraCoreSettings.delegate,
+         futureDelegate: UltraCoreFutureDelegate? = UltraCoreSettings.futureDelegate) {
         self.delegate = delegate
         self.conversation = conversation
+        self.futureDelegate = futureDelegate
         let moduleViewController = ConversationViewController()
         super.init(viewController: moduleViewController)
         
@@ -64,16 +67,19 @@ extension ConversationWireframe: ConversationWireframeInterface {
     }
     
     func navigateTo(contact: ContactDisplayable) {
-        self.navigationController?.pushWireframe(ContactWireframe(contact: contact), animated: true, removeFromStack: nil)
+        if let viewController = self.delegate?.contactViewController(contact: contact.phone) {
+            self.navigationController?.pushViewController(viewController, animated: true)
+        } else {
+            self.navigationController?.pushWireframe(ContactWireframe(contact: contact), animated: true, removeFromStack: nil)
+        }
     }
     
     func openMoneyController(callback: @escaping MoneyCallback) {
         if let innerViewController = self.delegate?.moneyViewController(callback: callback) {
             self.viewController.present(innerViewController, animated: true)
-        }else {
-            let wireframe = MoneyTransferWireframe(conversation:self.conversation, moneyCallback: callback)
+        } else {
+            let wireframe = MoneyTransferWireframe(conversation: self.conversation, moneyCallback: callback)
             self.viewController.present(wireframe.viewController, animated: true)
         }
-        
     }
 }

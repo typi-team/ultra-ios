@@ -95,10 +95,14 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.handleKeyboardTransmission = true
         super.setupViews()
 //        MARK: Must be hide
-//        self.navigationItem.rightBarButtonItems = [.init(image: .named("conversation_video_camera_icon"),
+        self.navigationItem.rightBarButtonItems = [
+//                                                    .init(image: .named("conversation_video_camera_icon"),
 //                                                         style: .done, target: self, action: #selector(self.callWithVideo(_:))),
 //                                                   .init(image: .named("conversation_phone_icon"),
-//                                                         style: .done, target: self, action: #selector(self.callWithVoice(_:)))]
+//                                                         style: .done, target: self, action: #selector(self.callWithVoice(_:)))
+                                                               .init(image: .named("conversation.dots"),
+                                                         style: .done, target: self, action: #selector(self.more(_:)))
+        ]
         self.view.addSubview(tableView)
         self.view.addSubview(messageHeadline)
         self.view.addSubview(messageInputBar)
@@ -197,6 +201,24 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             }
             .disposed(by: disposeBag)
         
+        self.tableView
+            .rx
+            .itemSelected
+            .subscribe({ [weak self] _ in
+                guard let `self` = self, let rows = self.tableView.indexPathsForSelectedRows else { return }
+                self.editInputBar.hideReport(isHidden: rows.count > 1)
+            })
+            .disposed(by: disposeBag)
+        
+        self.tableView
+            .rx
+            .itemDeselected
+            .subscribe({ [weak self] _ in
+                guard let `self` = self, let rows = self.tableView.indexPathsForSelectedRows else { return }
+                self.editInputBar.hideReport(isHidden: rows.count > 1)
+            })
+            .disposed(by: disposeBag)
+        
         self.presenter?.viewDidLoad()
     }
     
@@ -269,14 +291,6 @@ extension ConversationViewController: MessageInputBarDelegate {
         present(viewController, animated: true)
     }
     
-    func micro(isActivated: Bool) {
-        self.view.addSubview(voiceInputBar)
-        self.voiceInputBar.snp.makeConstraints({make in
-            make.edges.equalTo(self.messageInputBar)
-        })
-        self.voiceInputBar.setActiveRecord()
-    }
-    
     func message(text: String) {
         self.presenter?.send(message: text)
     }
@@ -285,6 +299,14 @@ extension ConversationViewController: MessageInputBarDelegate {
 // MARK: - Extensions -
 
 extension ConversationViewController: ConversationViewInterface {
+    func blocked(is blocked: Bool) {
+        self.messageInputBar.block(blocked)
+    }
+    
+    func reported() {
+        self.showAlert(from: "Запрос отправлен!")
+    }
+    
     
     func stopRefresh(removeController: Bool) {
         self.refreshControl.endRefreshing()
@@ -385,6 +407,25 @@ extension ConversationViewController {
         self.presenter?.callVoice()
     }
     
+    @objc func more(_ sender: UIBarButtonItem) {
+        guard let blocked = self.presenter?.isBlock() else { return }
+        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        if blocked {
+            alert.addAction(.init(title: ConversationStrings.unblock.localized.capitalized, style: .default, handler: { [weak self] _ in
+                guard let `self` = self else { return }
+                self.presenter?.block()
+            }))
+        } else {
+            alert.addAction(.init(title: ConversationStrings.block.localized.capitalized, style: .destructive, handler: { [weak self] _ in
+                guard let `self` = self else { return }
+                self.presenter?.block()
+            }))
+        }
+
+        alert.addAction(.init(title: EditActionStrings.cancel.localized.capitalized, style: .cancel))
+        self.present(alert, animated: true)
+    }
+    
     func cell(_ message: Message, in tableView: UITableView) -> BaseMessageCell {
         
         guard let content = message.content else {
@@ -477,6 +518,12 @@ extension ConversationViewController {
             let cell: BaseMessageCell = tableView.dequeueCell()
             cell.setup(message: message)
             return cell
+        case .stock(_):
+            let cell: BaseMessageCell = tableView.dequeueCell()
+             return cell
+        case .coin(_):
+            let cell: BaseMessageCell = tableView.dequeueCell()
+             return cell
         }
     }
     
@@ -500,6 +547,25 @@ extension ConversationViewController {
 }
 
 extension ConversationViewController: EditActionBottomBarDelegate {
+    func report() {
+        let messages = self.tableView.indexPathsForSelectedRows?
+            .map { indexPath in self.tableView.cellForRow(at: indexPath) }
+            .compactMap({ $0 as? BaseMessageCell })
+            .map({ $0.message })
+            .compactMap({ $0 }) ?? []
+        
+        guard !messages.isEmpty else { return }
+        
+        let alert = UIAlertController(title: "Вы уверены?", message: " Если сообщение содержит угрозы, неподходящий контент или нарушает какие-либо правила платформы или сообщества, оно может быть обжаловано и подлежит удалению. Восстановление такого сообщения может быть невозможным.", preferredStyle: .actionSheet)
+        alert.addAction(.init(title: EditActionStrings.report.localized.capitalized, style: .destructive, handler: { [weak self] _ in
+            guard let `self` = self else { return }
+            self.presenter?.report(messages)
+            self.cancel()
+        }))
+       
+        alert.addAction(.init(title: EditActionStrings.cancel.localized, style: .cancel))
+        self.present(alert, animated: true)
+    }
     func cancel() {
         self.editInputBar.removeFromSuperview()
         self.tableView.setEditing(false, animated: true)
@@ -545,6 +611,10 @@ extension ConversationViewController: UIDocumentPickerDelegate {
 }
 
 extension ConversationViewController: VoiceInputBarDelegate {
+    func showVoiceError() {
+        showSettingAlert(from: "Дайте разрешение на запись голоса")
+    }
+    
     func recordedVoice(url: URL, in duration: TimeInterval) {
         guard duration > 2,
               let data = try? Data(contentsOf: url) else { return }

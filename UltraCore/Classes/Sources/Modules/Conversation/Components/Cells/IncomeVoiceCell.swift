@@ -16,7 +16,15 @@ class IncomeVoiceCell: MediaCell {
 
     fileprivate lazy var config = UltraCoreStyle.incomeMessageCell
     
+    fileprivate var isInSeekMessage: Message? {
+        didSet {
+            PP.debug(isInSeekMessage == nil ? "Is nil": "Not nil")
+        }
+    }
+    
     fileprivate lazy var slider: UISlider = .init({
+        $0.addTarget(self, action: #selector(self.seekTo(_:)), for: .touchUpInside)
+        $0.addTarget(self, action: #selector(self.beginSeek(_:)), for: .valueChanged)
         $0.thumbTintColor = config.sildirBackgroundColor.color
         $0.maximumTrackTintColor = config.sildirBackgroundColor.color
         $0.minimumTrackTintColor = config.sildirBackgroundColor.color
@@ -78,35 +86,55 @@ class IncomeVoiceCell: MediaCell {
             make.bottom.equalToSuperview().offset(-kLowPadding)
         }
     }
-
-    override func setup(message: Message) {
-        super.setup(message: message)
-
-        self.durationLabel.text = message.voice.duration.timeInterval.formatSeconds
-        
+    
+    override func additioanSetup() {
+        super.additioanSetup()
         self.voiceRepository
             .currentVoice
             .subscribe(onNext: { [weak self] voice in
                 guard let `self` = self else { return }
                 if let voice = voice,
-                   self.message?.voice.fileID == voice.voiceMessage.fileID {
+                   self.message?.voice.fileID == voice.voiceMessage.fileID,
+                   self.isInSeekMessage?.voice.fileID != voice.voiceMessage.fileID {
                     let duration = voice.voiceMessage.duration.timeInterval
                     let value = (voice.currentTime / duration)
 
                     self.slider.setValue(Float(value), animated: true)
                     self.controllerView.setImage(value == 0 ? self.playImage : self.pauseImage, for: .normal)
+                } else if voice?.voiceMessage.fileID == self.message?.voice.fileID {
+                    //                IGNORE THIS CASE
+                } else if self.isInSeekMessage != nil {
+                    //                IGNORE THIS CASE
                 } else {
                     self.slider.setValue(0.0, animated: true)
                     self.controllerView.setImage(self.playImage, for: .normal)
                 }
+                
+                
             })
             .disposed(by: disposeBag)
     }
- 
+
+    override func setup(message: Message) {
+        super.setup(message: message)
+        self.durationLabel.text = message.voice.duration.timeInterval.formatSeconds
+    }
+    
+    @objc private func seekTo(_ sender: UISlider) {
+        guard let message = self.message else { return }
+        self.isInSeekMessage = nil
+        let value = TimeInterval(sender.value) * message.voice.duration.timeInterval;
+        self.voiceRepository.play(message: message, atTime: value)
+    }
+    
+    @objc private func beginSeek(_ sender: UISlider) {
+        guard let message = self.message else { return }
+        self.isInSeekMessage = message
+    }
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        
+        self.isInSeekMessage = nil
         self.slider.setValue(0.0, animated: true)
         self.durationLabel.text = 0.0.description
         self.controllerView.setImage(self.playImage, for: .normal)

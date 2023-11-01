@@ -88,17 +88,37 @@ public class UltraCoreStyle {
     public static var regularCaption3Config: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularCaption3)
 //    MARK: UIViewContoller
     public static var controllerBackground: TwiceColor = TwiceColorImpl(defaultColor: .gray100, darkColor: .gray700)
-    public static var inputMessageBarBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .gray100, darkColor: .gray700)
     public static var divederColor: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
 //    MARK: Message cells
     public static var incomeMessageCell: MessageCellConfig = IncomeMessageCellConfigImpl()
     public static var outcomeMessageCell: MessageCellConfig = OutcomeMessageCellConfigImpl()
+//    MARK: MessageInputBar config
+    public static var mesageInputBarConfig: MessageInputBarConfig = MessageInputBarConfigImpl()
 //    MARK: VoiceBarView config
     public static var voiceInputBarConfig: VoiceInputBarConfig = VoiceInputBarConfigImpl()
 //    MARK: Calling page config
     public static var callingConfig: CallPageStyle = CallPageStyleImpl()
 }
 
+
+
+public protocol MessageInputBarConfig {
+    var dividerColor: TwiceColor { get set }
+    var background: TwiceColor { get set }
+    var sendMessageViewTint: TwiceColor { get set }
+    var sendMoneyViewTint: TwiceColor { get set }
+    var recordViewTint: TwiceColor { get set }
+    var messageContainerBackground: TwiceColor { get set }
+}
+
+private class MessageInputBarConfigImpl: MessageInputBarConfig {
+    var dividerColor: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
+    var background: TwiceColor = TwiceColorImpl(defaultColor: .gray100, darkColor: .gray700)
+    var sendMessageViewTint: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
+    var sendMoneyViewTint: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
+    var recordViewTint: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
+    var messageContainerBackground: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
+}
 
 public protocol VoiceInputBarConfig {
     var background: TwiceColor { get set }

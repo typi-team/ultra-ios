@@ -34,6 +34,25 @@ class ContactDBService {
         }
     }
     
+    func block(user id: String, blocked: Bool) -> Single<Void> {
+        Single.create { observer in
+            do {
+                let realm = Realm.myRealm()
+                try realm.write({
+                    if let contact = realm.object(ofType: DBContact.self, forPrimaryKey: id) {
+                        contact.isBlocked = blocked
+                        realm.add(contact, update: .all)
+                    }
+
+                    observer(.success(()))
+                })
+            } catch {
+                observer(.failure(error))
+            }
+            return Disposables.create()
+        }
+    }
+    
     func contact(id: String) -> DBContact? {
         if let contact = Realm.myRealm().object(ofType: DBContact.self, forPrimaryKey: id) {
             return DBContact(value: contact)
@@ -70,4 +89,22 @@ class ContactDBService {
             return Disposables.create()
         }
     }
+    
+    func update(contacts: [IContactInfo]) throws {
+        let realm = Realm.myRealm()
+        try realm.write {
+            PP.info(realm.objects(DBContact.self).map{"\($0.phone) \($0.firstName)"}.joined(separator: "\n"))
+            realm.objects(DBContact.self).forEach { storedContact in
+                if let contact = contacts.first(where: { $0.userID == storedContact.userID }) {
+                    storedContact.firstName = contact.firstname
+                    storedContact.lastName = contact.lastname
+                    realm.add(storedContact, update: .all)
+                }
+            }
+        }
+    }
+}
+
+extension Contact: IContactInfo {
+    
 }
