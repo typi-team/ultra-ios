@@ -115,6 +115,8 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
     }
     
     func createChatBy(contact: IContact) {
+        
+        
         self.contactToCreateChatByPhoneInteractor
             .executeSingle(params: contact)
             .flatMap({ contactByPhone -> Single<Conversation?> in

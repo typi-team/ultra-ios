@@ -124,8 +124,8 @@ extension ContactsBookViewController: ContactsBookViewInterface {
     func contacts(is empty: Bool) {
         if empty {
             let data = PermissionStateViewData(imageName: "contacts_centered_card",
-                                               headline: "Ваш список контактов пуст",
-                                               subline: "К сожалению у вас нет контактов которые используют данное приложение.")
+                                               headline: ContactsStrings.yourContactListIsEmpty.localized,
+                                               subline: ContactsStrings.unfortunately.localized)
             self.tableView.backgroundView = PermissionStateView(data: data)
         } else {
             self.tableView.backgroundView = nil
@@ -135,8 +135,8 @@ extension ContactsBookViewController: ContactsBookViewInterface {
     func permission(is denied: Bool) {
         if denied {
             self.tableView.backgroundView = PermissionStateView(data: PermissionStateViewData(imageName: "contacts_centered_card",
-                                                                                              headline: "Нет доступа к контактам",
-                                                                                              subline: "Нажмите на кнопку ниже и предоставьте доступ к вашим контактам.",
+                                                                                              headline: ContactsStrings.noAccessToContacts.localized,
+                                                                                              subline: ContactsStrings.clickToShareContacts.localized,
                                                                                               action: {
                 UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
                                                                                               })

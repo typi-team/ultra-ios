@@ -156,17 +156,11 @@ extension ViewController: UltraCoreSettingsDelegate {
     /// - Parameter callback: для передачи сообщения о переводе денег
     /// - Returns: Контроллер для передачи денег с указаннием суммы
     func moneyViewController(callback: @escaping MoneyCallback) -> UIViewController? {
-        return UIViewController({
-            $0.title = "Страница передачи денег"
-            $0.view.backgroundColor = .white
-        })
+        return nil
     }
     
     func contactViewController(contact id: String) -> UIViewController? {
-        return UIViewController({
-            $0.title = "Страница детали контакта"
-            $0.view.backgroundColor = .white
-        })
+        return nil
     }
 }
 

@@ -21,12 +21,12 @@ class FilesController: BaseViewController<String> {
 
     fileprivate let headlineLabel: HeadlineBody = .init({
         $0.textAlignment = .left
-        $0.text = "Добавить вложение"
+        $0.text = ConversationStrings.addAttachment.localized
     })
 
     fileprivate lazy var takePhoto: TextButton = .init({
         $0.setImage(.named("conversation_camera"), for: .normal)
-        $0.setTitle("Сделать фото", for: .normal)
+        $0.setTitle(ConversationStrings.toMakeAPhoto.localized, for: .normal)
         $0.addAction { [weak self] in
             guard let `self` = self else { return }
             self.handle(action: .takePhoto)
@@ -35,7 +35,7 @@ class FilesController: BaseViewController<String> {
 
     fileprivate lazy var fromGallery: TextButton = .init({
         $0.setImage(.named("conversation_photo"), for: .normal)
-        $0.setTitle("Выбрать из галереи", for: .normal)
+        $0.setTitle(ConversationStrings.selectionFromLibrary.localized, for: .normal)
         $0.addAction { [weak self] in
             guard let `self` = self else { return }
             self.handle(action: .fromGallery)
@@ -44,7 +44,7 @@ class FilesController: BaseViewController<String> {
     
     fileprivate lazy var document: TextButton = .init({
         $0.setImage(.named("contact_file_icon"), for: .normal)
-        $0.setTitle("Выбрать документ", for: .normal)
+        $0.setTitle(ConversationStrings.selectDocument.localized, for: .normal)
         $0.addAction { [weak self] in
             guard let `self` = self else { return }
             self.handle(action: .document)
@@ -53,7 +53,7 @@ class FilesController: BaseViewController<String> {
     
     fileprivate lazy var contact: TextButton = .init({
         $0.setImage(.named("conversation_user_contact"), for: .normal)
-        $0.setTitle("Контакт", for: .normal)
+        $0.setTitle(ConversationStrings.contact.localized, for: .normal)
         $0.addAction { [weak self] in
             guard let `self` = self else { return }
             self.handle(action: .contact)
@@ -62,7 +62,7 @@ class FilesController: BaseViewController<String> {
     
     fileprivate lazy var location: TextButton = .init({
         $0.setImage(.named("conversation_location"), for: .normal)
-        $0.setTitle("Местопложение", for: .normal)
+        $0.setTitle(ConversationStrings.location.localized, for: .normal)
         $0.addAction { [weak self] in
             guard let `self` = self else { return }
             self.handle(action: .location)

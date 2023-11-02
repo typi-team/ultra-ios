@@ -71,7 +71,6 @@ public extension UltraCoreSettings {
      }
 
      static func entryConversationsViewController() -> UIViewController {
-         setupAppearance()
          return ConversationsWireframe(appDelegate: UltraCoreSettings.delegate).viewController
      }
 
@@ -116,4 +115,21 @@ public extension UltraCoreSettings {
                  callback(nil)
              })
      }
+    
+    static func conversation(by contact: IContactInfo, callback: @escaping (UIViewController?) -> Void){
+        AppSettingsImpl.shared.contactToConversationInteractor.executeSingle(params: contact)
+            .subscribe(on: MainScheduler.instance)
+            .observe(on: MainScheduler.instance)
+            .subscribe(onSuccess: { conversation in
+                if let conversation = conversation {
+                    callback(ConversationWireframe(with: conversation).viewController)
+                } else {
+                    callback(nil)
+                }
+
+            }, onFailure: { error in
+                callback(nil)
+            })
+    }
+    
 }

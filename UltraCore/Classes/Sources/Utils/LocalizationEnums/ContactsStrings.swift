@@ -14,6 +14,11 @@ enum ContactsStrings: String, StringLocalizable {
     case backward
     case yesterday
     
+    case yourContactListIsEmpty
+    case unfortunately
+    case noAccessToContacts
+    case clickToShareContacts
+    
     
     var prefixOfTemplate: String { "contacts" }
     var localizableValue: String { rawValue }
