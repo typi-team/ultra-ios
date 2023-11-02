@@ -19,6 +19,8 @@
 "contacts.noAccessToContacts" = "No access to contacts";
 "contacts.clickToShareContacts" = "Click the button below and share your contacts.";
 // MARK: Conversation page
+"conversation.today" = "Today";
+"conversation.yesterday" = "Yesterday";
 "conversation.money" = "Money";
 "conversation.online" = "online";
 "conversation.unknowNumber" = "Unknown number";

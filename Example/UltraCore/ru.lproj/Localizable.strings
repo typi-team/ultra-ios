@@ -19,6 +19,8 @@
 "contacts.noAccessToContacts" = "Нет доступа к контактам";
 "contacts.clickToShareContacts" = "Нажмите на кнопку ниже и предоставьте доступ к вашим контактам.";
 // MARK: Conversation page
+"conversation.today" = "Сегодня";
+"conversation.yesterday" = "Вчера";
 "conversation.money" = "Деньги";
 "conversation.online" = "онлайн";
 "conversation.unknowNumber" = "Неизвестный номер";

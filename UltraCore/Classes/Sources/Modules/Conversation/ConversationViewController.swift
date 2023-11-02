@@ -13,6 +13,7 @@ import RxCocoa
 import RxSwift
 import QuickLook
 import ContactsUI
+import RxDataSources
 
 final class ConversationViewController: BaseViewController<ConversationPresenterInterface> {
     // MARK: - Properties
@@ -42,6 +43,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.tableFooterView = UIView()
         tableView.keyboardDismissMode = .onDragWithAccessory
         tableView.refreshControl = refreshControl
+        tableView.delegate = self
         tableView.registerCell(type: IncomeFileCell.self)
         tableView.registerCell(type: OutcomeFileCell.self)
         tableView.registerCell(type: BaseMessageCell.self)
@@ -59,7 +61,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.registerCell(type: IncomeLocationCell.self)
         tableView.registerCell(type: OutcomeLocationCell.self)
         tableView.registerCell(type: OutgoingMessageCell.self)
-        tableView.contentInset = .init(top: kMediumPadding, left: 0, bottom: 0, right: 0)
+        tableView.contentInset = .zero
         tableView.backgroundView = UIImageView({
             $0.contentMode = .scaleAspectFill
             $0.image = .named("conversation_background")
@@ -89,6 +91,45 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     private lazy var voiceInputBar: VoiceInputBar = .init({ [weak self] inputBar in
         inputBar.delegate = self
     })
+    
+   private lazy var dataSource = RxTableViewSectionedReloadDataSource<SectionModel<String, Message>>(
+        configureCell: { [weak self] _, tableView, indexPath,
+            message in
+            guard let `self` = self else {
+                return UITableViewCell.init()
+            }
+            let cell = self.cell(message, in: tableView)
+            cell.longTapCallback = {[weak self] message in
+                guard let `self` = self else { return }
+                self.presentEditController(for: message, indexPath: indexPath)
+            }
+            cell.actionCallback = {[weak self] message in
+                guard let `self` = self,
+                      let content = message.content else { return }
+                
+                switch content {
+                case .location(let location):
+                    if let url = URL(string: "maps://?q=\(location.lat),\(location.lon)"),
+                       UIApplication.shared.canOpenURL(url) {
+                        UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                    }
+                default:
+                    guard let url = self.presenter?.mediaURL(from: message) else { return }
+                    self.view.endEditing(true)
+                    self.mediaItem = url
+                    let previewController = QLPreviewController()
+                    previewController.modalPresentationStyle = .formSheet
+                    previewController.dataSource = self
+                    previewController.currentPreviewItemIndex = 0
+                    self.present(previewController, animated: true)
+                }
+            }
+            return cell
+        },
+        titleForHeaderInSection: { dataSource, sectionIndex in
+            return dataSource[sectionIndex].model
+        }
+    )
     
     // MARK: - Private Methods
     
@@ -150,56 +191,34 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                 self?.messageHeadline.text = messages.isEmpty ? ConversationStrings.thereAreNoMessagesInThisChat.localized : ""
             })
             .do(onNext: { [weak self] result in
-                guard let `self` = self, !self.isDrawingTable else {
+                let numberOfSections = self?.tableView.numberOfSections ?? 0
+                guard let `self` = self, !self.isDrawingTable, numberOfSections >= 1 else {
                     return
                 }
+
                 self.isDrawingTable = true
-                let isEmpty = self.tableView.numberOfRows(inSection: 0) - 1 <= 0
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2, execute: {
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                    guard let self = self else { return }
                     
-                    let lastRowIndex = self.tableView.numberOfRows(inSection: 0) - 1
-                    if lastRowIndex < 0 { return }
-                    let indexPath = IndexPath(row: lastRowIndex, section: 0)
-                    self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: !isEmpty)
-                    self.isDrawingTable = false
-                })
-            })
-            .bind(to: tableView.rx.items) { [weak self] tableView, indexPath,
-                message in
-                guard let `self` = self else {
-                    return UITableViewCell.init()
-                }
-                let cell = self.cell(message, in: tableView)
-                cell.longTapCallback = {[weak self] message in
-                    guard let `self` = self else { return }
-                    self.presentEditController(for: message, indexPath: IndexPath(row: indexPath, section: 0))
-                }
-                
-                cell.actionCallback = {[weak self] message in
+                    let lastSection = numberOfSections - 1
+                    let lastRow = self.tableView.numberOfRows(inSection: lastSection) - 1
                     
-                    
-                    guard let `self` = self,
-                          let content = message.content else { return }
-                    
-                    switch content {
-                    case .location(let location):
-                        if let url = URL(string: "maps://?q=\(location.lat),\(location.lon)"),
-                           UIApplication.shared.canOpenURL(url) {
-                            UIApplication.shared.open(url, options: [:], completionHandler: nil)
-                        }
-                    default:
-                        guard let url = self.presenter?.mediaURL(from: message) else { return }
-                        self.view.endEditing(true)
-                        self.mediaItem = url
-                        let previewController = QLPreviewController()
-                        previewController.modalPresentationStyle = .formSheet
-                        previewController.dataSource = self
-                        previewController.currentPreviewItemIndex = 0
-                        self.present(previewController, animated: true)
+                    if lastRow >= 0, lastSection >= 0 {
+                        let indexPath = IndexPath(row: lastRow, section: lastSection)
+                        self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: false)
                     }
+                    self.isDrawingTable = false
                 }
-                return cell
-            }
+            })
+            .map({messages -> [SectionModel<String, Message>] in
+                if messages.isEmpty {return []}
+                return Dictionary(grouping: messages) { message in
+                    return Calendar.current.startOfDay(for: message.meta.created.date)}
+                    .sorted { $0.key < $1.key }
+                    .map({SectionModel<String, Message>.init(model: $0.key.formattedTimeToHeadline(format: "d MMMM yyyy"), items: $0.value)})
+            })
+            .bind(to: tableView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
         
         self.tableView
@@ -620,6 +639,24 @@ extension ConversationViewController: VoiceInputBarDelegate {
         guard duration > 2,
               let data = try? Data(contentsOf: url) else { return }
         self.presenter?.upload(file: FileUpload(url: nil, data: data, mime: "audio/wav", width: 0, height: 0, duration: duration))
+    }
+}
+
+extension ConversationViewController: UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+        return .zero
+    }
+    
+    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+        return kHeadlinePadding + kMediumPadding
+    }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        return RegularFootnote({
+            $0.textAlignment = .center
+            $0.text = self.dataSource.sectionModels[section].model
+        })
     }
 }
 
