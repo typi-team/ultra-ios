@@ -20,7 +20,7 @@ public class RecordView: UIView, CAAnimationDelegate {
     private var slideToCancelStackVIew: UIStackView!
 
     public weak var delegate: RecordViewDelegate?
-    public var offset: CGFloat = 20
+    public var offset: CGFloat = 0
     public var isSoundEnabled = false
     public var buttonTransformScale: CGFloat = 2
 
@@ -55,31 +55,21 @@ public class RecordView: UIView, CAAnimationDelegate {
     }
 
 
-    private let arrow: UIImageView = {
-        let arrowView = UIImageView()
-        arrowView.image = UIImage.named("voice.arrow")
-        arrowView.contentMode = .scaleAspectFit
-        
-        arrowView.translatesAutoresizingMaskIntoConstraints = false
-        arrowView.tintColor = .black
-        return arrowView
-    }()
+    private let arrow: UIImageView = .init{
+        $0.image = UIImage.named("voice.arrow")
+        $0.contentMode = .scaleAspectFit
+        $0.translatesAutoresizingMaskIntoConstraints = false
+    }
 
-    private let slideLabel: UILabel = {
-        let slide = RegularCallout()
-        slide.text = "Slide To Cancel"
-        slide.translatesAutoresizingMaskIntoConstraints = false
-        slide.font = slide.font.withSize(12)
-        return slide
-    }()
+    private let slideLabel: RegularCallout =  .init {
+        $0.text = "Slide To Cancel"
+        $0.translatesAutoresizingMaskIntoConstraints = false
+    }
 
-    private var timerLabel: UILabel = {
-        let label = RegularCallout()
-        label.text = "00:00"
-        label.font = label.font.withSize(12)
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
-    }()
+    private var timerLabel: RegularCallout = .init{
+        $0.text = "00:00"
+        $0.translatesAutoresizingMaskIntoConstraints = false
+    }
 
     private func setup() {
         bucketImageView = BucketImageView(frame: frame)
@@ -98,6 +88,7 @@ public class RecordView: UIView, CAAnimationDelegate {
         slideToCancelStackVIew = UIStackView(arrangedSubviews: [arrow, slideLabel])
         slideToCancelStackVIew.translatesAutoresizingMaskIntoConstraints = false
         slideToCancelStackVIew.isHidden = true
+        slideToCancelStackVIew.spacing = kMediumPadding
 
 
         addSubview(timerStackView)
@@ -107,7 +98,7 @@ public class RecordView: UIView, CAAnimationDelegate {
         arrow.widthAnchor.constraint(equalToConstant: 15).isActive = true
         arrow.heightAnchor.constraint(equalToConstant: 15).isActive = true
 
-        slideToCancelStackVIew.trailingAnchor.constraint(equalTo: self.trailingAnchor).isActive = true
+        slideToCancelStackVIew.centerXAnchor.constraint(equalTo: self.centerXAnchor).isActive = true
         slideToCancelStackVIew.centerYAnchor.constraint(equalTo: self.centerYAnchor).isActive = true
 
 

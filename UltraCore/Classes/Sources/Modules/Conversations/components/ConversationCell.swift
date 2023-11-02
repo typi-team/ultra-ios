@@ -29,7 +29,7 @@ class ConversationCell: BaseCell {
         $0.textColor = .white
         $0.textAlignment = .center
         $0.font = .defaultRegularFootnote
-        $0.backgroundColor = .green500.withAlphaComponent(0.3)
+        $0.backgroundColor = .green500
     })
     
     
