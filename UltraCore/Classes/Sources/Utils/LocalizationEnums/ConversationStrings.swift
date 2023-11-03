@@ -35,11 +35,21 @@ enum ConversationStrings: String, StringLocalizable {
     case thereAreNoMessagesInThisChat
     case insertText
     
+    case today
+    case yesterday
+    
     var prefixOfTemplate: String { "conversation" }
     var localizableValue: String { rawValue }
 }
 
 
+enum ActionStrings: String, StringLocalizable {
+    case decline
+    
+    var prefixOfTemplate: String { "conversation" }
+    var localizableValue: String { rawValue }
+}
+    
 enum EditActionStrings: String, StringLocalizable {
     case cancel
     case delete

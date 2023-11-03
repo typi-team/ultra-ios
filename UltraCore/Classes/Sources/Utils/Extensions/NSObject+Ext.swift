@@ -46,6 +46,23 @@ extension Date {
         formatter.dateFormat = format
         return formatter.string(from: self)
     }
+    
+    func formattedTimeToHeadline(format: String = "HH:mm") -> String {
+        
+        let calendar = Calendar.current
+            let now = Date()
+            let yesterday = calendar.date(byAdding: .day, value: -1, to: now)!
+            
+            if calendar.isDateInToday(self) {
+                return ConversationStrings.today.localized
+            } else if calendar.isDateInYesterday(self) {
+                return ConversationStrings.yesterday.localized
+            } else {
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = format
+                return dateFormatter.string(from: self)
+            }
+    }
 }
 
 extension TimeInterval {

@@ -16,18 +16,15 @@ class IncomeVoiceCell: MediaCell {
 
     fileprivate lazy var config = UltraCoreStyle.incomeMessageCell
     
-    fileprivate var isInSeekMessage: Message? {
-        didSet {
-            PP.debug(isInSeekMessage == nil ? "Is nil": "Not nil")
-        }
-    }
+    fileprivate var isInSeekMessage: Message?
     
     fileprivate lazy var slider: UISlider = .init({
         $0.addTarget(self, action: #selector(self.seekTo(_:)), for: .touchUpInside)
         $0.addTarget(self, action: #selector(self.beginSeek(_:)), for: .valueChanged)
         $0.thumbTintColor = config.sildirBackgroundColor.color
-        $0.maximumTrackTintColor = config.sildirBackgroundColor.color
         $0.minimumTrackTintColor = config.sildirBackgroundColor.color
+        $0.setThumbImage(.named("conversation.thumbImage"), for: .normal)
+        
     })
     fileprivate let durationLabel: RegularFootnote = .init({ $0.text = "10.00₸" })
     
@@ -63,7 +60,7 @@ class IncomeVoiceCell: MediaCell {
         }
         
         self.controllerView.snp.makeConstraints { make in
-            make.width.height.equalTo(48)
+            make.width.height.equalTo(30)
             make.centerY.equalToSuperview()
             make.left.equalToSuperview().offset(kLowPadding)
         }
@@ -159,7 +156,7 @@ class OutcomeVoiceCell: IncomeVoiceCell {
         }
         
         self.controllerView.snp.makeConstraints { make in
-            make.width.height.equalTo(48)
+            make.width.height.equalTo(30)
             make.centerY.equalToSuperview()
             make.left.equalToSuperview().offset(kLowPadding)
         }

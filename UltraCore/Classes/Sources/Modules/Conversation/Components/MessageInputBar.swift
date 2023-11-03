@@ -76,7 +76,7 @@ class MessageInputBar: UIView {
         $0.delegate = self
         $0.isHidden = true
         $0.isUserInteractionEnabled = false
-        $0.slideToCancelText = EditActionStrings.cancel.localized.capitalized
+        $0.slideToCancelText = ActionStrings.decline.localized
     })
     
     private lazy var microButton: RecordButton = .init {[weak self] button in
@@ -185,7 +185,7 @@ class MessageInputBar: UIView {
             make.top.equalToSuperview()
             make.bottom.equalToSuperview()
             make.left.equalToSuperview().offset(kMediumPadding)
-            make.right.equalTo(microButton.snp.left).offset(-kHeadlinePadding)
+            make.right.equalTo(microButton.snp.right)
         }
     }
     

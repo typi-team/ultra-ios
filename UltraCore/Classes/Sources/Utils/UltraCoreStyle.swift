@@ -116,7 +116,7 @@ private class MessageInputBarConfigImpl: MessageInputBarConfig {
     var background: TwiceColor = TwiceColorImpl(defaultColor: .gray100, darkColor: .gray700)
     var sendMessageViewTint: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
     var sendMoneyViewTint: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
-    var recordViewTint: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
+    var recordViewTint: TwiceColor = TwiceColorImpl(defaultColor: .gray400, darkColor: .white)
     var messageContainerBackground: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
 }
 

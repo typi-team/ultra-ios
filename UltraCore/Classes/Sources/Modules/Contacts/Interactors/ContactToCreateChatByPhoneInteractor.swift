@@ -37,3 +37,32 @@ class ContactToCreateChatByPhoneInteractor: UseCase<IContact, CreateChatByPhoneR
         })
     }
 }
+
+class ContactToConversationInteractor: UseCase<IContact, Conversation?> {
+    final let contactToCreateChatByPhoneInteractor: ContactToCreateChatByPhoneInteractor
+    final let contactByUserIdInteractor: ContactByUserIdInteractor
+    final let contactRepository: ContactsRepository
+
+    init(contactRepository: ContactsRepository,
+         contactsService: ContactServiceClientProtocol,
+         integrateService: IntegrationServiceClientProtocol) {
+             self.contactRepository = contactRepository
+             self.contactByUserIdInteractor = ContactByUserIdInteractor(delegate: nil, contactsService: contactsService)
+        self.contactToCreateChatByPhoneInteractor = ContactToCreateChatByPhoneInteractor.init(integrateService: integrateService)
+    }
+
+    override func executeSingle(params: IContact) -> Single<Conversation?> {
+        
+        return self.contactToCreateChatByPhoneInteractor.executeSingle(params: params)
+            .flatMap({ [weak self] contactToCreateChat in
+                guard let `self` = self else { throw NSError.selfIsNill}
+                return self.contactByUserIdInteractor.executeSingle(params: contactToCreateChat.userID)
+                    .flatMap({ [weak self] contact in
+                        guard let `self` = self else { throw NSError.selfIsNill}
+                        return self.contactRepository.save(contact: .init(from: contact))
+                            .map({self.contactRepository.contact(id: contactToCreateChat.userID)})
+                            .map({ $0 != nil ? ConversationImpl(contact: $0!, idintification: contactToCreateChat.userID): nil })
+                    })
+            })
+    }
+}

@@ -79,6 +79,10 @@ open class AppSettingsImpl: AppSettings  {
     
     //    MARK: App main interactors, must be create once
     
+    lazy var contactToConversationInteractor: ContactToConversationInteractor = ContactToConversationInteractor.init(contactRepository: contactRepository,
+                                                                                                                     contactsService: contactsService,
+                                                                                                                     integrateService: integrateService)
+    
     lazy var superMessageSaverInteractor: UseCase<MessageData, Conversation?> = SuperMessageSaverInteractor.init(appStore: appStore,
                                                                                                                  contactDBService: contactDBService,
                                                                                                                  messageDBService: messageDBService,

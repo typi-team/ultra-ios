@@ -14,7 +14,14 @@
 "contacts.justNow" = "just now";
 "contacts.backward" = "back";
 "contacts.yesterday" = "yesterday";
+"contacts.yourContactListIsEmpty" = "Your contact list is empty";
+"contacts.unfortunately" = "Unfortunately, you do not have contacts who use this application.";
+"contacts.noAccessToContacts" = "No access to contacts";
+"contacts.clickToShareContacts" = "Click the button below and share your contacts.";
 // MARK: Conversation page
+"conversation.decline" = "Cancel";
+"conversation.today" = "Today";
+"conversation.yesterday" = "Yesterday";
 "conversation.money" = "Money";
 "conversation.online" = "online";
 "conversation.unknowNumber" = "Unknown number";
@@ -53,3 +60,5 @@
 "message.contact" = "📇 Contact";
 "message.moneyTransfer" = "Transfer";
 "message.uploadingInProgress" = "Uploading in progress";
+
+
