@@ -45,8 +45,7 @@ class RetrieveContactStatusesInteractor: UseCase<Void, Void> {
                     .flatMap { userStatus -> Single<Void> in
                         if var contact = self.contactDBService.contact(id: userStatus.userID)?.toProto() {
                             contact.status = userStatus
-                            fatalError()
-//                            return self.contactDBService.save(contact: DBContact(from: contact, chatId: ))
+                            return self.contactDBService.save(contact: DBContact(from: contact))
                         } else {
                             return Single.just(())
                         }

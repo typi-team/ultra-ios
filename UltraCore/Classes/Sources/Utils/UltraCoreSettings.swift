@@ -116,7 +116,7 @@ public extension UltraCoreSettings {
              })
      }
     
-    static func conversation(by contact: IContactInfo, callback: @escaping (UIViewController?) -> Void){
+    static func conversation(by contact: IContact, callback: @escaping (UIViewController?) -> Void){
         AppSettingsImpl.shared.contactToConversationInteractor.executeSingle(params: contact)
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
