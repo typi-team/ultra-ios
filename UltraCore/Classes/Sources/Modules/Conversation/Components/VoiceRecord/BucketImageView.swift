@@ -68,9 +68,9 @@ class BucketImageView: UIImageView, CAAnimationDelegate {
 
     private func setup() {
 
-        self.smallMicImage = UIImage.named("mic_red")
-        let bucketLidImage = UIImage.named("bucket_lid")
-        let bucketBodyImage = UIImage.named("bucket_body")
+        self.smallMicImage = UIImage.named("mic_red") ?? UIImage()
+        let bucketLidImage = UIImage.named("bucket_lid") ?? UIImage()
+        let bucketBodyImage = UIImage.named("bucket_body") ?? UIImage()
 
         self.bucketLidLayer.anchorPoint = CGPoint(x: 0.15, y: 1.56);
         self.bucketBodyLayer.anchorPoint = CGPoint.zero

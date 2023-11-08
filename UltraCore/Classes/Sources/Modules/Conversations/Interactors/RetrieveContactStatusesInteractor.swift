@@ -8,14 +8,11 @@
 import RxSwift
 
 class RetrieveContactStatusesInteractor: UseCase<Void, Void> {
-    final let appStore: AppSettingsStore
     final let contactDBService: ContactDBService
     final let contactService: ContactServiceClientProtocol
     
-     init(appStore: AppSettingsStore,
-          contactDBService: ContactDBService,
+     init(contactDBService: ContactDBService,
           contactService: ContactServiceClientProtocol) {
-         self.appStore = appStore
          self.contactService = contactService
          self.contactDBService = contactDBService
     }
@@ -39,7 +36,6 @@ class RetrieveContactStatusesInteractor: UseCase<Void, Void> {
             }
             .asObservable()
             .flatMap { user -> Observable<Void> in
-                
                 return Observable<UserStatus>
                     .from(user.statuses)
                     .flatMap { userStatus -> Single<Void> in

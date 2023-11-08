@@ -25,8 +25,7 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
         let deleteConversationInteractor = DeleteConversationInteractor(conversationDBService: appSettings.conversationDBService,
                                                                         conversationService: appSettings.conversationService)
         
-        let retrieveContactStatusesInteractor = RetrieveContactStatusesInteractor.init(appStore: appSettings.appStore,
-                                                                                       contactDBService: appSettings.contactDBService,
+        let retrieveContactStatusesInteractor = RetrieveContactStatusesInteractor.init(contactDBService: appSettings.contactDBService,
                                                                                        contactService: appSettings.contactsService)
         let contactByUserIdInteractor = ContactByUserIdInteractor.init(delegate: UltraCoreSettings.delegate,
                                                                        contactsService: appSettings.contactsService)
