@@ -47,6 +47,24 @@ extension Date {
         return formatter.string(from: self)
     }
     
+    func formattedTimeForConversationCell() -> String {
+        let calendar = Calendar.current
+        let formatter = DateFormatter()
+        if calendar.isDateInToday(self) {
+            formatter.dateFormat = "HH:mm"
+            return formatter.string(from: self)
+        } else if calendar.isDateInWeekend(self) {
+            formatter.dateFormat = "EEE"
+            return formatter.string(from: self)
+        } else if calendar.isDate(Date(), equalTo: self, toGranularity: .year) {
+            formatter.dateFormat = "dd.MM"
+            return formatter.string(from: self)
+        }
+       
+        formatter.dateFormat = "dd.MM.yyyy"
+        return formatter.string(from: self)
+    }
+    
     func formattedTimeToHeadline(format: String = "HH:mm") -> String {
         
         let calendar = Calendar.current

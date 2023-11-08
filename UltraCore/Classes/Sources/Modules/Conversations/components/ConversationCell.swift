@@ -84,7 +84,7 @@ class ConversationCell: BaseCell {
         self.descriptionView.text = conversation.lastMessage
         self.unreadView.isHidden = conversation.unreadCount == 0
         self.unreadView.text = conversation.unreadCount.description
-        self.lastSeenView.text = conversation.timestamp.formattedTime()
+        self.lastSeenView.text = conversation.timestamp.formattedTimeForConversationCell()
         self.avatarView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
         self.setupTyping(conversation: conversation)
         self.setupAvatar(conversation: conversation)
