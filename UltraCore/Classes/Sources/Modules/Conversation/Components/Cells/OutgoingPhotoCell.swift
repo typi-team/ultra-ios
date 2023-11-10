@@ -89,6 +89,7 @@ class OutgoingPhotoCell: MediaCell {
         super.setup(message: message)
         self.statusView.image = .named(message.statusImageName)
         self.mediaView.image = UIImage.init(data: message.photo.preview)
+        self.playView.isHidden = true
         if self.mediaRepository.isUploading(from: message) {
             self.uploadingProgress(for: message)
         } else if let image = self.mediaRepository.image(from: message) {
