@@ -86,7 +86,7 @@ extension DBConversation: Conversation {
                 case .photo(_):
                     return MessageStrings.photo.localized
                 case .video(_):
-                    return MessageStrings.photo.localized
+                    return MessageStrings.video.localized
                 case .money(_):
                     return MessageStrings.money.localized
                 case .location(_):
