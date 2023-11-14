@@ -44,6 +44,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.keyboardDismissMode = .onDragWithAccessory
         tableView.refreshControl = refreshControl
         tableView.delegate = self
+        tableView.tintColor = .green500
         tableView.registerCell(type: IncomeFileCell.self)
         tableView.registerCell(type: OutcomeFileCell.self)
         tableView.registerCell(type: BaseMessageCell.self)
@@ -99,9 +100,20 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                 return UITableViewCell.init()
             }
             let cell = self.cell(message, in: tableView)
-            cell.longTapCallback = {[weak self] message in
+            cell.longTapCallback = {[weak self] actionType in
                 guard let `self` = self else { return }
-                self.presentEditController(for: message, indexPath: indexPath)
+                switch actionType {
+                case let .select(message):
+                    self.presentEditController(for: message, indexPath: indexPath)
+                case let .delete(message):
+                    self.presentDeletedMessageView(messages: [message])
+                case .reply:
+                    break
+                case let .report(message):
+                    self.presentReportMessageView(messages: [message])
+                case let .copy(message):
+                    UIPasteboard.general.string = message.text
+                }
             }
             cell.actionCallback = {[weak self] message in
                 guard let `self` = self,
@@ -324,6 +336,7 @@ extension ConversationViewController: ConversationViewInterface {
     }
     
     func reported() {
+        self.editInputBar.hideReport(isHidden: false)
         self.showAlert(from: "Запрос отправлен!")
     }
     
@@ -575,7 +588,10 @@ extension ConversationViewController: EditActionBottomBarDelegate {
             .compactMap({ $0 }) ?? []
         
         guard !messages.isEmpty else { return }
-        
+        self.presentReportMessageView(messages: messages)
+    }
+    
+    func presentReportMessageView(messages: [Message]) {
         let alert = UIAlertController(title: "Вы уверены?", message: " Если сообщение содержит угрозы, неподходящий контент или нарушает какие-либо правила платформы или сообщества, оно может быть обжаловано и подлежит удалению. Восстановление такого сообщения может быть невозможным.", preferredStyle: .actionSheet)
         alert.addAction(.init(title: EditActionStrings.report.localized.capitalized, style: .destructive, handler: { [weak self] _ in
             guard let `self` = self else { return }
@@ -586,8 +602,10 @@ extension ConversationViewController: EditActionBottomBarDelegate {
         alert.addAction(.init(title: EditActionStrings.cancel.localized, style: .cancel))
         self.present(alert, animated: true)
     }
+    
     func cancel() {
         self.editInputBar.removeFromSuperview()
+        self.editInputBar.hideReport(isHidden: false)
         self.tableView.setEditing(false, animated: true)
     }
     
@@ -600,7 +618,10 @@ extension ConversationViewController: EditActionBottomBarDelegate {
             .compactMap({ $0 }) ?? []
         
         guard !messages.isEmpty else { return }
-        
+        self.presentDeletedMessageView(messages: messages)
+    }
+    
+    func presentDeletedMessageView(messages: [Message]) {
         let alert = UIAlertController(title: "Вы уверены?", message: "Пожалуйста, обратите внимание, что данные сообщения будут безвозвратно удалены, и восстановление не будет возможным", preferredStyle: .actionSheet)
         alert.addAction(.init(title: "Удалить для всех", style: .destructive, handler: { [weak self] _ in
             guard let `self` = self else { return }

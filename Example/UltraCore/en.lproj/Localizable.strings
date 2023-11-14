@@ -60,5 +60,8 @@
 "message.contact" = "📇 Contact";
 "message.moneyTransfer" = "Transfer";
 "message.uploadingInProgress" = "Uploading in progress";
-
-
+"message.reply" = "Reply";
+"message.copy" = "Copy";
+"message.report" = "Report";
+"message.delete" = "Delete";
+"message.select" = "Select";

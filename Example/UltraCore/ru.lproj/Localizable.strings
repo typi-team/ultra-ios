@@ -60,3 +60,10 @@
 "message.contact" = "📇 Контакт";
 "message.moneyTransfer" = "Перевод";
 "message.uploadingInProgress" = "Идет выгрузка";
+
+"message.reply" = "Ответить";
+"message.copy" = "Копировать";
+"message.report" = "Пожаловаться";
+"message.delete" = "Удалить";
+"message.select" = "Выбрать";
+

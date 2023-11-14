@@ -14,10 +14,18 @@ struct MediaMessageConstants {
     let maxHeight: CGFloat
 }
 
+enum MessageMenuAction {
+    case select(Message)
+    case delete(Message)
+    case reply(Message)
+    case report(Message)
+    case copy(Message)
+}
+
 class BaseMessageCell: BaseCell {
     var message: Message?
     var actionCallback: ((Message) -> Void)?
-    var longTapCallback:((Message) -> Void)?
+    var longTapCallback:((MessageMenuAction) -> Void)?
     lazy var disposeBag: DisposeBag = .init()
     lazy var constants: MediaMessageConstants = .init(maxWidth: 300, maxHeight: 200)
     
@@ -30,8 +38,8 @@ class BaseMessageCell: BaseCell {
     })
     
     let container: UIView = .init({
-        $0.cornerRadius = 18
-        $0.backgroundColor = .white
+        $0.cornerRadius = 18x
+        $0.backgroundColor = .clear
     })
     
     override func setupView() {
@@ -48,9 +56,14 @@ class BaseMessageCell: BaseCell {
         super.additioanSetup()
         
         self.selectionStyle = .gray
-        let longTap = UILongPressGestureRecognizer.init(target: self, action: #selector(self.handleLongPress(_:)))
-        longTap.minimumPressDuration = 0.3
-        self.container.addGestureRecognizer(longTap)
+        
+        if #available(iOS 13.0, *) {
+            self.addInteraction(UIContextMenuInteraction.init(delegate: self))
+        } else {
+            let longTap = UILongPressGestureRecognizer.init(target: self, action: #selector(self.handleLongPress(_:)))
+            longTap.minimumPressDuration = 0.3
+            self.container.addGestureRecognizer(longTap)
+        }
         
         let tap = UITapGestureRecognizer.init(target: self, action: #selector(self.handleTapPress(_:)))
         self.container.addGestureRecognizer(tap)
@@ -105,13 +118,44 @@ class BaseMessageCell: BaseCell {
     }
 }
 
+extension BaseMessageCell: UIContextMenuInteractionDelegate {
+    @available(iOS 13.0, *)
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ -> UIMenu? in
+            let copy = UIAction(title: MessageStrings.copy.localized, image: .named("message.cell.copy")) { [weak self ]_ in
+                guard let `self` = self, let message = self.message else { return }
+                self.longTapCallback?(.copy(message))
+            }
+            let reply = UIAction(title: MessageStrings.reply.localized, image: .named("message.cell.reply")) { [weak self ]_ in
+                guard let `self` = self, let message = self.message else { return }
+                self.longTapCallback?(.reply(message))
+            }
+            let report = UIAction(title: MessageStrings.report.localized, image: .named("message.cell.report")) { [weak self ]_ in
+                guard let `self` = self, let message = self.message else { return }
+                self.longTapCallback?(.report(message))
+            }
+            let delete = UIAction(title: MessageStrings.delete.localized, image: .named("message.cell.trash"), attributes: .destructive) { [weak self ]_ in
+                guard let `self` = self, let message = self.message else { return }
+                self.longTapCallback?(.delete(message))
+            }
+
+            let select = UIAction(title: MessageStrings.select.localized, image: .named("message.cell.select")) { [weak self] _ in
+                guard let `self` = self, let message = self.message else { return }
+                self.longTapCallback?(.select(message))
+            }
+
+            return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: [reply, copy, report, delete]), select])
+        }
+    }
+}
+
 extension BaseMessageCell {
     @objc func handleLongPress(_ sender: UILongPressGestureRecognizer) {
         guard let message = self.message, sender.state == .began else {
             return
         }
         
-        self.longTapCallback?(message)
+        self.longTapCallback?(.select(message))
      }
     
     @objc func handleTapPress(_ sender: UILongPressGestureRecognizer) {
