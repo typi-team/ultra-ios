@@ -121,7 +121,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                     previewController.modalPresentationStyle = .formSheet
                     previewController.dataSource = self
                     previewController.currentPreviewItemIndex = 0
-                    self.present(previewController, animated: true)
+                    self.navigationController?.pushViewController(previewController, animated: true)
                 }
             }
             return cell
