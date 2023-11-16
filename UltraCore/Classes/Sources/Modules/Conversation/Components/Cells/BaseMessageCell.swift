@@ -38,7 +38,7 @@ class BaseMessageCell: BaseCell {
     })
     
     let container: UIView = .init({
-        $0.cornerRadius = 18x
+        $0.cornerRadius = 18
         $0.backgroundColor = .clear
     })
     

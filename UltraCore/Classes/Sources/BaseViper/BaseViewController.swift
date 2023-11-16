@@ -50,6 +50,12 @@ class BaseViewController<T>: UIViewController {
 
 extension UIViewController {
     
+    func showInProgressAlert() {
+        let alert = UIAlertController.init(title: title, message: "В процессе воплощения созревает уникальный функционал, который добавит магии и эффективности в наш продукт", preferredStyle: .alert)
+        alert.addAction(UIAlertAction.init(title: "Закрыть", style: UIAlertAction.Style.cancel))
+        self.present(alert, animated: true)
+    }
+    
     func showAlert(from message: String, with title: String? = nil) {
         let alert = UIAlertController.init(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction.init(title: "Закрыть", style: UIAlertAction.Style.cancel))
