@@ -14,6 +14,8 @@ protocol EditActionBottomBarDelegate: AnyObject {
 
 class EditActionBottomBar: UIView {
     
+    private var style: MessageInputBarConfig { UltraCoreStyle.mesageInputBarConfig }
+    
     weak var delegate:EditActionBottomBarDelegate?
     
     fileprivate lazy var stackView: UIStackView = .init({
@@ -63,15 +65,28 @@ class EditActionBottomBar: UIView {
         self.setupViews()
         self.setupConstraints()
     }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        self.setupStyle()
+    }
+    
+    
 }
 
 private extension EditActionBottomBar {
+    
+    func setupStyle() {
+        self.backgroundColor = style.background.color
+    }
+    
     func setupViews() {
         self.addSubview(stackView)
         self.backgroundColor = .gray100
         self.stackView.addArrangedSubview(self.strashButton)
-        self.stackView.addArrangedSubview(self.shareButton)
-        self.stackView.addArrangedSubview(self.replyButton)
+//        self.stackView.addArrangedSubview(self.shareButton)
+//        self.stackView.addArrangedSubview(self.replyButton)
+        self.setupStyle()
     }
     
     func setupConstraints() {

@@ -122,28 +122,28 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
     @available(iOS 13.0, *)
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ -> UIMenu? in
-            guard let `self` = self else { return nil}
+            guard let `self` = self else { return nil }
             var action: [UIAction] = []
-            
-            
-            action.append(UIAction(title: MessageStrings.copy.localized, image: .named("message.cell.copy")) { [weak self ]_ in
+
+            action.append(UIAction(title: MessageStrings.copy.localized, image: .named("message.cell.copy")) { [weak self] _ in
                 guard let `self` = self, let message = self.message else { return }
                 self.longTapCallback?(.copy(message))
             })
-            
-            if(self.message?.isIncome ?? false) {
-                action.append(UIAction(title: MessageStrings.reply.localized, image: .named("message.cell.reply")) { [weak self ]_ in
+
+            //            if(self.message?.isIncome ?? false) {
+            //                action.append(UIAction(title: MessageStrings.reply.localized, image: .named("message.cell.reply")) { [weak self ]_ in
+            //                    guard let `self` = self, let message = self.message else { return }
+            //                    self.longTapCallback?(.reply(message))
+            //                })
+            //            }
+            if self.message?.isIncome ?? false {
+                action.append(UIAction(title: MessageStrings.report.localized, image: .named("message.cell.report")) { [weak self] _ in
                     guard let `self` = self, let message = self.message else { return }
-                    self.longTapCallback?(.reply(message))
+                    self.longTapCallback?(.report(message))
                 })
             }
-            
-            action.append(UIAction(title: MessageStrings.report.localized, image: .named("message.cell.report")) { [weak self ]_ in
-                guard let `self` = self, let message = self.message else { return }
-                self.longTapCallback?(.report(message))
-            })
-            
-            action.append(UIAction(title: MessageStrings.delete.localized, image: .named("message.cell.trash"), attributes: .destructive) { [weak self ]_ in
+
+            action.append(UIAction(title: MessageStrings.delete.localized, image: .named("message.cell.trash"), attributes: .destructive) { [weak self] _ in
                 guard let `self` = self, let message = self.message else { return }
                 self.longTapCallback?(.delete(message))
             })

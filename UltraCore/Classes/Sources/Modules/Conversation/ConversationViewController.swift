@@ -196,27 +196,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .do(onNext: {[weak self] messages in
                 self?.messageHeadline.text = messages.isEmpty ? ConversationStrings.thereAreNoMessagesInThisChat.localized : ""
             })
-            .do(onNext: { [weak self] result in
-                let numberOfSections = self?.tableView.numberOfSections ?? 0
-                guard let `self` = self, !self.isDrawingTable, numberOfSections >= 1 else {
-                    return
-                }
-
-                self.isDrawingTable = true
-
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
-                    guard let self = self else { return }
-                    
-                    let lastSection = numberOfSections - 1
-                    let lastRow = self.tableView.numberOfRows(inSection: lastSection) - 1
-                    
-                    if lastRow >= 0, lastSection >= 0 {
-                        let indexPath = IndexPath(row: lastRow, section: lastSection)
-                        self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: false)
-                    }
-                    self.isDrawingTable = false
-                }
-            })
             .map({messages -> [SectionModel<String, Message>] in
                 if messages.isEmpty {return []}
                 return Dictionary(grouping: messages) { message in
@@ -225,6 +204,18 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                     .map({SectionModel<String, Message>.init(model: $0.key.formattedTimeToHeadline(format: "d MMMM yyyy"), items: $0.value)})
             })
             .bind(to: tableView.rx.items(dataSource: dataSource))
+            .disposed(by: disposeBag)
+                
+            var prev: [Message] = []
+        self.presenter?
+            .messages
+            .debounce(.milliseconds(100), scheduler: MainScheduler.asyncInstance)
+            .filter({ !$0.isEmpty })
+            .filter({$0.count != prev.count})
+            .do(onNext: {prev = $0})
+            .subscribe(onNext: { [weak self] _ in
+                self?.scrollToBottom()
+            })
             .disposed(by: disposeBag)
         
         self.presenter?.viewDidLoad()
@@ -701,4 +692,23 @@ extension ConversationViewController: CNContactPickerDelegate {
             })
         }
     }
+}
+
+extension ConversationViewController {
+    func scrollToBottom() {
+        let lastSectionIndex = tableView.numberOfSections - 1
+        if lastSectionIndex < 0 { return }
+
+        let lastRowIndex = tableView.numberOfRows(inSection: lastSectionIndex) - 1
+        if lastRowIndex < 0 { return }
+
+        let lastIndexPath = IndexPath(row: lastRowIndex, section: lastSectionIndex)
+        
+        // Проверяем, видна ли последняя ячейка
+        let isLastRowVisible = tableView.indexPathsForVisibleRows?.contains(lastIndexPath) ?? false
+
+        // Прокручиваем с анимацией, если последняя ячейка уже видна (т.е., это не первая загрузка)
+        tableView.scrollToRow(at: lastIndexPath, at: .bottom, animated: isLastRowVisible)
+    }
+
 }
