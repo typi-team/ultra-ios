@@ -135,6 +135,10 @@ extension ViewController: UltraCoreFutureDelegate {
 }
 
 extension ViewController: UltraCoreSettingsDelegate {
+    func emptyConversationView() -> UIView? {
+        return nil
+    }
+    
     func info(from id: String) -> UltraCore.IContactInfo? {
         return nil
     }
