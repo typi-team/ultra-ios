@@ -20,6 +20,12 @@ enum MessageStrings: String, StringLocalizable {
     case moneyTransfer
     case uploadingInProgress
     case fileWithoutSmile
+    
+    case reply
+    case copy
+    case report
+    case delete
+    case select
 
     var prefixOfTemplate: String { "message" }
     var localizableValue: String { rawValue }

@@ -48,6 +48,11 @@
 "conversation.report" = "report";
 "conversation.block" = "Block";
 "conversation.unblock" = "Unblock";
+"conversation.deleteFromMe" = "Delete from me";
+"conversation.deleteForEveryone" = "Delete for everyone";
+
+"conversation.areYouSure" = "Are you sure?";
+"conversation.pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible" = "Please note that message data will be permanently deleted and recovery will not be possible";
 // MARK: Messages page
 "message.audio" = "🔉 Audio";
 "message.voice" = "🎤 Voice";
@@ -60,5 +65,8 @@
 "message.contact" = "📇 Contact";
 "message.moneyTransfer" = "Transfer";
 "message.uploadingInProgress" = "Uploading in progress";
-
-
+"message.reply" = "Reply";
+"message.copy" = "Copy";
+"message.report" = "Report";
+"message.delete" = "Delete";
+"message.select" = "Select";

@@ -48,6 +48,10 @@
 "conversation.report" = "пожаловаться";
 "conversation.block" = "Заблокировать";
 "conversation.unblock" = "Разблокировать";
+"conversation.deleteFromMe" = "Удалить у меня";
+"conversation.deleteForEveryone" = "Удалить для всех";
+"conversation.areYouSure" = "Вы уверены?";
+"conversation.pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible" = "Пожалуйста, обратите внимание, что данные сообщения будут безвозвратно удалены, и восстановление не будет возможным";
 // MARK: Messages page
 "message.audio" = "🔉 Аудио";
 "message.voice" = "🎤 Голосовое сообщение";
@@ -60,3 +64,10 @@
 "message.contact" = "📇 Контакт";
 "message.moneyTransfer" = "Перевод";
 "message.uploadingInProgress" = "Идет выгрузка";
+
+"message.reply" = "Ответить";
+"message.copy" = "Копировать";
+"message.report" = "Пожаловаться";
+"message.delete" = "Удалить";
+"message.select" = "Выбрать";
+

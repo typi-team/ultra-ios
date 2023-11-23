@@ -8,11 +8,13 @@
 import Foundation
 protocol EditActionBottomBarDelegate: AnyObject {
     func delete()
-    func cancel()
-    func report()
+    func share()
+    func reply()
 }
 
 class EditActionBottomBar: UIView {
+    
+    private var style: MessageInputBarConfig { UltraCoreStyle.mesageInputBarConfig }
     
     weak var delegate:EditActionBottomBarDelegate?
     
@@ -22,10 +24,8 @@ class EditActionBottomBar: UIView {
         $0.distribution = .fillEqually
     })
     
-    fileprivate lazy var deleteButton: UIButton = .init({
-        $0.setTitle(EditActionStrings.delete.localized.capitalized, for: .normal)
-        $0.titleLabel?.font = .defaultRegularCallout
-        $0.setTitleColor(.red500, for: .normal)
+    fileprivate lazy var strashButton: UIButton = .init({
+        $0.setImage(.named("edit.action.bar.trash"), for: .normal)
         $0.addAction {[weak self] in
             guard let `self` = self else {
                  return
@@ -34,27 +34,23 @@ class EditActionBottomBar: UIView {
         }
     })
     
-    fileprivate lazy var reportButton: UIButton = .init({
-        $0.setTitle(EditActionStrings.report.localized.capitalized, for: .normal)
-        $0.titleLabel?.font = .defaultRegularCallout
-        $0.setTitleColor(.red500, for: .normal)
+    fileprivate lazy var shareButton: UIButton = .init({
+        $0.setImage(.named("edit.action.bar.share"), for: .normal)
         $0.addAction {[weak self] in
             guard let `self` = self else {
                  return
             }
-            self.delegate?.report()
+            self.delegate?.share()
         }
     })
     
-    fileprivate lazy var cancelButton: UIButton = .init({
-        $0.setTitle(EditActionStrings.cancel.localized.capitalized, for: .normal)
-        $0.titleLabel?.font = .defaultRegularCallout
-        $0.setTitleColor(.gray900, for: .normal)
+    fileprivate lazy var replyButton: UIButton = .init({
+        $0.setImage(.named("edit.action.bar.reply"), for: .normal)
         $0.addAction {[weak self] in
             guard let `self` = self else {
                  return
             }
-            self.delegate?.cancel()
+            self.delegate?.reply()
         }
     })
     
@@ -70,18 +66,27 @@ class EditActionBottomBar: UIView {
         self.setupConstraints()
     }
     
-    func hideReport(isHidden: Bool) {
-        self.reportButton.isHidden = isHidden
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        self.setupStyle()
     }
+    
+    
 }
 
 private extension EditActionBottomBar {
+    
+    func setupStyle() {
+        self.backgroundColor = style.background.color
+    }
+    
     func setupViews() {
         self.addSubview(stackView)
         self.backgroundColor = .gray100
-        self.stackView.addArrangedSubview(self.deleteButton)
-        self.stackView.addArrangedSubview(self.reportButton)
-        self.stackView.addArrangedSubview(self.cancelButton)
+        self.stackView.addArrangedSubview(self.strashButton)
+//        self.stackView.addArrangedSubview(self.shareButton)
+//        self.stackView.addArrangedSubview(self.replyButton)
+        self.setupStyle()
     }
     
     func setupConstraints() {
