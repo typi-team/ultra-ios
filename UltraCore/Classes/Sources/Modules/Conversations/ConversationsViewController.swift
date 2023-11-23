@@ -13,13 +13,12 @@ import RxSwift
 import RxCocoa
 import RxDataSources
 
-
-
 final class ConversationsViewController: BaseViewController<ConversationsPresenterInterface> {
 
-    fileprivate lazy var permissionData = PermissionStateViewData(imageName: "conversations_centered_card",
-                                                                  headline: "Нет сообщений",
-                                                                  subline: "У вас пока нет сообщений. Начните общаться с вашими контактами прямо сейчас.")
+    fileprivate lazy var permissionData = PermissionStateViewData(imageName: "conversations_empty",
+                                                                  headline: ConversationsStrings.emptyMessages.localized,
+                                                                  subline: ConversationsStrings.startCommunicatingWithYourContactsNow.localized.localized,
+                                                                  action: .init(title: "Начать", callback: {[weak self] in self?.presenter?.navigateToContacts()}))
     fileprivate lazy var backgroundView: PermissionStateView = .init(data: permissionData)
     
     fileprivate lazy var tableView: UITableView = {
