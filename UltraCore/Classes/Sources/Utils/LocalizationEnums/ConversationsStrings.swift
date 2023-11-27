@@ -11,6 +11,7 @@ enum ConversationsStrings:  String {
     case chats
     case emptyMessages
     case startCommunicatingWithYourContactsNow
+    case start
 
 }
 
