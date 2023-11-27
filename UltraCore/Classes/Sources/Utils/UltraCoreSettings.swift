@@ -79,6 +79,7 @@ public extension UltraCoreSettings {
      static func update(sid token: String, with callback: @escaping (Error?) -> Void) {
          AppSettingsImpl.shared.appStore.ssid = token
          AppSettingsImpl.shared.update(ssid: token, callback: callback)
+         AppSettingsImpl.shared.updateRepository.setupSubscription()
      }
 
      static func update(firebase token: String) {
