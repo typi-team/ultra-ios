@@ -19,6 +19,8 @@ enum ContactsStrings: String, StringLocalizable {
     case noAccessToContacts
     case clickToShareContacts
     
+    case grantAccess
+    
     
     var prefixOfTemplate: String { "contacts" }
     var localizableValue: String { rawValue }

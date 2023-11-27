@@ -7,7 +7,9 @@
 */
 
 // MARK: Conversations page
-"conversations.chats" = "Чаты";
+"conversations.chats" = "Нет сообщений";
+"conversations.emptyMessages" = "Начните общаться с вашими контактами прямо сейчас";
+"conversations.startCommunicatingWithYourContactsNow" = "Start communicating with your contacts now";
 // MARK: Contacts page
 "contacts.newChat" = "Новый чат";
 "contacts.was" = "был(а)";
@@ -18,6 +20,7 @@
 "contacts.unfortunately" = "К сожалению у вас нет контактов которые используют данное приложение.";
 "contacts.noAccessToContacts" = "Нет доступа к контактам";
 "contacts.clickToShareContacts" = "Нажмите на кнопку ниже и предоставьте доступ к вашим контактам.";
+"contacts.grantAccess" = "Предоставить доступ";
 // MARK: Conversation page
 "conversation.decline" = "Отмена";
 "conversation.today" = "Сегодня";
