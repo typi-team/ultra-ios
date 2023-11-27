@@ -44,6 +44,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.keyboardDismissMode = .onDragWithAccessory
         tableView.refreshControl = refreshControl
         tableView.delegate = self
+        tableView.tintColor = .green500
         tableView.registerCell(type: IncomeFileCell.self)
         tableView.registerCell(type: OutcomeFileCell.self)
         tableView.registerCell(type: BaseMessageCell.self)
@@ -99,9 +100,20 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                 return UITableViewCell.init()
             }
             let cell = self.cell(message, in: tableView)
-            cell.longTapCallback = {[weak self] message in
+            cell.longTapCallback = {[weak self] actionType in
                 guard let `self` = self else { return }
-                self.presentEditController(for: message, indexPath: indexPath)
+                switch actionType {
+                case let .select(message):
+                    self.presentEditController(for: message, indexPath: indexPath)
+                case let .delete(message):
+                    self.presentDeletedMessageView(messages: [message])
+                case .reply:
+                    break
+                case let .report(message):
+                    self.presentReportMessageView(message: message)
+                case let .copy(message):
+                    UIPasteboard.general.string = message.text
+                }
             }
             cell.actionCallback = {[weak self] message in
                 guard let `self` = self,
@@ -137,14 +149,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.handleKeyboardTransmission = true
         super.setupViews()
 //        MARK: Must be hide
-        self.navigationItem.rightBarButtonItems = [
-//                                                    .init(image: .named("conversation_video_camera_icon"),
-//                                                         style: .done, target: self, action: #selector(self.callWithVideo(_:))),
-//                                                   .init(image: .named("conversation_phone_icon"),
-//                                                         style: .done, target: self, action: #selector(self.callWithVoice(_:)))
-                                                               .init(image: .named("conversation.dots"),
-                                                         style: .done, target: self, action: #selector(self.more(_:)))
-        ]
+        self.navigationItem.rightBarButtonItem = .init(image: .named("conversation.dots"),
+                                                       style: .done, target: self, action: #selector(self.more(_:)))
         self.view.addSubview(tableView)
         self.view.addSubview(messageHeadline)
         self.view.addSubview(messageInputBar)
@@ -190,27 +196,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .do(onNext: {[weak self] messages in
                 self?.messageHeadline.text = messages.isEmpty ? ConversationStrings.thereAreNoMessagesInThisChat.localized : ""
             })
-            .do(onNext: { [weak self] result in
-                let numberOfSections = self?.tableView.numberOfSections ?? 0
-                guard let `self` = self, !self.isDrawingTable, numberOfSections >= 1 else {
-                    return
-                }
-
-                self.isDrawingTable = true
-
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
-                    guard let self = self else { return }
-                    
-                    let lastSection = numberOfSections - 1
-                    let lastRow = self.tableView.numberOfRows(inSection: lastSection) - 1
-                    
-                    if lastRow >= 0, lastSection >= 0 {
-                        let indexPath = IndexPath(row: lastRow, section: lastSection)
-                        self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: false)
-                    }
-                    self.isDrawingTable = false
-                }
-            })
             .map({messages -> [SectionModel<String, Message>] in
                 if messages.isEmpty {return []}
                 return Dictionary(grouping: messages) { message in
@@ -220,22 +205,16 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             })
             .bind(to: tableView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
-        
-        self.tableView
-            .rx
-            .itemSelected
-            .subscribe({ [weak self] _ in
-                guard let `self` = self, let rows = self.tableView.indexPathsForSelectedRows else { return }
-                self.editInputBar.hideReport(isHidden: rows.count > 1)
-            })
-            .disposed(by: disposeBag)
-        
-        self.tableView
-            .rx
-            .itemDeselected
-            .subscribe({ [weak self] _ in
-                guard let `self` = self, let rows = self.tableView.indexPathsForSelectedRows else { return }
-                self.editInputBar.hideReport(isHidden: rows.count > 1)
+                
+            var prev: [Message] = []
+        self.presenter?
+            .messages
+            .debounce(.milliseconds(100), scheduler: MainScheduler.asyncInstance)
+            .filter({ !$0.isEmpty })
+            .filter({$0.count != prev.count})
+            .do(onNext: {prev = $0})
+            .subscribe(onNext: { [weak self] _ in
+                self?.scrollToBottom()
             })
             .disposed(by: disposeBag)
         
@@ -419,6 +398,7 @@ extension ConversationViewController: QLPreviewControllerDataSource  {
 }
 
 extension ConversationViewController {
+    
     @objc func callWithVideo(_ sender: UIBarButtonItem) {
         self.presenter?.callVideo()
     }
@@ -548,6 +528,7 @@ extension ConversationViewController {
     }
     
     func presentEditController(for message: Message, indexPath: IndexPath) {
+        self.navigationItem.rightBarButtonItem = .init(image: .named("icon_close"), style: .done, target: self, action: #selector(self.cancel))
         self.tableView.allowsMultipleSelectionDuringEditing = true
         self.tableView.setEditing(!tableView.isEditing, animated: true)
         
@@ -567,28 +548,44 @@ extension ConversationViewController {
 }
 
 extension ConversationViewController: EditActionBottomBarDelegate {
-    func report() {
-        let messages = self.tableView.indexPathsForSelectedRows?
-            .map { indexPath in self.tableView.cellForRow(at: indexPath) }
-            .compactMap({ $0 as? BaseMessageCell })
-            .map({ $0.message })
-            .compactMap({ $0 }) ?? []
-        
-        guard !messages.isEmpty else { return }
-        
-        let alert = UIAlertController(title: "Вы уверены?", message: " Если сообщение содержит угрозы, неподходящий контент или нарушает какие-либо правила платформы или сообщества, оно может быть обжаловано и подлежит удалению. Восстановление такого сообщения может быть невозможным.", preferredStyle: .actionSheet)
-        alert.addAction(.init(title: EditActionStrings.report.localized.capitalized, style: .destructive, handler: { [weak self] _ in
-            guard let `self` = self else { return }
-            self.presenter?.report(messages)
-            self.cancel()
-        }))
-       
-        alert.addAction(.init(title: EditActionStrings.cancel.localized, style: .cancel))
-        self.present(alert, animated: true)
+    func share() {
+        self.showInProgressAlert()
     }
-    func cancel() {
+    
+    func reply() {
+        self.showInProgressAlert()
+    }
+    
+    func presentReportMessageView(message: Message) {
+        
+        let viewController = ActionsViewController({ controler in
+            controler.headlineText = ConversationStrings.areYouSure.localized
+            controler.regularText = "Если сообщение содержит угрозы, неподходящий контент или нарушает какие-либо правила платформы или сообщества, оно может быть обжаловано и подлежит удалению. Восстановление такого сообщения может быть невозможным"
+            
+            controler.additionalButtons = [.init({
+                $0.titleLabel?.numberOfLines = 0
+                $0.backgroundColor = .green500
+                $0.setTitleColor(.white, for: .normal)
+                $0.setTitle(EditActionStrings.report.localized.capitalized, for: .normal)
+                $0.addAction { [weak self] in
+                    guard let `self` = self else { return }
+                    controler.dismiss(animated: true)
+                    self.presenter?.report([message])
+                    self.cancel()
+                }
+            })]
+        })
+        
+        viewController.modalPresentationStyle = .custom
+        viewController.transitioningDelegate = sheetTransitioningDelegate
+        present(viewController, animated: true)
+    }
+    
+    @objc func cancel() {
         self.editInputBar.removeFromSuperview()
         self.tableView.setEditing(false, animated: true)
+        self.navigationItem.rightBarButtonItem = .init(image: .named("conversation.dots"),
+                                                         style: .plain, target: self, action: #selector(self.more(_:)))
     }
     
     func delete() {
@@ -600,20 +597,43 @@ extension ConversationViewController: EditActionBottomBarDelegate {
             .compactMap({ $0 }) ?? []
         
         guard !messages.isEmpty else { return }
+        self.presentDeletedMessageView(messages: messages)
+    }
+    
+    func presentDeletedMessageView(messages: [Message]) {
+        let viewController = ActionsViewController({ controler in
+            controler.headlineText = ConversationStrings.areYouSure.localized
+            controler.regularText = ConversationStrings.pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible.localized
+            
+            controler.additionalButtons = [.init({
+                $0.titleLabel?.numberOfLines = 0
+                $0.backgroundColor = .green500
+                $0.setTitleColor(.white, for: .normal)
+                $0.setTitle(ConversationStrings.deleteFromMe.localized, for: .normal)
+                $0.addAction { [weak self] in
+                    guard let `self` = self else { return }
+                    controler.dismiss(animated: true)
+                    self.presenter?.delete(messages, all: false)
+                    self.cancel()
+                }
+            }),
+            .init({
+                $0.titleLabel?.numberOfLines = 0
+                $0.backgroundColor = .green500
+                $0.setTitleColor(.white, for: .normal)
+                $0.setTitle(ConversationStrings.deleteForEveryone.localized, for: .normal)
+                $0.addAction { [weak self] in
+                    guard let `self` = self else { return }
+                    controler.dismiss(animated: true)
+                    self.presenter?.delete(messages, all: true)
+                    self.cancel()
+                }
+            })]
+        })
         
-        let alert = UIAlertController(title: "Вы уверены?", message: "Пожалуйста, обратите внимание, что данные сообщения будут безвозвратно удалены, и восстановление не будет возможным", preferredStyle: .actionSheet)
-        alert.addAction(.init(title: "Удалить для всех", style: .destructive, handler: { [weak self] _ in
-            guard let `self` = self else { return }
-            self.presenter?.delete(messages, all: true)
-            self.cancel()
-        }))
-        alert.addAction(.init(title: "Удалить у меня", style: .destructive, handler: { [weak self] _ in
-            guard let `self` = self else { return }
-            self.presenter?.delete(messages, all: false)
-            self.cancel()
-        }))
-        alert.addAction(.init(title: "Отмена", style: .cancel))
-        self.present(alert, animated: true)
+        viewController.modalPresentationStyle = .custom
+        viewController.transitioningDelegate = sheetTransitioningDelegate
+        present(viewController, animated: true)
     }
 }
 
@@ -672,4 +692,23 @@ extension ConversationViewController: CNContactPickerDelegate {
             })
         }
     }
+}
+
+extension ConversationViewController {
+    func scrollToBottom() {
+        let lastSectionIndex = tableView.numberOfSections - 1
+        if lastSectionIndex < 0 { return }
+
+        let lastRowIndex = tableView.numberOfRows(inSection: lastSectionIndex) - 1
+        if lastRowIndex < 0 { return }
+
+        let lastIndexPath = IndexPath(row: lastRowIndex, section: lastSectionIndex)
+        
+        // Проверяем, видна ли последняя ячейка
+        let isLastRowVisible = tableView.indexPathsForVisibleRows?.contains(lastIndexPath) ?? false
+
+        // Прокручиваем с анимацией, если последняя ячейка уже видна (т.е., это не первая загрузка)
+        tableView.scrollToRow(at: lastIndexPath, at: .bottom, animated: isLastRowVisible)
+    }
+
 }

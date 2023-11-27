@@ -9,11 +9,16 @@ import UIKit
 
 typealias VoidCallback = () -> Void
 
+struct ActionValue {
+    var title: String
+    var callback: VoidCallback
+}
+
 struct PermissionStateViewData {
     var imageName: String
     var headline: String
     var subline: String
-    var action: VoidCallback?
+    var action: ActionValue?
 }
 
 class PermissionStateView: UIView {
@@ -36,9 +41,8 @@ class PermissionStateView: UIView {
         $0.textAlignment = .center
     })
     fileprivate lazy var imageView: UIImageView = .init()
-    fileprivate lazy var headline: RegularBody = .init({
+    fileprivate lazy var headline: HeadlineBody = .init({
         $0.textAlignment = .center
-        $0.font = .default(of: 13, and: .bold)
     })
     fileprivate lazy var button: ElevatedButton = .init()
 
@@ -49,13 +53,13 @@ class PermissionStateView: UIView {
 
         if let action = self.data.action {
             self.addSubview(button)
-            self.button.addAction(action)
+            self.button.addAction(action.callback)
         }
     }
     
     private func setupConstraints() {
         self.imageView.snp.makeConstraints { make in
-            make.width.height.equalTo(80)
+            make.width.height.equalTo(128)
             make.centerX.equalToSuperview()
             make.centerY.equalToSuperview().offset(-100)
         }
@@ -74,7 +78,7 @@ class PermissionStateView: UIView {
         
         if data.action != nil {
             self.button.snp.makeConstraints { make in
-                make.bottom.equalTo(safeAreaLayoutGuide.snp.bottomMargin).offset(-kMediumPadding * 2)
+                make.bottom.equalTo(safeAreaLayoutGuide.snp.bottom).offset(-kMediumPadding * 4)
                 make.left.equalToSuperview().offset(kHeadlinePadding)
                 make.right.equalToSuperview().offset(-kHeadlinePadding)
                 make.height.equalTo(kButtonHeight)
@@ -84,8 +88,9 @@ class PermissionStateView: UIView {
     
     func setupData() {
         self.headline.text = data.headline
+        self.headline.font = .default(of: 34, and: .bold)
         self.subline.text = data.subline
         self.imageView.image = .named(data.imageName)
-        self.button.setTitle("Предоставить доступ", for: .normal)
+        self.button.setTitle(data.action?.title, for: .normal)
     }
 }

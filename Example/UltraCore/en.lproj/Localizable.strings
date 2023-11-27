@@ -8,6 +8,8 @@
 
 // MARK: Conversations page
 "conversations.chats" = "Chats";
+"conversations.emptyMessages" = "No messages";
+"conversations.startCommunicatingWithYourContactsNow" = "Start communicating with your contacts now";
 // MARK: Contacts page
 "contacts.newChat" = "New chat";
 "contacts.was" = "was";
@@ -18,6 +20,7 @@
 "contacts.unfortunately" = "Unfortunately, you do not have contacts who use this application.";
 "contacts.noAccessToContacts" = "No access to contacts";
 "contacts.clickToShareContacts" = "Click the button below and share your contacts.";
+"contacts.grantAccess" = "Give access";
 // MARK: Conversation page
 "conversation.decline" = "Cancel";
 "conversation.today" = "Today";
@@ -48,6 +51,11 @@
 "conversation.report" = "report";
 "conversation.block" = "Block";
 "conversation.unblock" = "Unblock";
+"conversation.deleteFromMe" = "Delete from me";
+"conversation.deleteForEveryone" = "Delete for everyone";
+
+"conversation.areYouSure" = "Are you sure?";
+"conversation.pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible" = "Please note that message data will be permanently deleted and recovery will not be possible";
 // MARK: Messages page
 "message.audio" = "🔉 Audio";
 "message.voice" = "🎤 Voice";
@@ -60,3 +68,8 @@
 "message.contact" = "📇 Contact";
 "message.moneyTransfer" = "Transfer";
 "message.uploadingInProgress" = "Uploading in progress";
+"message.reply" = "Reply";
+"message.copy" = "Copy";
+"message.report" = "Report";
+"message.delete" = "Delete";
+"message.select" = "Select";

@@ -7,7 +7,7 @@
 
 import UIKit
 
-public extension UITableView {
+extension UITableView {
     
     func registerCell(type: UITableViewCell.Type, identifier: String? = nil) {
         register(type, forCellReuseIdentifier: type.identifier)
@@ -18,7 +18,7 @@ public extension UITableView {
     }
 }
 
-public extension UITableViewCell {
+extension UITableViewCell {
     static var identifier: String {
         return String(describing: self)
     }

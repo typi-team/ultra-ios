@@ -38,6 +38,11 @@ enum ConversationStrings: String, StringLocalizable {
     case today
     case yesterday
     
+    case deleteFromMe
+    case deleteForEveryone
+    case areYouSure
+    case pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible
+    
     var prefixOfTemplate: String { "conversation" }
     var localizableValue: String { rawValue }
 }

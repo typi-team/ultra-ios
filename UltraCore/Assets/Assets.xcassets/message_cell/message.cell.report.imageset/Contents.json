@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "message.cell.report.pdf",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

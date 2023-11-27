@@ -133,14 +133,13 @@ extension ContactsBookViewController: ContactsBookViewInterface {
     }
     
     func permission(is denied: Bool) {
-        if denied {
-            self.tableView.backgroundView = PermissionStateView(data: PermissionStateViewData(imageName: "contacts_centered_card",
-                                                                                              headline: ContactsStrings.noAccessToContacts.localized,
-                                                                                              subline: ContactsStrings.clickToShareContacts.localized,
-                                                                                              action: {
-                UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
-                                                                                              })
-            )
+        if denied, let url = URL(string: UIApplication.openSettingsURLString) {
+            let callback = { UIApplication.shared.open(url, options: [:], completionHandler: nil) }
+            let data = PermissionStateViewData(imageName: "contacts_centered_card",
+                                               headline: ContactsStrings.noAccessToContacts.localized,
+                                               subline: ContactsStrings.clickToShareContacts.localized,
+                                               action: .init(title: ContactsStrings.grantAccess.localized, callback: callback))
+            self.tableView.backgroundView = PermissionStateView(data: data)
         } else {
             self.tableView.backgroundView = nil
         }
