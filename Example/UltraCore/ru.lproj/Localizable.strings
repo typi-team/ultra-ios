@@ -40,7 +40,7 @@
 "conversation.selectionFromLibrary" = "Выбрать из галереи";
 "conversation.selectDocument" = "Выбрать документ";
 "conversation.contact" = "Контакт";
-"conversation.location" = "Местопложение";
+"conversation.location" = "Местоположение";
 "conversation.transferAmount" = "Сумма перевода";
 "conversation.writeOffTheCard" = "Списать с карты";
 "conversation.continue" = "Продолжить";
