@@ -18,7 +18,7 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
     fileprivate lazy var permissionData = PermissionStateViewData(imageName: "conversations_empty",
                                                                   headline: ConversationsStrings.emptyMessages.localized,
                                                                   subline: ConversationsStrings.startCommunicatingWithYourContactsNow.localized.localized,
-                                                                  action: .init(title: "Начать", callback: {[weak self] in self?.presenter?.navigateToContacts()}))
+                                                                  action: .init(title: ConversationsStrings.start.localized, callback: {[weak self] in self?.presenter?.navigateToContacts()}))
     fileprivate lazy var backgroundView: PermissionStateView = .init(data: permissionData)
     
     fileprivate lazy var tableView: UITableView = {

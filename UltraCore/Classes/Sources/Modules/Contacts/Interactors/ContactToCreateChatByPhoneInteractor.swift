@@ -21,7 +21,7 @@ class ContactToCreateChatByPhoneInteractor: UseCase<IContact, CreateChatByPhoneR
             self.integrateService.createChatByPhone(.with({
                 $0.firstname = params.firstname
                 $0.phone = params.phone
-            }))
+            }), callOptions: .default())
             .response
             .whenComplete({ result in
                 switch result {

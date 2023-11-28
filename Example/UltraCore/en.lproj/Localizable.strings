@@ -8,6 +8,7 @@
 
 // MARK: Conversations page
 "conversations.chats" = "Chats";
+"conversations.start" = "Start";
 "conversations.emptyMessages" = "No messages";
 "conversations.startCommunicatingWithYourContactsNow" = "Start communicating with your contacts now";
 // MARK: Contacts page

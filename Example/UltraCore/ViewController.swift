@@ -129,6 +129,10 @@ class ViewController: UITabBarController {
 }
 
 extension ViewController: UltraCoreFutureDelegate {
+    func localize(for key: String) -> String? {
+        nil
+    }
+    
     func availableToSendMoney() -> Bool {
         return true
     }

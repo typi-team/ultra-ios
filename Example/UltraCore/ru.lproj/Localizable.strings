@@ -10,6 +10,7 @@
 "conversations.chats" = "Нет сообщений";
 "conversations.emptyMessages" = "Начните общаться с вашими контактами прямо сейчас";
 "conversations.startCommunicatingWithYourContactsNow" = "Start communicating with your contacts now";
+"conversations.start" = "Начать";
 // MARK: Contacts page
 "contacts.newChat" = "Новый чат";
 "contacts.was" = "был(а)";
