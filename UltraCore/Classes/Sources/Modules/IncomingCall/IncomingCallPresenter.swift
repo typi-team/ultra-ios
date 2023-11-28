@@ -52,6 +52,10 @@ final class IncomingCallPresenter {
 
 extension IncomingCallPresenter: IncomingCallPresenterInterface {
     
+    func getCallStatus() -> CallStatus {
+        callStatus
+    }
+    
     func reject() {
         
         self.callService.reject(RejectCallRequest.with({
@@ -85,7 +89,7 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
         })
     }
     
-    func viewDidLoad() -> CallStatus {
+    func viewDidLoad() {
         if let contact = self.contactService.contact(id: self.callStatus.callInfo.sender) {
             self.view.dispay(view: contact)
         } else {
@@ -100,6 +104,5 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
 //                })
 //                .disposed(by: disposeBag)
         }
-        return self.callStatus
     }
 }
