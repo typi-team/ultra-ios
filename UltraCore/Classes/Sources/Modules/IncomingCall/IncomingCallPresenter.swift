@@ -70,7 +70,6 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
     }
     
     func cancel() {
-        
         self.callService.cancel(CancelCallRequest.with({
             $0.userID = self.userId
             $0.room = self.callStatus.callInfo.room

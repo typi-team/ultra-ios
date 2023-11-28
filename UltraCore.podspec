@@ -26,7 +26,7 @@ Pod::Spec.new do |s|
   s.source           = { :git => 'git@github.com:typi-team/ultra-ios.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
-  s.ios.deployment_target = '11.0'
+  s.ios.deployment_target = '13.0'
 
   s.source_files = 'UltraCore/Classes/**/*'
   s.source_files = 'UltraCore/Classes/Sources/**/*'
@@ -50,5 +50,6 @@ Pod::Spec.new do |s|
    s.dependency 'RealmSwift'
    s.dependency 'RxDataSources'
    s.dependency 'NVActivityIndicatorView'
+   s.dependency 'LiveKitClient'
    
 end
