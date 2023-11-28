@@ -35,31 +35,31 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
     override func setupViews() {
         super.setupViews()
 
-        self.view.backgroundColor = self.style.background.color
+        view.backgroundColor = style.background.color
 
-        self.view.addSubview(localVideoView)
-        self.view.addSubview(remoteVideoView)
-        self.view.addSubview(infoView)
-        self.view.addSubview(actionStackView)
+        view.addSubview(localVideoView)
+        view.addSubview(remoteVideoView)
+        view.addSubview(infoView)
+        view.addSubview(actionStackView)
     }
 
     override func setupConstraints() {
         super.setupConstraints()
 
-        self.actionStackView.snp.makeConstraints { make in
+        actionStackView.snp.makeConstraints { make in
             make.bottom.equalToSuperview().offset(-54)
             make.left.equalToSuperview().offset(kHeadlinePadding)
             make.right.equalToSuperview().offset(-kHeadlinePadding)
             make.height.equalTo(52)
         }
-        self.infoView.snp.makeConstraints { make in
+        infoView.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(view.snp.centerY).offset(-36)
         }
-        self.localVideoView.snp.makeConstraints { make in
+        localVideoView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        self.remoteVideoView.snp.makeConstraints { make in
+        remoteVideoView.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(31)
             make.bottom.equalTo(actionStackView.snp.top).offset(-32)
             make.width.equalTo(90)
@@ -70,7 +70,8 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
     override func setupInitialData() {
         super.setupInitialData()
 
-        guard let status = self.presenter?.viewDidLoad() else { return }
+        presenter?.viewDidLoad()
+        guard let status = presenter?.getCallStatus() else { return }
         actionStackView.configure(status: status)
         switch status {
         case let .incoming(request), let .outcoming(request):
@@ -83,17 +84,17 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
     }
 }
 
-// MARK: - Extensions -
+// MARK: - IncomingCallActionViewDelegate
 
 extension IncomingCallViewController: IncomingCallActionViewDelegate {
     
     func view(_ view: IncomingCallActionView, answerButtonDidTap button: UIButton) {
-        guard let callInfo = presenter?.viewDidLoad() else { return }
+        guard let callInfo = presenter?.getCallStatus() else { return }
         connect(with: callInfo.callInfo)
     }
     
     func view(_ view: IncomingCallActionView, mouthpieceButtonDidTap button: UIButton) {
-//        _ = room.localParticipant?.isSpeaking = !button.isSelected
+//        _ = room.localParticipant?.isSpeaking = button.isSelected
     }
     
     func view(_ view: IncomingCallActionView, microButtonDidTap button: UIButton) {
@@ -101,7 +102,9 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
     }
     
     func view(_ view: IncomingCallActionView, cameraButtonDidTap button: UIButton) {
-        _ = room.localParticipant?.set(source: .camera, enabled: !button.isSelected)
+        let cameraEnabled = button.isSelected
+        _ = room.localParticipant?.set(source: .camera, enabled: cameraEnabled)
+        infoView.isHidden = cameraEnabled
     }
     
     func view(_ view: IncomingCallActionView, cancelButtonDidTap button: UIButton) {
@@ -116,6 +119,8 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
     
 }
 
+// MARK: - IncomingCallViewInterface
+
 extension IncomingCallViewController: IncomingCallViewInterface {
     func disconnectRoom() {
         self.room.disconnect().then({[weak self] () in
@@ -129,6 +134,8 @@ extension IncomingCallViewController: IncomingCallViewInterface {
         infoView.confige(view: contact)
     }
 }
+
+// MARK: - RoomDelegateObjC
 
 extension IncomingCallViewController: RoomDelegateObjC {
     func room(_ room: Room, didUpdate connectionState: ConnectionStateObjC, oldValue oldConnectionState: ConnectionStateObjC) {
@@ -168,10 +175,12 @@ extension IncomingCallViewController: RoomDelegateObjC {
       }
 }
 
+//MARK: - Extensions
+
 private extension IncomingCallViewController {
     func connect(with callInfo: CallInformation) {
-        self.room.connect(callInfo.host, callInfo.accessToken).then { [weak self] room in
-            guard let self, let status = self.presenter?.viewDidLoad() else { return }
+        room.connect(callInfo.host, callInfo.accessToken).then { [weak self] room in
+            guard let self, let status = self.presenter?.getCallStatus() else { return }
             self.actionStackView.configure(status: status)
             room.localParticipant?.setCamera(enabled: callInfo.video)
             room.localParticipant?.setMicrophone(enabled: true)

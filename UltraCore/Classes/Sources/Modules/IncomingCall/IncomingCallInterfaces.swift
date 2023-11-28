@@ -53,7 +53,8 @@ protocol IncomingCallViewInterface: ViewInterface {
 
 
 protocol IncomingCallPresenterInterface: PresenterInterface {
-    func viewDidLoad() -> CallStatus
+    func viewDidLoad()
+    func getCallStatus() -> CallStatus
     func reject()
     func cancel()
 }
