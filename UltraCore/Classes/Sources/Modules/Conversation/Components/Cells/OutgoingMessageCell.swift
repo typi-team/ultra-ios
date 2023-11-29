@@ -38,7 +38,7 @@ class OutgoingMessageCell: BaseMessageCell {
             make.left.equalTo(self.statusView.snp.right).offset(kLowPadding / 2)
             make.right.equalToSuperview().offset(-10)
             make.bottom.equalTo(textView.snp.bottom)
-            make.width.equalTo(40)
+//            make.width.equalTo(40)
             make.centerY.equalTo(statusView.snp.centerY)
         }
     }

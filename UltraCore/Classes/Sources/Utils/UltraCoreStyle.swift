@@ -21,6 +21,8 @@ public protocol LabelConfig: TwiceColor {
 public protocol MessageCellConfig {
     var backgroundColor: TwiceColor { get set }
     var sildirBackgroundColor: TwiceColor { get set }
+    var textLabelConfig: LabelConfig { get set }
+    var deliveryLabelConfig: LabelConfig { get set }
 }
 
 public extension TwiceColor {
@@ -41,28 +43,24 @@ public extension TwiceColor {
 }
 
 private class IncomeMessageCellConfigImpl: MessageCellConfig {
+    var textLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularBody)
+    var deliveryLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
     var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white, darkColor: .gray500)
     var sildirBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
 }
 
 private class OutcomeMessageCellConfigImpl: MessageCellConfig {
+    var textLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularBody)
+    var deliveryLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
     var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray900)
     var sildirBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
 }
 
 
-private class LabelConfigImpl: LabelConfig {
+private struct LabelConfigImpl: LabelConfig {
     var darkColor: UIColor = .white
     var defaultColor: UIColor = .gray700
     var font: UIFont = .defaultRegularBody
-    
-    init(darkColor: UIColor ,
-         defaultColor: UIColor,
-         font: UIFont) {
-        self.font = font
-        self.darkColor = darkColor
-        self.defaultColor = defaultColor
-    }
 }
 
 

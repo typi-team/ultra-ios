@@ -52,6 +52,9 @@ class ViewController: UITabBarController {
        }
     
     func setupSID() {
+        
+//        UltraCoreStyle.incomeMessageCell = MessageCellConfigImpl.init()
+//        UltraCoreStyle.outcomeMessageCell = MessageCellConfigImpl.init(backgroundColor: TwiceColorImpl.init(defaultColor: .orange, darkColor: .yellow), sildirBackgroundColor: TwiceColorImpl.init(defaultColor: .blue, darkColor: .brown))
         UltraCoreSettings.update(sid: UserDefaults.standard.string(forKey: "K_SID") ?? "") { [weak self] error in
             guard let `self` = self else { return }
             DispatchQueue.main.async {
@@ -182,4 +185,28 @@ struct Contact: IContactInfo {
     var phone: String
     var lastname: String
     var firstname: String
+}
+
+struct MessageCellConfigImpl: MessageCellConfig {
+    var textLabelConfig: LabelConfig = LabelConfigImpl()
+    
+    var deliveryLabelConfig: LabelConfig = LabelConfigImpl()
+    
+    var backgroundColor: TwiceColor = TwiceColorImpl.init(defaultColor: .blue, darkColor: .brown)
+    
+    var sildirBackgroundColor: TwiceColor = TwiceColorImpl.init(defaultColor: .blue, darkColor: .brown)
+}
+
+struct TwiceColorImpl: TwiceColor {
+    var defaultColor: UIColor
+    
+    var darkColor: UIColor
+}
+
+struct LabelConfigImpl: LabelConfig {
+    var font: UIFont = .systemFont(ofSize: 12)
+    
+    var defaultColor: UIColor = .red
+    
+    var darkColor: UIColor = .purple
 }

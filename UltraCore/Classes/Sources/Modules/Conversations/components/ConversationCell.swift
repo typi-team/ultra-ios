@@ -17,7 +17,9 @@ class ConversationCell: BaseCell {
         
     })
     
-    fileprivate let titleView: RegularCallout = .init()
+    fileprivate let titleView: RegularCallout = .init({
+        $0.numberOfLines = 0
+    })
     fileprivate let descriptionView: RegularFootnote = .init({
         $0.numberOfLines = 1
     })
