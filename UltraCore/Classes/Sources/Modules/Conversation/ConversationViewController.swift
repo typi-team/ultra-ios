@@ -115,6 +115,10 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                     UIPasteboard.general.string = message.text
                 }
             }
+            
+            cell.cellActionCallback = {[weak self] () in
+                self?.view.endEditing(true)
+            }
             cell.actionCallback = {[weak self] message in
                 guard let `self` = self,
                       let content = message.content else { return }

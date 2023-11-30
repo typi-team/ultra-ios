@@ -28,7 +28,7 @@
 "conversation.yesterday" = "Вчера";
 "conversation.money" = "Деньги";
 "conversation.online" = "онлайн";
-"conversation.unknowNumber" = "Неизвестный номер";
+"conversation.unknowNumber" = "";
 "conversation.prints" = "печатает";
 "conversation.moneyTransfer" = "Переводы";
 "conversation.insertMoney" = "";

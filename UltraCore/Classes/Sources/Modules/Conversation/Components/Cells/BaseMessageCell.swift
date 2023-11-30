@@ -23,7 +23,10 @@ enum MessageMenuAction {
 }
 
 class BaseMessageCell: BaseCell {
+    fileprivate lazy var cellAction = UITapGestureRecognizer.init(target: self, action: #selector(self.handleCellPress(_:)))
+    
     var message: Message?
+    var cellActionCallback: (() -> Void)?
     var actionCallback: ((Message) -> Void)?
     var longTapCallback:((MessageMenuAction) -> Void)?
     lazy var disposeBag: DisposeBag = .init()
@@ -56,6 +59,8 @@ class BaseMessageCell: BaseCell {
         super.additioanSetup()
         
         self.selectionStyle = .gray
+        
+        self.contentView.addGestureRecognizer(cellAction)
         
         if #available(iOS 13.0, *) {
             self.container.addInteraction(UIContextMenuInteraction.init(delegate: self))
@@ -183,6 +188,10 @@ extension BaseMessageCell {
             return
         }
         self.actionCallback?(message)
+     }
+    
+    @objc func handleCellPress(_ sender: UILongPressGestureRecognizer) {
+        self.cellActionCallback?()
      }
     
     override func setEditing(_ editing: Bool, animated: Bool) {
