@@ -95,7 +95,7 @@ class BaseMessageCell: BaseCell {
         }
 
         self.deliveryDateLabel.snp.makeConstraints { make in
-//            make.width.equalTo(40)
+            make.width.greaterThanOrEqualTo(34)
             make.bottom.equalTo(textView.snp.bottom)
             make.right.equalToSuperview().offset(-(kLowPadding + 1))
             make.left.equalTo(textView.snp.right).offset(kMediumPadding - 5)

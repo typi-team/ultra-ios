@@ -29,9 +29,18 @@ class BaseCell: UITableViewCell {
         self.setupView()
         self.setupConstraints()
     }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        self.setupStyle()
+    }
 }
 
 extension UITableViewCell {
+    
+    @objc func setupStyle() {
+    }
+    
     @objc func additioanSetup() {
     }
     @objc func setupView() {
