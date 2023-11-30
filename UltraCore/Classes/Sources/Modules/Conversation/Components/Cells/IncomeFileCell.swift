@@ -11,7 +11,6 @@ class IncomeFileCell : BaseMessageCell {
     
     let mediaRepository: MediaRepository = AppSettingsImpl.shared.mediaRepository
     
-    fileprivate let moneyHeadlineLabel: RegularCallout = .init({ $0.text = ConversationStrings.money.localized })
     fileprivate let moneyCaptionlabel: RegularFootnote = .init({ $0.text = MessageStrings.fileWithoutSmile.localized })
     fileprivate let moneyAvatarView: UIImageView = .init({
         $0.image = UIImage.named("contact_file_icon")
@@ -22,7 +21,7 @@ class IncomeFileCell : BaseMessageCell {
         super.setupView()
         self.container.addSubview(moneyAvatarView)
 
-        self.container.addSubview(moneyHeadlineLabel)
+        self.container.addSubview(textView)
         self.container.addSubview(moneyCaptionlabel)
     }
 
@@ -35,19 +34,19 @@ class IncomeFileCell : BaseMessageCell {
             make.right.lessThanOrEqualToSuperview().offset(-120)
         }
         
-        self.moneyHeadlineLabel.snp.makeConstraints { make in
+        self.textView.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(kMediumPadding)
             make.left.equalToSuperview().offset(kMediumPadding)
         }
         
         self.moneyCaptionlabel.snp.makeConstraints { make in
-            make.top.equalTo(moneyHeadlineLabel.snp.bottom).offset(1)
+            make.top.equalTo(textView.snp.bottom).offset(1)
             make.left.equalToSuperview().offset(kMediumPadding)
             make.bottom.equalTo(moneyAvatarView.snp.bottom)
         }
 
         self.moneyAvatarView.snp.makeConstraints { make in
-            make.left.equalTo(moneyHeadlineLabel.snp.right).offset(kLowPadding)
+            make.left.equalTo(textView.snp.right).offset(kLowPadding)
             make.top.equalToSuperview().offset(kMediumPadding)
             make.right.equalToSuperview().offset(-kMediumPadding)
             make.bottom.equalToSuperview().offset(-kMediumPadding)
@@ -63,6 +62,6 @@ class IncomeFileCell : BaseMessageCell {
 
     override func setup(message: Message) {
         super.setup(message: message)
-        self.moneyHeadlineLabel.text = message.file.fileName
+        self.textView.text = message.file.fileName
     }
 }

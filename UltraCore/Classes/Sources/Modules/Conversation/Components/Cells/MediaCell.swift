@@ -28,7 +28,6 @@ class MediaCell: BaseMessageCell {
     let mediaRepository: MediaRepository = AppSettingsImpl.shared.mediaRepository
 
     lazy var mediaView: UIImageView = .init {
-        $0.image = .named("ff_logo_text")
         $0.contentMode = .scaleAspectFill
     }
 

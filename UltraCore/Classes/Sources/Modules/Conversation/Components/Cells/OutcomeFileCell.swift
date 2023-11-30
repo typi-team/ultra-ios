@@ -15,14 +15,13 @@ class OutcomeFileCell : BaseMessageCell {
         $0.contentMode = .center
     })
     
-    fileprivate let moneyHeadlineLabel: RegularCallout = .init({ $0.text = ConversationStrings.money.localized })
     fileprivate let moneyCaptionlabel: RegularFootnote = .init({ $0.text = MessageStrings.fileWithoutSmile.localized })
     
     override func setupView() {
         super.setupView()
 
         self.container.addSubview(moneyAvatarView)
-        self.container.addSubview(moneyHeadlineLabel)
+        self.container.addSubview(textView)
         self.container.addSubview(moneyCaptionlabel)
         self.container.addSubview(statusView)
         self.container.backgroundColor = .gray200
@@ -44,7 +43,7 @@ class OutcomeFileCell : BaseMessageCell {
             make.width.equalTo(16)
         }
         
-        self.moneyHeadlineLabel.snp.makeConstraints { make in
+        self.textView.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(kMediumPadding)
             make.left.equalTo(moneyAvatarView.snp.right).offset(kMediumPadding)
             make.right.equalToSuperview().offset(kMediumPadding).offset(-kMediumPadding)
@@ -52,7 +51,7 @@ class OutcomeFileCell : BaseMessageCell {
         
         self.moneyCaptionlabel.snp.makeConstraints { make in
             make.bottom.equalTo(moneyAvatarView.snp.bottom)
-            make.top.equalTo(moneyHeadlineLabel.snp.bottom).offset(1)
+            make.top.equalTo(textView.snp.bottom).offset(1)
             make.left.equalTo(moneyAvatarView.snp.right).offset(kMediumPadding)
         }
 
@@ -71,7 +70,7 @@ class OutcomeFileCell : BaseMessageCell {
     
     override func setup(message: Message) {
         super.setup(message: message)
-        self.moneyHeadlineLabel.text = message.file.fileName
+        self.textView.text = message.file.fileName
         self.statusView.image = .named(message.statusImageName)
     }
 }

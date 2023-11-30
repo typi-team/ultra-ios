@@ -9,6 +9,8 @@ import UIKit
 
 class ConversationCell: BaseCell {
     
+    fileprivate lazy var style: ConversationCellConfig = UltraCoreStyle.conversationCell
+    
     fileprivate let avatarView: UIImageView = .init({
         $0.borderWidth = 2
         $0.cornerRadius = 20
@@ -17,7 +19,9 @@ class ConversationCell: BaseCell {
         
     })
     
-    fileprivate let titleView: RegularCallout = .init()
+    fileprivate let titleView: RegularCallout = .init({
+        $0.numberOfLines = 0
+    })
     fileprivate let descriptionView: RegularFootnote = .init({
         $0.numberOfLines = 1
     })
@@ -55,11 +59,14 @@ class ConversationCell: BaseCell {
         
         self.titleView.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(10)
+            make.height.equalTo(kHeadlinePadding)
             make.left.equalTo(self.avatarView.snp.right).offset(kMediumPadding)
         }
 
         self.lastSeenView.snp.makeConstraints { make in
+            
             make.top.equalTo(self.avatarView.snp.top)
+            make.width.greaterThanOrEqualTo(kHeadlinePadding)
             make.left.equalTo(self.titleView.snp.right).offset(kMediumPadding)
             make.right.equalToSuperview().offset(-kMediumPadding)
         }
@@ -111,5 +118,14 @@ class ConversationCell: BaseCell {
         super.prepareForReuse()
         self.avatarView.image = nil
         self.unreadView.text = ""
+    }
+    
+    override func setupStyle() {
+        super.setupStyle()
+        self.descriptionView.textColor = style.descriptionConfig.color
+        self.descriptionView.font = style.descriptionConfig.font
+        self.backgroundColor = style.backgroundColor.color
+        self.titleView.textColor = style.titleConfig.color
+        self.titleView.font = style.titleConfig.font
     }
 }

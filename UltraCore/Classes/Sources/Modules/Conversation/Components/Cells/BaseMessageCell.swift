@@ -23,7 +23,10 @@ enum MessageMenuAction {
 }
 
 class BaseMessageCell: BaseCell {
+    fileprivate lazy var cellAction = UITapGestureRecognizer.init(target: self, action: #selector(self.handleCellPress(_:)))
+    
     var message: Message?
+    var cellActionCallback: (() -> Void)?
     var actionCallback: ((Message) -> Void)?
     var longTapCallback:((MessageMenuAction) -> Void)?
     lazy var disposeBag: DisposeBag = .init()
@@ -56,6 +59,8 @@ class BaseMessageCell: BaseCell {
         super.additioanSetup()
         
         self.selectionStyle = .gray
+        
+        self.contentView.addGestureRecognizer(cellAction)
         
         if #available(iOS 13.0, *) {
             self.container.addInteraction(UIContextMenuInteraction.init(delegate: self))
@@ -90,7 +95,7 @@ class BaseMessageCell: BaseCell {
         }
 
         self.deliveryDateLabel.snp.makeConstraints { make in
-            make.width.equalTo(40)
+            make.width.greaterThanOrEqualTo(34)
             make.bottom.equalTo(textView.snp.bottom)
             make.right.equalToSuperview().offset(-(kLowPadding + 1))
             make.left.equalTo(textView.snp.right).offset(kMediumPadding - 5)
@@ -109,8 +114,19 @@ class BaseMessageCell: BaseCell {
         if let message = message {
             if message.isIncome {
                 self.container.backgroundColor = UltraCoreStyle.incomeMessageCell.backgroundColor.color
+                self.deliveryDateLabel.font = UltraCoreStyle.incomeMessageCell.deliveryLabelConfig.font
+                self.deliveryDateLabel.textColor = UltraCoreStyle.incomeMessageCell.deliveryLabelConfig.color
+                
+                self.textView.font = UltraCoreStyle.incomeMessageCell.textLabelConfig.font
+                self.textView.textColor = UltraCoreStyle.incomeMessageCell.textLabelConfig.color
             } else {
                 self.container.backgroundColor = UltraCoreStyle.outcomeMessageCell.backgroundColor.color
+                
+                self.deliveryDateLabel.font = UltraCoreStyle.outcomeMessageCell.deliveryLabelConfig.font
+                self.deliveryDateLabel.textColor = UltraCoreStyle.outcomeMessageCell.deliveryLabelConfig.color
+                
+                self.textView.font = UltraCoreStyle.outcomeMessageCell.textLabelConfig.font
+                self.textView.textColor = UltraCoreStyle.outcomeMessageCell.textLabelConfig.color
             }
         } else {
             self.container.backgroundColor = UltraCoreStyle.incomeMessageCell.backgroundColor.color
@@ -172,6 +188,10 @@ extension BaseMessageCell {
             return
         }
         self.actionCallback?(message)
+     }
+    
+    @objc func handleCellPress(_ sender: UILongPressGestureRecognizer) {
+        self.cellActionCallback?()
      }
     
     override func setEditing(_ editing: Bool, animated: Bool) {
