@@ -10,6 +10,7 @@ import UIKit
 public protocol UltraCoreFutureDelegate: AnyObject {
     func availableToSendMoney() -> Bool
     func localize(for key: String) -> String?
+    func availableToReport(message: Any) -> Bool
 }
 
 public protocol UltraCoreSettingsDelegate: AnyObject {

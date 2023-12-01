@@ -70,7 +70,7 @@ open class AppSettingsImpl: AppSettings  {
     lazy var updateRepository: UpdateRepository = UpdateRepositoryImpl.init(appStore: appStore,
                                                                             messageService: messageDBService,
                                                                             contactService: contactDBService,
-                                                                            update: updateService,
+                                                                            updateClient: updateService,
                                                                             conversationService: conversationDBService,
                                                                             userByIDInteractor: ContactByUserIdInteractor.init(delegate: UltraCoreSettings.delegate,
                                                                                                                                contactsService: contactsService),

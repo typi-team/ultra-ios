@@ -24,6 +24,7 @@ class BaseViewController<T>: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         self.setupViews()
+        self.setupStyle()
         self.setupConstraints()
         self.setupInitialData()
         if handleKeyboardTransmission { self.registerKeyboardNotification() }
@@ -43,7 +44,7 @@ class BaseViewController<T>: UIViewController {
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
-        self.view.backgroundColor = UltraCoreStyle.controllerBackground.color
+        self.setupStyle()
     }
 }
 
@@ -97,6 +98,11 @@ extension UIViewController {
     @objc func debugInitialData() {
         
     }
+    
+    @objc func setupStyle() {
+        self.view.backgroundColor = UltraCoreStyle.controllerBackground.color
+    }
+    
     @objc func setupViews() {
         self.view.backgroundColor = UltraCoreStyle.controllerBackground.color
         

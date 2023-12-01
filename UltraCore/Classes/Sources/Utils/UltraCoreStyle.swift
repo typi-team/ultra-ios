@@ -14,6 +14,30 @@ public protocol TwiceColor {
     var color: UIColor { get }
 }
 
+public protocol TwiceImage {
+    var `default`: UIImage { get set }
+    var dark: UIImage { get set }
+
+    var image: UIImage { get }
+}
+
+public extension TwiceImage {
+    var image: UIImage {
+        if #available(iOS 12.0, *) {
+            switch UIScreen.main.traitCollection.userInterfaceStyle {
+            case .dark:
+                return dark
+            case .light:
+                return self.default
+            default:
+                return self.default
+            }
+        } else {
+            return self.default
+        }
+    }
+}
+
 public protocol LabelConfig: TwiceColor {
     var font: UIFont { get set }
 }
@@ -87,6 +111,11 @@ private class TwiceColorImpl: TwiceColor {
     }
 }
 
+private struct TwiceImageImpl: TwiceImage {
+    var dark: UIImage
+    var `default`: UIImage
+}
+
 public class UltraCoreStyle {
 //    MARK: TextButton
     public static var textButtonConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularBody)
@@ -97,6 +126,8 @@ public class UltraCoreStyle {
     public static var regularCalloutConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularCallout)
     public static var regularFootnoteConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
     public static var regularCaption3Config: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularCaption3)
+//    MARK: Conversation controller style
+    public static var conversationBackgroundImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_background") ?? UIImage(), default: .named("conversation_background") ?? UIImage())
 //    MARK: UIViewContoller
     public static var controllerBackground: TwiceColor = TwiceColorImpl(defaultColor: .gray100, darkColor: .gray700)
     public static var divederColor: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)

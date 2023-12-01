@@ -32,6 +32,7 @@ class OutgoingMessageCell: BaseMessageCell {
 
         self.statusView.snp.makeConstraints { make in
             make.left.equalTo(self.textView.snp.right).offset(kLowPadding / 2)
+            make.width.equalTo(15).priority(.high)
         }
 
         self.deliveryDateLabel.snp.makeConstraints { make in

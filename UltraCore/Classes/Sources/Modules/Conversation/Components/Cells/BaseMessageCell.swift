@@ -152,7 +152,7 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
             //                    self.longTapCallback?(.reply(message))
             //                })
             //            }
-            if self.message?.isIncome ?? false {
+            if let message = self.message, message.isIncome, (UltraCoreSettings.futureDelegate?.availableToReport(message: message) ?? true) {
                 action.append(UIAction(title: MessageStrings.report.localized, image: .named("message.cell.report")) { [weak self] _ in
                     guard let `self` = self, let message = self.message else { return }
                     self.longTapCallback?(.report(message))
