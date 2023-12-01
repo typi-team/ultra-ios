@@ -33,8 +33,10 @@ class ContactByUserIdInteractor: UseCase<String, Contact> {
                         let photo = userByContact.contact.hasPhoto ? userByContact.contact.photo : userByContact.user.photo
                         let lastname = userByContact.hasContact ? userByContact.contact.lastname : userByContact.user.lastname
                         let firstname = userByContact.hasContact ? userByContact.contact.firstname : userByContact.user.firstname
+                        let phone = userByContact.hasContact ? userByContact.contact.phone : userByContact.user.phone
 
                         observer(.success(.with({ contact in
+                            contact.phone = phone
                             contact.photo = photo
                             contact.userID = params
                             contact.lastname = lastname
