@@ -132,12 +132,16 @@ class ViewController: UITabBarController {
 }
 
 extension ViewController: UltraCoreFutureDelegate {
+    func availableToReport(message: Any) -> Bool {
+        return Date().hashValue%2 == 0
+    }
+    
     func localize(for key: String) -> String? {
         nil
     }
     
     func availableToSendMoney() -> Bool {
-        return true
+        return Date().hashValue%2 == 0
     }
 }
 
