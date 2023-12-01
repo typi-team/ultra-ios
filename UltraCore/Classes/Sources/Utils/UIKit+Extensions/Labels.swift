@@ -27,10 +27,13 @@ class BaseLabel: UILabel {
 }
 
 class HeadlineBody: BaseLabel {
+
     override func setupView() {
         super.setupView()
-        self.font = UltraCoreStyle.regularFootnoteConfig.font
+        self.font = UltraCoreStyle.headlineConfig.font
+        self.textColor = UltraCoreStyle.headlineConfig.color
     }
+    
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         self.textColor = UltraCoreStyle.headlineConfig.color

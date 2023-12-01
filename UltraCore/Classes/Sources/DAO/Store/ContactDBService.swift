@@ -65,6 +65,10 @@ class ContactDBService {
             do {
                 let realm = Realm.myRealm()
                 try realm.write {
+                    if let contactInfo = UltraCoreSettings.delegate?.info(from: contact.phone) {
+                        contact.firstName = contactInfo.firstname
+                        contact.lastName = contactInfo.lastname
+                    }
                     realm.add(contact, update: .all)
                 }
                 completable(.success(()))
