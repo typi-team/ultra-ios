@@ -63,10 +63,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.registerCell(type: OutcomeLocationCell.self)
         tableView.registerCell(type: OutgoingMessageCell.self)
         tableView.contentInset = .zero
-        tableView.backgroundView = UIImageView({
-            $0.contentMode = .scaleAspectFill
-            $0.image = .named("conversation_background")
-        })
     }
     
     fileprivate lazy var messageHeadline: SubHeadline = .init({
@@ -165,7 +161,13 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.navigationItem.leftItemsSupplementBackButton = true
         self.navigationItem.leftBarButtonItem = .init(customView: headline)
     }
-    
+    override func setupStyle() {
+        super.setupStyle()
+        self.tableView.backgroundView = UIImageView({
+            $0.contentMode = .scaleAspectFill
+            $0.image = UltraCoreStyle.conversationBackgroundImage?.image
+        })
+    }
     override func setupConstraints() {
         super.setupConstraints()
         self.navigationDivider.snp.makeConstraints { make in
