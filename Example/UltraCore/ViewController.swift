@@ -185,8 +185,7 @@ struct ServerConfig: ServerConfigurationProtocol {
 }
 
 struct Contact: IContactInfo {
-    var userID: String
-    var phone: String
+    var identifier: String
     var lastname: String
     var firstname: String
 }

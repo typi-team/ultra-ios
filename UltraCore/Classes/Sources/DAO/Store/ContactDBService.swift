@@ -99,7 +99,7 @@ class ContactDBService {
         try realm.write {
             PP.info(realm.objects(DBContact.self).map{"\($0.phone) \($0.firstName)"}.joined(separator: "\n"))
             realm.objects(DBContact.self).forEach { storedContact in
-                if let contact = contacts.first(where: { $0.phone == storedContact.phone }) {
+                if let contact = contacts.first(where: { $0.identifier == storedContact.phone }) {
                     storedContact.firstName = contact.firstname
                     storedContact.lastName = contact.lastname
                     realm.add(storedContact, update: .all)
