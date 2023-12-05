@@ -15,7 +15,7 @@ final class ContactsBookPresenter: BasePresenter {
     
     // MARK: - Public properties -
 
-    lazy var contacts: BehaviorSubject<[Contact]> = .init(value: [])
+    lazy var contacts: BehaviorSubject<[ContactDisplayable]> = .init(value: [])
 
     // MARK: - Private properties -
     
@@ -88,25 +88,11 @@ extension ContactsBookPresenter: ContactsBookPresenterInterface {
             })
             .do(onSuccess: {[weak self] contacts in
                 guard let `self` = self else { return }
-                self.contacts.on(.next(contacts))
+                self.contacts.on(.next(contacts.map({ContactDisplayableImpl(contact: $0)})))
             })
-            .asObservable()
-            .flatMap({ contacts -> Observable<[Contact]> in
-                Observable.from(contacts)
-                    .flatMap({ [weak self] contact -> Single in
-                        guard let `self` = self else { throw NSError.selfIsNill }
-                        return self.contactImageDownloadInteractor.executeSingle(params: contact)
-                    })
-                    .map({ contacts })
-            })
-            .do(onNext: {[weak self] contacts in
-                guard let `self` = self else { return }
-                self.contacts.on(.next(contacts))
-            })
-                
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
-            .subscribe(onNext: { contacts in PP.info("Contacts \(contacts.count)pcs saved on db") })
+            .subscribe(onSuccess: { contacts in PP.info("Contacts \(contacts.count)pcs saved on db") })
             .disposed(by: self.disposeBag)
     }
 }

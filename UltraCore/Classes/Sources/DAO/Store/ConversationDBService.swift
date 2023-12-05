@@ -26,14 +26,14 @@ class ConversationDBService {
                     let contact = realm.object(ofType: DBContact.self, forPrimaryKey: peerID )
                     let existConversation = realm.object(ofType: DBConversation.self, forPrimaryKey: message.receiver.chatID)
                     if let conversation = existConversation {
-                        conversation.peer = contact
+                        conversation.contact = contact
                         conversation.lastSeen = message.meta.created
                         conversation.message = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm, user: self.userID)
                         realm.create(DBConversation.self, value: conversation, update: .all)
                     } else {
                         let conversation = realm.create(DBConversation.self,
                                                         value: DBConversation(message: message, user: self.userID))
-                        conversation.peer = contact
+                        conversation.contact = contact
                         realm.add(conversation)
                     }
                     
@@ -56,9 +56,9 @@ class ConversationDBService {
             let notificationKey = results.observe(keyPaths: []) { changes in
                 switch changes {
                 case let .initial(collection):
-                    observer.on(.next(Array(collection.map({DBConversation(value: $0)}))))
+                    observer.on(.next(collection.map({ConversationImpl(dbConversation: $0)})))
                 case let .update(collection, _, _, _):
-                    observer.on(.next(Array(collection.map({DBConversation(value: $0)}))))
+                    observer.on(.next(collection.map({ConversationImpl(dbConversation: $0)})))
                 case let .error(error):
                     observer.on(.error(error))
                 }
@@ -80,9 +80,8 @@ class ConversationDBService {
     func conversation(by id: String) -> Single<Conversation?> {
         return Single.deferred {
             let realm = Realm.myRealm()
-            let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: id)
-            if let conversation = conversation {
-                return Single.just(conversation.detached())
+            if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: id) {
+                return Single.just(conversation.toConversation())
             } else {
                 return Single.just(nil)
             }

@@ -34,4 +34,41 @@ class ConversationImpl: Conversation {
         self.lastMessage = contact.phone
         self.idintification = idintification
     }
+    
+    init(dbConversation: DBConversation) {
+        self.title = dbConversation.contact?.toInterface().displaName ?? ""
+        self.lastMessage = dbConversation.message?.toProto().content?.description ?? dbConversation.message?.text
+        
+        self.peer = dbConversation.contact?.toInterface()
+        self.idintification = dbConversation.idintification
+        self.timestamp = dbConversation.lastSeen.date
+        
+    }
+}
+
+extension Message.OneOf_Content {
+    var description: String {
+        switch self {
+        case .audio:
+            return MessageStrings.audio.localized
+        case .voice:
+            return MessageStrings.voice.localized
+        case .photo:
+            return MessageStrings.photo.localized
+        case .video:
+            return MessageStrings.video.localized
+        case .money:
+            return MessageStrings.money.localized
+        case .location:
+            return MessageStrings.location.localized
+        case .file:
+            return MessageStrings.file.localized
+        case .contact:
+            return MessageStrings.contact.localized
+        case .stock:
+            return MessageStrings.moneyTransfer.localized
+        case .coin:
+            return MessageStrings.moneyTransfer.localized
+        }
+    }
 }

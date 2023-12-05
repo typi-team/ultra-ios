@@ -14,16 +14,16 @@ class ContactDBService {
         self.userID = userID
     }
     
-    func contacts() -> Observable<[Contact]> {
+    func contacts() -> Observable<[ContactDisplayable]> {
         return Observable.create { observer in
             let realm = Realm.myRealm()
             let contacts = realm.objects(DBContact.self)
             let notificationKey = contacts.observe(keyPaths: []) { changes in
                 switch changes {
                 case let .initial(collection):
-                    observer.on(.next(collection.map({$0.toProto()})))
+                    observer.on(.next(collection.map({$0.toInterface()})))
                 case let .update(collection, _, _, _):
-                    observer.on(.next(collection.map({$0.toProto()})))
+                    observer.on(.next(collection.map({$0.toInterface()})))
                 case let .error(error):
                     observer.on(.error(error))
                 }
@@ -53,23 +53,47 @@ class ContactDBService {
         }
     }
     
-    func contact(id: String) -> DBContact? {
+    func contact(id: String) -> ContactDisplayable? {
         if let contact = Realm.myRealm().object(ofType: DBContact.self, forPrimaryKey: id) {
-            return DBContact(value: contact)
+            return DBContact(value: contact).toInterface()
         }
         return nil
     }
     
-    func save( contact: DBContact) -> Single<Void> {
+    func update(contact status: UserStatus) -> Single<ContactDisplayable> {
         return Single.create { completable in
             do {
                 let realm = Realm.myRealm()
                 try realm.write {
-                    if let contactInfo = UltraCoreSettings.delegate?.info(from: contact.phone) {
-                        contact.firstName = contactInfo.firstname
-                        contact.lastName = contactInfo.lastname
+                    if let contact = realm.object(ofType: DBContact.self, forPrimaryKey: status.userID) {
+                        contact.statusValue = status.status.rawValue
+                        contact.lastseen = status.lastSeen
+
+                        realm.add(contact, update: .all)
+                        completable(.success(contact.toInterface()))
+                    } else {
+                        completable(.failure(NSError.objectsIsNill))
+                    }
+                }
+            } catch {
+                completable(.failure(error))
+            }
+            return Disposables.create()
+        }
+    }
+    
+    func save(contact interface: ContactDisplayable) -> Single<Void> {
+        return Single.create { completable in
+            do {
+                let realm = Realm.myRealm()
+                try realm.write {
+                    let contact = DBContact(contact: interface)
+                    if let contactInfo = UltraCoreSettings.delegate?.info(from: interface.phone) {
+                        contact.firstname = contactInfo.firstname
+                        contact.lastname = contactInfo.lastname
                     }
                     realm.add(contact, update: .all)
+                    
                 }
                 completable(.success(()))
             } catch {
@@ -79,14 +103,17 @@ class ContactDBService {
         }
     }
     
-    func delete( contact: DBContact) -> Single<Void> {
+    func delete( contact: ContactDisplayable) -> Single<Void> {
         return Single.create { completable in
             do {
                 let realm = Realm.myRealm()
                 try realm.write {
-                    realm.delete(contact)
+                    if let existContact = realm.object(ofType: DBContact.self, forPrimaryKey: contact.userID) {
+                        realm.delete(existContact)
+                    }
+                    completable(.success(()))
                 }
-                completable(.success(()))
+                
             } catch {
                 completable(.failure(error))
             }
@@ -97,11 +124,10 @@ class ContactDBService {
     func update(contacts: [IContactInfo]) throws {
         let realm = Realm.myRealm()
         try realm.write {
-            PP.info(realm.objects(DBContact.self).map{"\($0.phone) \($0.firstName)"}.joined(separator: "\n"))
             realm.objects(DBContact.self).forEach { storedContact in
                 if let contact = contacts.first(where: { $0.identifier == storedContact.phone }) {
-                    storedContact.firstName = contact.firstname
-                    storedContact.lastName = contact.lastname
+                    storedContact.firstname = contact.firstname
+                    storedContact.lastname = contact.lastname
                     realm.add(storedContact, update: .all)
                 }
             }

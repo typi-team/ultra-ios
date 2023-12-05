@@ -13,10 +13,10 @@ import MobileCoreServices
 
 class MediaUtils {
     static func image(from contact: ContactDisplayable) -> UIImage? {
-        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+        guard let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first, let path = contact.imagePath else {
             return nil
         }
-        let fileURL = documentsDirectory.appendingPathComponent(contact.imagePath)
+        let fileURL = documentsDirectory.appendingPathComponent(path)
         if let data = try? Data(contentsOf: fileURL) {
             return UIImage(data: data)
         }

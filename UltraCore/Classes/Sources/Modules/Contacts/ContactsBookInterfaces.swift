@@ -24,5 +24,5 @@ protocol ContactsBookPresenterInterface: PresenterInterface {
     
     func initial()
     func openConversation(with contact: ContactDisplayable)
-    var contacts: BehaviorSubject<[Contact]> { get set }
+    var contacts: BehaviorSubject<[ContactDisplayable]> { get set }
 }

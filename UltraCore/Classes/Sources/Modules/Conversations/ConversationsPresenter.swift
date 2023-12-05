@@ -115,26 +115,20 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
     }
     
     func createChatBy(contact: IContact) {
-        
-        
         self.contactToCreateChatByPhoneInteractor
             .executeSingle(params: contact)
-            .flatMap({ contactByPhone -> Single<Conversation?> in
+            .flatMap({ contactByPhone -> Single<Conversation> in
                 self.contactByUserIdInteractor.executeSingle(params: contactByPhone.userID)
                     .flatMap({ contact in
-                        self.contactsRepository.save(contact: .init(from: contact))
-                    }).map({ _ -> DBContact? in
-                        self.contactsRepository.contact(id: contactByPhone.userID)
-                    })
-                    .map({ $0 == nil ? nil : ConversationImpl(contact: $0!, idintification: contactByPhone.chatID) })
+                        self.contactsRepository.save(contact: contact).map({contact})
+                    }).map({ ConversationImpl(contact: $0, idintification: contactByPhone.chatID) })
+                    
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
-            .subscribe(onSuccess: { conversation in
-                guard let conversation = conversation else {
-                    return
-                }
-                self.wireframe.navigateToConversation(with: conversation)
+            .subscribe(onSuccess: { [weak self] conversation in
+                
+                self?.wireframe.navigateToConversation(with: conversation)
             })
             .disposed(by: disposeBag)
     }

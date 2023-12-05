@@ -16,13 +16,13 @@ import RxDataSources
 
 struct ContactSection {
     var header: String
-    var items: [Contact]
+    var items: [ContactDisplayable]
 }
 
 extension ContactSection: SectionModelType {
-    typealias Item = Contact
+    typealias Item = ContactDisplayable
 
-    init(original: ContactSection, items: [Contact]) {
+    init(original: ContactSection, items: [ContactDisplayable]) {
         self = original
         self.items = items
     }
