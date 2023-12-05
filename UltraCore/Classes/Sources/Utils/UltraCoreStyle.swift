@@ -14,13 +14,51 @@ public protocol TwiceColor {
     var color: UIColor { get }
 }
 
+public protocol TwiceImage {
+    var `default`: UIImage { get set }
+    var dark: UIImage { get set }
+
+    var image: UIImage { get }
+}
+
+public extension TwiceImage {
+    var image: UIImage {
+        if #available(iOS 12.0, *) {
+            switch UIScreen.main.traitCollection.userInterfaceStyle {
+            case .dark:
+                return dark
+            case .light:
+                return self.default
+            default:
+                return self.default
+            }
+        } else {
+            return self.default
+        }
+    }
+}
+
 public protocol LabelConfig: TwiceColor {
     var font: UIFont { get set }
+}
+
+public protocol TextViewConfig: LabelConfig {
+    var tintColor: TwiceColor { get set }
+    var placeholder: String { get set }
+}
+
+public protocol ConversationCellConfig {
+    var titleConfig: LabelConfig { get set }
+    var deliveryConfig: LabelConfig { get set }
+    var backgroundColor: TwiceColor { get set }
+    var descriptionConfig: LabelConfig { get set }
 }
 
 public protocol MessageCellConfig {
     var backgroundColor: TwiceColor { get set }
     var sildirBackgroundColor: TwiceColor { get set }
+    var textLabelConfig: LabelConfig { get set }
+    var deliveryLabelConfig: LabelConfig { get set }
 }
 
 public extension TwiceColor {
@@ -41,30 +79,27 @@ public extension TwiceColor {
 }
 
 private class IncomeMessageCellConfigImpl: MessageCellConfig {
+    var textLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularBody)
+    var deliveryLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
     var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white, darkColor: .gray500)
     var sildirBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
 }
 
 private class OutcomeMessageCellConfigImpl: MessageCellConfig {
+    var textLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularBody)
+    var deliveryLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
     var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray900)
     var sildirBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
 }
 
 
-private class LabelConfigImpl: LabelConfig {
+private struct LabelConfigImpl: TextViewConfig {
     var darkColor: UIColor = .white
     var defaultColor: UIColor = .gray700
     var font: UIFont = .defaultRegularBody
-    
-    init(darkColor: UIColor ,
-         defaultColor: UIColor,
-         font: UIFont) {
-        self.font = font
-        self.darkColor = darkColor
-        self.defaultColor = defaultColor
-    }
+    var placeholder: String = "\(ConversationStrings.insertText.localized)..."
+    var tintColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
 }
-
 
 private class TwiceColorImpl: TwiceColor {
     var defaultColor: UIColor
@@ -74,6 +109,11 @@ private class TwiceColorImpl: TwiceColor {
         self.defaultColor = defaultColor
         self.darkColor = darkColor
     }
+}
+
+private struct TwiceImageImpl: TwiceImage {
+    var dark: UIImage
+    var `default`: UIImage
 }
 
 public class UltraCoreStyle {
@@ -86,9 +126,13 @@ public class UltraCoreStyle {
     public static var regularCalloutConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularCallout)
     public static var regularFootnoteConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
     public static var regularCaption3Config: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularCaption3)
+//    MARK: Conversation controller style
+    public static var conversationBackgroundImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_background") ?? UIImage(), default: .named("conversation_background") ?? UIImage())
 //    MARK: UIViewContoller
     public static var controllerBackground: TwiceColor = TwiceColorImpl(defaultColor: .gray100, darkColor: .gray700)
     public static var divederColor: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
+//    MARK: Conversation cell
+    public static var conversationCell: ConversationCellConfig = ConversationCellConfigImpl()
 //    MARK: Message cells
     public static var incomeMessageCell: MessageCellConfig = IncomeMessageCellConfigImpl()
     public static var outcomeMessageCell: MessageCellConfig = OutcomeMessageCellConfigImpl()
@@ -105,6 +149,7 @@ public class UltraCoreStyle {
 public protocol MessageInputBarConfig {
     var dividerColor: TwiceColor { get set }
     var background: TwiceColor { get set }
+    var textConfig: TextViewConfig { get set }
     var sendMessageViewTint: TwiceColor { get set }
     var sendMoneyViewTint: TwiceColor { get set }
     var recordViewTint: TwiceColor { get set }
@@ -112,6 +157,8 @@ public protocol MessageInputBarConfig {
 }
 
 private class MessageInputBarConfigImpl: MessageInputBarConfig {
+    var textConfig: TextViewConfig = LabelConfigImpl.init(darkColor: .white, defaultColor: .gray900, font: .defaultRegularSubHeadline,
+                                                          tintColor: TwiceColorImpl(defaultColor: .green500, darkColor: .white))
     var dividerColor: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
     var background: TwiceColor = TwiceColorImpl(defaultColor: .gray100, darkColor: .gray700)
     var sendMessageViewTint: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
@@ -188,3 +235,9 @@ private class CallPageStyleImpl: CallPageStyle {
     var closeImage: UIImage = .named("calling.close")!
 }
 
+private class ConversationCellConfigImpl: ConversationCellConfig {
+    var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white, darkColor: .red)
+    var titleConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularCallout)
+    var deliveryConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
+    var descriptionConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
+}

@@ -17,6 +17,8 @@ protocol StringLocalizable: CaseIterable {
 extension StringLocalizable {
     var descrition: String { "\(prefixOfTemplate).\(localizableValue)" }
 
-    var localized: String { NSLocalizedString("\(prefixOfTemplate).\(localizableValue)",
-                                              comment: "\(prefixOfTemplate).\(localizableValue)") }
+    var localized: String {
+        var key = "\(prefixOfTemplate).\(localizableValue)"
+        return UltraCoreSettings.futureDelegate?.localize(for: key) ?? NSLocalizedString(key, comment: key)
+    }
 }

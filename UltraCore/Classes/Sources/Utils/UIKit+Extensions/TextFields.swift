@@ -106,4 +106,6 @@ class MessageTextView: UITextView {
         self.tintColor = .green500
         self.font = .defaultRegularSubHeadline
     }
+    
+    
 }

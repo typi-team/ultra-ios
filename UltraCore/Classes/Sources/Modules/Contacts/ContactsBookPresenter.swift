@@ -110,4 +110,13 @@ extension ContactsBookPresenter: ContactsBookPresenterInterface {
             .disposed(by: self.disposeBag)
     }
 }
-extension Contact: IContact {}
+extension Contact: IContact {
+    var identifier: String {
+        get {
+            phone
+        }
+        set {
+            phone = newValue
+        }
+    }
+}

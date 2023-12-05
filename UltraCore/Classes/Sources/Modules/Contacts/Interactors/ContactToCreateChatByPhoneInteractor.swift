@@ -20,8 +20,8 @@ class ContactToCreateChatByPhoneInteractor: UseCase<IContact, CreateChatByPhoneR
 
             self.integrateService.createChatByPhone(.with({
                 $0.firstname = params.firstname
-                $0.phone = params.phone
-            }))
+                $0.phone = params.identifier
+            }), callOptions: .default())
             .response
             .whenComplete({ result in
                 switch result {
@@ -61,7 +61,7 @@ class ContactToConversationInteractor: UseCase<IContact, Conversation?> {
                         guard let `self` = self else { throw NSError.selfIsNill}
                         return self.contactRepository.save(contact: .init(from: contact))
                             .map({self.contactRepository.contact(id: contactToCreateChat.userID)})
-                            .map({ $0 != nil ? ConversationImpl(contact: $0!, idintification: contactToCreateChat.userID): nil })
+                            .map({ $0 != nil ? ConversationImpl(contact: $0!, idintification: contactToCreateChat.chatID): nil })
                     })
             })
     }

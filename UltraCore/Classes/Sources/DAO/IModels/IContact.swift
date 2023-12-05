@@ -8,13 +8,12 @@
 import Foundation
 
 public protocol IContact {
-    var phone: String { get set }
+    var identifier : String { get set }
     var firstname: String { get set }
 }
 
 public protocol IContactInfo: IContact {
     var lastname: String { get set }
-    var userID: String {get set }
 }
 
 public typealias UserIDCallback = (IContact) -> Void

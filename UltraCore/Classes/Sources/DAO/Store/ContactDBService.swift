@@ -65,6 +65,10 @@ class ContactDBService {
             do {
                 let realm = Realm.myRealm()
                 try realm.write {
+                    if let contactInfo = UltraCoreSettings.delegate?.info(from: contact.phone) {
+                        contact.firstName = contactInfo.firstname
+                        contact.lastName = contactInfo.lastname
+                    }
                     realm.add(contact, update: .all)
                 }
                 completable(.success(()))
@@ -95,7 +99,7 @@ class ContactDBService {
         try realm.write {
             PP.info(realm.objects(DBContact.self).map{"\($0.phone) \($0.firstName)"}.joined(separator: "\n"))
             realm.objects(DBContact.self).forEach { storedContact in
-                if let contact = contacts.first(where: { $0.userID == storedContact.userID }) {
+                if let contact = contacts.first(where: { $0.identifier == storedContact.phone }) {
                     storedContact.firstName = contact.firstname
                     storedContact.lastName = contact.lastname
                     realm.add(storedContact, update: .all)

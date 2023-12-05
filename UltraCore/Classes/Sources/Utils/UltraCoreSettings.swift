@@ -9,6 +9,8 @@ import UIKit
 
 public protocol UltraCoreFutureDelegate: AnyObject {
     func availableToSendMoney() -> Bool
+    func localize(for key: String) -> String?
+    func availableToReport(message: Any) -> Bool
 }
 
 public protocol UltraCoreSettingsDelegate: AnyObject {
@@ -77,7 +79,13 @@ public extension UltraCoreSettings {
 
      static func update(sid token: String, with callback: @escaping (Error?) -> Void) {
          AppSettingsImpl.shared.appStore.ssid = token
-         AppSettingsImpl.shared.update(ssid: token, callback: callback)
+         AppSettingsImpl.shared.update(ssid: token, callback: { error in
+             
+             if error == nil {
+                 AppSettingsImpl.shared.updateRepository.setupSubscription()
+             }
+             callback(error)
+         })
      }
 
      static func update(firebase token: String) {

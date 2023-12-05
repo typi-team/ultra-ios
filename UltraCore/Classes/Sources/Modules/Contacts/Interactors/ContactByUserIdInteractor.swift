@@ -26,31 +26,22 @@ class ContactByUserIdInteractor: UseCase<String, Contact> {
             let requestParam = ContactByUserIdRequest.with({ $0.userID = params })
             self.contactsService.getContactByUserId(requestParam, callOptions: .default())
                 .response
-                .whenComplete {[weak self] result in
-                    
+                .whenComplete { result in
                     switch result {
                     case let .success(userByContact):
-                        if userByContact.hasUser {
-                            let info = self?.delegate?.info(from: userByContact.user.phone)
-                            observer(.success(.with({
-                                $0.userID = userByContact.user.id
-                                $0.phone = userByContact.user.phone
-                                $0.photo = userByContact.user.photo
-                                $0.lastname = info?.lastname ?? userByContact.user.lastname
-                                $0.firstname = info?.firstname ?? userByContact.user.firstname
-                            })))
-                        } else if userByContact.hasContact {
-                            observer(.success(.with({
-                                let info = self?.delegate?.info(from: userByContact.contact.phone)
-                                $0.phone = userByContact.contact.phone
-                                $0.photo = userByContact.contact.photo
-                                $0.userID = userByContact.contact.userID
-                                $0.lastname = info?.lastname ?? userByContact.contact.lastname
-                                $0.firstname = info?.firstname ?? userByContact.contact.firstname
-                            })))
-                        } else {
-                            observer(.failure(NSError.objectsIsNill))
-                        }
+                        
+                        let photo = userByContact.contact.hasPhoto ? userByContact.contact.photo : userByContact.user.photo
+                        let lastname = userByContact.hasContact ? userByContact.contact.lastname : userByContact.user.lastname
+                        let firstname = userByContact.hasContact ? userByContact.contact.firstname : userByContact.user.firstname
+                        let phone = userByContact.hasContact ? userByContact.contact.phone : userByContact.user.phone
+
+                        observer(.success(.with({ contact in
+                            contact.phone = phone
+                            contact.photo = photo
+                            contact.userID = params
+                            contact.lastname = lastname
+                            contact.firstname = firstname
+                        })))
                     case let .failure(error):
                         observer(.failure(error))
                     }

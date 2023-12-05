@@ -8,6 +8,7 @@
 
 // MARK: Conversations page
 "conversations.chats" = "Chats";
+"conversations.start" = "Start";
 "conversations.emptyMessages" = "No messages";
 "conversations.startCommunicatingWithYourContactsNow" = "Start communicating with your contacts now";
 // MARK: Contacts page
@@ -27,7 +28,7 @@
 "conversation.yesterday" = "Yesterday";
 "conversation.money" = "Money";
 "conversation.online" = "online";
-"conversation.unknowNumber" = "Unknown number";
+"conversation.unknowNumber" = "";
 "conversation.prints" = "prints";
 "conversation.moneyTransfer" = "Transfer";
 "conversation.insertMoney" = "";

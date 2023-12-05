@@ -18,7 +18,7 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
     fileprivate lazy var permissionData = PermissionStateViewData(imageName: "conversations_empty",
                                                                   headline: ConversationsStrings.emptyMessages.localized,
                                                                   subline: ConversationsStrings.startCommunicatingWithYourContactsNow.localized.localized,
-                                                                  action: .init(title: "Начать", callback: {[weak self] in self?.presenter?.navigateToContacts()}))
+                                                                  action: .init(title: ConversationsStrings.start.localized, callback: {[weak self] in self?.presenter?.navigateToContacts()}))
     fileprivate lazy var backgroundView: PermissionStateView = .init(data: permissionData)
     
     fileprivate lazy var tableView: UITableView = {
@@ -95,9 +95,9 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
             .subscribe(onNext: {[weak self] conversation in
                 guard let `self` = self else { return }
                 let alert = UIAlertController.init(title: "Вы уверены?", message: "Пожалуйста, обратите внимание, что данные сообщения будут безвозвратно удалены, и восстановление не будет возможным", preferredStyle: .actionSheet)
-                alert.addAction(.init(title: "Удалить для всех", style: .destructive, handler: { _ in
-                    self.presenter?.delete(conversation, all: true)
-                }))
+//                alert.addAction(.init(title: "Удалить для всех", style: .destructive, handler: { _ in
+//                    self.presenter?.delete(conversation, all: true)
+//                }))
                 alert.addAction(.init(title: "Удалить у меня", style: .destructive, handler: { _ in
                     self.presenter?.delete(conversation, all: false)
                 }))

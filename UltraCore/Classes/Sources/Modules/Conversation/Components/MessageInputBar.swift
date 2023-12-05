@@ -42,7 +42,7 @@ class MessageInputBar: UIView {
     private lazy var messageTextView: UITextView = MessageTextView.init {[weak self] textView in
         textView.delegate = self
         textView.cornerRadius = kLowPadding
-        textView.placeholder = "\(ConversationStrings.insertText.localized)..."
+        textView.placeholder = self?.style.textConfig.placeholder ?? ""
     }
     
     private lazy var sendButton: UIButton = .init {[weak self] button in
@@ -87,6 +87,7 @@ class MessageInputBar: UIView {
     
     private lazy var blockLabel: LabelWithInsets = .init {
         $0.textAlignment = .center
+        $0.isUserInteractionEnabled = true
         $0.text = "Простите, но вы заблокировали этот чат. Если у вас есть вопросы или вам необходима помощь, пожалуйста, обратитесь к нашей службе поддержки."
     }
     
@@ -108,6 +109,8 @@ class MessageInputBar: UIView {
     
     private func setupStyle() {
         self.backgroundColor = style.background.color
+        self.messageTextView.font = style.textConfig.font
+        self.messageTextView.textColor = style.textConfig.color
         self.microButton.tintColor = style.recordViewTint.color
         self.divider.backgroundColor = style.dividerColor.color
         self.blockLabel.backgroundColor = style.background.color

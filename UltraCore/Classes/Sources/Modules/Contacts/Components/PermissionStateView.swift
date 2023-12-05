@@ -78,7 +78,7 @@ class PermissionStateView: UIView {
         
         if data.action != nil {
             self.button.snp.makeConstraints { make in
-                make.bottom.equalTo(safeAreaLayoutGuide.snp.bottom).offset(-kMediumPadding * 4)
+                make.bottom.equalTo(safeAreaLayoutGuide.snp.bottom).offset(-kMediumPadding * 6)
                 make.left.equalToSuperview().offset(kHeadlinePadding)
                 make.right.equalToSuperview().offset(-kHeadlinePadding)
                 make.height.equalTo(kButtonHeight)

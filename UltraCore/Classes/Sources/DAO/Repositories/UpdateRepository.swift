@@ -7,6 +7,7 @@
 
 import Foundation
 import RxSwift
+import GRPC
 
 struct UserTypingWithDate: Hashable {
     var chatId: String
@@ -53,20 +54,23 @@ class UpdateRepositoryImpl {
     fileprivate let appStore: AppSettingsStore
     fileprivate let contactService: ContactDBService
     fileprivate let messageService: MessageDBService
-    fileprivate let update: UpdatesServiceClientProtocol
+    fileprivate let updateClient: UpdatesServiceClientProtocol
     fileprivate let conversationService: ConversationDBService
     fileprivate let contactByIDInteractor: UseCase<String, Contact>
     fileprivate let deliveredMessageInteractor: UseCase<Message, MessagesDeliveredResponse>
     
     
+    fileprivate var updateListenStream: ServerStreamingCall<ListenRequest, Updates>?
+    
+    
     init(appStore: AppSettingsStore,
          messageService: MessageDBService,
          contactService: ContactDBService,
-         update: UpdatesServiceClientProtocol,
+         updateClient: UpdatesServiceClientProtocol,
          conversationService: ConversationDBService,
          userByIDInteractor: UseCase<String, Contact>,
          deliveredMessageInteractor: UseCase<Message, MessagesDeliveredResponse>) {
-        self.update = update
+        self.updateClient = updateClient
         self.appStore = appStore
         self.messageService = messageService
         self.contactService = contactService
@@ -87,7 +91,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
     func sendPoingByTimer() {
         Timer.scheduledTimer(withTimeInterval: 12, repeats: true) { [weak self] timer in
             guard let `self` = self else { return timer.invalidate() }
-            self.update.ping(PingRequest(), callOptions: .default())
+            self.updateClient.ping(PingRequest(), callOptions: .default())
                 .response
                 .whenComplete { result in
                     switch result {
@@ -103,7 +107,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
     
     func setupSubscription() {
         if appStore.lastState == 0 {
-            self.update
+            self.updateClient
                 .getInitialState(InitialStateRequest(), callOptions: .default())
                 .response
                 .whenComplete { [weak self] result in
@@ -142,7 +146,8 @@ private extension UpdateRepositoryImpl {
     
     func setupChangesSubscription(with state: UInt64) {
         let state: ListenRequest = .with { $0.localState = .with { $0.state = state } }
-        let call = self.update.listen(state, callOptions: .default()) { [weak self] response in
+        self.updateListenStream?.cancel(promise: nil)
+        self.updateListenStream = updateClient.listen(state, callOptions: .default()) { [weak self] response in
             guard let `self` = self else { return }
             self.appStore.store(last: Int64(response.lastState))
             response.updates.forEach { update in
@@ -154,9 +159,10 @@ private extension UpdateRepositoryImpl {
                 }
             }
         }
-        call.status.whenComplete { status in
+        updateListenStream?.status.whenComplete { status in
             print(status)
         }
+        
     }
     
     func handle(of presence: Update.OneOf_OfPresence) {
