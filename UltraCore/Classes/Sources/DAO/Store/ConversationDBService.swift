@@ -115,4 +115,34 @@ extension Message {
     func peerId(user id: String) -> String {
         return sender.userID == id ? receiver.userID : sender.userID
     }
+    
+    var isIncome: Bool { self.receiver.userID == AppSettingsImpl.shared.appStore.userID() }
+    
+    var message: String? {
+        content?.description ?? text
+    }
+    
+    var statusImageName: String {
+        if self.seqNumber == 0 {
+            return "conversation_status_loading"
+        } else if self.state.delivered == false && self.state.read == false {
+            return "conversation_status_sent"
+        } else if self.state.delivered == true && self.state.read == false {
+            return "conversation_status_delivered"
+        } else {
+            return "conversation_status_read"
+        }
+    }
+    
+    var stateViewWidth: Double {
+        if self.seqNumber == 0 {
+            return 12
+        } else if self.state.delivered == false && self.state.read == false {
+            return 10
+        } else if self.state.delivered == true && self.state.read == false {
+            return 15
+        } else {
+            return 15
+        }
+    }
 }

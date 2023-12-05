@@ -62,7 +62,7 @@ class ContactDisplayableImpl: ContactDisplayable {
         lastname = contact.lastname
         status = contact.status
         image = UIImage(data: contact.photo.preview)
-        imagePath = "https://ui-avatars.com/api/?name=\(firstname)+\(lastname)"
+        imagePath = nil
     }
     
 }

@@ -45,19 +45,6 @@ public extension UltraCoreSettings {
         try AppSettingsImpl.shared.contactDBService.update(contacts: contacts)
     }
     
-    static func allContactsIn(callback: @escaping ([IContactInfo]) -> Void) {
-        interactor
-            .executeSingle(params: ())
-            .subscribe(onSuccess: { response in
-                switch response {
-                case let .authorized(contacts: contacts):
-                    callback(contacts)
-                case .denied: break
-                }
-            })
-            .disposed(by: disposeBag)
-    }
-    
     static func printAllLocalizableStrings() {
         print("================= Localizable =======================")
         print(CallStrings.allCases.map({"\"\($0.descrition)\" = \"\($0.localized)\";"}).joined(separator: "\n"))
@@ -126,7 +113,7 @@ public extension UltraCoreSettings {
      }
     
     static func conversation(by contact: IContact, callback: @escaping (UIViewController?) -> Void){
-        AppSettingsImpl.shared.contactToConversationInteractor.executeSingle(params: contact)
+        _ = AppSettingsImpl.shared.contactToConversationInteractor.executeSingle(params: contact)
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { conversation in

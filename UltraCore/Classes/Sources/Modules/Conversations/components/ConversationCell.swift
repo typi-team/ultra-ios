@@ -19,8 +19,11 @@ class ConversationCell: BaseCell {
         
     })
     
+    fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
+    
     fileprivate let titleView: RegularCallout = .init({
         $0.numberOfLines = 0
+        $0.lineBreakMode = .byTruncatingTail
     })
     fileprivate let descriptionView: RegularFootnote = .init({
         $0.numberOfLines = 1
@@ -42,6 +45,7 @@ class ConversationCell: BaseCell {
         self.contentView.addSubview(self.avatarView)
         self.contentView.addSubview(self.titleView)
         self.contentView.addSubview(self.descriptionView)
+        self.contentView.addSubview(self.statusView)
         self.contentView.addSubview(self.lastSeenView)
         self.contentView.addSubview(self.unreadView)
         
@@ -61,13 +65,18 @@ class ConversationCell: BaseCell {
             make.top.equalToSuperview().offset(10)
             make.height.equalTo(kHeadlinePadding)
             make.left.equalTo(self.avatarView.snp.right).offset(kMediumPadding)
+            make.right.lessThanOrEqualTo(self.statusView.snp.left).offset(-kLowPadding).priority(.high)
         }
 
+        self.statusView.snp.makeConstraints { make in
+            make.width.equalTo(0)
+            make.centerY.equalTo(self.lastSeenView.snp.centerY)
+        }
+        
         self.lastSeenView.snp.makeConstraints { make in
-            
             make.top.equalTo(self.avatarView.snp.top)
             make.width.greaterThanOrEqualTo(kHeadlinePadding)
-            make.left.equalTo(self.titleView.snp.right).offset(kMediumPadding)
+            make.left.equalTo(self.statusView.snp.right).offset(kLowPadding)
             make.right.equalToSuperview().offset(-kMediumPadding)
         }
 
@@ -87,14 +96,25 @@ class ConversationCell: BaseCell {
     }
     
     func setup(conversation: Conversation ) {
-        self.titleView.text = conversation.title
-        self.descriptionView.text = conversation.lastMessage
+        self.titleView.text = conversation.title + conversation.title
+        self.descriptionView.text = conversation.lastMessage?.message
         self.unreadView.isHidden = conversation.unreadCount == 0
         self.unreadView.text = conversation.unreadCount.description
         self.lastSeenView.text = conversation.timestamp.formattedTimeForConversationCell()
         self.avatarView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
         self.setupTyping(conversation: conversation)
         self.setupAvatar(conversation: conversation)
+        
+        if let message = conversation.lastMessage, !message.isIncome {
+            self.statusView.image = .named(message.statusImageName)
+            self.statusView.snp.updateConstraints { make in
+                make.width.equalTo(message.stateViewWidth)
+            }
+        } else {
+            self.statusView.snp.updateConstraints { make in
+                make.width.equalTo(0)
+            }
+        }
     }
     
     private func setupAvatar(conversation: Conversation) {
@@ -108,7 +128,7 @@ class ConversationCell: BaseCell {
     private func setupTyping(conversation: Conversation) {
         let typingUsers = conversation.typingData.filter({$0.isTyping})
         if typingUsers.isEmpty {
-            self.descriptionView.text = conversation.lastMessage
+            self.descriptionView.text = conversation.lastMessage?.message
         } else {
             self.descriptionView.text = "печатает..."
         }

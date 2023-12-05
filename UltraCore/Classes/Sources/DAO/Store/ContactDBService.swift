@@ -89,8 +89,9 @@ class ContactDBService {
                 try realm.write {
                     let contact = DBContact(contact: interface)
                     if let contactInfo = UltraCoreSettings.delegate?.info(from: interface.phone) {
-                        contact.firstname = contactInfo.firstname
                         contact.lastname = contactInfo.lastname
+                        contact.firstname = contactInfo.firstname
+                        contact.imagePath = contactInfo.imagePath
                     }
                     realm.add(contact, update: .all)
                     
@@ -128,13 +129,10 @@ class ContactDBService {
                 if let contact = contacts.first(where: { $0.identifier == storedContact.phone }) {
                     storedContact.firstname = contact.firstname
                     storedContact.lastname = contact.lastname
+                    storedContact.imagePath = contact.imagePath
                     realm.add(storedContact, update: .all)
                 }
             }
         }
     }
-}
-
-extension Contact: IContactInfo {
-    
 }

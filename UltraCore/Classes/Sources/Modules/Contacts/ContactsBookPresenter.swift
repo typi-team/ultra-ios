@@ -81,11 +81,6 @@ extension ContactsBookPresenter: ContactsBookPresenterInterface {
                 return self.syncContact.executeSingle(params: request)
             })
             .map({ $0.contacts })
-            .do(onSuccess: { [weak self] response in
-                guard let `self` = self else { return }
-                self.contactsCallback(response)
-                try? UltraCoreSettings.update(contacts: response)
-            })
             .do(onSuccess: {[weak self] contacts in
                 guard let `self` = self else { return }
                 self.contacts.on(.next(contacts.map({ContactDisplayableImpl(contact: $0)})))

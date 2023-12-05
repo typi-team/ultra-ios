@@ -13,7 +13,7 @@ protocol Conversation: Any {
     var peer: ContactDisplayable? { get set }
     var timestamp: Date { get set }
     var unreadCount: Int { get set }
-    var lastMessage: String? { get set }
+    var lastMessage: Message? { get set }
     var idintification: String { get set }
     var typingData: [UserTypingWithDate] { get set }
 }
@@ -21,7 +21,7 @@ protocol Conversation: Any {
 class ConversationImpl: Conversation {
 
     var title: String = ""
-    var lastMessage: String?
+    var lastMessage: Message?
     var unreadCount: Int = 0
     var idintification: String
     var timestamp: Date = Date()
@@ -31,13 +31,13 @@ class ConversationImpl: Conversation {
     init(contact: ContactDisplayable, idintification: String ) {
         self.peer = contact
         self.title = contact.displaName
-        self.lastMessage = contact.phone
+        self.lastMessage = nil
         self.idintification = idintification
     }
     
     init(dbConversation: DBConversation) {
         self.title = dbConversation.contact?.toInterface().displaName ?? ""
-        self.lastMessage = dbConversation.message?.toProto().content?.description ?? dbConversation.message?.text
+        self.lastMessage = dbConversation.message?.toProto()
         
         self.peer = dbConversation.contact?.toInterface()
         self.idintification = dbConversation.idintification

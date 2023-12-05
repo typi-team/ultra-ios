@@ -73,7 +73,7 @@ class ProfileNavigationView: UIView {
     func setup(conversation: Conversation) {
         self.conversation = conversation
         self.headlineText.text = conversation.title
-        self.sublineText.text = conversation.lastMessage?.description
+        self.sublineText.text = conversation.lastMessage?.message
         if let contact = conversation.peer {
             self.avatarImageView.config(contact: contact)
         } else {

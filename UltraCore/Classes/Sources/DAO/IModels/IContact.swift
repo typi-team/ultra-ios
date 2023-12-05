@@ -14,6 +14,7 @@ public protocol IContact {
 
 public protocol IContactInfo: IContact {
     var lastname: String { get set }
+    var imagePath: String? {get set }
 }
 
 public typealias UserIDCallback = (IContact) -> Void

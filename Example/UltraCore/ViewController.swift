@@ -188,6 +188,7 @@ struct Contact: IContactInfo {
     var identifier: String
     var lastname: String
     var firstname: String
+    var imagePath: String?
 }
 
 struct MessageCellConfigImpl: MessageCellConfig {
