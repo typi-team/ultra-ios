@@ -178,7 +178,7 @@ class MessageInputBar: UIView {
         }
         
         self.microButton.snp.makeConstraints { make in
-            make.width.height.equalTo(36)
+            make.width.height.equalTo((UltraCoreSettings.futureDelegate?.availableToRecordVoice() ?? true) ? 36 : 0)
             make.bottom.equalToSuperview().offset(-kLowPadding)
             make.right.equalToSuperview().offset(-kLowPadding)
             make.left.equalTo(messageTextView.snp.right).offset(kLowPadding)

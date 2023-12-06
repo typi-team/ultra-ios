@@ -132,8 +132,12 @@ class ViewController: UITabBarController {
 }
 
 extension ViewController: UltraCoreFutureDelegate {
+    func availableToRecordVoice() -> Bool {
+        true
+    }
+    
     func availableToReport(message: Any) -> Bool {
-        return true
+        true
     }
     
     func localize(for key: String) -> String? {
