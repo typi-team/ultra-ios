@@ -49,6 +49,7 @@ class DBConversation: Object {
 }
 
 extension DBConversation: Conversation {
+        
     var peer: ContactDisplayable? {
         get { self.contact }
         set {
@@ -107,5 +108,13 @@ extension DBConversation: Conversation {
         set {
             self.message?.text = newValue ?? ""
         }
+    }
+    
+    var isLastMessageIncome: Bool? {
+        message?.isIncome
+    }
+    
+    var read: Bool? {
+        message?.state?.delivered == true && message?.state?.read == true
     }
 }

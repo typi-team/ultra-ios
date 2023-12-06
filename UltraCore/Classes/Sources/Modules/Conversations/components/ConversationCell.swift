@@ -16,7 +16,6 @@ class ConversationCell: BaseCell {
         $0.cornerRadius = 20
         $0.borderColor = .green500
         $0.contentMode = .scaleAspectFit
-        
     })
     
     fileprivate let titleView: RegularCallout = .init({
@@ -36,6 +35,7 @@ class ConversationCell: BaseCell {
         $0.backgroundColor = .green500
     })
     
+    fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
     
     override func setupView() {
         super.setupView()
@@ -44,7 +44,7 @@ class ConversationCell: BaseCell {
         self.contentView.addSubview(self.descriptionView)
         self.contentView.addSubview(self.lastSeenView)
         self.contentView.addSubview(self.unreadView)
-        
+        self.contentView.addSubview(self.statusView)
     }
     
     override func setupConstraints() {
@@ -84,6 +84,10 @@ class ConversationCell: BaseCell {
             make.left.equalTo(descriptionView.snp.right).offset(kMediumPadding)
             make.bottom.greaterThanOrEqualTo(self.descriptionView.snp.bottom)
         }
+        statusView.snp.makeConstraints { make in
+            make.centerY.equalTo(lastSeenView)
+            make.right.equalTo(lastSeenView.snp.left).offset(-8)
+        }
     }
     
     func setup(conversation: Conversation ) {
@@ -95,6 +99,7 @@ class ConversationCell: BaseCell {
         self.avatarView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
         self.setupTyping(conversation: conversation)
         self.setupAvatar(conversation: conversation)
+        self.statusView.isHidden = !(conversation.isLastMessageIncome == false && conversation.read == true)
     }
     
     private func setupAvatar(conversation: Conversation) {

@@ -16,6 +16,8 @@ protocol Conversation: Any {
     var lastMessage: String? { get set }
     var idintification: String { get set }
     var typingData: [UserTypingWithDate] { get set }
+    var isLastMessageIncome: Bool? { get }
+    var read: Bool? { get }
 }
 
 class ConversationImpl: Conversation {
@@ -27,6 +29,8 @@ class ConversationImpl: Conversation {
     var timestamp: Date = Date()
     var peer: ContactDisplayable?
     var typingData: [UserTypingWithDate] = []
+    var isLastMessageIncome: Bool?
+    var read: Bool?
     
     init(contact: ContactDisplayable, idintification: String ) {
         self.peer = contact
