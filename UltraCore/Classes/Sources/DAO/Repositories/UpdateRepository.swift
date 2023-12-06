@@ -126,8 +126,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
                         }
                         
                         self.handleUnread(from: response.chats)
-                        let state: UInt64 = self.appStore.lastState == 0 ? response.state : UInt64(self.appStore.lastState)
-                        self.setupChangesSubscription(with: state)
+                        self.setupChangesSubscription(with: response.state)
                     }
                 }
         } else {
@@ -149,9 +148,8 @@ private extension UpdateRepositoryImpl {
         self.updateListenStream?.cancel(promise: nil)
         self.updateListenStream = updateClient.listen(state, callOptions: .default()) { [weak self] response in
             guard let `self` = self else { return }
-            self.appStore.store(last: Int64(response.lastState))
+            self.appStore.store(last: max(Int64(response.lastState), self.appStore.lastState))
             response.updates.forEach { update in
-                PP.info(update.textFormatString())
                 if let ofUpdate = update.ofUpdate {
                     self.handle(of: ofUpdate)
                 } else if let presence = update.ofPresence {
