@@ -20,6 +20,8 @@ extension UIImageView {
             self.image = image
             self.borderWidth = 1
             self.image = MediaUtils.image(from: contact) ?? image
+        } else if let path = contact.imagePath?.url {
+            self.sd_setImage(with: path, placeholderImage: nil)
         } else {
             self.borderWidth = 2
             self.loadImage(by: nil, placeholder: .initial(text: contact.displaName.initails))

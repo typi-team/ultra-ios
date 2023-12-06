@@ -79,7 +79,7 @@ open class AppSettingsImpl: AppSettings  {
     
     //    MARK: App main interactors, must be create once
     
-    lazy var contactToConversationInteractor: ContactToConversationInteractor = ContactToConversationInteractor.init(contactRepository: contactRepository,
+    lazy var contactToConversationInteractor: ContactToConversationInteractor = ContactToConversationInteractor.init(contactDBService: contactDBService,
                                                                                                                      contactsService: contactsService,
                                                                                                                      integrateService: integrateService)
     

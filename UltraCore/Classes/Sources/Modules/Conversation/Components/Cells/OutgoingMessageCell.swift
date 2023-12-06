@@ -47,20 +47,9 @@ class OutgoingMessageCell: BaseMessageCell {
     override func setup(message: Message) {
         super.setup(message: message)
         self.statusView.image = .named(message.statusImageName)
-    }
-}
-
-
-extension Message {
-    var statusImageName: String {
-        if self.seqNumber == 0 {
-            return "conversation_status_loading"
-        } else if self.state.delivered == false && self.state.read == false {
-            return "conversation_status_sent"
-        } else if self.state.delivered == true && self.state.read == false {
-            return "conversation_status_delivered"
-        } else {
-            return "conversation_status_read"
+        
+        self.statusView.snp.updateConstraints { make in
+            make.width.equalTo(message.stateViewWidth).priority(.high)
         }
     }
 }

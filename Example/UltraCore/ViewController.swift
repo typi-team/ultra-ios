@@ -132,8 +132,12 @@ class ViewController: UITabBarController {
 }
 
 extension ViewController: UltraCoreFutureDelegate {
+    func availableToRecordVoice() -> Bool {
+        true
+    }
+    
     func availableToReport(message: Any) -> Bool {
-        return Date().hashValue%2 == 0
+        true
     }
     
     func localize(for key: String) -> String? {
@@ -141,7 +145,7 @@ extension ViewController: UltraCoreFutureDelegate {
     }
     
     func availableToSendMoney() -> Bool {
-        return Date().hashValue%2 == 0
+        return true
     }
 }
 
@@ -188,6 +192,7 @@ struct Contact: IContactInfo {
     var identifier: String
     var lastname: String
     var firstname: String
+    var imagePath: String?
 }
 
 struct MessageCellConfigImpl: MessageCellConfig {

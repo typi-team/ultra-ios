@@ -9,6 +9,7 @@ import UIKit
 
 public protocol UltraCoreFutureDelegate: AnyObject {
     func availableToSendMoney() -> Bool
+    func availableToRecordVoice() -> Bool
     func localize(for key: String) -> String?
     func availableToReport(message: Any) -> Bool
 }
@@ -43,19 +44,6 @@ public extension UltraCoreSettings {
     
     static func update(contacts: [IContactInfo]) throws {
         try AppSettingsImpl.shared.contactDBService.update(contacts: contacts)
-    }
-    
-    static func allContactsIn(callback: @escaping ([IContactInfo]) -> Void) {
-        interactor
-            .executeSingle(params: ())
-            .subscribe(onSuccess: { response in
-                switch response {
-                case let .authorized(contacts: contacts):
-                    callback(contacts)
-                case .denied: break
-                }
-            })
-            .disposed(by: disposeBag)
     }
     
     static func printAllLocalizableStrings() {
@@ -126,7 +114,7 @@ public extension UltraCoreSettings {
      }
     
     static func conversation(by contact: IContact, callback: @escaping (UIViewController?) -> Void){
-        AppSettingsImpl.shared.contactToConversationInteractor.executeSingle(params: contact)
+        _ = AppSettingsImpl.shared.contactToConversationInteractor.executeSingle(params: contact)
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { conversation in

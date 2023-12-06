@@ -56,7 +56,7 @@ class UpdateRepositoryImpl {
     fileprivate let messageService: MessageDBService
     fileprivate let updateClient: UpdatesServiceClientProtocol
     fileprivate let conversationService: ConversationDBService
-    fileprivate let contactByIDInteractor: UseCase<String, Contact>
+    fileprivate let contactByIDInteractor: UseCase<String, ContactDisplayable>
     fileprivate let deliveredMessageInteractor: UseCase<Message, MessagesDeliveredResponse>
     
     
@@ -68,7 +68,7 @@ class UpdateRepositoryImpl {
          contactService: ContactDBService,
          updateClient: UpdatesServiceClientProtocol,
          conversationService: ConversationDBService,
-         userByIDInteractor: UseCase<String, Contact>,
+         userByIDInteractor: UseCase<String, ContactDisplayable>,
          deliveredMessageInteractor: UseCase<Message, MessagesDeliveredResponse>) {
         self.updateClient = updateClient
         self.appStore = appStore
@@ -118,7 +118,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
                     case let .success(response):
                         
                         response.contacts.forEach { contact in
-                            self.update(contact: contact)
+                            self.update(contact: ContactDisplayableImpl(contact: contact))
                         }
                         
                         response.messages.forEach { message in
@@ -126,8 +126,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
                         }
                         
                         self.handleUnread(from: response.chats)
-                        let state: UInt64 = self.appStore.lastState == 0 ? response.state : UInt64(self.appStore.lastState)
-                        self.setupChangesSubscription(with: state)
+                        self.setupChangesSubscription(with: response.state)
                     }
                 }
         } else {
@@ -149,9 +148,8 @@ private extension UpdateRepositoryImpl {
         self.updateListenStream?.cancel(promise: nil)
         self.updateListenStream = updateClient.listen(state, callOptions: .default()) { [weak self] response in
             guard let `self` = self else { return }
-            self.appStore.store(last: Int64(response.lastState))
+            self.appStore.store(last: max(Int64(response.lastState), self.appStore.lastState))
             response.updates.forEach { update in
-                PP.info(update.textFormatString())
                 if let ofUpdate = update.ofUpdate {
                     self.handle(of: ofUpdate)
                 } else if let presence = update.ofPresence {
@@ -172,12 +170,8 @@ private extension UpdateRepositoryImpl {
             self.handle(user: typing)
         case let .audioRecording(pres):
             PP.debug(pres.textFormatString())
-        case let .userStatus(userStatus):
-            guard var contact = self.contactService.contact(id: userStatus.userID)?.toProto() else {
-                return
-            }
-            contact.status = userStatus
-            self.update(contact: contact)
+        case let .userStatus(status):
+            _ = self.contactService.update(contact: status).subscribe()
         case let .mediaUploading(pres):
             PP.debug(pres.textFormatString())
         case let .callReject(reject):
@@ -215,7 +209,7 @@ private extension UpdateRepositoryImpl {
     func handleIncoming(callRequest: CallRequest) {
         self.contactByIDInteractor
             .executeSingle(params: callRequest.sender)
-            .flatMap({ self.contactService.save(contact: DBContact(from: $0)) })
+            .flatMap({ self.contactService.save(contact: $0) })
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { () in
                 if var topController = UIApplication.shared.windows.filter({ $0.isKeyWindow }).first?.rootViewController {
@@ -234,7 +228,7 @@ private extension UpdateRepositoryImpl {
             self.update(message: message)
             self.handleNewMessageOnRead(message: message)
         case let .contact(contact):
-            self.update(contact: contact)
+            self.update(contact: ContactDisplayableImpl(contact: contact))
         case let .messagesDelivered(message):
             self.messagesDelivered(message: message)
         case let .messagesRead(message):
@@ -268,7 +262,7 @@ extension UpdateRepositoryImpl {
         if contact == nil {
             _ = self.contactByIDInteractor
                 .executeSingle(params: contactID)
-                .flatMap({ self.contactService.save(contact: DBContact(from: $0)) })
+                .flatMap({ self.contactService.save(contact: $0) })
                 .flatMap({ _ in self.conversationService.createIfNotExist(from: message) })
                 .flatMap({ self.messageService.update(message: message) })
                 .subscribe()
@@ -289,8 +283,8 @@ extension UpdateRepositoryImpl {
         }
     }
     
-    func update(contact: Contact) {
-        _ = self.contactService.save(contact: DBContact.init(from: contact))
+    func update(contact interface: ContactDisplayable) {
+        _ = self.contactService.save(contact: interface)
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .subscribe()
     }
