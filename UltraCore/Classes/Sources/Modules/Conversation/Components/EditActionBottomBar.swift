@@ -14,7 +14,7 @@ protocol EditActionBottomBarDelegate: AnyObject {
 
 class EditActionBottomBar: UIView {
     
-    private var style: MessageInputBarConfig { UltraCoreStyle.mesageInputBarConfig }
+    private var style: MessageInputBarConfig? { UltraCoreStyle.mesageInputBarConfig }
     
     weak var delegate:EditActionBottomBarDelegate?
     
@@ -77,7 +77,7 @@ class EditActionBottomBar: UIView {
 private extension EditActionBottomBar {
     
     func setupStyle() {
-        self.backgroundColor = style.background.color
+        self.backgroundColor = style?.background.color
     }
     
     func setupViews() {

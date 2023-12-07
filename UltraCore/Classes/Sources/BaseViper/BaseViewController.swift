@@ -100,12 +100,11 @@ extension UIViewController {
     }
     
     @objc func setupStyle() {
-        self.view.backgroundColor = UltraCoreStyle.controllerBackground.color
+        self.view.backgroundColor = UltraCoreStyle.controllerBackground?.color
     }
     
     @objc func setupViews() {
-        self.view.backgroundColor = UltraCoreStyle.controllerBackground.color
-        
+
         let yourBackImage = UIImage.named( "icon_back_button")
         self.navigationController?.navigationBar.backIndicatorImage = yourBackImage
         self.navigationController?.navigationBar.backIndicatorTransitionMaskImage = yourBackImage

@@ -129,22 +129,20 @@ public class UltraCoreStyle {
 //    MARK: Conversation controller style
     public static var conversationBackgroundImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_background") ?? UIImage(), default: .named("conversation_background") ?? UIImage())
 //    MARK: UIViewContoller
-    public static var controllerBackground: TwiceColor = TwiceColorImpl(defaultColor: .gray100, darkColor: .gray700)
-    public static var divederColor: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
+    public static var controllerBackground: TwiceColor? = TwiceColorImpl(defaultColor: .gray100, darkColor: .gray700)
+    public static var divederColor: TwiceColor? = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
 //    MARK: Conversation cell
-    public static var conversationCell: ConversationCellConfig = ConversationCellConfigImpl()
+    public static var conversationCell: ConversationCellConfig? = ConversationCellConfigImpl()
 //    MARK: Message cells
-    public static var incomeMessageCell: MessageCellConfig = IncomeMessageCellConfigImpl()
-    public static var outcomeMessageCell: MessageCellConfig = OutcomeMessageCellConfigImpl()
+    public static var incomeMessageCell: MessageCellConfig? = IncomeMessageCellConfigImpl()
+    public static var outcomeMessageCell: MessageCellConfig? = OutcomeMessageCellConfigImpl()
 //    MARK: MessageInputBar config
-    public static var mesageInputBarConfig: MessageInputBarConfig = MessageInputBarConfigImpl()
+    public static var mesageInputBarConfig: MessageInputBarConfig? = MessageInputBarConfigImpl()
 //    MARK: VoiceBarView config
-    public static var voiceInputBarConfig: VoiceInputBarConfig = VoiceInputBarConfigImpl()
+    public static var voiceInputBarConfig: VoiceInputBarConfig? = VoiceInputBarConfigImpl()
 //    MARK: Calling page config
     public static var callingConfig: CallPageStyle = CallPageStyleImpl()
 }
-
-
 
 public protocol MessageInputBarConfig {
     var dividerColor: TwiceColor { get set }
