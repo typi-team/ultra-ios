@@ -22,4 +22,13 @@ func setDefaultStyleSettings() {
     UltraCoreStyle.outcomeMessageCell = OutcomeMessageCellConfigImpl()
     UltraCoreStyle.mesageInputBarConfig = MessageInputBarConfigImpl()
     UltraCoreStyle.voiceInputBarConfig = VoiceInputBarConfigImpl()
+    
+//    UltraCoreStyle.defaultPlaceholder = TwiceImageImpl(dark: UIImage(named: "user-avatar")!, default: UIImage(named: "user-avatar")!)
+    UltraCoreStyle.elevatedButtonTint = TwiceColorImpl(defaultColor: .black, darkColor: .black)
+    
+    UltraCoreAppearance.imageViewTint = .red500
+    UltraCoreAppearance.buttonTint = .red500
+    UltraCoreAppearance.sliderTint = .red500
+    UltraCoreAppearance.barButtonTint = .red500
+    UltraCoreAppearance.navigationBarTitleTextAttributes = LabelConfigImpl()
 }

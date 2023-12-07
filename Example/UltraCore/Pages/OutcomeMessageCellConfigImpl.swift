@@ -9,6 +9,14 @@
 import UltraCore
 
 class OutcomeMessageCellConfigImpl: MessageCellConfig {
+    var loadingImage: UltraCore.TwiceImage?
+    
+    var sentImage: UltraCore.TwiceImage?
+    
+    var deliveredImage: UltraCore.TwiceImage?
+    
+    var readImage: UltraCore.TwiceImage?
+    
    var textLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularBody)
    var deliveryLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
    var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray900)

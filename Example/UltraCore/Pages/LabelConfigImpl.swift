@@ -10,7 +10,7 @@ import UltraCore
 
 struct LabelConfigImpl: TextViewConfig {
     var darkColor: UIColor = .white
-    var defaultColor: UIColor = .gray700
+    var defaultColor: UIColor = .red500
     var font: UIFont = .defaultRegularBody
     var placeholder: String = "Введите текст..."
     var tintColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)

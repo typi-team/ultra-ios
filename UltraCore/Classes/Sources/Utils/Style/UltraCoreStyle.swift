@@ -5,80 +5,14 @@
 //  Created by Slam on 7/31/23.
 //
 
-import Foundation
-
-public protocol TwiceColor {
-    var defaultColor: UIColor { get set }
-    var darkColor: UIColor { get set }
-
-    var color: UIColor { get }
-}
-
-public protocol TwiceImage {
-    var `default`: UIImage { get set }
-    var dark: UIImage { get set }
-
-    var image: UIImage { get }
-}
-
-public extension TwiceImage {
-    var image: UIImage {
-        if #available(iOS 12.0, *) {
-            switch UIScreen.main.traitCollection.userInterfaceStyle {
-            case .dark:
-                return dark
-            case .light:
-                return self.default
-            default:
-                return self.default
-            }
-        } else {
-            return self.default
-        }
-    }
-}
-
-public protocol LabelConfig: TwiceColor {
-    var font: UIFont { get set }
-}
-
-public protocol TextViewConfig: LabelConfig {
-    var tintColor: TwiceColor { get set }
-    var placeholder: String { get set }
-}
-
-public protocol ConversationCellConfig {
-    var titleConfig: LabelConfig { get set }
-    var deliveryConfig: LabelConfig { get set }
-    var backgroundColor: TwiceColor { get set }
-    var descriptionConfig: LabelConfig { get set }
-}
-
-public protocol MessageCellConfig {
-    var backgroundColor: TwiceColor { get set }
-    var sildirBackgroundColor: TwiceColor { get set }
-    var textLabelConfig: LabelConfig { get set }
-    var deliveryLabelConfig: LabelConfig { get set }
-}
-
-public extension TwiceColor {
-    var color: UIColor {
-        if #available(iOS 12.0, *) {
-            switch UIScreen.main.traitCollection.userInterfaceStyle {
-            case .dark:
-                return darkColor
-            case .light:
-                return defaultColor
-            default:
-                return defaultColor
-            }
-        } else {
-            return defaultColor
-        }
-    }
-}
+import UIKit
 
 private class IncomeMessageCellConfigImpl: MessageCellConfig {
+    var loadingImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_loading")!, default: UIImage.init(named: "conversation_status_loading")!)
+    var sentImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_sent")!, default: UIImage.init(named: "conversation_status_sent")!)
+    var deliveredImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_delivered")!, default: UIImage.init(named: "conversation_status_delivered")!)
+    var readImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_read")!, default: UIImage.init(named: "conversation_status_read")!)
+    
     var textLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularBody)
     var deliveryLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
     var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white, darkColor: .gray500)
@@ -86,6 +20,11 @@ private class IncomeMessageCellConfigImpl: MessageCellConfig {
 }
 
 private class OutcomeMessageCellConfigImpl: MessageCellConfig {
+    var loadingImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_loading")!, default: UIImage.init(named: "conversation_status_loading")!)
+    var sentImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_sent")!, default: UIImage.init(named: "conversation_status_sent")!)
+    var deliveredImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_delivered")!, default: UIImage.init(named: "conversation_status_delivered")!)
+    var readImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_read")!, default: UIImage.init(named: "conversation_status_read")!)
+    
     var textLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularBody)
     var deliveryLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
     var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray900)
@@ -117,8 +56,11 @@ private struct TwiceImageImpl: TwiceImage {
 }
 
 public class UltraCoreStyle {
+//    MARK: UIImage
+    public static var defaultPlaceholder: TwiceImage?
 //    MARK: TextButton
     public static var textButtonConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularBody)
+    public static var elevatedButtonTint: TwiceColor? = TwiceColorImpl(defaultColor: .green500, darkColor: .green500)
 //    MARK: UILabel
     public static var headlineConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularHeadline)
     public static var subHeadlineConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularSubHeadline)
@@ -144,16 +86,6 @@ public class UltraCoreStyle {
     public static var callingConfig: CallPageStyle = CallPageStyleImpl()
 }
 
-public protocol MessageInputBarConfig {
-    var dividerColor: TwiceColor { get set }
-    var background: TwiceColor { get set }
-    var textConfig: TextViewConfig { get set }
-    var sendMessageViewTint: TwiceColor { get set }
-    var sendMoneyViewTint: TwiceColor { get set }
-    var recordViewTint: TwiceColor { get set }
-    var messageContainerBackground: TwiceColor { get set }
-}
-
 private class MessageInputBarConfigImpl: MessageInputBarConfig {
     var textConfig: TextViewConfig = LabelConfigImpl.init(darkColor: .white, defaultColor: .gray900, font: .defaultRegularSubHeadline,
                                                           tintColor: TwiceColorImpl(defaultColor: .green500, darkColor: .white))
@@ -165,16 +97,6 @@ private class MessageInputBarConfigImpl: MessageInputBarConfig {
     var messageContainerBackground: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
 }
 
-public protocol VoiceInputBarConfig {
-    var background: TwiceColor { get set }
-    var waveBackground: TwiceColor { get set }
-    var durationLabel: LabelConfig { get set }
-    var recordBackground: TwiceColor { get set }
-    var roundedViewBackground: TwiceColor { get set }
-    var removeButtonBackground: TwiceColor { get set }
-}
-
-
 private class VoiceInputBarConfigImpl: VoiceInputBarConfig {
     var background: TwiceColor = TwiceColorImpl(defaultColor: .gray100, darkColor: .white)
     var waveBackground: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
@@ -182,27 +104,6 @@ private class VoiceInputBarConfigImpl: VoiceInputBarConfig {
     var roundedViewBackground: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray100)
     var removeButtonBackground: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
     var durationLabel: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray500, font: .defaultRegularBody)
-}
-
-
-public protocol CallPageStyle {
-    var background: TwiceColor { get set }
-    
-    var companionConfig: LabelConfig { get set }
-    var durationConfig: LabelConfig { get set }
-    
-    var mouthpieceOnImage: UIImage { get set }
-    
-    var mouthpieceOffImage: UIImage { get set }
-    
-    var micOnImage: UIImage { get set }
-    var micOffImage: UIImage { get set }
-    
-    var cameraOnImage: UIImage { get set }
-    var cameraOffImage: UIImage { get set }
-    
-    var answerImage: UIImage { get set }
-    var declineImage: UIImage { get set }
 }
 
 private class CallPageStyleImpl: CallPageStyle {
@@ -234,6 +135,8 @@ private class CallPageStyleImpl: CallPageStyle {
 }
 
 private class ConversationCellConfigImpl: ConversationCellConfig {
+    var avatarPlaceholder: TwiceImage? = nil
+    
     var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white, darkColor: .red)
     var titleConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularCallout)
     var deliveryConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)

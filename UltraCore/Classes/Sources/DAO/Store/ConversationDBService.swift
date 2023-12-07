@@ -122,15 +122,16 @@ extension Message {
         content?.description ?? text
     }
     
-    var statusImageName: String {
+    var statusImage: UIImage? {
         if self.seqNumber == 0 {
-            return "conversation_status_loading"
+            return UltraCoreStyle.incomeMessageCell?.loadingImage?.image ?? UIImage.named("conversation_status_loading")
         } else if self.state.delivered == false && self.state.read == false {
-            return "conversation_status_sent"
+            return UltraCoreStyle.incomeMessageCell?.sentImage?.image ?? UIImage.named("conversation_status_sent")
         } else if self.state.delivered == true && self.state.read == false {
-            return "conversation_status_delivered"
+            return UltraCoreStyle.incomeMessageCell?.deliveredImage?.image ?? UIImage.named("conversation_status_delivered")
         } else {
-            return "conversation_status_read"
+            return UltraCoreStyle.incomeMessageCell?.readImage?.image ?? UIImage.named("conversation_status_read")
+            
         }
     }
     

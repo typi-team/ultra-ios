@@ -64,7 +64,7 @@ class IncomeContactCell : BaseMessageCell {
         super.setup(message: message)
         self.phoneNumberLabel.text = message.contact.phone
         self.displayNameLabel.text = message.contact.displayName
-        self.moneyAvatarView.loadImage(by: nil,placeholder: .initial(text: message.contact.displayName.initails))
+        self.moneyAvatarView.set(placeholder: .initial(text: message.contact.displayName.initails))
         
     }
 }

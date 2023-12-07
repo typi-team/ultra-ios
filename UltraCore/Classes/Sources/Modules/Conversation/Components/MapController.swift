@@ -29,7 +29,6 @@ class MapController: BaseViewController<String>, MKMapViewDelegate {
     
     fileprivate lazy var nextButton: ElevatedButton = .init({[weak self] button in
         button.setTitle("Отправить", for: .normal)
-        button.backgroundColor = .green500
         button.addAction {[weak self] in
             guard let `self` = self, let locationMessage = self.locationMessage else { return }
             self.dismiss(animated: true, completion: { self.locationCallback?(locationMessage) })

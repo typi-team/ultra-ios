@@ -104,12 +104,12 @@ class ConversationCell: BaseCell {
         self.unreadView.isHidden = conversation.unreadCount == 0
         self.unreadView.text = conversation.unreadCount.description
         self.lastSeenView.text = conversation.timestamp.formattedTimeForConversationCell()
-        self.avatarView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
+        self.avatarView.set(placeholder: .initial(text: conversation.title))
         self.setupTyping(conversation: conversation)
         self.setupAvatar(conversation: conversation)
         
         if let message = conversation.lastMessage, !message.isIncome {
-            self.statusView.image = .named(message.statusImageName)
+            self.statusView.image = message.statusImage
             self.statusView.snp.updateConstraints { make in
                 make.width.equalTo(message.stateViewWidth)
             }
@@ -122,9 +122,9 @@ class ConversationCell: BaseCell {
     
     private func setupAvatar(conversation: Conversation) {
         if let contact = conversation.peer {
-            self.avatarView.config(contact: contact)
+            self.avatarView.set(contact: contact, placeholder: UltraCoreStyle.defaultPlaceholder?.image)
         } else {
-            self.avatarView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
+            self.avatarView.set(placeholder: .initial(text: conversation.title))
         }
     }
     

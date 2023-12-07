@@ -46,7 +46,7 @@ class OutgoingMessageCell: BaseMessageCell {
     
     override func setup(message: Message) {
         super.setup(message: message)
-        self.statusView.image = .named(message.statusImageName)
+        self.statusView.image = message.statusImage
         
         self.statusView.snp.updateConstraints { make in
             make.width.equalTo(message.stateViewWidth).priority(.high)

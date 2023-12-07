@@ -12,25 +12,24 @@ extension UIImageView {
     enum PlaceholderType {
         case oval, rounded, square
         case initial(text: String)
+        case placeholder(image:UIImage)
     }
 
-    func config(contact: ContactDisplayable) {
+    func set(contact: ContactDisplayable, placeholder: UIImage?) {
         self.contentMode = .scaleAspectFit
-        if let image = contact.image {
-            self.image = image
-            self.borderWidth = 1
-            self.image = MediaUtils.image(from: contact) ?? image
-        } else if let path = contact.imagePath?.url {
-            self.sd_setImage(with: path, placeholderImage: nil)
+        if let path = contact.imagePath?.url {
+            self.sd_setImage(with: path, placeholderImage: placeholder)
         } else {
-            self.borderWidth = 2
-            self.loadImage(by: nil, placeholder: .initial(text: contact.displaName.initails))
+            let enumPlace: PlaceholderType = placeholder == nil ? .initial(text: contact.displaName.initails) : .placeholder(image: placeholder!)
+            self.set(placeholder: enumPlace)
         }
     }
     
     
-    func loadImage(by path: String?, placeholder: PlaceholderType = .square) {
-        self.contentMode = .scaleAspectFit
+    func set(placeholder: PlaceholderType) {
+        self.contentMode = .scaleAspectFill
+        self.borderWidth = placeholder.borderWidth
+        
         switch placeholder {
         case let .initial(text: text):
             if let image = self.imageFromCache(forKey: text) {
@@ -44,7 +43,6 @@ extension UIImageView {
 
         default:
             self.image = placeholder.image
-            self.sd_setImage(with: path?.url, placeholderImage: placeholder.image)
         }
     }
 }
@@ -99,7 +97,28 @@ extension UIImageView {
 }
 
 extension UIImageView.PlaceholderType {
-    var image: UIImage? {  UIImage.named("ff_logo_text") }
+    var image: UIImage? {
+        switch self {
+        case .placeholder(let image):
+            return image
+        default: return UIImage.named("ff_logo_text")
+        }
+    }
+    
+    var borderWidth: CGFloat {
+        switch self {
+        case .placeholder:
+            return 0
+        case .oval:
+            return 2
+        case .rounded:
+            return 1
+        case .square:
+            return 1
+        case .initial:
+            return 2
+        }
+    }
 }
 
 extension UIImage {
@@ -172,9 +191,9 @@ extension UIImage {
         if let resourceURL = bundle.url(forResource: "UltraCore", withExtension: "bundle"),
            let resourceBundle = Bundle(url: resourceURL) {
             let image = UIImage(named: name, in: resourceBundle, compatibleWith: nil)
-            return image
+            return image?.withRenderingMode(.alwaysTemplate)
         }
-        return UIImage(named: name, in: AppSettingsImpl.shared.podAsset, compatibleWith: nil)
+        return UIImage(named: name, in: AppSettingsImpl.shared.podAsset, compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
     }
     
     func downsample(reductionAmount: Float) -> UIImage? {

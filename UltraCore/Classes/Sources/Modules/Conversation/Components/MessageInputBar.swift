@@ -110,11 +110,8 @@ class MessageInputBar: UIView {
         self.backgroundColor = style?.background.color
         self.messageTextView.font = style?.textConfig.font
         self.messageTextView.textColor = style?.textConfig.color
-        self.microButton.tintColor = style?.recordViewTint.color
         self.divider.backgroundColor = style?.dividerColor.color
         self.blockLabel.backgroundColor = style?.background.color
-        self.sendButton.tintColor = style?.sendMessageViewTint.color
-        self.exchangesButton.tintColor = style?.sendMoneyViewTint.color
         self.containerStack.backgroundColor = style?.messageContainerBackground.color
         self.messageTextView.backgroundColor = style?.messageContainerBackground.color
     }
