@@ -22,6 +22,19 @@
 "contacts.noAccessToContacts" = "No access to contacts";
 "contacts.clickToShareContacts" = "Click the button below and share your contacts.";
 "contacts.grantAccess" = "Give access";
+
+"contacts.minuteSingularForm" = "minute";
+"contacts.minutePluralForm" = "minututes";
+"contacts.minutePluralForm2" = "minute";
+
+"contacts.hourSingularForm" = "hour";
+"contacts.hourPluralForm" = "hours";
+"contacts.hourPluralForm2" = "hours";
+
+"profile.profile" = "Profile";
+"profile.phone" = "Phone";
+"profile.detail" = "About contact";
+
 // MARK: Conversation page
 "conversation.decline" = "Cancel";
 "conversation.today" = "Today";

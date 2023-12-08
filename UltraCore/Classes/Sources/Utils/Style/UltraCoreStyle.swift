@@ -8,10 +8,10 @@
 import UIKit
 
 private class IncomeMessageCellConfigImpl: MessageCellConfig {
-    var loadingImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_loading")!, default: UIImage.init(named: "conversation_status_loading")!)
-    var sentImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_sent")!, default: UIImage.init(named: "conversation_status_sent")!)
-    var deliveredImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_delivered")!, default: UIImage.init(named: "conversation_status_delivered")!)
-    var readImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_read")!, default: UIImage.init(named: "conversation_status_read")!)
+    var loadingImage: TwiceImage?  = TwiceImageImpl.init(dark: .named("conversation_status_loading")!, default: .named("conversation_status_loading")!)
+    var sentImage: TwiceImage?  = TwiceImageImpl.init(dark: .named("conversation_status_sent")!, default: .named("conversation_status_sent")!)
+    var deliveredImage: TwiceImage?  = TwiceImageImpl.init(dark: .named("conversation_status_delivered")!, default: .named("conversation_status_delivered")!)
+    var readImage: TwiceImage?  = TwiceImageImpl.init(dark: .named("conversation_status_read")!, default: .named("conversation_status_read")!)
     
     var textLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularBody)
     var deliveryLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
@@ -20,10 +20,10 @@ private class IncomeMessageCellConfigImpl: MessageCellConfig {
 }
 
 private class OutcomeMessageCellConfigImpl: MessageCellConfig {
-    var loadingImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_loading")!, default: UIImage.init(named: "conversation_status_loading")!)
-    var sentImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_sent")!, default: UIImage.init(named: "conversation_status_sent")!)
-    var deliveredImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_delivered")!, default: UIImage.init(named: "conversation_status_delivered")!)
-    var readImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_read")!, default: UIImage.init(named: "conversation_status_read")!)
+    var loadingImage: TwiceImage?  = nil
+    var sentImage: TwiceImage?  = nil
+    var deliveredImage: TwiceImage?  = nil
+    var readImage: TwiceImage?  = nil
     
     var textLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularBody)
     var deliveryLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
