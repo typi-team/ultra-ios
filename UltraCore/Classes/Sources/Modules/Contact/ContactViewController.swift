@@ -19,7 +19,7 @@ final class ContactViewController: BaseViewController<ContactPresenter> {
     })
     
     fileprivate lazy var headline: HeadlineBody = .init({
-        $0.text = "Профиль"
+        $0.text = ProfileEnums.profile.localized
         $0.font = .systemFont(ofSize: 20, weight: .bold)
         $0.numberOfLines = 0
     })
@@ -32,7 +32,7 @@ final class ContactViewController: BaseViewController<ContactPresenter> {
     
     fileprivate lazy var phoneButton: TextButton = .init({
         $0.setImage(.named("contact_phone_icon"), for: .normal)
-        $0.setTitle("Телефон", for: .normal)
+        $0.setTitle(ProfileEnums.phone.localized, for: .normal)
     })
     
     private let scrollView = UIScrollView({
@@ -48,7 +48,7 @@ final class ContactViewController: BaseViewController<ContactPresenter> {
     override func setupViews() {
         super.setupViews()
 
-        self.title = "О контакте"
+        self.title = ProfileEnums.detail.localized
         self.scrollView.addSubview(stackView)
         self.view.addSubview(scrollView)
         

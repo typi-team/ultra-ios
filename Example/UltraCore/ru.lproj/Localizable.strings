@@ -22,6 +22,20 @@
 "contacts.noAccessToContacts" = "Нет доступа к контактам";
 "contacts.clickToShareContacts" = "Нажмите на кнопку ниже и предоставьте доступ к вашим контактам.";
 "contacts.grantAccess" = "Предоставить доступ";
+
+"contacts.minuteSingularForm" = "минуту";
+"contacts.minutePluralForm" = "минуты";
+"contacts.minutePluralForm2" = "минут";
+
+"contacts.hourSingularForm" = "час";
+"contacts.hourPluralForm" = "часа";
+"contacts.hourPluralForm2" = "часов";
+
+// MARK: Profile
+"profile.profile" = "Profile";
+"profile.phone" = "Phone";
+"profile.detail" = "About contact";
+
 // MARK: Conversation page
 "conversation.decline" = "Отмена";
 "conversation.today" = "Сегодня";

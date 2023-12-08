@@ -26,9 +26,9 @@ func setDefaultStyleSettings() {
     UltraCoreStyle.defaultPlaceholder = TwiceImageImpl(dark: UIImage(named: "user-avatar")!, default: UIImage(named: "user-avatar")!)
     UltraCoreStyle.elevatedButtonTint = TwiceColorImpl(defaultColor: .black, darkColor: .black)
     
-    UltraCoreAppearance.imageViewTint = .green500
-    UltraCoreAppearance.buttonTint = .green500
-    UltraCoreAppearance.sliderTint = .green500
-    UltraCoreAppearance.barButtonTint = .green500
-    UltraCoreAppearance.navigationBarTitleTextAttributes = LabelConfigImpl(darkColor: .white, defaultColor: .green500)
+    UltraCoreAppearance.imageViewTint = .black
+    UltraCoreAppearance.buttonTint = .black
+    UltraCoreAppearance.sliderTint = .black
+    UltraCoreAppearance.barButtonTint = .black
+    UltraCoreAppearance.navigationBarTitleTextAttributes = LabelConfigImpl(darkColor: .white, defaultColor: .black)
 }

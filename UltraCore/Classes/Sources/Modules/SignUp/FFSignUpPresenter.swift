@@ -89,9 +89,6 @@ extension FFSignUpPresenter: SignUpPresenterInterface {
                         }
                     }
                 }
-
-            } else {
-                fatalError("Handle this case")
             }
         }
         
