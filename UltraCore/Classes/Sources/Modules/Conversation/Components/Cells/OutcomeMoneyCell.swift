@@ -78,7 +78,7 @@ class OutcomeMoneyCell : BaseMessageCell {
     
     override func setup(message: Message) {
         super.setup(message: message)
-        self.statusView.image = .named(message.statusImageName)
+        self.statusView.image = message.statusImage
         self.moneyAmountLabel.text = message.money.money.formattedPrice
     }
 }

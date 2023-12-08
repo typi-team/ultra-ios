@@ -113,23 +113,23 @@ class BaseMessageCell: BaseCell {
         super.traitCollectionDidChange(previousTraitCollection)
         if let message = message {
             if message.isIncome {
-                self.container.backgroundColor = UltraCoreStyle.incomeMessageCell.backgroundColor.color
-                self.deliveryDateLabel.font = UltraCoreStyle.incomeMessageCell.deliveryLabelConfig.font
-                self.deliveryDateLabel.textColor = UltraCoreStyle.incomeMessageCell.deliveryLabelConfig.color
+                self.container.backgroundColor = UltraCoreStyle.incomeMessageCell?.backgroundColor.color
+                self.deliveryDateLabel.font = UltraCoreStyle.incomeMessageCell?.deliveryLabelConfig.font
+                self.deliveryDateLabel.textColor = UltraCoreStyle.incomeMessageCell?.deliveryLabelConfig.color
                 
-                self.textView.font = UltraCoreStyle.incomeMessageCell.textLabelConfig.font
-                self.textView.textColor = UltraCoreStyle.incomeMessageCell.textLabelConfig.color
+                self.textView.font = UltraCoreStyle.incomeMessageCell?.textLabelConfig.font
+                self.textView.textColor = UltraCoreStyle.incomeMessageCell?.textLabelConfig.color
             } else {
-                self.container.backgroundColor = UltraCoreStyle.outcomeMessageCell.backgroundColor.color
+                self.container.backgroundColor = UltraCoreStyle.outcomeMessageCell?.backgroundColor.color
                 
-                self.deliveryDateLabel.font = UltraCoreStyle.outcomeMessageCell.deliveryLabelConfig.font
-                self.deliveryDateLabel.textColor = UltraCoreStyle.outcomeMessageCell.deliveryLabelConfig.color
+                self.deliveryDateLabel.font = UltraCoreStyle.outcomeMessageCell?.deliveryLabelConfig.font
+                self.deliveryDateLabel.textColor = UltraCoreStyle.outcomeMessageCell?.deliveryLabelConfig.color
                 
-                self.textView.font = UltraCoreStyle.outcomeMessageCell.textLabelConfig.font
-                self.textView.textColor = UltraCoreStyle.outcomeMessageCell.textLabelConfig.color
+                self.textView.font = UltraCoreStyle.outcomeMessageCell?.textLabelConfig.font
+                self.textView.textColor = UltraCoreStyle.outcomeMessageCell?.textLabelConfig.color
             }
         } else {
-            self.container.backgroundColor = UltraCoreStyle.incomeMessageCell.backgroundColor.color
+            self.container.backgroundColor = UltraCoreStyle.incomeMessageCell?.backgroundColor.color
         }
     }
 }

@@ -33,7 +33,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     }
     
     fileprivate let navigationDivider: UIView = .init({
-        $0.backgroundColor = UltraCoreStyle.divederColor.color
+        $0.backgroundColor = UltraCoreStyle.divederColor?.color
     })
     
     private lazy var tableView: UITableView = .init {[weak self] tableView in
@@ -41,7 +41,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.separatorStyle = .none
         tableView.backgroundColor = .clear
         tableView.tableFooterView = UIView()
-        tableView.keyboardDismissMode = .onDragWithAccessory
         tableView.refreshControl = refreshControl
         tableView.delegate = self
         tableView.tintColor = .green500
@@ -249,7 +248,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
-        self.navigationDivider.backgroundColor = UltraCoreStyle.divederColor.color
+        self.navigationDivider.backgroundColor = UltraCoreStyle.divederColor?.color
     }
 }
 
@@ -381,7 +380,7 @@ extension ConversationViewController: (UIImagePickerControllerDelegate & UINavig
             picker.dismiss(animated: true)
             self.presenter?.upload(file: .init(url: url, data: data, mime: "video/mp4", width: 300, height: 200))
         } else if let image = info[.originalImage] as? UIImage,
-                  let downsampled = image.fixedOrientation().downsample(reductionAmount: 0.7),
+                  let downsampled = image.fixedOrientation().downsample(reductionAmount: 0.5),
                   let data = downsampled.pngData() {
             picker.dismiss(animated: true, completion: {
                 self.presenter?.upload(file: .init(url: nil, data: data, mime: "image/png", width: image.size.width, height: image.size.height))
@@ -679,10 +678,9 @@ extension ConversationViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        return RegularFootnote({
-            $0.textAlignment = .center
-            $0.text = self.dataSource.sectionModels[section].model
-        })
+        return HeadlineInSectionView {[weak self] view in
+            view.setup(title: self?.dataSource.sectionModels[section].model ?? "")
+        }
     }
 }
 

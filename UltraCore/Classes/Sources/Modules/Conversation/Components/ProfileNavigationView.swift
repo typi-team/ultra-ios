@@ -75,9 +75,9 @@ class ProfileNavigationView: UIView {
         self.headlineText.text = conversation.title
         self.sublineText.text = conversation.lastMessage?.message
         if let contact = conversation.peer {
-            self.avatarImageView.config(contact: contact)
+            self.avatarImageView.set(contact: contact, placeholder: UltraCoreStyle.defaultPlaceholder?.image)
         } else {
-            self.avatarImageView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
+            self.avatarImageView.set(placeholder: .initial(text: conversation.title))
         }
         
         if let contact = conversation.peer {

@@ -87,7 +87,7 @@ class OutgoingPhotoCell: MediaCell {
     
     override func setup(message: Message) {
         super.setup(message: message)
-        self.statusView.image = .named(message.statusImageName)
+        self.statusView.image = message.statusImage
         self.mediaView.image = UIImage.init(data: message.photo.preview)
         self.playView.isHidden = true
         if self.mediaRepository.isUploading(from: message) {
@@ -151,7 +151,7 @@ class OutgoingVideoCell: OutgoingPhotoCell {
     override func setup(message: Message) {
         super.setup(message: message)
         self.playView.isHidden = !message.hasVideo
-        self.statusView.image = .named(message.statusImageName)
+        self.statusView.image = message.statusImage
         self.mediaView.image = UIImage.init(data: message.video.thumbPreview)
         if self.mediaRepository.isUploading(from: message) {
             self.uploadingProgress(for: message)

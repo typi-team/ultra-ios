@@ -53,7 +53,7 @@ class OutcomeLocationCell: BaseMessageCell {
     
     override func setup(message: Message) {
         super.setup(message: message)
-        self.statusView.image = .named(message.statusImageName)
+        self.statusView.image = message.statusImage
         if let mapImage = self.mediaView.imageFromCache(forKey: message.location.locationID) {
             self.mediaView.image = mapImage
         } else {

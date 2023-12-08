@@ -30,19 +30,18 @@ class MessageInputBar: UIView {
         $0.delegate = self
     })
     
-    private var style: MessageInputBarConfig { UltraCoreStyle.mesageInputBarConfig }
-    private lazy var divider: UIView = .init { $0.backgroundColor = style.dividerColor.color }
+    private var style: MessageInputBarConfig? { UltraCoreStyle.mesageInputBarConfig }
+    private lazy var divider: UIView = .init { $0.backgroundColor = style?.dividerColor.color }
     
     private let containerStack: UIView = .init {
         $0.cornerRadius = kLowPadding
         $0.clipsToBounds = false
-
     }
     
     private lazy var messageTextView: UITextView = MessageTextView.init {[weak self] textView in
         textView.delegate = self
         textView.cornerRadius = kLowPadding
-        textView.placeholder = self?.style.textConfig.placeholder ?? ""
+        textView.placeholder = self?.style?.textConfig.placeholder ?? ""
     }
     
     private lazy var sendButton: UIButton = .init {[weak self] button in
@@ -108,24 +107,21 @@ class MessageInputBar: UIView {
     }
     
     private func setupStyle() {
-        self.backgroundColor = style.background.color
-        self.messageTextView.font = style.textConfig.font
-        self.messageTextView.textColor = style.textConfig.color
-        self.microButton.tintColor = style.recordViewTint.color
-        self.divider.backgroundColor = style.dividerColor.color
-        self.blockLabel.backgroundColor = style.background.color
-        self.sendButton.tintColor = style.sendMessageViewTint.color
-        self.exchangesButton.tintColor = style.sendMoneyViewTint.color
-        self.containerStack.backgroundColor = style.messageContainerBackground.color
-        self.messageTextView.backgroundColor = style.messageContainerBackground.color
+        self.backgroundColor = style?.background.color
+        self.messageTextView.font = style?.textConfig.font
+        self.messageTextView.textColor = style?.textConfig.color
+        self.divider.backgroundColor = style?.dividerColor.color
+        self.blockLabel.backgroundColor = style?.background.color
+        self.containerStack.backgroundColor = style?.messageContainerBackground.color
+        self.messageTextView.backgroundColor = style?.messageContainerBackground.color
     }
     
     private func hideOrShowAllViewInRecording(visibility: Bool) {
         self.sendButton.isHidden = !visibility
         self.exchangesButton.isHidden = !visibility
         self.messageTextView.alpha = !visibility ?  0 : 1
-        self.containerStack.backgroundColor = visibility ? style.messageContainerBackground.color : style.background.color
-        self.messageTextView.backgroundColor = visibility ? style.messageContainerBackground.color : style.background.color
+        self.containerStack.backgroundColor = visibility ? style?.messageContainerBackground.color : style?.background.color
+        self.messageTextView.backgroundColor = visibility ? style?.messageContainerBackground.color : style?.background.color
     }
     
     private func setupViews() {
@@ -137,7 +133,7 @@ class MessageInputBar: UIView {
         self.containerStack.addSubview(messageTextView)
         self.containerStack.addSubview(microButton)
         
-        self.backgroundColor = UltraCoreStyle.controllerBackground.color
+        self.backgroundColor = UltraCoreStyle.controllerBackground?.color
     }
     
     private func setupConstraints() {

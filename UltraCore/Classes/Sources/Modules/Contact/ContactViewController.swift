@@ -98,7 +98,7 @@ final class ContactViewController: BaseViewController<ContactPresenter> {
 
 extension ContactViewController: ContactViewInterface {
     func update(contact: ContactDisplayable) {
-        self.imageView.config(contact: contact)
+        self.imageView.set(contact: contact, placeholder: UltraCoreStyle.defaultPlaceholder?.image)
         self.phoneNumber.text = "           " + contact.phone
         self.contactTitleButton.setTitle(contact.displaName, for: .normal)
     }

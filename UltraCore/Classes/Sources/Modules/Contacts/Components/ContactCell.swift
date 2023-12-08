@@ -55,7 +55,7 @@ class ContactCell: BaseCell {
             self.avatarImageView.borderColor = .green500
             self.avatarImageView.contentMode = .scaleAspectFit
         }
-        self.avatarImageView.config(contact: contact)
+        self.avatarImageView.set(contact: contact, placeholder: UltraCoreStyle.defaultPlaceholder?.image)
         self.titleLabel.text = contact.displaName
         self.subLabel.textColor = contact.status.color
         self.subLabel.text = contact.status.displayText

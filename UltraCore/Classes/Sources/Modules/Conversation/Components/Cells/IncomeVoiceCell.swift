@@ -21,8 +21,8 @@ class IncomeVoiceCell: MediaCell {
     fileprivate lazy var slider: UISlider = .init({
         $0.addTarget(self, action: #selector(self.seekTo(_:)), for: .touchUpInside)
         $0.addTarget(self, action: #selector(self.beginSeek(_:)), for: .valueChanged)
-        $0.thumbTintColor = config.sildirBackgroundColor.color
-        $0.minimumTrackTintColor = config.sildirBackgroundColor.color
+//        $0.thumbTintColor = config?.sildirBackgroundColor.color
+//        $0.minimumTrackTintColor = config?.sildirBackgroundColor.color
         $0.setThumbImage(.named("conversation.thumbImage"), for: .normal)
         
     })
@@ -187,6 +187,6 @@ class OutcomeVoiceCell: IncomeVoiceCell {
     
     override func setup(message: Message) {
         super.setup(message: message)
-        self.statusView.image = .named(message.statusImageName)
+        self.statusView.image = message.statusImage
     }
 }

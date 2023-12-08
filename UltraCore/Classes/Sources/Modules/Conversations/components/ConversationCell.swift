@@ -9,7 +9,7 @@ import UIKit
 
 class ConversationCell: BaseCell {
     
-    fileprivate lazy var style: ConversationCellConfig = UltraCoreStyle.conversationCell
+    fileprivate lazy var style: ConversationCellConfig? = UltraCoreStyle.conversationCell
     
     fileprivate let avatarView: UIImageView = .init({
         $0.borderWidth = 2
@@ -21,16 +21,19 @@ class ConversationCell: BaseCell {
     
     fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
     
-    fileprivate let titleView: RegularCallout = .init({
+    fileprivate let titleView: UILabel = .init({
         $0.numberOfLines = 0
         $0.lineBreakMode = .byTruncatingTail
     })
-    fileprivate let descriptionView: RegularFootnote = .init({
+    
+    fileprivate let descriptionView: UILabel = .init({
         $0.numberOfLines = 1
     })
-    fileprivate let lastSeenView: RegularFootnote = .init({
+    
+    fileprivate let lastSeenView: UILabel = .init({
         $0.textAlignment = .right
     })
+    
     fileprivate let unreadView: LabelWithInsets = .init({
         $0.cornerRadius = 9
         $0.textColor = .white
@@ -96,17 +99,17 @@ class ConversationCell: BaseCell {
     }
     
     func setup(conversation: Conversation ) {
-        self.titleView.text = conversation.title + conversation.title
+        self.titleView.text = conversation.title
         self.descriptionView.text = conversation.lastMessage?.message
         self.unreadView.isHidden = conversation.unreadCount == 0
         self.unreadView.text = conversation.unreadCount.description
         self.lastSeenView.text = conversation.timestamp.formattedTimeForConversationCell()
-        self.avatarView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
+        self.avatarView.set(placeholder: .initial(text: conversation.title))
         self.setupTyping(conversation: conversation)
         self.setupAvatar(conversation: conversation)
         
         if let message = conversation.lastMessage, !message.isIncome {
-            self.statusView.image = .named(message.statusImageName)
+            self.statusView.image = message.statusImage
             self.statusView.snp.updateConstraints { make in
                 make.width.equalTo(message.stateViewWidth)
             }
@@ -119,9 +122,9 @@ class ConversationCell: BaseCell {
     
     private func setupAvatar(conversation: Conversation) {
         if let contact = conversation.peer {
-            self.avatarView.config(contact: contact)
+            self.avatarView.set(contact: contact, placeholder: UltraCoreStyle.defaultPlaceholder?.image)
         } else {
-            self.avatarView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
+            self.avatarView.set(placeholder: .initial(text: conversation.title))
         }
     }
     
@@ -142,10 +145,12 @@ class ConversationCell: BaseCell {
     
     override func setupStyle() {
         super.setupStyle()
-        self.descriptionView.textColor = style.descriptionConfig.color
-        self.descriptionView.font = style.descriptionConfig.font
-        self.backgroundColor = style.backgroundColor.color
-        self.titleView.textColor = style.titleConfig.color
-        self.titleView.font = style.titleConfig.font
+        self.descriptionView.textColor = style?.descriptionConfig.color
+        self.descriptionView.font = style?.descriptionConfig.font
+        self.backgroundColor = style?.backgroundColor.color
+        self.titleView.textColor = style?.titleConfig.color
+        self.titleView.font = style?.titleConfig.font
+        self.lastSeenView.font = style?.deliveryConfig.font
+        self.lastSeenView.textColor = style?.deliveryConfig.color
     }
 }

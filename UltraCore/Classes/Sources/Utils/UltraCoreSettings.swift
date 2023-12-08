@@ -32,12 +32,6 @@ public class UltraCoreSettings {
     public static weak var delegate: UltraCoreSettingsDelegate?
     public static weak var futureDelegate: UltraCoreFutureDelegate?
     
-    static func setupAppearance() {
-        UIBarButtonItem.appearance().tintColor = .green500
-        UINavigationBar.appearance().titleTextAttributes = [NSAttributedString.Key.font: UIFont.defaultRegularHeadline]
-        UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedString.Key.foregroundColor: UIColor.clear], for: .normal)
-        UIBarButtonItem.appearance().setTitleTextAttributes([NSAttributedString.Key.foregroundColor: UIColor.clear], for: UIControl.State.highlighted)
-    }
 }
 
 public extension UltraCoreSettings {
@@ -57,7 +51,6 @@ public extension UltraCoreSettings {
     }
 
      static func entrySignUpViewController() -> UIViewController {
-         setupAppearance()
          return SignUpWireframe().viewController
      }
 

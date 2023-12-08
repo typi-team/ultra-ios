@@ -16,7 +16,7 @@ class VoiceInputBar: UIView {
     
     weak var delegate: VoiceInputBarDelegate?
     
-    fileprivate var voiceInputBarConfig: VoiceInputBarConfig { UltraCoreStyle.voiceInputBarConfig }
+    fileprivate var voiceInputBarConfig: VoiceInputBarConfig? { UltraCoreStyle.voiceInputBarConfig }
     
     fileprivate lazy var audioRecordUtils: AudioRecordUtils = .init({
         $0.delegate = self
@@ -24,11 +24,11 @@ class VoiceInputBar: UIView {
     
     fileprivate lazy var roundedView: UIView = .init({
         $0.cornerRadius = 12
-        $0.backgroundColor = self.voiceInputBarConfig.roundedViewBackground.color
+        $0.backgroundColor = self.voiceInputBarConfig?.roundedViewBackground.color
     })
     
     fileprivate lazy var removeButton: UIButton = .init({
-        $0.tintColor = self.voiceInputBarConfig.removeButtonBackground.color
+        $0.tintColor = self.voiceInputBarConfig?.removeButtonBackground.color
         $0.setImage(.named("conversation_voice_delete_icon"), for: .normal)
         $0.addAction {[weak self] in
             self?.cancelRecording()
@@ -36,7 +36,7 @@ class VoiceInputBar: UIView {
     })
     
     fileprivate lazy var recordingButton: UIButton = .init({
-        $0.tintColor = self.voiceInputBarConfig.recordBackground.color
+        $0.tintColor = self.voiceInputBarConfig?.recordBackground.color
         $0.setImage(.named("conversation_send"), for: .normal)
         $0.addTarget(self, action: #selector(stopRecording), for: .touchUpInside)
     })
@@ -69,7 +69,7 @@ class VoiceInputBar: UIView {
         self.roundedView.addSubview(waveView)
         self.roundedView.addSubview(durationLabel)
         
-        self.backgroundColor = voiceInputBarConfig.background.color
+        self.backgroundColor = voiceInputBarConfig?.background.color
     }
     
     private func setupConstraints() {
