@@ -33,6 +33,8 @@ class FilesController: BaseViewController<String> {
         }
     })
 
+    fileprivate var style: FilesControllerConfig? = UltraCoreStyle.filePageConfig
+    
     fileprivate lazy var fromGallery: TextButton = .init({
         $0.setImage(.named("conversation_photo"), for: .normal)
         $0.setTitle(ConversationStrings.selectionFromLibrary.localized, for: .normal)
@@ -106,6 +108,18 @@ class FilesController: BaseViewController<String> {
             make.left.equalToSuperview().offset(kMediumPadding)
             make.right.equalToSuperview().offset(-kMediumPadding)
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin).offset(-kLowPadding)
+        }
+    }
+    
+    override func setupStyle() {
+        super.setupStyle()
+        
+        if let style = self.style {
+            self.takePhoto.setImage(style.takePhotoImage.image, for: .normal)
+            self.fromGallery.setImage(style.fromGalleryImage.image, for: .normal)
+            self.document.setImage(style.documentImage.image, for: .normal)
+            self.contact.setImage(style.contactImage.image, for: .normal)
+            self.location.setImage(style.locationImage.image, for: .normal)
         }
     }
 }

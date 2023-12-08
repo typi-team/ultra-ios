@@ -87,6 +87,8 @@ public class UltraCoreStyle {
     public static var voiceInputBarConfig: VoiceInputBarConfig? = VoiceInputBarConfigImpl()
 //    MARK: Calling page config
     public static var callingConfig: CallPageStyle = CallPageStyleImpl()
+//    MARK: File page config
+    public static var filePageConfig: FilesControllerConfig?
 }
 
 private class MessageInputBarConfigImpl: MessageInputBarConfig {
