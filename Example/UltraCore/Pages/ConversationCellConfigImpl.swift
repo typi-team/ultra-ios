@@ -9,6 +9,8 @@
 import UltraCore
 
 class ConversationCellConfigImpl: ConversationCellConfig {
+    var unreadBackgroundColor: UltraCore.TwiceColor = TwiceColorImpl(defaultColor: .red500, darkColor: .gray700)
+    
 
     var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white, darkColor: .gray700)
     var titleConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularCallout)

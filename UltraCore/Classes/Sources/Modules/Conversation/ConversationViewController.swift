@@ -304,6 +304,7 @@ extension ConversationViewController: MessageInputBarDelegate {
 
 extension ConversationViewController: ConversationViewInterface {
     func blocked(is blocked: Bool) {
+        self.view.endEditing(true)
         self.messageInputBar.block(blocked)
     }
     

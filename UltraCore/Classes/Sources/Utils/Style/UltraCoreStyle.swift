@@ -140,6 +140,8 @@ private class CallPageStyleImpl: CallPageStyle {
 }
 
 private class ConversationCellConfigImpl: ConversationCellConfig {
+    var unreadBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .clear)
+    
     var avatarPlaceholder: TwiceImage? = nil
     
     var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white, darkColor: .gray700)

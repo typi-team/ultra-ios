@@ -152,5 +152,6 @@ class ConversationCell: BaseCell {
         self.titleView.font = style?.titleConfig.font
         self.lastSeenView.font = style?.deliveryConfig.font
         self.lastSeenView.textColor = style?.deliveryConfig.color
+        self.unreadView.backgroundColor = style?.unreadBackgroundColor.color
     }
 }
