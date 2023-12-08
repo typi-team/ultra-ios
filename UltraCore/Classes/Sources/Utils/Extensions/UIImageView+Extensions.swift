@@ -16,7 +16,7 @@ extension UIImageView {
     }
 
     func set(contact: ContactDisplayable, placeholder: UIImage?) {
-        self.contentMode = .scaleAspectFit
+        self.contentMode = .scaleAspectFill
         if let path = contact.imagePath?.url {
             self.sd_setImage(with: path, placeholderImage: placeholder)
         } else {
