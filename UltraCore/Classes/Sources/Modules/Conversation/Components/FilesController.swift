@@ -51,14 +51,14 @@ class FilesController: BaseViewController<String> {
         }
     })
     
-//    fileprivate lazy var contact: TextButton = .init({
-//        $0.setImage(.named("conversation_user_contact"), for: .normal)
-//        $0.setTitle(ConversationStrings.contact.localized, for: .normal)
-//        $0.addAction { [weak self] in
-//            guard let `self` = self else { return }
-//            self.handle(action: .contact)
-//        }
-//    })
+    fileprivate lazy var contact: TextButton = .init({
+        $0.setImage(.named("conversation_user_contact"), for: .normal)
+        $0.setTitle(ConversationStrings.contact.localized, for: .normal)
+        $0.addAction { [weak self] in
+            guard let `self` = self else { return }
+            self.handle(action: .contact)
+        }
+    })
     
     fileprivate lazy var location: TextButton = .init({
         $0.setImage(.named("conversation_location"), for: .normal)
@@ -81,10 +81,16 @@ class FilesController: BaseViewController<String> {
         $0.setCustomSpacing(kLowPadding * 3, after: fromGallery)
         $0.addArrangedSubview(document)
         $0.setCustomSpacing(kLowPadding * 3, after: document)
-//        $0.addArrangedSubview(contact)
-//        $0.setCustomSpacing(kLowPadding * 3, after: contact)
-        $0.addArrangedSubview(location)
-        $0.setCustomSpacing(kLowPadding * 3, after: location)
+        
+        if UltraCoreSettings.futureDelegate?.availableToContact() ?? false {
+            $0.addArrangedSubview(contact)
+            $0.setCustomSpacing(kLowPadding * 3, after: contact)
+        }
+        
+        if UltraCoreSettings.futureDelegate?.availableToContact() ?? false {
+            $0.addArrangedSubview(location)
+            $0.setCustomSpacing(kLowPadding * 3, after: location)
+        }
     }
     
     

@@ -124,4 +124,12 @@ extension ViewModel: UltraCoreSettingsDelegate {
     func contactViewController(contact id: String) -> UIViewController? {
         return nil
     }
+    
+    func availableToContact() -> Bool {
+        return true
+    }
+    
+    func availableToLocation() -> Bool {
+        return true
+    }
 }
