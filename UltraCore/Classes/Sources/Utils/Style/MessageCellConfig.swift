@@ -18,3 +18,8 @@ public protocol MessageCellConfig {
     var deliveredImage: TwiceImage? { get set }
     var readImage: TwiceImage? { get set }
 }
+
+public protocol HeaderInSectionConfig {
+    var labelConfig: LabelConfig { get set }
+    var backgroundColor: TwiceColor { get set }
+}

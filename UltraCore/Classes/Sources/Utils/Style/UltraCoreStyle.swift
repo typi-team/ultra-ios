@@ -78,6 +78,9 @@ public class UltraCoreStyle {
 //    MARK: Message cells
     public static var incomeMessageCell: MessageCellConfig? = IncomeMessageCellConfigImpl()
     public static var outcomeMessageCell: MessageCellConfig? = OutcomeMessageCellConfigImpl()
+//    MARK: Date header
+    public static var headerInSection: HeaderInSectionConfig? = HeaderInSectionConfigImpl()
+
 //    MARK: MessageInputBar config
     public static var mesageInputBarConfig: MessageInputBarConfig? = MessageInputBarConfigImpl()
 //    MARK: VoiceBarView config
@@ -137,8 +140,14 @@ private class CallPageStyleImpl: CallPageStyle {
 private class ConversationCellConfigImpl: ConversationCellConfig {
     var avatarPlaceholder: TwiceImage? = nil
     
-    var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white, darkColor: .red)
+    var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white, darkColor: .gray700)
     var titleConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularCallout)
     var deliveryConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
     var descriptionConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
+}
+
+private class HeaderInSectionConfigImpl: HeaderInSectionConfig {
+    var labelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote, placeholder: "", tintColor: TwiceColorImpl(defaultColor: .clear, darkColor: .clear))
+    
+    var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white.withAlphaComponent(0.4), darkColor: .clear)
 }

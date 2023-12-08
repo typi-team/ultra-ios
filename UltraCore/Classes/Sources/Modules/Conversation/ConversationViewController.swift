@@ -679,10 +679,9 @@ extension ConversationViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        return RegularFootnote({
-            $0.textAlignment = .center
-            $0.text = self.dataSource.sectionModels[section].model
-        })
+        return HeadlineInSectionView {[weak self] view in
+            view.setup(title: self?.dataSource.sectionModels[section].model ?? "")
+        }
     }
 }
 

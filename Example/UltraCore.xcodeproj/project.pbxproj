@@ -181,6 +181,7 @@
 		75F114FE2B219C9300AA9260 /* Pages */ = {
 			isa = PBXGroup;
 			children = (
+				75F1150D2B21A42900AA9260 /* StyleSetting.swift */,
 				75F115022B219F5600AA9260 /* ServerSetting */,
 				75F115012B219F4800AA9260 /* StyleSettings */,
 				607FACD71AFB9204008FA782 /* ViewController.swift */,
@@ -196,7 +197,6 @@
 				75F115072B21A2FC00AA9260 /* TwiceColorImpl.swift */,
 				75F115092B21A31200AA9260 /* LabelConfigImpl.swift */,
 				75F1150B2B21A33200AA9260 /* MessageCellConfigImpl.swift */,
-				75F1150D2B21A42900AA9260 /* StyleSetting.swift */,
 				75F1150F2B21A52100AA9260 /* TwiceImageImpl.swift */,
 				75F115132B21A7F100AA9260 /* ConversationCellConfigImpl.swift */,
 				75F115152B21AD8600AA9260 /* IncomeMessageCellConfigImpl.swift */,
