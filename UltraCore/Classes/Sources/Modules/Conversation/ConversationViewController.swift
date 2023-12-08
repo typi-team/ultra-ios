@@ -606,39 +606,21 @@ extension ConversationViewController: EditActionBottomBarDelegate {
     }
     
     func presentDeletedMessageView(messages: [Message]) {
-        let viewController = ActionsViewController({ controler in
-            controler.headlineText = ConversationStrings.areYouSure.localized
-            controler.regularText = ConversationStrings.pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible.localized
-            
-            controler.additionalButtons = [.init({
-                $0.titleLabel?.numberOfLines = 0
-                $0.backgroundColor = .green500
-                $0.setTitleColor(.white, for: .normal)
-                $0.setTitle(ConversationStrings.deleteFromMe.localized, for: .normal)
-                $0.addAction { [weak self] in
-                    guard let `self` = self else { return }
-                    controler.dismiss(animated: true)
-                    self.presenter?.delete(messages, all: false)
-                    self.cancel()
-                }
-            }),
-            .init({
-                $0.titleLabel?.numberOfLines = 0
-                $0.backgroundColor = .green500
-                $0.setTitleColor(.white, for: .normal)
-                $0.setTitle(ConversationStrings.deleteForEveryone.localized, for: .normal)
-                $0.addAction { [weak self] in
-                    guard let `self` = self else { return }
-                    controler.dismiss(animated: true)
-                    self.presenter?.delete(messages, all: true)
-                    self.cancel()
-                }
-            })]
-        })
-        
-        viewController.modalPresentationStyle = .custom
-        viewController.transitioningDelegate = sheetTransitioningDelegate
-        present(viewController, animated: true)
+        let alert = UIAlertController(title: ConversationStrings.areYouSure.localized, message: ConversationStrings.pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible.localized, preferredStyle: .actionSheet)
+        alert.addAction(.init(title: ConversationStrings.deleteFromMe.localized, style: .destructive, handler: { [weak self] _ in
+            guard let `self` = self else { return }
+            self.presenter?.delete(messages, all: false)
+            self.cancel()
+        }))
+
+        alert.addAction(.init(title: ConversationStrings.deleteForEveryone.localized, style: .destructive, handler: { [weak self] _ in
+            guard let `self` = self else { return }
+            self.presenter?.delete(messages, all: true)
+            self.cancel()
+        }))
+
+        alert.addAction(.init(title: EditActionStrings.cancel.localized.capitalized, style: .cancel))
+        self.present(alert, animated: true)
     }
 }
 
