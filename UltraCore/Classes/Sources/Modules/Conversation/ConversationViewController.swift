@@ -41,7 +41,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.separatorStyle = .none
         tableView.backgroundColor = .clear
         tableView.tableFooterView = UIView()
-        tableView.keyboardDismissMode = .onDragWithAccessory
         tableView.refreshControl = refreshControl
         tableView.delegate = self
         tableView.tintColor = .green500
@@ -381,7 +380,7 @@ extension ConversationViewController: (UIImagePickerControllerDelegate & UINavig
             picker.dismiss(animated: true)
             self.presenter?.upload(file: .init(url: url, data: data, mime: "video/mp4", width: 300, height: 200))
         } else if let image = info[.originalImage] as? UIImage,
-                  let downsampled = image.fixedOrientation().downsample(reductionAmount: 0.1),
+                  let downsampled = image.fixedOrientation().downsample(reductionAmount: 0.5),
                   let data = downsampled.pngData() {
             picker.dismiss(animated: true, completion: {
                 self.presenter?.upload(file: .init(url: nil, data: data, mime: "image/png", width: image.size.width, height: image.size.height))
