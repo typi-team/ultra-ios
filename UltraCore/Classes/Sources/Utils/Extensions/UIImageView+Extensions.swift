@@ -18,6 +18,7 @@ extension UIImageView {
     func set(contact: ContactDisplayable, placeholder: UIImage?) {
         self.contentMode = .scaleAspectFill
         if let path = contact.imagePath?.url {
+            self.sd_cancelCurrentImageLoad()
             self.sd_setImage(with: path, placeholderImage: placeholder)
         } else {
             let enumPlace: PlaceholderType = placeholder == nil ? .initial(text: contact.displaName.initails) : .placeholder(image: placeholder!)
