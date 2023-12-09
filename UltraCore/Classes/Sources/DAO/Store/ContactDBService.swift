@@ -87,12 +87,18 @@ class ContactDBService {
             do {
                 let realm = Realm.myRealm()
                 try realm.write {
-                    let contact = DBContact(contact: interface)
+                    let contact = realm.object(ofType: DBContact.self, forPrimaryKey: interface.userID) ?? DBContact(contact: interface)
                     if let contactInfo = UltraCoreSettings.delegate?.info(from: interface.phone) {
                         contact.lastname = contactInfo.lastname
                         contact.firstname = contactInfo.firstname
                         contact.imagePath = contactInfo.imagePath
                     }
+                    
+                    if interface.status.lastSeen > contact.lastseen {
+                        contact.lastseen = interface.status.lastSeen
+                        contact.statusValue = interface.status.status.rawValue
+                    }
+                    
                     realm.add(contact, update: .all)
                     
                 }

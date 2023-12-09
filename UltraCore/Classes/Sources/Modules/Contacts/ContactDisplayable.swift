@@ -20,9 +20,14 @@ protocol ContactDisplayable: Any {
     var firstname: String { get }
     var lastname: String { get }
 }
+
 extension ContactDisplayable {
     var displaName: String {
-        [firstname, lastname].joined(separator: " ")
+        if let contact = UltraCoreSettings.delegate?.info(from: self.phone) {
+            return [contact.firstname, contact.lastname].joined(separator: " ")
+        } else {
+            return [firstname, lastname].joined(separator: " ")
+        }
     }
 }
 

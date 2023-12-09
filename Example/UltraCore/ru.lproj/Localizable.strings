@@ -7,7 +7,7 @@
 */
 
 // MARK: Conversations page
-"conversations.chats" = "Нет сообщений";
+"conversations.chats" = "Чаты";
 "conversations.emptyMessages" = "Начните общаться с вашими контактами прямо сейчас";
 "conversations.startCommunicatingWithYourContactsNow" = "Start communicating with your contacts now";
 "conversations.start" = "Начать";
