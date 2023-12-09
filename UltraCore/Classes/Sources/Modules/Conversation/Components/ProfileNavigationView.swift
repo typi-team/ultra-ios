@@ -21,10 +21,8 @@ class ProfileNavigationView: UIView {
     })
     
     fileprivate let avatarImageView: UIImageView = .init {
-        $0.borderWidth = 1
+        
         $0.cornerRadius = 20
-        $0.borderColor = .green500
-        $0.backgroundColor = .gray100
         $0.isUserInteractionEnabled = false
         $0.frame.size = .init(width: 40, height: 40)
     }

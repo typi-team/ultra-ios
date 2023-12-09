@@ -12,9 +12,7 @@ class ConversationCell: BaseCell {
     fileprivate lazy var style: ConversationCellConfig? = UltraCoreStyle.conversationCell
     
     fileprivate let avatarView: UIImageView = .init({
-        $0.borderWidth = 2
         $0.cornerRadius = 20
-        $0.borderColor = .green500
         $0.contentMode = .scaleAspectFit
         
     })
@@ -104,7 +102,6 @@ class ConversationCell: BaseCell {
         self.unreadView.isHidden = conversation.unreadCount == 0
         self.unreadView.text = conversation.unreadCount.description
         self.lastSeenView.text = conversation.timestamp.formattedTimeForConversationCell()
-        self.avatarView.set(placeholder: .initial(text: conversation.title))
         self.setupTyping(conversation: conversation)
         self.setupAvatar(conversation: conversation)
         

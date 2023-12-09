@@ -155,7 +155,7 @@ private class HeaderInSectionConfigImpl: HeaderInSectionConfig {
     var labelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700,
                                                    font: .defaultRegularFootnote, placeholder: "",
                                                    tintColor: TwiceColorImpl(defaultColor: .clear, darkColor: .clear))
-    var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white.withAlphaComponent(0.4), darkColor: .clear)
+    var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white.withAlphaComponent(0.7), darkColor: .clear)
 }
 
 private class ConversationHeaderConfigImpl: ConversationHeaderConfig {
