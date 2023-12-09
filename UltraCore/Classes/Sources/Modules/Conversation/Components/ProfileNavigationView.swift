@@ -10,12 +10,13 @@ import Foundation
 class ProfileNavigationView: UIView {
     
     var callback: VoidCallback?
+    private var style: ConversationHeaderConfig = UltraCoreStyle.conversationProfileConfig
     
     fileprivate var conversation: Conversation?
-    fileprivate let headlineText: HeadlineBody = .init({
+    fileprivate let titleText: UILabel = .init({
         $0.isUserInteractionEnabled = false
     })
-    fileprivate let sublineText: RegularFootnote = .init({
+    fileprivate let sublineText: UILabel = .init({
         $0.isUserInteractionEnabled = false
     })
     
@@ -32,12 +33,14 @@ class ProfileNavigationView: UIView {
         super.init(frame: frame)
         self.setupView()
         self.setupConstraints()
+        self.traitCollectionDidChange(UIScreen.main.traitCollection)
     }
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
         self.setupView()
         self.setupConstraints()
+        self.traitCollectionDidChange(UIScreen.main.traitCollection)
     }
     
     func setupConstraints() {
@@ -48,7 +51,7 @@ class ProfileNavigationView: UIView {
             make.bottom.equalToSuperview().offset(-(kLowPadding / 2))
         }
         
-        self.headlineText.snp.makeConstraints { make in
+        self.titleText.snp.makeConstraints { make in
             make.right.equalToSuperview()
             make.top.equalTo(self.avatarImageView.snp.top)
             make.left.equalTo(self.avatarImageView.snp.right).offset(kMediumPadding)
@@ -57,14 +60,14 @@ class ProfileNavigationView: UIView {
         self.sublineText.snp.makeConstraints { make in
             make.right.equalToSuperview()
             make.bottom.equalTo(self.avatarImageView.snp.bottom)
-            make.top.equalTo(self.headlineText.snp.bottom).offset(kLowPadding / 2)
+            make.top.equalTo(self.titleText.snp.bottom).offset(kLowPadding / 2)
             make.left.equalTo(self.avatarImageView.snp.right).offset(kMediumPadding)
         }
     }
     
     func setupView() {
         self.addSubview(sublineText)
-        self.addSubview(headlineText)
+        self.addSubview(titleText)
         self.addSubview(avatarImageView)
         
         self.addGestureRecognizer(UITapGestureRecognizer.init(target: self, action: #selector(self.tapHandle(_:))))
@@ -72,7 +75,7 @@ class ProfileNavigationView: UIView {
     
     func setup(conversation: Conversation) {
         self.conversation = conversation
-        self.headlineText.text = conversation.title
+        self.titleText.text = conversation.title
         self.sublineText.text = conversation.lastMessage?.message
         if let contact = conversation.peer {
             self.avatarImageView.set(contact: contact, placeholder: UltraCoreStyle.defaultPlaceholder?.image)
@@ -82,7 +85,7 @@ class ProfileNavigationView: UIView {
         
         if let contact = conversation.peer {
             self.sublineText.text = contact.status.displayText
-            self.sublineText.textColor = contact.status.color
+            self.sublineText.textColor = contact.status.isOnline ? style.onlineColor.color : style.sublineConfig.color
         }
     }
     
@@ -97,6 +100,14 @@ class ProfileNavigationView: UIView {
     
     @objc private func tapHandle(_ sender: Any) {
         callback?()
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        self.titleText.font = style.titleConfig.font
+        self.titleText.textColor = style.titleConfig.color
+        self.sublineText.font = style.sublineConfig.font
+        self.sublineText.textColor = style.sublineConfig.color
     }
 }
 
@@ -115,6 +126,8 @@ extension UserStatus {
             return self.lastSeen.date(format: .dayAndHourMinute)
         }
     }
+    
+    var isOnline: Bool { status == .online}
     
     var color: UIColor {
         switch status {

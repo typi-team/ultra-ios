@@ -43,7 +43,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.tableFooterView = UIView()
         tableView.refreshControl = refreshControl
         tableView.delegate = self
-        tableView.tintColor = .green500
         tableView.registerCell(type: IncomeFileCell.self)
         tableView.registerCell(type: OutcomeFileCell.self)
         tableView.registerCell(type: BaseMessageCell.self)

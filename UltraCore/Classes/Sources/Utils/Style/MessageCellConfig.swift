@@ -23,3 +23,9 @@ public protocol HeaderInSectionConfig {
     var labelConfig: LabelConfig { get set }
     var backgroundColor: TwiceColor { get set }
 }
+
+public protocol ConversationHeaderConfig {
+    var titleConfig: LabelConfig { get set }
+    var sublineConfig: LabelConfig { get set }
+    var onlineColor: TwiceColor {get set }
+}

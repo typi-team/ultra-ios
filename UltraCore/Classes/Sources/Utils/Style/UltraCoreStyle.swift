@@ -80,7 +80,8 @@ public class UltraCoreStyle {
     public static var outcomeMessageCell: MessageCellConfig? = OutcomeMessageCellConfigImpl()
 //    MARK: Date header
     public static var headerInSection: HeaderInSectionConfig? = HeaderInSectionConfigImpl()
-
+//    MARK: Conversation Profile header
+    public static var conversationProfileConfig: ConversationHeaderConfig = ConversationHeaderConfigImpl()
 //    MARK: MessageInputBar config
     public static var mesageInputBarConfig: MessageInputBarConfig? = MessageInputBarConfigImpl()
 //    MARK: VoiceBarView config
@@ -151,7 +152,14 @@ private class ConversationCellConfigImpl: ConversationCellConfig {
 }
 
 private class HeaderInSectionConfigImpl: HeaderInSectionConfig {
-    var labelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote, placeholder: "", tintColor: TwiceColorImpl(defaultColor: .clear, darkColor: .clear))
-    
+    var labelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700,
+                                                   font: .defaultRegularFootnote, placeholder: "",
+                                                   tintColor: TwiceColorImpl(defaultColor: .clear, darkColor: .clear))
     var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white.withAlphaComponent(0.4), darkColor: .clear)
+}
+
+private class ConversationHeaderConfigImpl: ConversationHeaderConfig {
+    var onlineColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
+    var titleConfig: LabelConfig =  LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularHeadline)
+    var sublineConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
 }
