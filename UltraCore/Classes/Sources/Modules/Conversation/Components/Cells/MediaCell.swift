@@ -74,4 +74,20 @@ class MediaCell: BaseMessageCell {
             }
             .disposed(by: disposeBag)
     }
+    
+    func statusImage(for message: Message)  -> UIImage? {
+        if let style = UltraCoreStyle.videoFotoMessageCell {
+            if message.seqNumber == 0 {
+                return style.loadingImage?.image ?? message.statusImage
+            } else if message.state.delivered == false && message.state.read == false {
+                return style.sentImage?.image ?? message.statusImage
+            } else if message.state.delivered == true && message.state.read == false {
+                return style.deliveredImage?.image ?? message.statusImage
+            } else {
+                return style.readImage?.image ?? message.statusImage
+            }
+        } else {
+            return message.statusImage
+        }
+    }
 }

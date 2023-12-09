@@ -78,6 +78,7 @@ public class UltraCoreStyle {
 //    MARK: Message cells
     public static var incomeMessageCell: MessageCellConfig? = IncomeMessageCellConfigImpl()
     public static var outcomeMessageCell: MessageCellConfig? = OutcomeMessageCellConfigImpl()
+    public static var videoFotoMessageCell: VideoFotoCellConfig?
 //    MARK: Date header
     public static var headerInSection: HeaderInSectionConfig? = HeaderInSectionConfigImpl()
 //    MARK: Conversation Profile header

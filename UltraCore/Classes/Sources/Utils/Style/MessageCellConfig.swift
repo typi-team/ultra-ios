@@ -19,6 +19,18 @@ public protocol MessageCellConfig {
     var readImage: TwiceImage? { get set }
 }
 
+public protocol VideoFotoCellConfig  {
+    var placeholder: TwiceImage? { get set }
+    var playImage: TwiceImage? { get set }
+    var containerBackgroundColor: TwiceColor { get set }
+    var deliveryLabelConfig: LabelConfig { get set }
+    
+    var loadingImage: TwiceImage? { get set }
+    var sentImage: TwiceImage? { get set }
+    var deliveredImage: TwiceImage? { get set }
+    var readImage: TwiceImage? { get set }
+}
+
 public protocol HeaderInSectionConfig {
     var labelConfig: LabelConfig { get set }
     var backgroundColor: TwiceColor { get set }

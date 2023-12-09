@@ -68,6 +68,19 @@ class IncomingPhotoCell: MediaCell {
             self.dowloadImage(by: message)
         }
     }
+    
+    override func setupStyle() {
+        super.setupStyle()
+        if let style = UltraCoreStyle.videoFotoMessageCell {
+            self.deliveryWrapper.backgroundColor = style.containerBackgroundColor.color
+            self.deliveryDateLabel.textColor = style.deliveryLabelConfig.color
+            self.deliveryDateLabel.font = style.deliveryLabelConfig.font
+            
+            if let playImage = style.playImage?.image {
+                self.playView.image = playImage
+            }
+        }
+    }
 }
 
 

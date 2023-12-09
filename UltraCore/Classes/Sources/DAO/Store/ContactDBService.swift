@@ -128,7 +128,7 @@ class ContactDBService {
         }
     }
     
-    func update(contacts: [IContactInfo]) throws {
+    static func update(contacts: [IContactInfo]) throws {
         let realm = Realm.myRealm()
         try realm.write {
             realm.objects(DBContact.self).forEach { storedContact in

@@ -40,7 +40,7 @@ public class UltraCoreSettings {
 public extension UltraCoreSettings {
     
     static func update(contacts: [IContactInfo]) throws {
-        try AppSettingsImpl.shared.contactDBService.update(contacts: contacts)
+        try ContactDBService.update(contacts: contacts)
     }
     
     static func printAllLocalizableStrings() {

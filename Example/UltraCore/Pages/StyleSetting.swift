@@ -19,6 +19,7 @@ func setDefaultStyleSettings() {
     UltraCoreStyle.divederColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
     UltraCoreStyle.conversationCell = ConversationCellConfigImpl()
     UltraCoreStyle.incomeMessageCell = IncomeMessageCellConfigImpl()
+    UltraCoreStyle.videoFotoMessageCell = VideoFotoCellConfigImpl()
     UltraCoreStyle.outcomeMessageCell = OutcomeMessageCellConfigImpl()
     UltraCoreStyle.mesageInputBarConfig = MessageInputBarConfigImpl()
     UltraCoreStyle.voiceInputBarConfig = VoiceInputBarConfigImpl()

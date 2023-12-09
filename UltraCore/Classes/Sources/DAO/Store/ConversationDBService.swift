@@ -124,13 +124,13 @@ extension Message {
     
     var statusImage: UIImage? {
         if self.seqNumber == 0 {
-            return UltraCoreStyle.incomeMessageCell?.loadingImage?.image ?? UIImage.named("conversation_status_loading")
+            return UltraCoreStyle.outcomeMessageCell?.loadingImage?.image ?? UIImage.named("conversation_status_loading")
         } else if self.state.delivered == false && self.state.read == false {
-            return UltraCoreStyle.incomeMessageCell?.sentImage?.image ?? UIImage.named("conversation_status_sent")
+            return UltraCoreStyle.outcomeMessageCell?.sentImage?.image ?? UIImage.named("conversation_status_sent")
         } else if self.state.delivered == true && self.state.read == false {
-            return UltraCoreStyle.incomeMessageCell?.deliveredImage?.image ?? UIImage.named("conversation_status_delivered")
+            return UltraCoreStyle.outcomeMessageCell?.deliveredImage?.image ?? UIImage.named("conversation_status_delivered")
         } else {
-            return UltraCoreStyle.incomeMessageCell?.readImage?.image ?? UIImage.named("conversation_status_read")
+            return UltraCoreStyle.outcomeMessageCell?.readImage?.image ?? UIImage.named("conversation_status_read")
             
         }
     }

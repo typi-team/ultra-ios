@@ -130,7 +130,7 @@ class ConversationCell: BaseCell {
         if typingUsers.isEmpty {
             self.descriptionView.text = conversation.lastMessage?.message
         } else {
-            self.descriptionView.text = "печатает..."
+            self.descriptionView.text = "\(ConversationStrings.prints.localized)..."
         }
     }
     

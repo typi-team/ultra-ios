@@ -128,6 +128,11 @@ class BaseMessageCell: BaseCell {
                 self.textView.font = UltraCoreStyle.outcomeMessageCell?.textLabelConfig.font
                 self.textView.textColor = UltraCoreStyle.outcomeMessageCell?.textLabelConfig.color
             }
+            
+            if (message.hasPhoto || message.hasVideo), let style = UltraCoreStyle.videoFotoMessageCell {
+                self.deliveryDateLabel.font = style.deliveryLabelConfig.font
+                self.deliveryDateLabel.textColor = style.deliveryLabelConfig.color
+            }
         } else {
             self.container.backgroundColor = UltraCoreStyle.incomeMessageCell?.backgroundColor.color
         }
