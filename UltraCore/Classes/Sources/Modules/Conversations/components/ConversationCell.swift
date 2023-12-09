@@ -138,6 +138,7 @@ class ConversationCell: BaseCell {
         super.prepareForReuse()
         self.avatarView.image = nil
         self.unreadView.text = ""
+        self.avatarView.sd_cancelCurrentImageLoad()
     }
     
     override func setupStyle() {
