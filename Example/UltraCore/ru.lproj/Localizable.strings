@@ -11,6 +11,12 @@
 "conversations.emptyMessages" = "Начните общаться с вашими контактами прямо сейчас";
 "conversations.startCommunicatingWithYourContactsNow" = "Start communicating with your contacts now";
 "conversations.start" = "Начать";
+
+"conversations.deleteFromMe" = "Удалить у меня";
+"conversations.areYouSure" = "Вы уверены?";
+"conversations.pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible" = "Пожалуйста, обратите внимание, что данные сообщения будут безвозвратно удалены, и восстановление не будет возможным";
+
+
 // MARK: Contacts page
 "contacts.newChat" = "Новый чат";
 "contacts.was" = "был(а)";

@@ -11,6 +11,10 @@
 "conversations.start" = "Start";
 "conversations.emptyMessages" = "No messages";
 "conversations.startCommunicatingWithYourContactsNow" = "Start communicating with your contacts now";
+
+"conversations.deleteFromMe" = "Delete from me";
+"conversations.areYouSure" = "Are you sure?";
+"conversations.pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible" = "Please note that message data will be permanently deleted and recovery will not be possible";
 // MARK: Contacts page
 "contacts.newChat" = "New chat";
 "contacts.was" = "was";

@@ -94,8 +94,8 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
             .modelDeleted(Conversation.self)
             .subscribe(onNext: {[weak self] conversation in
                 guard let `self` = self else { return }
-                let alert = UIAlertController.init(title: ConversationStrings.areYouSure.localized, message: ConversationStrings.pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible.localized, preferredStyle: .actionSheet)
-                alert.addAction(.init(title: ConversationStrings.deleteFromMe.localized, style: .destructive, handler: { _ in
+                let alert = UIAlertController.init(title: ConversationsStrings.areYouSure.localized, message: ConversationsStrings.pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible.localized, preferredStyle: .actionSheet)
+                alert.addAction(.init(title: ConversationsStrings.deleteFromMe.localized, style: .destructive, handler: { _ in
                     self.presenter?.delete(conversation, all: false)
                 }))
                 alert.addAction(.init(title: EditActionStrings.cancel.localized.capitalized, style: .cancel))
