@@ -125,4 +125,7 @@ public extension UltraCoreSettings {
             })
     }
     
+    static func logout() {
+        AppSettingsImpl.shared.logout()
+    }
 }

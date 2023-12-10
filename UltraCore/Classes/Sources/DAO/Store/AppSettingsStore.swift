@@ -17,6 +17,7 @@ protocol AppSettingsStore {
     var lastState: Int64 { get }
     var isAuthed: Bool { get }
     var ssid: String { get set }
+    func deleteAll()
 }
 
 class AppSettingsStoreImpl {
@@ -72,5 +73,14 @@ extension AppSettingsStoreImpl: AppSettingsStore {
             fatalError("call store(token:) before call this function")
         }
         return token
+    }
+    
+    func deleteAll() {
+        [kToken,
+         kSID,
+         kUserID,
+         kLastState].forEach({ key in
+            self.userDefault?.removeObject(forKey: key)
+        })
     }
 }

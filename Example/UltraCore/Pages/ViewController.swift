@@ -45,6 +45,13 @@ private extension ViewController {
             }), title: NSLocalizedString("Платежи", comment: ""), image: UIImage(named: "payments")!),
             createNavController(for: UIViewController({
                 $0.view.backgroundColor = UIColor(red: 243.0 / 255.0, green: 244.0 / 255.0, blue: 246.0 / 255.0, alpha: 1.0)
+                $0.view.addSubview(UIButton.init({
+                    $0.setTitle("Выйти", for: .normal)
+                    $0.addTarget(self, action: #selector(self.logout(_:)), for: .touchUpInside)
+                    $0.frame.origin = .init(x: 120, y: 120)
+                    $0.frame.size = .init(width: 120, height: 52)
+                    $0.setTitleColor(.green500, for: .normal)
+                }))
             }), title: NSLocalizedString("Расходы", comment: ""), image: UIImage(named: "banence")!),
         ]
         
@@ -70,5 +77,9 @@ private extension ViewController {
     func setupView() {
         self.view.backgroundColor = .lightGray
         self.tabBar.tintColor = UIColor(red: 34.0 / 255.0, green: 197.0 / 255.0, blue: 94.0 / 255.0, alpha: 1.0)
+    }
+    
+    @objc func logout(_ sender: Any) {
+        UltraCoreSettings.logout()
     }
 }

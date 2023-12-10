@@ -12,6 +12,8 @@ import RxSwift
 import NIOPosix
 import PodAsset
 import Logging
+import Realm
+import RealmSwift
 
 open class AppSettingsImpl: AppSettings  {
     
@@ -105,6 +107,14 @@ open class AppSettingsImpl: AppSettings  {
             }, onError: { callback($0) })
             .do(onSuccess: { _ in callback(nil) })
             .subscribe()
+    }
+    
+    func logout() {
+        let realm = Realm.myRealm()
+        try? realm.write({
+            realm.deleteAll()
+        })
+        self.appStore.deleteAll()
     }
 }
 
