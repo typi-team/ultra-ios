@@ -213,7 +213,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             var prev: [Message] = []
         self.presenter?
             .messages
-            .debounce(.milliseconds(100), scheduler: MainScheduler.asyncInstance)
+            .debounce(.milliseconds(20), scheduler: MainScheduler.asyncInstance)
             .filter({ !$0.isEmpty })
             .filter({$0.count != prev.count})
             .do(onNext: {prev = $0})
