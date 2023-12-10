@@ -32,11 +32,11 @@ class BaseMessageCell: BaseCell {
     lazy var disposeBag: DisposeBag = .init()
     lazy var constants: MediaMessageConstants = .init(maxWidth: 300, maxHeight: 200)
     
-    let textView: SubHeadline = .init({
+    let textView: UILabel = .init({
         $0.numberOfLines = 0
     })
     
-    let deliveryDateLabel: RegularFootnote = .init({
+    let deliveryDateLabel: UILabel = .init({
         $0.textAlignment = .right
     })
     
