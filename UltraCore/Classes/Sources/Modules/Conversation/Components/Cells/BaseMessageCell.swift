@@ -63,7 +63,7 @@ class BaseMessageCell: BaseCell {
         self.contentView.addGestureRecognizer(cellAction)
         
         if #available(iOS 13.0, *) {
-            self.container.addInteraction(UIContextMenuInteraction.init(delegate: self))
+            
         } else {
             let longTap = UILongPressGestureRecognizer.init(target: self, action: #selector(self.handleLongPress(_:)))
             longTap.minimumPressDuration = 0.3
@@ -107,6 +107,12 @@ class BaseMessageCell: BaseCell {
         self.textView.text = message.text
         self.deliveryDateLabel.text = message.meta.created.dateBy(format: .hourAndMinute)
         self.traitCollectionDidChange(UIScreen.main.traitCollection)
+        if #available(iOS 13.0, *) {
+            if let interaction =  self.contentView.interactions.first {
+                self.container.removeInteraction(interaction)
+            }
+            self.container.addInteraction(UIContextMenuInteraction.init(delegate: self))
+        }
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
