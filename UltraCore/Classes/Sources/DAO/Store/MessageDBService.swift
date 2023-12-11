@@ -9,10 +9,14 @@ import RxSwift
 import RealmSwift
 
 class MessageDBService {
-    fileprivate let userId: String
+    fileprivate let appStore: AppSettingsStore
     
-    init(userId: String) {
-        self.userId = userId
+    fileprivate var userID: String  {
+        return self.appStore.userID()
+    }
+    
+    init(appStore: AppSettingsStore) {
+        self.appStore = appStore
     }
 
 //  MARK: Обновление сообщения в базе данных
@@ -29,7 +33,7 @@ class MessageDBService {
                         messageInDB.seqNumber = Int64(message.seqNumber)
                     } else {
                         realm.create(DBMessage.self,
-                                     value: DBMessage(from: message, user: self.userId), update: .all)
+                                     value: DBMessage(from: message, user: self.userID), update: .all)
                     }
                     
                 }
@@ -116,7 +120,7 @@ class MessageDBService {
                 let realm = Realm.myRealm()
                 try realm.write {
                     realm.create(DBMessage.self,
-                                 value: DBMessage(from: message, user: self.userId), update: .all)
+                                 value: DBMessage(from: message, user: self.userID), update: .all)
                     
                 }
                 completable(.success(()))
@@ -189,7 +193,7 @@ class MessageDBService {
                 try realm.write {
                     messages.forEach { message in
                         realm.create(DBMessage.self,
-                                     value: DBMessage(from: message, user: self.userId), update: .all)
+                                     value: DBMessage(from: message, user: self.userID), update: .all)
                     }
                     
                 }

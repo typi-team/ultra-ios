@@ -8,10 +8,14 @@ import RxSwift
 import RealmSwift
 
 class ContactDBService {
-    fileprivate let userID: String
+    fileprivate let appStore: AppSettingsStore
     
-    init(userID: String) {
-        self.userID = userID
+    fileprivate var userID: String  {
+        return self.appStore.userID()
+    }
+    
+    init(appStore: AppSettingsStore) {
+        self.appStore = appStore
     }
     
     func contacts() -> Observable<[ContactDisplayable]> {

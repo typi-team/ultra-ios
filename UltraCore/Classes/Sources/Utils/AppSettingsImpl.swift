@@ -51,14 +51,14 @@ open class AppSettingsImpl: AppSettings  {
     lazy var contactsService: ContactServiceClientProtocol = ContactServiceNIOClient(channel: channel)
     lazy var updateService: UpdatesServiceClientProtocol = UpdatesServiceNIOClient(channel: updateChannel)
     lazy var conversationService: ChatServiceClientProtocol = ChatServiceNIOClient.init(channel: channel)
-    lazy var integrateService: IntegrationServiceClientProtocol = IntegrationServiceNIOClient.init(channel: channel, defaultCallOptions: .default())
+    lazy var integrateService: IntegrationServiceClientProtocol = IntegrationServiceNIOClient.init(channel: channel)
 
 //    MARK: Services
 
-    lazy var messageDBService: MessageDBService = .init(userId: appStore.userID())
     lazy var appStore: AppSettingsStore = AppSettingsStoreImpl()
-    lazy var contactDBService: ContactDBService = .init(userID: appStore.userID())
-    lazy var conversationDBService: ConversationDBService = .init(userID: appStore.userID())
+    lazy var messageDBService: MessageDBService = .init(appStore: appStore)
+    lazy var contactDBService: ContactDBService = .init(appStore: appStore)
+    lazy var conversationDBService: ConversationDBService = .init(appStore: appStore)
 
 //    MARK: Repositories
 
