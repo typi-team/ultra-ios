@@ -13,10 +13,14 @@ public protocol MessageCellConfig {
     var textLabelConfig: LabelConfig { get set }
     var deliveryLabelConfig: LabelConfig { get set }
     
+}
+
+public protocol OutcomingMessageCellConfig: MessageCellConfig {
     var loadingImage: TwiceImage? { get set }
     var sentImage: TwiceImage? { get set }
     var deliveredImage: TwiceImage? { get set }
     var readImage: TwiceImage? { get set }
+    var statusWidth: CGFloat? { get set }
 }
 
 public protocol VideoFotoCellConfig  {

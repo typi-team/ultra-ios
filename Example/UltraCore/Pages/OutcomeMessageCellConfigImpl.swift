@@ -8,7 +8,8 @@
 
 import UltraCore
 
-class OutcomeMessageCellConfigImpl: MessageCellConfig {
+class OutcomeMessageCellConfigImpl: OutcomingMessageCellConfig {
+    var statusWidth: CGFloat?
     
     var loadingImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_loading")!, default: UIImage.init(named: "conversation_status_loading")!)
     var sentImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_sent")!, default: UIImage.init(named: "conversation_status_sent")!)

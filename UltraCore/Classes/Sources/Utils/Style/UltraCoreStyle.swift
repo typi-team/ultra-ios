@@ -19,7 +19,9 @@ private class IncomeMessageCellConfigImpl: MessageCellConfig {
     var sildirBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
 }
 
-private class OutcomeMessageCellConfigImpl: MessageCellConfig {
+private class OutcomeMessageCellConfigImpl: OutcomingMessageCellConfig {
+    var statusWidth: CGFloat?
+    
     var loadingImage: TwiceImage?  = nil
     var sentImage: TwiceImage?  = nil
     var deliveredImage: TwiceImage?  = nil
@@ -77,7 +79,7 @@ public class UltraCoreStyle {
     public static var conversationCell: ConversationCellConfig? = ConversationCellConfigImpl()
 //    MARK: Message cells
     public static var incomeMessageCell: MessageCellConfig? = IncomeMessageCellConfigImpl()
-    public static var outcomeMessageCell: MessageCellConfig? = OutcomeMessageCellConfigImpl()
+    public static var outcomeMessageCell: OutcomingMessageCellConfig? = OutcomeMessageCellConfigImpl()
     public static var videoFotoMessageCell: VideoFotoCellConfig?
 //    MARK: Date header
     public static var headerInSection: HeaderInSectionConfig? = HeaderInSectionConfigImpl()

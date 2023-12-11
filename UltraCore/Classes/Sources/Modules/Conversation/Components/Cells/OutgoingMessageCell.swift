@@ -9,7 +9,9 @@ import Foundation
 
 class OutgoingMessageCell: BaseMessageCell {
     
-    fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
+    fileprivate let statusView: UIImageView = .init({
+        $0.contentMode = .scaleAspectFit
+    })
     
     override func setupView() {
         super.setupView()

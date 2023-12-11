@@ -140,7 +140,9 @@ extension Message {
     }
     
     var stateViewWidth: Double {
-        if self.seqNumber == 0 {
+        if let size = UltraCoreStyle.outcomeMessageCell?.statusWidth {
+          return size
+        } else if self.seqNumber == 0 {
             return 12
         } else if self.state.delivered == false && self.state.read == false {
             return 10
