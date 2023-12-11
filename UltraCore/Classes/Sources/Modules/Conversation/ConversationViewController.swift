@@ -219,11 +219,28 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .filter({$0.count != prev.count})
             .do(onNext: {prev = $0})
             .subscribe(onNext: { [weak self] _ in
-                self?.scrollToBottom()
+                guard let `self` = self else { return }
+                if self.tableView.isDecelerating {
+                    self.tableView.stopScrolling()
+                }
+                self.tableView.scrollToLastCell(animated: false)
+                
             })
             .disposed(by: disposeBag)
         
         self.presenter?.viewDidLoad()
+
+//        Observable<Int>
+//            .timer(.milliseconds(200), period: .milliseconds(200), scheduler: MainScheduler.asyncInstance)
+//            .subscribe(onNext: { [weak self] _ in
+//                guard let `self` = self else { return }
+//                self.presenter?.send(message: UUID().uuidString +
+//                    UUID().uuidString +
+//                    UUID().uuidString +
+//                    UUID().uuidString +
+//                    UUID().uuidString)
+//            })
+//            .disposed(by: disposeBag)
     }
     
     override func changed(keyboard height: CGFloat) {
@@ -679,16 +696,4 @@ extension ConversationViewController: CNContactPickerDelegate {
             })
         }
     }
-}
-
-extension ConversationViewController {
-    func scrollToBottom() {
-        let lastSectionIndex = tableView.numberOfSections - 1
-        if lastSectionIndex < 0 { return }
-        let lastRowIndex = tableView.numberOfRows(inSection: lastSectionIndex) - 1
-        if lastRowIndex < 0 { return }
-        let lastIndexPath = IndexPath(row: lastRowIndex, section: lastSectionIndex)
-        tableView.scrollToRow(at: lastIndexPath, at: .bottom, animated: false)
-    }
-
 }

@@ -38,7 +38,7 @@ private struct LabelConfigImpl: TextViewConfig {
     var darkColor: UIColor = .white
     var defaultColor: UIColor = .gray700
     var font: UIFont = .defaultRegularBody
-    var placeholder: String = "\(ConversationStrings.insertText.localized)..."
+    var placeholder: String = "\(ConversationStrings.insertText.localized)"
     var tintColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
 }
 
