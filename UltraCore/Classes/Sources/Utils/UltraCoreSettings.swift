@@ -61,14 +61,22 @@ public extension UltraCoreSettings {
          return ConversationsWireframe(appDelegate: UltraCoreSettings.delegate).viewController
      }
 
-     static func update(sid token: String, with callback: @escaping (Error?) -> Void) {
+    static func update(sid token: String, timeOut: TimeInterval = 4,
+                       with callback: @escaping (Error?) -> Void) {
          AppSettingsImpl.shared.appStore.ssid = token
          AppSettingsImpl.shared.update(ssid: token, callback: { error in
-             
+
              if error == nil {
                  AppSettingsImpl.shared.updateRepository.setupSubscription()
              }
-             callback(error)
+             
+             if AppSettingsImpl.shared.appStore.lastState == 0 {
+                 DispatchQueue.main.asyncAfter(deadline: .now() + timeOut, execute: {
+                     callback(error)
+                 })
+             } else {
+                 callback(error)
+             }
          })
      }
 
