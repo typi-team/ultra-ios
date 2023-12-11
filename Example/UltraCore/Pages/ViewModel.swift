@@ -84,11 +84,11 @@ private extension ViewModel {
 
 extension ViewModel: UltraCoreFutureDelegate {
     func availableToRecordVoice() -> Bool {
-        true
+        false
     }
     
     func availableToReport(message: Any) -> Bool {
-        true
+        false
     }
     
     func localize(for key: String) -> String? {
@@ -96,7 +96,7 @@ extension ViewModel: UltraCoreFutureDelegate {
     }
     
     func availableToSendMoney() -> Bool {
-        return true
+        return false
     }
 }
 

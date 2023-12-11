@@ -195,6 +195,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         super.setupInitialData()
         self.presenter?
             .messages
+            .distinctUntilChanged()
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
             .do(onNext: {[weak self] messages in
@@ -684,17 +685,10 @@ extension ConversationViewController {
     func scrollToBottom() {
         let lastSectionIndex = tableView.numberOfSections - 1
         if lastSectionIndex < 0 { return }
-
         let lastRowIndex = tableView.numberOfRows(inSection: lastSectionIndex) - 1
         if lastRowIndex < 0 { return }
-
         let lastIndexPath = IndexPath(row: lastRowIndex, section: lastSectionIndex)
-        
-        // Проверяем, видна ли последняя ячейка
-        let isLastRowVisible = tableView.indexPathsForVisibleRows?.contains(lastIndexPath) ?? false
-
-        // Прокручиваем с анимацией, если последняя ячейка уже видна (т.е., это не первая загрузка)
-        tableView.scrollToRow(at: lastIndexPath, at: .bottom, animated: isLastRowVisible)
+        tableView.scrollToRow(at: lastIndexPath, at: .bottom, animated: false)
     }
 
 }

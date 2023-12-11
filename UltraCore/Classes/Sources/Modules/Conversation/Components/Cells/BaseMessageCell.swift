@@ -108,9 +108,6 @@ class BaseMessageCell: BaseCell {
         self.deliveryDateLabel.text = message.meta.created.dateBy(format: .hourAndMinute)
         self.traitCollectionDidChange(UIScreen.main.traitCollection)
         if #available(iOS 13.0, *) {
-            if let interaction =  self.contentView.interactions.first {
-                self.container.removeInteraction(interaction)
-            }
             self.container.addInteraction(UIContextMenuInteraction.init(delegate: self))
         }
     }
