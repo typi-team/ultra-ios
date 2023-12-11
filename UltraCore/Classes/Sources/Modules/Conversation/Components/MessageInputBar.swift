@@ -87,7 +87,7 @@ class MessageInputBar: UIView {
     private lazy var blockLabel: LabelWithInsets = .init {
         $0.textAlignment = .center
         $0.isUserInteractionEnabled = true
-        $0.text = "Простите, но вы заблокировали этот чат. Если у вас есть вопросы или вам необходима помощь, пожалуйста, обратитесь к нашей службе поддержки."
+        $0.text = MessageStrings.sorryButYouHaveBlockedThisChatIfYouHaveAnyQuestionsOrNeedAssistancePleaseContactOurSupportService.localized
     }
     
 //    MARK: Public properties

@@ -43,6 +43,10 @@ enum ConversationStrings: String, StringLocalizable {
     case areYouSure
     case pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible
     
+    case requestSent
+    case givePermissionToRecordVoice
+    case ifAMessageContainsThreatsInappropriateContentOrViolatesAnyPlatformOrCommunity
+    
     var prefixOfTemplate: String { "conversation" }
     var localizableValue: String { rawValue }
 }

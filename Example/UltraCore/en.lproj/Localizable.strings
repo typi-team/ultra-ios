@@ -71,6 +71,8 @@
 "conversation.unblock" = "Unblock";
 "conversation.deleteFromMe" = "Delete from me";
 "conversation.deleteForEveryone" = "Delete for everyone";
+"conversation.givePermissionToRecordVoice" = "Give permission to record voice";
+"conversation.ifAMessageContainsThreatsInappropriateContentOrViolatesAnyPlatformOrCommunity" = "If a message contains threats, inappropriate content, or violates any platform or community rules, it can be reported and is subject to removal. Restoring such a message may be impossible";
 
 "conversation.areYouSure" = "Are you sure?";
 "conversation.pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible" = "Please note that message data will be permanently deleted and recovery will not be possible";
@@ -91,3 +93,14 @@
 "message.report" = "Report";
 "message.delete" = "Delete";
 "message.select" = "Select";
+"message.sorryButYouHaveBlockedThisChatIfYouHaveAnyQuestionsOrNeedAssistancePleaseContactOurSupportService" = "Sorry, but you have blocked this chat. If you have any questions or need assistance, please contact our support service";
+
+// MARK: Base view
+"base.freedomChatDoesNotHaveAccessToYourContacts" = "Freedom Chat does not have access to your contacts";
+"base.goToSettingsAndSwitchContactsToOn" = "Go to the settings and switch Contacts to ON";
+"base.error" = "Error";
+"base.close" = "Close";
+"base.settings" = "Settings";
+"base.inTheProcessOfRealizationAUniqueFunctionalityMaturesWhichWillAddMagicAndEfficiencyToOurProduct" = "In the process of realization, a unique functionality matures, which will add magic and efficiency to our product.";
+
+"conversation.requestSent" = "Request sent";

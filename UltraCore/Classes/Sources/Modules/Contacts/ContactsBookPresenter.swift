@@ -87,7 +87,7 @@ extension ContactsBookPresenter: ContactsBookPresenterInterface {
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
-            .subscribe(onSuccess: { contacts in PP.info("Contacts \(contacts.count)pcs saved on db") })
+            .subscribe()
             .disposed(by: self.disposeBag)
     }
 }

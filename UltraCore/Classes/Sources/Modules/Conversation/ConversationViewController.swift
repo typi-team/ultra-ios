@@ -309,7 +309,7 @@ extension ConversationViewController: ConversationViewInterface {
     }
     
     func reported() {
-        self.showAlert(from: "Запрос отправлен!")
+        self.showAlert(from: ConversationStrings.requestSent.localized)
     }
     
     
@@ -566,7 +566,7 @@ extension ConversationViewController: EditActionBottomBarDelegate {
         
         let viewController = ActionsViewController({ controler in
             controler.headlineText = ConversationStrings.areYouSure.localized
-            controler.regularText = "Если сообщение содержит угрозы, неподходящий контент или нарушает какие-либо правила платформы или сообщества, оно может быть обжаловано и подлежит удалению. Восстановление такого сообщения может быть невозможным"
+            controler.regularText = ConversationStrings.ifAMessageContainsThreatsInappropriateContentOrViolatesAnyPlatformOrCommunity.localized
             
             controler.additionalButtons = [.init({
                 $0.titleLabel?.numberOfLines = 0
@@ -640,7 +640,7 @@ extension ConversationViewController: UIDocumentPickerDelegate {
 
 extension ConversationViewController: VoiceInputBarDelegate {
     func showVoiceError() {
-        showSettingAlert(from: "Дайте разрешение на запись голоса")
+        showSettingAlert(from: ConversationStrings.givePermissionToRecordVoice.localized)
     }
     
     func recordedVoice(url: URL, in duration: TimeInterval) {
