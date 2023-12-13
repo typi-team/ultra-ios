@@ -25,7 +25,7 @@ class SyncFreedomContactsInteractor: UseCase<ContactsImportRequest, ContactImpor
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
             request.httpBody = httpBody
-            request.addValue(self.appStore.ssid, forHTTPHeaderField: "SID")
+            request.addValue(self.appStore.ssid ?? "", forHTTPHeaderField: "SID")
             request.addValue("application/json", forHTTPHeaderField: "Content-Type")
 
             let task = URLSession.shared.dataTask(with: request) { data, response, error in

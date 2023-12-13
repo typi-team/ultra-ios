@@ -27,7 +27,7 @@ class ContactDownloadInteractor: UseCase<Contact, Void> {
 
             var request = URLRequest(url: url)
             request.httpMethod = "GET"
-            request.addValue(self.appStore.ssid, forHTTPHeaderField: "SID")
+            request.addValue(self.appStore.ssid ?? "", forHTTPHeaderField: "SID")
 
             let task = URLSession.shared.dataTask(with: request) { data, response, error in
                 if let imageData = data, imageData.count > 0 {
