@@ -247,13 +247,15 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         
         if let indexPath = self.tableView.indexPathsForVisibleRows?.last {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
-                self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: false)
+                self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
             })
         }
         
         self.messageInputBar.snp.updateConstraints { make in
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin).offset(height > 0 ? -(height - 36) : 0)
         }
+
+        self.view.layoutIfNeeded()
     }
     
     override func viewDidAppear(_ animated: Bool) {
