@@ -8,6 +8,7 @@
 import UIKit
 
 public protocol MessageCellConfig {
+    var fileIconImage: TwiceImage? { get set }
     var backgroundColor: TwiceColor { get set }
     var sildirBackgroundColor: TwiceColor { get set }
     var textLabelConfig: LabelConfig { get set }

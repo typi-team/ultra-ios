@@ -11,6 +11,7 @@ import UltraCore
 class OutcomeMessageCellConfigImpl: OutcomingMessageCellConfig {
     var statusWidth: CGFloat?
     
+    var fileIconImage: UltraCore.TwiceImage? 
     var loadingImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_loading")!, default: UIImage.init(named: "conversation_status_loading")!)
     var sentImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_sent")!, default: UIImage.init(named: "conversation_status_sent")!)
     var deliveredImage: TwiceImage?  = TwiceImageImpl.init(dark: UIImage.init(named: "conversation_status_delivered")!, default: UIImage.init(named: "conversation_status_delivered")!)

@@ -9,6 +9,8 @@
 import UltraCore
 
 class IncomeMessageCellConfigImpl: MessageCellConfig {
+    var fileIconImage: UltraCore.TwiceImage?
+    
     var loadingImage: UltraCore.TwiceImage?
     var sentImage: UltraCore.TwiceImage?
     var deliveredImage: UltraCore.TwiceImage?

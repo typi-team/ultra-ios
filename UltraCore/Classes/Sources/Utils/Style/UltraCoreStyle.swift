@@ -8,6 +8,8 @@
 import UIKit
 
 private class IncomeMessageCellConfigImpl: MessageCellConfig {
+    var fileIconImage: TwiceImage? = TwiceImageImpl(dark: UIImage.named("contact_file_icon")!, default: UIImage.named("contact_file_icon")!)
+    
     var loadingImage: TwiceImage?  = TwiceImageImpl.init(dark: .named("conversation_status_loading")!, default: .named("conversation_status_loading")!)
     var sentImage: TwiceImage?  = TwiceImageImpl.init(dark: .named("conversation_status_sent")!, default: .named("conversation_status_sent")!)
     var deliveredImage: TwiceImage?  = TwiceImageImpl.init(dark: .named("conversation_status_delivered")!, default: .named("conversation_status_delivered")!)
@@ -26,6 +28,8 @@ private class OutcomeMessageCellConfigImpl: OutcomingMessageCellConfig {
     var sentImage: TwiceImage?  = nil
     var deliveredImage: TwiceImage?  = nil
     var readImage: TwiceImage?  = nil
+    
+    var fileIconImage: TwiceImage? = TwiceImageImpl(dark: UIImage.named("contact_file_icon")!, default: UIImage.named("contact_file_icon")!)
     
     var textLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularBody)
     var deliveryLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
