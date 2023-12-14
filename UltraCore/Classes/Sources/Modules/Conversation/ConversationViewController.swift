@@ -383,9 +383,21 @@ private extension ConversationViewController {
     
     func setupNavigationMore() {
         let mustBeHide = UltraCoreSettings.futureDelegate?.availableToBlock(conversation: self) ?? false
-        
-        self.navigationItem.rightBarButtonItem = mustBeHide ? .init(image: .named("conversation.dots"),
-                                                                    style: .plain, target: self, action: #selector(self.more(_:))) : nil
+        let items: [UIBarButtonItem] = [
+            .init(
+                image: .named("conversation.dots"),
+                style: .plain,
+                target: self,
+                action: #selector(self.more(_:))
+            ),
+            .init(
+                image: .named("contact_phone_icon"),
+                style: .plain,
+                target: self,
+                action: #selector(self.callWithVoice)
+            )
+        ]
+        self.navigationItem.rightBarButtonItems = mustBeHide ? items : nil
     }
     
     func openMoneyTransfer() {
