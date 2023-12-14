@@ -9,7 +9,9 @@ import Foundation
 
 class OutgoingMessageCell: BaseMessageCell {
     
-    fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
+    fileprivate let statusView: UIImageView = .init({
+        $0.contentMode = .scaleAspectFit
+    })
     
     override func setupView() {
         super.setupView()
@@ -39,28 +41,17 @@ class OutgoingMessageCell: BaseMessageCell {
             make.left.equalTo(self.statusView.snp.right).offset(kLowPadding / 2)
             make.right.equalToSuperview().offset(-10)
             make.bottom.equalTo(textView.snp.bottom)
-            make.width.greaterThanOrEqualTo(34)
+            make.width.greaterThanOrEqualTo(35)
             make.centerY.equalTo(statusView.snp.centerY)
         }
     }
     
     override func setup(message: Message) {
         super.setup(message: message)
-        self.statusView.image = .named(message.statusImageName)
-    }
-}
-
-
-extension Message {
-    var statusImageName: String {
-        if self.seqNumber == 0 {
-            return "conversation_status_loading"
-        } else if self.state.delivered == false && self.state.read == false {
-            return "conversation_status_sent"
-        } else if self.state.delivered == true && self.state.read == false {
-            return "conversation_status_delivered"
-        } else {
-            return "conversation_status_read"
+        self.statusView.image = message.statusImage
+        
+        self.statusView.snp.updateConstraints { make in
+            make.width.equalTo(message.stateViewWidth).priority(.high)
         }
     }
 }

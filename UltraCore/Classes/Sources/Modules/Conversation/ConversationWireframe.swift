@@ -67,8 +67,10 @@ extension ConversationWireframe: ConversationWireframeInterface {
     }
     
     func navigateTo(contact: ContactDisplayable) {
-        if let viewController = self.delegate?.contactViewController(contact: contact.phone) {
-            self.navigationController?.pushViewController(viewController, animated: true)
+        if let delegate = self.delegate {
+            if let viewController = delegate.contactViewController(contact: contact.phone) {
+                self.navigationController?.pushViewController(viewController, animated: true)
+            }
         } else {
             self.navigationController?.pushWireframe(ContactWireframe(contact: contact), animated: true, removeFromStack: nil)
         }

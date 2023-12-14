@@ -70,11 +70,9 @@ class OutcomeContactCell : BaseMessageCell {
     
     override func setup(message: Message) {
         super.setup(message: message)
-        
-        self.statusView.image = .named(message.statusImageName)
-        
+        self.statusView.image = message.statusImage
         self.phoneLabel.text = message.contact.phone
         self.displayNameLabel.text = message.contact.displayName
-        self.contactImageView.loadImage(by: nil,placeholder: .initial(text: message.contact.displayName.initails))
+        self.contactImageView.set(placeholder: .initial(text: message.contact.displayName.initails))
     }
 }

@@ -33,7 +33,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     }
     
     fileprivate let navigationDivider: UIView = .init({
-        $0.backgroundColor = UltraCoreStyle.divederColor.color
+        $0.backgroundColor = UltraCoreStyle.divederColor?.color
     })
     
     private lazy var tableView: UITableView = .init {[weak self] tableView in
@@ -41,10 +41,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.separatorStyle = .none
         tableView.backgroundColor = .clear
         tableView.tableFooterView = UIView()
-        tableView.keyboardDismissMode = .onDragWithAccessory
         tableView.refreshControl = refreshControl
         tableView.delegate = self
-        tableView.tintColor = .green500
         tableView.registerCell(type: IncomeFileCell.self)
         tableView.registerCell(type: OutcomeFileCell.self)
         tableView.registerCell(type: BaseMessageCell.self)
@@ -197,6 +195,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         super.setupInitialData()
         self.presenter?
             .messages
+            .distinctUntilChanged()
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
             .do(onNext: {[weak self] messages in
@@ -215,29 +214,48 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             var prev: [Message] = []
         self.presenter?
             .messages
-            .debounce(.milliseconds(100), scheduler: MainScheduler.asyncInstance)
+            .debounce(.milliseconds(20), scheduler: MainScheduler.asyncInstance)
             .filter({ !$0.isEmpty })
             .filter({$0.count != prev.count})
             .do(onNext: {prev = $0})
             .subscribe(onNext: { [weak self] _ in
-                self?.scrollToBottom()
+                guard let `self` = self else { return }
+                if self.tableView.isDecelerating {
+                    self.tableView.stopScrolling()
+                }
+                self.tableView.scrollToLastCell(animated: false)
+                
             })
             .disposed(by: disposeBag)
         
         self.presenter?.viewDidLoad()
+
+//        Observable<Int>
+//            .timer(.milliseconds(200), period: .milliseconds(200), scheduler: MainScheduler.asyncInstance)
+//            .subscribe(onNext: { [weak self] _ in
+//                guard let `self` = self else { return }
+//                self.presenter?.send(message: UUID().uuidString +
+//                    UUID().uuidString +
+//                    UUID().uuidString +
+//                    UUID().uuidString +
+//                    UUID().uuidString)
+//            })
+//            .disposed(by: disposeBag)
     }
     
     override func changed(keyboard height: CGFloat) {
         
         if let indexPath = self.tableView.indexPathsForVisibleRows?.last {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
-                self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: false)
+                self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
             })
         }
         
         self.messageInputBar.snp.updateConstraints { make in
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin).offset(height > 0 ? -(height - 36) : 0)
         }
+
+        self.view.layoutIfNeeded()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -249,7 +267,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
-        self.navigationDivider.backgroundColor = UltraCoreStyle.divederColor.color
+        self.navigationDivider.backgroundColor = UltraCoreStyle.divederColor?.color
     }
 }
 
@@ -305,11 +323,14 @@ extension ConversationViewController: MessageInputBarDelegate {
 
 extension ConversationViewController: ConversationViewInterface {
     func blocked(is blocked: Bool) {
+        if blocked {
+            self.view.endEditing(true)
+        }
         self.messageInputBar.block(blocked)
     }
     
     func reported() {
-        self.showAlert(from: "Запрос отправлен!")
+        self.showAlert(from: ConversationStrings.requestSent.localized)
     }
     
     
@@ -381,7 +402,7 @@ extension ConversationViewController: (UIImagePickerControllerDelegate & UINavig
             picker.dismiss(animated: true)
             self.presenter?.upload(file: .init(url: url, data: data, mime: "video/mp4", width: 300, height: 200))
         } else if let image = info[.originalImage] as? UIImage,
-                  let downsampled = image.fixedOrientation().downsample(reductionAmount: 0.7),
+                  let downsampled = image.fixedOrientation().downsample(reductionAmount: 0.5),
                   let data = downsampled.pngData() {
             picker.dismiss(animated: true, completion: {
                 self.presenter?.upload(file: .init(url: nil, data: data, mime: "image/png", width: image.size.width, height: image.size.height))
@@ -566,7 +587,7 @@ extension ConversationViewController: EditActionBottomBarDelegate {
         
         let viewController = ActionsViewController({ controler in
             controler.headlineText = ConversationStrings.areYouSure.localized
-            controler.regularText = "Если сообщение содержит угрозы, неподходящий контент или нарушает какие-либо правила платформы или сообщества, оно может быть обжаловано и подлежит удалению. Восстановление такого сообщения может быть невозможным"
+            controler.regularText = ConversationStrings.ifAMessageContainsThreatsInappropriateContentOrViolatesAnyPlatformOrCommunity.localized
             
             controler.additionalButtons = [.init({
                 $0.titleLabel?.numberOfLines = 0
@@ -607,39 +628,21 @@ extension ConversationViewController: EditActionBottomBarDelegate {
     }
     
     func presentDeletedMessageView(messages: [Message]) {
-        let viewController = ActionsViewController({ controler in
-            controler.headlineText = ConversationStrings.areYouSure.localized
-            controler.regularText = ConversationStrings.pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible.localized
-            
-            controler.additionalButtons = [.init({
-                $0.titleLabel?.numberOfLines = 0
-                $0.backgroundColor = .green500
-                $0.setTitleColor(.white, for: .normal)
-                $0.setTitle(ConversationStrings.deleteFromMe.localized, for: .normal)
-                $0.addAction { [weak self] in
-                    guard let `self` = self else { return }
-                    controler.dismiss(animated: true)
-                    self.presenter?.delete(messages, all: false)
-                    self.cancel()
-                }
-            }),
-            .init({
-                $0.titleLabel?.numberOfLines = 0
-                $0.backgroundColor = .green500
-                $0.setTitleColor(.white, for: .normal)
-                $0.setTitle(ConversationStrings.deleteForEveryone.localized, for: .normal)
-                $0.addAction { [weak self] in
-                    guard let `self` = self else { return }
-                    controler.dismiss(animated: true)
-                    self.presenter?.delete(messages, all: true)
-                    self.cancel()
-                }
-            })]
-        })
-        
-        viewController.modalPresentationStyle = .custom
-        viewController.transitioningDelegate = sheetTransitioningDelegate
-        present(viewController, animated: true)
+        let alert = UIAlertController(title: ConversationStrings.areYouSure.localized, message: ConversationStrings.pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible.localized, preferredStyle: .actionSheet)
+        alert.addAction(.init(title: ConversationStrings.deleteFromMe.localized, style: .destructive, handler: { [weak self] _ in
+            guard let `self` = self else { return }
+            self.presenter?.delete(messages, all: false)
+            self.cancel()
+        }))
+
+        alert.addAction(.init(title: ConversationStrings.deleteForEveryone.localized, style: .destructive, handler: { [weak self] _ in
+            guard let `self` = self else { return }
+            self.presenter?.delete(messages, all: true)
+            self.cancel()
+        }))
+
+        alert.addAction(.init(title: EditActionStrings.cancel.localized.capitalized, style: .cancel))
+        self.present(alert, animated: true)
     }
 }
 
@@ -658,7 +661,7 @@ extension ConversationViewController: UIDocumentPickerDelegate {
 
 extension ConversationViewController: VoiceInputBarDelegate {
     func showVoiceError() {
-        showSettingAlert(from: "Дайте разрешение на запись голоса")
+        showSettingAlert(from: ConversationStrings.givePermissionToRecordVoice.localized)
     }
     
     func recordedVoice(url: URL, in duration: TimeInterval) {
@@ -679,10 +682,9 @@ extension ConversationViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        return RegularFootnote({
-            $0.textAlignment = .center
-            $0.text = self.dataSource.sectionModels[section].model
-        })
+        return HeadlineInSectionView {[weak self] view in
+            view.setup(title: self?.dataSource.sectionModels[section].model ?? "")
+        }
     }
 }
 
@@ -698,23 +700,4 @@ extension ConversationViewController: CNContactPickerDelegate {
             })
         }
     }
-}
-
-extension ConversationViewController {
-    func scrollToBottom() {
-        let lastSectionIndex = tableView.numberOfSections - 1
-        if lastSectionIndex < 0 { return }
-
-        let lastRowIndex = tableView.numberOfRows(inSection: lastSectionIndex) - 1
-        if lastRowIndex < 0 { return }
-
-        let lastIndexPath = IndexPath(row: lastRowIndex, section: lastSectionIndex)
-        
-        // Проверяем, видна ли последняя ячейка
-        let isLastRowVisible = tableView.indexPathsForVisibleRows?.contains(lastIndexPath) ?? false
-
-        // Прокручиваем с анимацией, если последняя ячейка уже видна (т.е., это не первая загрузка)
-        tableView.scrollToRow(at: lastIndexPath, at: .bottom, animated: isLastRowVisible)
-    }
-
 }

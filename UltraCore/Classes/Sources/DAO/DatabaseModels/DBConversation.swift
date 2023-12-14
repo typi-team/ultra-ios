@@ -25,10 +25,8 @@ class DBConversation: Object {
     convenience init(conversation: Conversation) {
         self.init()
         self.message = nil
-        if let contact = conversation.peer as? DBContact {
-            self.contact = contact
-        } else if let contact = conversation.peer as? Contact {
-            self.contact = DBContact.init(from: contact)
+        if let contact = conversation.peer {
+            self.contact = DBContact.init(contact: contact)
         } else {
             fatalError("handle this case")
         }
@@ -46,66 +44,8 @@ class DBConversation: Object {
         self.contact = realm.object(ofType: DBContact.self, forPrimaryKey: message.sender.userID == id ? message.receiver.userID : message.sender.userID)
         
     }
-}
-
-extension DBConversation: Conversation {
-    var peer: ContactDisplayable? {
-        get { self.contact }
-        set {
-            
-            if let contact = newValue as? DBContact {
-                self.contact = contact
-            } else if let contact = newValue as? Contact {
-                self.contact = DBContact.init(from: contact)
-            } else {
-                fatalError("handle this case")
-            }
-        }
-    }
-    var title: String {
-        return self.contact?.displaName ?? ""
-    }
     
-    var timestamp: Date {
-        get {
-            return self.lastSeen.date
-        }
-        set {
-            self.lastSeen = newValue.nanosec
-        }
-    }
-    
-    var lastMessage: String? {
-        get {
-            if let content = message?.toProto().content {
-                switch content {
-                case .audio(_):
-                    return MessageStrings.audio.localized
-                case .voice(_):
-                    return MessageStrings.voice.localized
-                case .photo(_):
-                    return MessageStrings.photo.localized
-                case .video(_):
-                    return MessageStrings.video.localized
-                case .money(_):
-                    return MessageStrings.money.localized
-                case .location(_):
-                    return MessageStrings.location.localized
-                case .file(_):
-                    return MessageStrings.file.localized
-                case .contact(_):
-                    return MessageStrings.contact.localized
-                case .stock(_):
-                    return MessageStrings.moneyTransfer.localized
-                case .coin(_):
-                    return MessageStrings.moneyTransfer.localized
-                }
-            } else {
-                return self.message?.text
-            }
-        }
-        set {
-            self.message?.text = newValue ?? ""
-        }
+    func toConversation() -> Conversation {
+        return ConversationImpl.init(dbConversation: self)
     }
 }

@@ -60,11 +60,25 @@ class IncomingPhotoCell: MediaCell {
     
     override func setup(message: Message) {
         super.setup(message: message)
+        self.playView.isHidden = true
         self.mediaView.image = UIImage.init(data: message.photo.preview)
         if let image = self.mediaRepository.image(from: message) {
             self.mediaView.image = image
         } else {
             self.dowloadImage(by: message)
+        }
+    }
+    
+    override func setupStyle() {
+        super.setupStyle()
+        if let style = UltraCoreStyle.videoFotoMessageCell {
+            self.deliveryWrapper.backgroundColor = style.containerBackgroundColor.color
+            self.deliveryDateLabel.textColor = style.deliveryLabelConfig.color
+            self.deliveryDateLabel.font = style.deliveryLabelConfig.font
+            
+            if let playImage = style.playImage?.image {
+                self.playView.image = playImage
+            }
         }
     }
 }

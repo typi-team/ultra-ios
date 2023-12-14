@@ -12,6 +12,10 @@ enum ConversationsStrings:  String {
     case emptyMessages
     case startCommunicatingWithYourContactsNow
     case start
+    
+    case deleteFromMe
+    case areYouSure
+    case pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible
 
 }
 

@@ -32,11 +32,11 @@ class BaseMessageCell: BaseCell {
     lazy var disposeBag: DisposeBag = .init()
     lazy var constants: MediaMessageConstants = .init(maxWidth: 300, maxHeight: 200)
     
-    let textView: SubHeadline = .init({
+    let textView: UILabel = .init({
         $0.numberOfLines = 0
     })
     
-    let deliveryDateLabel: RegularFootnote = .init({
+    let deliveryDateLabel: UILabel = .init({
         $0.textAlignment = .right
     })
     
@@ -63,7 +63,7 @@ class BaseMessageCell: BaseCell {
         self.contentView.addGestureRecognizer(cellAction)
         
         if #available(iOS 13.0, *) {
-            self.container.addInteraction(UIContextMenuInteraction.init(delegate: self))
+            
         } else {
             let longTap = UILongPressGestureRecognizer.init(target: self, action: #selector(self.handleLongPress(_:)))
             longTap.minimumPressDuration = 0.3
@@ -95,7 +95,7 @@ class BaseMessageCell: BaseCell {
         }
 
         self.deliveryDateLabel.snp.makeConstraints { make in
-            make.width.greaterThanOrEqualTo(34)
+            make.width.greaterThanOrEqualTo(36)
             make.bottom.equalTo(textView.snp.bottom)
             make.right.equalToSuperview().offset(-(kLowPadding + 1))
             make.left.equalTo(textView.snp.right).offset(kMediumPadding - 5)
@@ -107,29 +107,37 @@ class BaseMessageCell: BaseCell {
         self.textView.text = message.text
         self.deliveryDateLabel.text = message.meta.created.dateBy(format: .hourAndMinute)
         self.traitCollectionDidChange(UIScreen.main.traitCollection)
+        if #available(iOS 13.0, *) {
+            self.container.addInteraction(UIContextMenuInteraction.init(delegate: self))
+        }
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         if let message = message {
             if message.isIncome {
-                self.container.backgroundColor = UltraCoreStyle.incomeMessageCell.backgroundColor.color
-                self.deliveryDateLabel.font = UltraCoreStyle.incomeMessageCell.deliveryLabelConfig.font
-                self.deliveryDateLabel.textColor = UltraCoreStyle.incomeMessageCell.deliveryLabelConfig.color
+                self.container.backgroundColor = UltraCoreStyle.incomeMessageCell?.backgroundColor.color
+                self.deliveryDateLabel.font = UltraCoreStyle.incomeMessageCell?.deliveryLabelConfig.font
+                self.deliveryDateLabel.textColor = UltraCoreStyle.incomeMessageCell?.deliveryLabelConfig.color
                 
-                self.textView.font = UltraCoreStyle.incomeMessageCell.textLabelConfig.font
-                self.textView.textColor = UltraCoreStyle.incomeMessageCell.textLabelConfig.color
+                self.textView.font = UltraCoreStyle.incomeMessageCell?.textLabelConfig.font
+                self.textView.textColor = UltraCoreStyle.incomeMessageCell?.textLabelConfig.color
             } else {
-                self.container.backgroundColor = UltraCoreStyle.outcomeMessageCell.backgroundColor.color
+                self.container.backgroundColor = UltraCoreStyle.outcomeMessageCell?.backgroundColor.color
                 
-                self.deliveryDateLabel.font = UltraCoreStyle.outcomeMessageCell.deliveryLabelConfig.font
-                self.deliveryDateLabel.textColor = UltraCoreStyle.outcomeMessageCell.deliveryLabelConfig.color
+                self.deliveryDateLabel.font = UltraCoreStyle.outcomeMessageCell?.deliveryLabelConfig.font
+                self.deliveryDateLabel.textColor = UltraCoreStyle.outcomeMessageCell?.deliveryLabelConfig.color
                 
-                self.textView.font = UltraCoreStyle.outcomeMessageCell.textLabelConfig.font
-                self.textView.textColor = UltraCoreStyle.outcomeMessageCell.textLabelConfig.color
+                self.textView.font = UltraCoreStyle.outcomeMessageCell?.textLabelConfig.font
+                self.textView.textColor = UltraCoreStyle.outcomeMessageCell?.textLabelConfig.color
+            }
+            
+            if (message.hasPhoto || message.hasVideo), let style = UltraCoreStyle.videoFotoMessageCell {
+                self.deliveryDateLabel.font = style.deliveryLabelConfig.font
+                self.deliveryDateLabel.textColor = style.deliveryLabelConfig.color
             }
         } else {
-            self.container.backgroundColor = UltraCoreStyle.incomeMessageCell.backgroundColor.color
+            self.container.backgroundColor = UltraCoreStyle.incomeMessageCell?.backgroundColor.color
         }
     }
 }

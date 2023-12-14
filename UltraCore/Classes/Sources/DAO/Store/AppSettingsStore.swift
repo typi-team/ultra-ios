@@ -16,7 +16,8 @@ protocol AppSettingsStore {
     
     var lastState: Int64 { get }
     var isAuthed: Bool { get }
-    var ssid: String { get set }
+    var ssid: String? { get set }
+    func deleteAll()
 }
 
 class AppSettingsStoreImpl {
@@ -26,21 +27,11 @@ class AppSettingsStoreImpl {
     fileprivate let kLastState = "kLastState"
     fileprivate let userDefault = UserDefaults(suiteName: "com.ultaCore.messenger")
     
-    var ssid: String {
-        get {
-            guard let sid = userDefault?.string(forKey: kSID) else {
-                fatalError("don't call this methode without value")
-            }
-            return sid
-        }
-        
-        set {
-            userDefault?.set(newValue, forKey: kSID)
-        }
-    }
+    var ssid: String?
 }
 
 extension AppSettingsStoreImpl: AppSettingsStore {
+    
     func store(last state: Int64) {
         self.userDefault?.set(state, forKey: kLastState)
     }
@@ -72,5 +63,14 @@ extension AppSettingsStoreImpl: AppSettingsStore {
             fatalError("call store(token:) before call this function")
         }
         return token
+    }
+    
+    func deleteAll() {
+        [kToken,
+         kSID,
+         kUserID,
+         kLastState].forEach({ key in
+            self.userDefault?.removeObject(forKey: key)
+        })
     }
 }

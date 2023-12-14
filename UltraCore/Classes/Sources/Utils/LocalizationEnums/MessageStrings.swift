@@ -26,6 +26,8 @@ enum MessageStrings: String, StringLocalizable {
     case report
     case delete
     case select
+    
+    case sorryButYouHaveBlockedThisChatIfYouHaveAnyQuestionsOrNeedAssistancePleaseContactOurSupportService
 
     var prefixOfTemplate: String { "message" }
     var localizableValue: String { rawValue }

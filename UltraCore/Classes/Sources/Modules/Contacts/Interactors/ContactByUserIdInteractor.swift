@@ -7,7 +7,7 @@
 import RxSwift
 import Foundation
 
-class ContactByUserIdInteractor: UseCase<String, Contact> {
+class ContactByUserIdInteractor: UseCase<String, ContactDisplayable> {
     
     fileprivate weak var  delegate: UltraCoreSettingsDelegate?
     
@@ -20,8 +20,8 @@ class ContactByUserIdInteractor: UseCase<String, Contact> {
         self.delegate = delegate
     }
         
-    override func executeSingle(params: String) -> Single<Contact> {
-        return Single<Contact>.create { [weak self] observer -> Disposable in
+    override func executeSingle(params: String) -> Single<ContactDisplayable> {
+        return Single<ContactDisplayable>.create { [weak self] observer -> Disposable in
             guard let `self` = self else { return Disposables.create() }
             let requestParam = ContactByUserIdRequest.with({ $0.userID = params })
             self.contactsService.getContactByUserId(requestParam, callOptions: .default())
@@ -35,13 +35,13 @@ class ContactByUserIdInteractor: UseCase<String, Contact> {
                         let firstname = userByContact.hasContact ? userByContact.contact.firstname : userByContact.user.firstname
                         let phone = userByContact.hasContact ? userByContact.contact.phone : userByContact.user.phone
 
-                        observer(.success(.with({ contact in
+                        observer(.success(ContactDisplayableImpl(contact: .with({ contact in
                             contact.phone = phone
                             contact.photo = photo
                             contact.userID = params
                             contact.lastname = lastname
                             contact.firstname = firstname
-                        })))
+                        }))))
                     case let .failure(error):
                         observer(.failure(error))
                     }

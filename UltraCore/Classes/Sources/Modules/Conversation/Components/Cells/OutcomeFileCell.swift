@@ -71,6 +71,11 @@ class OutcomeFileCell : BaseMessageCell {
     override func setup(message: Message) {
         super.setup(message: message)
         self.textView.text = message.file.fileName
-        self.statusView.image = .named(message.statusImageName)
+        self.statusView.image = message.statusImage
+    }
+    
+    override func setupStyle() {
+        super.setupStyle()
+        self.moneyAvatarView.image = UltraCoreStyle.outcomeMessageCell?.fileIconImage?.image ?? UIImage.named("contact_file_icon")
     }
 }

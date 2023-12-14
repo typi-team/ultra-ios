@@ -34,7 +34,7 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
         let presenter = ConversationsPresenter(view: moduleViewController,
                                                updateRepository: appSettings.updateRepository,
                                                messageRepository: appSettings.messageRespository,
-                                               contactsRepository: appSettings.contactRepository,
+                                               contactDBService: appSettings.contactDBService,
                                                wireframe: self,
                                                conversationRepository: appSettings.conversationRespository,
                                                contactByUserIdInteractor: contactByUserIdInteractor,

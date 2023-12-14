@@ -57,13 +57,17 @@ func getTimeText(start: Date, end: Date) -> String {
         return "\(ContactsStrings.was.localized) \(dateString)"
     } else if days == 1 {
         let formatter = DateFormatter()
-        formatter.dateFormat = "\(ContactsStrings.yesterday.localized) в HH:mm"
-        return "\(ContactsStrings.was.localized) \(formatter.string(from: start))"
+        formatter.dateFormat = "HH:mm"
+        return "\(ContactsStrings.was.localized) \(ContactsStrings.yesterday.localized) \(formatter.string(from: start))"
     } else if hours > 0 {
-        let hourString = pluralize(value: hours, singularForm: "час", pluralForm: "часа", pluralForm2: "часов")
+        let hourString = pluralize(value: hours, singularForm: ContactsStrings.hourSingularForm.localized,
+                                   pluralForm: ContactsStrings.hourPluralForm.localized,
+                                   pluralForm2: ContactsStrings.hourPluralForm2.localized)
         return "\(ContactsStrings.was.localized) \(hourString) \(ContactsStrings.backward.localized)"
     } else if minutes > 0 {
-        let minuteString = pluralize(value: minutes, singularForm: "минуту", pluralForm: "минуты", pluralForm2: "минут")
+        let minuteString = pluralize(value: minutes, singularForm: ContactsStrings.minuteSingularForm.localized,
+                                     pluralForm: ContactsStrings.minutePluralForm.localized,
+                                     pluralForm2: ContactsStrings.minutePluralForm2.localized)
         return "\(ContactsStrings.was.localized) \(minuteString) \(ContactsStrings.backward.localized)"
     } else {
         return "\(ContactsStrings.was.localized) \(ContactsStrings.justNow.localized)"

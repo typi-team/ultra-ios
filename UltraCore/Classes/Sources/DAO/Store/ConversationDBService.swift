@@ -10,10 +10,14 @@ import RealmSwift
 
 class ConversationDBService {
     
-    fileprivate let userID: String
+    fileprivate let appStore: AppSettingsStore
     
-    init(userID: String) {
-        self.userID = userID
+    fileprivate var userID: String  {
+        return self.appStore.userID()
+    }
+    
+    init(appStore: AppSettingsStore) {
+        self.appStore = appStore
     }
     
     func createIfNotExist(from message: Message) -> Single<Void> {
@@ -26,14 +30,14 @@ class ConversationDBService {
                     let contact = realm.object(ofType: DBContact.self, forPrimaryKey: peerID )
                     let existConversation = realm.object(ofType: DBConversation.self, forPrimaryKey: message.receiver.chatID)
                     if let conversation = existConversation {
-                        conversation.peer = contact
+                        conversation.contact = contact
                         conversation.lastSeen = message.meta.created
                         conversation.message = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm, user: self.userID)
                         realm.create(DBConversation.self, value: conversation, update: .all)
                     } else {
                         let conversation = realm.create(DBConversation.self,
                                                         value: DBConversation(message: message, user: self.userID))
-                        conversation.peer = contact
+                        conversation.contact = contact
                         realm.add(conversation)
                     }
                     
@@ -56,9 +60,9 @@ class ConversationDBService {
             let notificationKey = results.observe(keyPaths: []) { changes in
                 switch changes {
                 case let .initial(collection):
-                    observer.on(.next(Array(collection.map({DBConversation(value: $0)}))))
+                    observer.on(.next(collection.map({ConversationImpl(dbConversation: $0)})))
                 case let .update(collection, _, _, _):
-                    observer.on(.next(Array(collection.map({DBConversation(value: $0)}))))
+                    observer.on(.next(collection.map({ConversationImpl(dbConversation: $0)})))
                 case let .error(error):
                     observer.on(.error(error))
                 }
@@ -80,9 +84,8 @@ class ConversationDBService {
     func conversation(by id: String) -> Single<Conversation?> {
         return Single.deferred {
             let realm = Realm.myRealm()
-            let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: id)
-            if let conversation = conversation {
-                return Single.just(conversation.detached())
+            if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: id) {
+                return Single.just(conversation.toConversation())
             } else {
                 return Single.just(nil)
             }
@@ -115,5 +118,38 @@ class ConversationDBService {
 extension Message {
     func peerId(user id: String) -> String {
         return sender.userID == id ? receiver.userID : sender.userID
+    }
+    
+    var isIncome: Bool { self.receiver.userID == AppSettingsImpl.shared.appStore.userID() }
+    
+    var message: String? {
+        content?.description ?? text
+    }
+    
+    var statusImage: UIImage? {
+        if self.seqNumber == 0 {
+            return UltraCoreStyle.outcomeMessageCell?.loadingImage?.image ?? UIImage.named("conversation_status_loading")
+        } else if self.state.delivered == false && self.state.read == false {
+            return UltraCoreStyle.outcomeMessageCell?.sentImage?.image ?? UIImage.named("conversation_status_sent")
+        } else if self.state.delivered == true && self.state.read == false {
+            return UltraCoreStyle.outcomeMessageCell?.deliveredImage?.image ?? UIImage.named("conversation_status_delivered")
+        } else {
+            return UltraCoreStyle.outcomeMessageCell?.readImage?.image ?? UIImage.named("conversation_status_read")
+            
+        }
+    }
+    
+    var stateViewWidth: Double {
+        if let size = UltraCoreStyle.outcomeMessageCell?.statusWidth {
+          return size
+        } else if self.seqNumber == 0 {
+            return 12
+        } else if self.state.delivered == false && self.state.read == false {
+            return 10
+        } else if self.state.delivered == true && self.state.read == false {
+            return 15
+        } else {
+            return 15
+        }
     }
 }

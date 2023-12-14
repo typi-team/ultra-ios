@@ -21,6 +21,13 @@ enum ContactsStrings: String, StringLocalizable {
     
     case grantAccess
     
+    case minuteSingularForm
+    case minutePluralForm
+    case minutePluralForm2
+    case hourSingularForm
+    case hourPluralForm
+    case hourPluralForm2
+    
     
     var prefixOfTemplate: String { "contacts" }
     var localizableValue: String { rawValue }

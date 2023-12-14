@@ -87,7 +87,7 @@ class OutgoingPhotoCell: MediaCell {
     
     override func setup(message: Message) {
         super.setup(message: message)
-        self.statusView.image = .named(message.statusImageName)
+        self.statusView.image = statusImage(for: message)
         self.mediaView.image = UIImage.init(data: message.photo.preview)
         self.playView.isHidden = true
         if self.mediaRepository.isUploading(from: message) {
@@ -102,6 +102,20 @@ class OutgoingPhotoCell: MediaCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         self.sameProgressInSameTime.isHidden = true
+    }
+    
+    override func setupStyle() {
+        super.setupStyle()
+        
+        if let style = UltraCoreStyle.videoFotoMessageCell {
+            self.deliveryWrapper.backgroundColor = style.containerBackgroundColor.color
+            self.deliveryDateLabel.textColor = style.deliveryLabelConfig.color
+            self.deliveryDateLabel.font = style.deliveryLabelConfig.font
+            
+            if let playImage = style.playImage?.image {
+                self.playView.image = playImage
+            }
+        }
     }
 }
 
@@ -151,7 +165,7 @@ class OutgoingVideoCell: OutgoingPhotoCell {
     override func setup(message: Message) {
         super.setup(message: message)
         self.playView.isHidden = !message.hasVideo
-        self.statusView.image = .named(message.statusImageName)
+        self.statusView.image = statusImage(for: message)
         self.mediaView.image = UIImage.init(data: message.video.thumbPreview)
         if self.mediaRepository.isUploading(from: message) {
             self.uploadingProgress(for: message)

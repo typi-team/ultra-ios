@@ -12,6 +12,8 @@ import RxSwift
 import NIOPosix
 import PodAsset
 import Logging
+import Realm
+import RealmSwift
 
 open class AppSettingsImpl: AppSettings  {
     
@@ -49,14 +51,14 @@ open class AppSettingsImpl: AppSettings  {
     lazy var contactsService: ContactServiceClientProtocol = ContactServiceNIOClient(channel: channel)
     lazy var updateService: UpdatesServiceClientProtocol = UpdatesServiceNIOClient(channel: updateChannel)
     lazy var conversationService: ChatServiceClientProtocol = ChatServiceNIOClient.init(channel: channel)
-    lazy var integrateService: IntegrationServiceClientProtocol = IntegrationServiceNIOClient.init(channel: channel, defaultCallOptions: .default())
+    lazy var integrateService: IntegrationServiceClientProtocol = IntegrationServiceNIOClient.init(channel: channel)
 
 //    MARK: Services
 
-    lazy var messageDBService: MessageDBService = .init(userId: appStore.userID())
     lazy var appStore: AppSettingsStore = AppSettingsStoreImpl()
-    lazy var contactDBService: ContactDBService = .init(userID: appStore.userID())
-    lazy var conversationDBService: ConversationDBService = .init(userID: appStore.userID())
+    lazy var messageDBService: MessageDBService = .init(appStore: appStore)
+    lazy var contactDBService: ContactDBService = .init(appStore: appStore)
+    lazy var conversationDBService: ConversationDBService = .init(appStore: appStore)
 
 //    MARK: Repositories
 
@@ -79,7 +81,7 @@ open class AppSettingsImpl: AppSettings  {
     
     //    MARK: App main interactors, must be create once
     
-    lazy var contactToConversationInteractor: ContactToConversationInteractor = ContactToConversationInteractor.init(contactRepository: contactRepository,
+    lazy var contactToConversationInteractor: ContactToConversationInteractor = ContactToConversationInteractor.init(contactDBService: contactDBService,
                                                                                                                      contactsService: contactsService,
                                                                                                                      integrateService: integrateService)
     
@@ -105,6 +107,14 @@ open class AppSettingsImpl: AppSettings  {
             }, onError: { callback($0) })
             .do(onSuccess: { _ in callback(nil) })
             .subscribe()
+    }
+    
+    func logout() {
+        let realm = Realm.myRealm()
+        try? realm.write({
+            realm.deleteAll()
+        })
+        self.appStore.deleteAll()
     }
 }
 

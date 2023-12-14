@@ -50,7 +50,7 @@ class SuperMessageSaverInteractor: UseCase<MessageData, Conversation?> {
         if contact == nil {
             return self.contactByUserIdInteractor
                 .executeSingle(params: peerID)
-                .flatMap({ self.contactDBService.save(contact: DBContact(from: $0)) })
+                .flatMap({ self.contactDBService.save(contact: $0) })
                 .flatMap({_ in  self.message(by: messageID)})
                 .flatMap({ message in self.conversationDBService.createIfNotExist(from: message).map({message}) })
                 .flatMap({ message in self.messageDBService.update(message: message) })

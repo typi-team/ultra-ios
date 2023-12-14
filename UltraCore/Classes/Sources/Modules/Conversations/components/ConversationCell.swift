@@ -9,25 +9,29 @@ import UIKit
 
 class ConversationCell: BaseCell {
     
-    fileprivate lazy var style: ConversationCellConfig = UltraCoreStyle.conversationCell
+    fileprivate lazy var style: ConversationCellConfig? = UltraCoreStyle.conversationCell
     
     fileprivate let avatarView: UIImageView = .init({
-        $0.borderWidth = 2
         $0.cornerRadius = 20
-        $0.borderColor = .green500
         $0.contentMode = .scaleAspectFit
         
     })
     
-    fileprivate let titleView: RegularCallout = .init({
+    fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
+    
+    fileprivate let titleView: UILabel = .init({
         $0.numberOfLines = 0
+        $0.lineBreakMode = .byTruncatingTail
     })
-    fileprivate let descriptionView: RegularFootnote = .init({
+    
+    fileprivate let descriptionView: UILabel = .init({
         $0.numberOfLines = 1
     })
-    fileprivate let lastSeenView: RegularFootnote = .init({
+    
+    fileprivate let lastSeenView: UILabel = .init({
         $0.textAlignment = .right
     })
+    
     fileprivate let unreadView: LabelWithInsets = .init({
         $0.cornerRadius = 9
         $0.textColor = .white
@@ -42,6 +46,7 @@ class ConversationCell: BaseCell {
         self.contentView.addSubview(self.avatarView)
         self.contentView.addSubview(self.titleView)
         self.contentView.addSubview(self.descriptionView)
+        self.contentView.addSubview(self.statusView)
         self.contentView.addSubview(self.lastSeenView)
         self.contentView.addSubview(self.unreadView)
         
@@ -61,13 +66,18 @@ class ConversationCell: BaseCell {
             make.top.equalToSuperview().offset(10)
             make.height.equalTo(kHeadlinePadding)
             make.left.equalTo(self.avatarView.snp.right).offset(kMediumPadding)
+            make.right.lessThanOrEqualTo(self.statusView.snp.left).offset(-kLowPadding).priority(.high)
         }
 
+        self.statusView.snp.makeConstraints { make in
+            make.width.equalTo(0)
+            make.centerY.equalTo(self.lastSeenView.snp.centerY)
+        }
+        
         self.lastSeenView.snp.makeConstraints { make in
-            
             make.top.equalTo(self.avatarView.snp.top)
             make.width.greaterThanOrEqualTo(kHeadlinePadding)
-            make.left.equalTo(self.titleView.snp.right).offset(kMediumPadding)
+            make.left.equalTo(self.statusView.snp.right).offset(kLowPadding)
             make.right.equalToSuperview().offset(-kMediumPadding)
         }
 
@@ -88,29 +98,39 @@ class ConversationCell: BaseCell {
     
     func setup(conversation: Conversation ) {
         self.titleView.text = conversation.title
-        self.descriptionView.text = conversation.lastMessage
+        self.descriptionView.text = conversation.lastMessage?.message
         self.unreadView.isHidden = conversation.unreadCount == 0
         self.unreadView.text = conversation.unreadCount.description
         self.lastSeenView.text = conversation.timestamp.formattedTimeForConversationCell()
-        self.avatarView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
         self.setupTyping(conversation: conversation)
         self.setupAvatar(conversation: conversation)
+        
+        if let message = conversation.lastMessage, !message.isIncome {
+            self.statusView.image = message.statusImage
+            self.statusView.snp.updateConstraints { make in
+                make.width.equalTo(message.stateViewWidth)
+            }
+        } else {
+            self.statusView.snp.updateConstraints { make in
+                make.width.equalTo(0)
+            }
+        }
     }
     
     private func setupAvatar(conversation: Conversation) {
         if let contact = conversation.peer {
-            self.avatarView.config(contact: contact)
+            self.avatarView.set(contact: contact, placeholder: UltraCoreStyle.defaultPlaceholder?.image)
         } else {
-            self.avatarView.loadImage(by: nil, placeholder: .initial(text: conversation.title))
+            self.avatarView.set(placeholder: .initial(text: conversation.title))
         }
     }
     
     private func setupTyping(conversation: Conversation) {
         let typingUsers = conversation.typingData.filter({$0.isTyping})
         if typingUsers.isEmpty {
-            self.descriptionView.text = conversation.lastMessage
+            self.descriptionView.text = conversation.lastMessage?.message
         } else {
-            self.descriptionView.text = "печатает..."
+            self.descriptionView.text = "\(ConversationStrings.prints.localized)"
         }
     }
     
@@ -118,14 +138,18 @@ class ConversationCell: BaseCell {
         super.prepareForReuse()
         self.avatarView.image = nil
         self.unreadView.text = ""
+        self.avatarView.sd_cancelCurrentImageLoad()
     }
     
     override func setupStyle() {
         super.setupStyle()
-        self.descriptionView.textColor = style.descriptionConfig.color
-        self.descriptionView.font = style.descriptionConfig.font
-        self.backgroundColor = style.backgroundColor.color
-        self.titleView.textColor = style.titleConfig.color
-        self.titleView.font = style.titleConfig.font
+        self.descriptionView.textColor = style?.descriptionConfig.color
+        self.descriptionView.font = style?.descriptionConfig.font
+        self.backgroundColor = style?.backgroundColor.color
+        self.titleView.textColor = style?.titleConfig.color
+        self.titleView.font = style?.titleConfig.font
+        self.lastSeenView.font = style?.deliveryConfig.font
+        self.lastSeenView.textColor = style?.deliveryConfig.color
+        self.unreadView.backgroundColor = style?.unreadBackgroundColor.color
     }
 }

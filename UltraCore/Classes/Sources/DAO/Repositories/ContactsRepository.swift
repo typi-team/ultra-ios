@@ -12,10 +12,10 @@ import RxDataSources
 import Foundation
 
 protocol ContactsRepository {
-    func contacts() -> Observable<[Contact]>
-    func contact(id: String) -> DBContact?
-    func save(contact: DBContact) -> Single<Void>
-    func delete(contact: DBContact) -> Single<Void>
+    func contacts() -> Observable<[ContactDisplayable]>
+    func contact(id: String) -> ContactDisplayable?
+    func save(contact: ContactDisplayable) -> Single<Void>
+    func delete(contact: ContactDisplayable) -> Single<Void>
     func block(user id: String, blocked: Bool) -> Single<Void>
 }
 
@@ -28,19 +28,19 @@ class ContactsRepositoryImpl: ContactsRepository {
         self.contactDBService = contactDBService
     }
     
-    func contacts() -> Observable<[Contact]> {
+    func contacts() -> Observable<[ContactDisplayable]> {
         return self.contactDBService.contacts()
     }
     
-    func contact(id: String) -> DBContact?{
+    func contact(id: String) -> ContactDisplayable?{
         return self.contactDBService.contact(id: id)
     }
     
-    func save(contact: DBContact) -> Single<Void> {
+    func save(contact: ContactDisplayable) -> Single<Void> {
         return self.contactDBService.save(contact: contact)
     }
     
-    func delete(contact: DBContact) -> Single<Void> {
+    func delete(contact: ContactDisplayable) -> Single<Void> {
         return self.contactDBService.delete(contact: contact)
     }
     

@@ -489,7 +489,3 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .disposed(by: self.disposeBag)
     }
 }
-
-extension Message {
-    var isIncome: Bool { self.receiver.userID == AppSettingsImpl.shared.appStore.userID() }
-}

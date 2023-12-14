@@ -16,13 +16,13 @@ import RxDataSources
 
 struct ContactSection {
     var header: String
-    var items: [Contact]
+    var items: [ContactDisplayable]
 }
 
 extension ContactSection: SectionModelType {
-    typealias Item = Contact
+    typealias Item = ContactDisplayable
 
-    init(original: ContactSection, items: [Contact]) {
+    init(original: ContactSection, items: [ContactDisplayable]) {
         self = original
         self.items = items
     }
@@ -72,8 +72,8 @@ final class ContactsBookViewController: BaseViewController<ContactsBookPresenter
                 } else if contacts.isEmpty && AppHardwareUtils.checkPermissons() {
                     self.contacts(is: true)
                 } else if !AppHardwareUtils.checkPermissons() {
-                    self.showSettingAlert(from: "Зайдите в настройки и переведите Контакты в состояние ВКЛ",
-                                          with: "Freedom Chat не имеет доступа к вашим контактам")
+                    self.showSettingAlert(from: BaseStrings.goToSettingsAndSwitchContactsToOn.localized,
+                                          with: BaseStrings.freedomChatDoesNotHaveAccessToYourContacts.localized)
                 } else {
                     self.tableView.backgroundView = nil
                 }

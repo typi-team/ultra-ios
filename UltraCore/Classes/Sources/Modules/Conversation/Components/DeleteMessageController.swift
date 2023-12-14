@@ -33,7 +33,7 @@ class ActionsViewController: BaseViewController<String> {
     fileprivate lazy var cancelButton: ElevatedButton = .init({
         $0.titleLabel?.numberOfLines = 0
         $0.backgroundColor = .white
-        $0.setTitleColor(.green500, for: .normal)
+        $0.setTitleColor(UltraCoreStyle.elevatedButtonTint?.color, for: .normal)
         $0.setTitle(EditActionStrings.cancel.localized.capitalized, for: .normal)
         $0.addAction { [weak self] in
             guard let `self` = self else { return }
