@@ -42,7 +42,7 @@ class ConversationImpl: Conversation {
         self.peer = dbConversation.contact?.toInterface()
         self.idintification = dbConversation.idintification
         self.timestamp = dbConversation.lastSeen.date
-        
+        self.unreadCount = dbConversation.unreadMessageCount
     }
 }
 

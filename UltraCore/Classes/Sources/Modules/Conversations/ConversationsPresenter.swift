@@ -28,16 +28,14 @@ final class ConversationsPresenter: BasePresenter {
     fileprivate let deleteConversationInteractor: UseCase<(Conversation, Bool), Void>
     fileprivate let contactToCreateChatByPhoneInteractor: ContactToCreateChatByPhoneInteractor
     
-    lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(conversationRepository.conversations(), updateRepository.typingUsers, updateRepository.unreadMessages)
-        .map({ conversations, typingUsers, unreadMessages in
+    lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(conversationRepository.conversations(), updateRepository.typingUsers)
+        .map({ conversations, typingUsers in
             return conversations.map { conversation in
                 var mutable = conversation
-                
                 if let typing = typingUsers[conversation.idintification] {
                     mutable.typingData.removeAll(where: {$0.userId == typing.userId})
                     mutable.typingData.append(typing)
                 }
-                mutable.unreadCount = Int(unreadMessages[conversation.idintification] ?? 0)
                 return mutable
             }
         })

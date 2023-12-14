@@ -72,15 +72,37 @@ class ConversationDBService {
         }
     }
     
-    // Получение списка всех чатов
-    func getConversations() -> Observable<[DBConversation]> {
-        return Observable.deferred {
+    @discardableResult
+    func incrementUnread(for conversationID: String, count: Int = 1) -> Bool {
+        do {
             let realm = Realm.myRealm()
-            let conversations = Array(realm.objects(DBConversation.self).sorted(byKeyPath: "lastSeen", ascending: false))
-            return Observable.just(conversations)
+            try realm.write {
+                if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID) {
+                    conversation.unreadMessageCount += count
+                    realm.add(conversation, update: .all)
+                }
+            }
+            return true
+        } catch {
+            return false
         }
     }
     
+    @discardableResult
+    func realAllMessage(for conversationID: String) -> Bool {
+        do {
+            let realm = Realm.myRealm()
+            try realm.write {
+                if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID) {
+                    conversation.unreadMessageCount = 0
+                    realm.add(conversation, update: .all)
+                }
+            }
+            return true
+        } catch {
+            return false
+        }
+    }
     func conversation(by id: String) -> Single<Conversation?> {
         return Single.deferred {
             let realm = Realm.myRealm()

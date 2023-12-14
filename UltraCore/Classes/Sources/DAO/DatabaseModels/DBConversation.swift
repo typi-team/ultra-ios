@@ -15,7 +15,6 @@ class DBConversation: Object {
     @objc dynamic var idintification: String = ""
     @objc dynamic var unreadMessageCount: Int = 0
     
-    var unreadCount: Int = 0
     var typingData: [UserTypingWithDate] = []
     
     override static func primaryKey() -> String? {
