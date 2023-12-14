@@ -94,6 +94,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
                             self.update(message: message)
                         }
                         
+                        self.appStore.store(last: Int64(response.state))
                         self.handleUnread(from: response.chats)
                         self.setupChangesSubscription(with: response.state)
                     }
