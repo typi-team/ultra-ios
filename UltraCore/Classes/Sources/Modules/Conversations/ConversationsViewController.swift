@@ -29,6 +29,19 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
         }
     }()
     
+    lazy var dataSource = RxTableViewSectionedReloadDataSource<SectionModel<String, Conversation>>(configureCell: {_, tableView, indexPath,
+        model in
+        
+        let cell: ConversationCell = tableView.dequeueCell()
+        cell.setup(conversation: model)
+        return cell
+    }, canEditRowAtIndexPath: { data, indexpath in
+        if let phone = data.sectionModels[indexpath.section].items[indexpath.row].peer?.phone {
+            return !phone.contains("+00000000000")
+        } else {
+            return true
+        }
+    })
     override func setupViews() {
         super.setupViews()
         
@@ -73,12 +86,10 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
                 } else {
                     self.tableView.backgroundView = nil
                 }
+            }).map({ conversation -> [SectionModel<String, Conversation>] in
+                return [SectionModel<String, Conversation>.init(model: "", items: conversation)]
             })
-            .bind(to: tableView.rx.items) { tableView, index, model in
-                let cell: ConversationCell = tableView.dequeueCell()
-                cell.setup(conversation: model)
-                return cell
-            }
+                .bind(to: tableView.rx.items(dataSource: dataSource))
             .disposed(by: self.disposeBag)
         
         self.tableView

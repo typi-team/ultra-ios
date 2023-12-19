@@ -70,6 +70,10 @@ class ViewModel {
 }
 
 extension ViewModel: UltraCoreFutureDelegate {
+    func availableToBlock(conversation: Any) -> Bool {
+        true 
+    }
+    
     func availableToRecordVoice() -> Bool {
         false
     }

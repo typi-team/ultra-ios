@@ -148,8 +148,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.handleKeyboardTransmission = true
         super.setupViews()
 //        MARK: Must be hide
-        self.navigationItem.rightBarButtonItem = .init(image: .named("conversation.dots"),
-                                                       style: .done, target: self, action: #selector(self.more(_:)))
+        self.setupNavigationMore()
         self.view.addSubview(tableView)
         self.view.addSubview(messageHeadline)
         self.view.addSubview(messageInputBar)
@@ -352,6 +351,13 @@ extension ConversationViewController: ConversationViewInterface {
 
 
 private extension ConversationViewController {
+    
+    func setupNavigationMore() {
+        let mustBeHide = UltraCoreSettings.futureDelegate?.availableToBlock(conversation: self) ?? false
+        
+        self.navigationItem.rightBarButtonItem = mustBeHide ? .init(image: .named("conversation.dots"),
+                                                                    style: .plain, target: self, action: #selector(self.more(_:))) : nil
+    }
     
     func openMoneyTransfer() {
         self.presenter?.openMoneyController()
@@ -612,8 +618,7 @@ extension ConversationViewController: EditActionBottomBarDelegate {
     @objc func cancel() {
         self.editInputBar.removeFromSuperview()
         self.tableView.setEditing(false, animated: true)
-        self.navigationItem.rightBarButtonItem = .init(image: .named("conversation.dots"),
-                                                         style: .plain, target: self, action: #selector(self.more(_:)))
+        self.setupNavigationMore()
     }
     
     func delete() {
@@ -673,16 +678,6 @@ extension ConversationViewController: VoiceInputBarDelegate {
 }
 
 extension ConversationViewController: UITableViewDelegate {
-    
-    func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Возвращаем false, чтобы отключить возможность перемещения для всех ячеек
-        return false
-    }
-
-    func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        // Здесь код для обработки перемещения ячеек, если это необходимо
-        // Если вы не хотите, чтобы ячейки перемещались, этот метод может быть пустым
-    }
     
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         return .zero

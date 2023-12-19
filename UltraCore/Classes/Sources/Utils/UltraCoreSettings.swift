@@ -14,7 +14,7 @@ public protocol UltraCoreFutureDelegate: AnyObject {
     func availableToRecordVoice() -> Bool
     func localize(for key: String) -> String?
     func availableToReport(message: Any) -> Bool
-    
+    func availableToBlock(conversation: Any) -> Bool
 }
 
 public protocol UltraCoreSettingsDelegate: AnyObject {
