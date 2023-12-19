@@ -173,8 +173,10 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
             })
 
             let select = UIAction(title: MessageStrings.select.localized, image: .named("message.cell.select")) { [weak self] _ in
-                guard let `self` = self, let message = self.message else { return }
-                self.longTapCallback?(.select(message))
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
+                    guard let `self` = self, let message = self.message else { return }
+                    self.longTapCallback?(.select(message))
+                })
             }
 
             return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), select])

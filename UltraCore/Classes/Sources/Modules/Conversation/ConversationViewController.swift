@@ -135,9 +135,10 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                 }
             }
             return cell
-        },
-        titleForHeaderInSection: { dataSource, sectionIndex in
+        }, titleForHeaderInSection: { dataSource, sectionIndex in
             return dataSource[sectionIndex].model
+        }, canMoveRowAtIndexPath: { _, _  in
+            return false
         }
     )
     
@@ -672,6 +673,16 @@ extension ConversationViewController: VoiceInputBarDelegate {
 }
 
 extension ConversationViewController: UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
+        // Возвращаем false, чтобы отключить возможность перемещения для всех ячеек
+        return false
+    }
+
+    func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+        // Здесь код для обработки перемещения ячеек, если это необходимо
+        // Если вы не хотите, чтобы ячейки перемещались, этот метод может быть пустым
+    }
     
     func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
         return .zero

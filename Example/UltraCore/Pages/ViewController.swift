@@ -18,6 +18,10 @@ class ViewController: UITabBarController {
         self.viewModel.viewDidLoad()
         self.setupView()
         self.setupVCs()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         self.setupSID()
     }
 }
@@ -62,11 +66,11 @@ private extension ViewController {
         self.viewModel.setupSID(callback: {[weak self] error in
             guard let `self` = self else { return }
             DispatchQueue.main.async {
+                UltraCoreSettings.printAllLocalizableStrings()
                 if error != nil {
                     self.viewControllers?.append(self.createNavController(for: UltraCoreSettings.entrySignUpViewController(), title: NSLocalizedString("conversations.chats", comment: ""), image: UIImage(named: "chats")!))
-                    self.viewModel.timer()
-                    UltraCoreSettings.printAllLocalizableStrings()
                 } else {
+                    self.viewModel.timer()
                     self.viewControllers?.append(self.createNavController(for: UltraCoreSettings.entryConversationsViewController(), title: NSLocalizedString("conversations.chats", comment: ""), image: UIImage(named: "chats")!))
                 }
                 self.selectedIndex = 3
