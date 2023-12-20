@@ -31,7 +31,7 @@ class IncomeFileCell : BaseMessageCell {
             make.top.equalToSuperview()
             make.left.equalToSuperview().offset(kMediumPadding)
             make.bottom.equalToSuperview().offset(-(kMediumPadding - 2))
-            make.right.lessThanOrEqualToSuperview().offset(-120)
+            make.right.lessThanOrEqualToSuperview().offset(-contentLessThanConstant)
         }
         
         self.textView.snp.makeConstraints { make in
