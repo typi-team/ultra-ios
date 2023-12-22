@@ -31,7 +31,7 @@ class BaseMessageCell: BaseCell {
     var longTapCallback:((MessageMenuAction) -> Void)?
     lazy var disposeBag: DisposeBag = .init()
     lazy var constants: MediaMessageConstants = .init(maxWidth: 300, maxHeight: 200)
-    lazy var contentLessThanConstant: CGFloat = 180
+    lazy var contentLessThanConstant: CGFloat = 120
     
     let textView: UILabel = .init({
         $0.numberOfLines = 0
@@ -86,13 +86,14 @@ class BaseMessageCell: BaseCell {
             make.top.equalToSuperview()
             make.left.equalToSuperview().offset(kMediumPadding)
             make.bottom.equalToSuperview().offset(-(kMediumPadding - 2))
-            make.right.lessThanOrEqualToSuperview().offset(-contentLessThanConstant)
+            make.right.equalToSuperview().offset(-contentLessThanConstant)
         }
 
         self.textView.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(kLowPadding)
             make.left.equalToSuperview().offset(kLowPadding + 2)
             make.bottom.equalToSuperview().offset(-kLowPadding)
+            make.width.equalTo(38)
         }
 
         self.deliveryDateLabel.snp.makeConstraints { make in
