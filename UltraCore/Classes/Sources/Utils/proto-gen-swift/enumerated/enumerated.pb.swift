@@ -518,6 +518,10 @@ enum ComplainTypeEnum: SwiftProtobuf.Enum {
   case abuse // = 0
   case spam // = 1
   case inappropriate // = 2
+  case personalData // = 3
+  case other // = 4
+  case fraud // = 5
+  case serviceImposition // = 6
   case UNRECOGNIZED(Int)
 
   init() {
@@ -529,6 +533,10 @@ enum ComplainTypeEnum: SwiftProtobuf.Enum {
     case 0: self = .abuse
     case 1: self = .spam
     case 2: self = .inappropriate
+    case 3: self = .personalData
+    case 4: self = .other
+    case 5: self = .fraud
+    case 6: self = .serviceImposition
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -538,6 +546,10 @@ enum ComplainTypeEnum: SwiftProtobuf.Enum {
     case .abuse: return 0
     case .spam: return 1
     case .inappropriate: return 2
+    case .personalData: return 3
+    case .other: return 4
+    case .fraud: return 5
+    case .serviceImposition: return 6
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -552,6 +564,10 @@ extension ComplainTypeEnum: CaseIterable {
     .abuse,
     .spam,
     .inappropriate,
+    .personalData,
+    .other,
+    .fraud,
+    .serviceImposition,
   ]
 }
 
@@ -743,6 +759,10 @@ extension ComplainTypeEnum: SwiftProtobuf._ProtoNameProviding {
     0: .same(proto: "ABUSE"),
     1: .same(proto: "SPAM"),
     2: .same(proto: "INAPPROPRIATE"),
+    3: .same(proto: "PERSONAL_DATA"),
+    4: .same(proto: "OTHER"),
+    5: .same(proto: "FRAUD"),
+    6: .same(proto: "SERVICE_IMPOSITION"),
   ]
 }
 
