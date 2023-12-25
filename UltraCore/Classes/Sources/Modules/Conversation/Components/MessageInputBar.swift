@@ -114,7 +114,7 @@ class MessageInputBar: UIView {
         self.blockLabel.backgroundColor = style?.background.color
         self.containerStack.backgroundColor = style?.messageContainerBackground.color
         self.messageTextView.backgroundColor = style?.messageContainerBackground.color
-        self.messageTextView.tintColor = style?.textConfig.color
+        self.messageTextView.tintColor = style?.textConfig.tintColor.color
     }
     
     private func hideOrShowAllViewInRecording(visibility: Bool) {

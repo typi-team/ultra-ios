@@ -9,45 +9,16 @@ import Foundation
 import RxSwift
 import GRPC
 
-struct UserTypingWithDate: Hashable {
-    var chatId: String
-    var userId: String
-    var createdAt: Date
-    
-    init(chatId: String, userId: String, createdAt: Date = Date()) {
-        self.chatId = chatId
-        self.userId = userId
-        self.createdAt = createdAt
-    }
-    
-    
-    init(user typing: UserTyping) {
-        self.createdAt = Date()
-        self.chatId = typing.chatID
-        self.userId = typing.userID
-    }
-    
-    var isTyping: Bool {
-        return Date().timeIntervalSince(createdAt) < kTypingMinInterval
-    }
-    
-    static func == (lhs: UserTypingWithDate, rhs: UserTypingWithDate) -> Bool {
-        return lhs.chatId == rhs.chatId
-    }
-}
-
 protocol UpdateRepository: AnyObject {
     
     func setupSubscription()
     func sendPoingByTimer()
     func readAll(in conversation: Conversation)
-    var unreadMessages: BehaviorSubject<[String: Int64]> { get set }
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> { get set }
 }
 
 class UpdateRepositoryImpl {
     
-    var unreadMessages: BehaviorSubject<[String: Int64]> = .init(value: [:])
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> = .init(value: [:])
     
     fileprivate let disposeBag = DisposeBag()
@@ -83,9 +54,7 @@ class UpdateRepositoryImpl {
 extension UpdateRepositoryImpl: UpdateRepository {
     
     func readAll(in conversation: Conversation) {
-        guard var unread = try? self.unreadMessages.value() else { return }
-        unread.removeValue(forKey: conversation.idintification)
-        self.unreadMessages.on(.next(unread))
+        self.conversationService.realAllMessage(for: conversation.idintification)
     }
     
     func sendPoingByTimer() {
@@ -125,6 +94,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
                             self.update(message: message)
                         }
                         
+                        self.appStore.store(last: Int64(response.state))
                         self.handleUnread(from: response.chats)
                         self.setupChangesSubscription(with: response.state)
                     }
@@ -137,10 +107,9 @@ extension UpdateRepositoryImpl: UpdateRepository {
 
 private extension UpdateRepositoryImpl {
     func handleUnread(from chats: [Chat]) {
-        let unread = chats.reduce(into: [:]) { result, chat in
-            result[chat.chatID] = chat.unread
+        for chat in chats {
+            self.conversationService.incrementUnread(for: chat.chatID, count: Int(chat.unread))
         }
-        self.unreadMessages.on(.next(unread))
     }
     
     func setupChangesSubscription(with state: UInt64) {
@@ -250,10 +219,8 @@ private extension UpdateRepositoryImpl {
 extension UpdateRepositoryImpl {
     
     func handleNewMessageOnRead(message: Message) {
-        guard var unread = try? self.unreadMessages.value(),
-              message.sender.userID != self.appStore.userID() else { return }
-        unread[message.receiver.chatID] = (unread[message.receiver.chatID] ?? 0) + 1
-        self.unreadMessages.on(.next(unread))
+        guard message.sender.userID != self.appStore.userID() else { return }
+        self.conversationService.incrementUnread(for: message.receiver.chatID)
     }
     
     func update(message: Message) {
