@@ -86,7 +86,7 @@ class BaseMessageCell: BaseCell {
             make.top.equalToSuperview()
             make.left.equalToSuperview().offset(kMediumPadding)
             make.bottom.equalToSuperview().offset(-(kMediumPadding - 2))
-            make.right.equalToSuperview().offset(-contentLessThanConstant)
+            make.right.lessThanOrEqualToSuperview().offset(-contentLessThanConstant)
         }
 
         self.textView.snp.makeConstraints { make in

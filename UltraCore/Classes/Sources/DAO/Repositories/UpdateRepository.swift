@@ -149,13 +149,15 @@ private extension UpdateRepositoryImpl {
         case let .callCancel(callrequest):
             self.dissmissCall(in: callrequest.room)
         case let .block(blockMessage):
+            print("block \(blockMessage.textFormatString())")
             self.contactService
-                .block(user: blockMessage.user, blocked: blockMessage.state)
+                .block(user: blockMessage.user, blocked: true)
                 .subscribe()
                 .disposed(by: disposeBag)
         case let .unblock(blockMessage):
+            print("unblock \(blockMessage.textFormatString())")
             self.contactService
-                .block(user: blockMessage.user, blocked: blockMessage.state)
+                .block(user: blockMessage.user, blocked: false)
                 .subscribe()
                 .disposed(by: disposeBag)
         }
