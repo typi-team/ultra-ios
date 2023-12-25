@@ -40,6 +40,7 @@ class MessageInputBar: UIView {
     
     private lazy var messageTextView: UITextView = MessageTextView.init {[weak self] textView in
         textView.delegate = self
+        textView.inputAccessoryView = nil
         textView.cornerRadius = kLowPadding
         textView.placeholder = self?.style?.textConfig.placeholder ?? ""
     }

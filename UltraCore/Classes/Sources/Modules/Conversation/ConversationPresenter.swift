@@ -112,9 +112,8 @@ extension ConversationPresenter: ConversationPresenterInterface {
         guard let contact = self.conversation.peer else { return }
         let userId = contact.userID
         if contact.isBlocked {
-            AppSettingsImpl.shared.conversationService.unblockUser(.with({
+            AppSettingsImpl.shared.userService.unblockUser(.with({
                 $0.userID = userId
-                $0.chatID = self.conversation.idintification
             }), callOptions: .default()).response.whenComplete({[weak self] result in
                 guard let `self` = self else { return }
                 DispatchQueue.main.async {
@@ -127,8 +126,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 }
             })
         } else {
-            AppSettingsImpl.shared.conversationService.blockUser(.with({
-                $0.chatID = self.conversation.idintification
+            AppSettingsImpl.shared.userService.blockUser(.with({
                 $0.userID = userId
             }), callOptions: .default()).response.whenComplete({[weak self] result in
                 guard let `self` = self else { return }

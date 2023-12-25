@@ -135,9 +135,10 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                 }
             }
             return cell
-        },
-        titleForHeaderInSection: { dataSource, sectionIndex in
+        }, titleForHeaderInSection: { dataSource, sectionIndex in
             return dataSource[sectionIndex].model
+        }, canMoveRowAtIndexPath: { _, _  in
+            return false
         }
     )
     
@@ -147,8 +148,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.handleKeyboardTransmission = true
         super.setupViews()
 //        MARK: Must be hide
-        self.navigationItem.rightBarButtonItem = .init(image: .named("conversation.dots"),
-                                                       style: .done, target: self, action: #selector(self.more(_:)))
+        self.setupNavigationMore()
         self.view.addSubview(tableView)
         self.view.addSubview(messageHeadline)
         self.view.addSubview(messageInputBar)
@@ -351,6 +351,13 @@ extension ConversationViewController: ConversationViewInterface {
 
 
 private extension ConversationViewController {
+    
+    func setupNavigationMore() {
+        let mustBeHide = UltraCoreSettings.futureDelegate?.availableToBlock(conversation: self) ?? false
+        
+        self.navigationItem.rightBarButtonItem = mustBeHide ? .init(image: .named("conversation.dots"),
+                                                                    style: .plain, target: self, action: #selector(self.more(_:))) : nil
+    }
     
     func openMoneyTransfer() {
         self.presenter?.openMoneyController()
@@ -611,8 +618,7 @@ extension ConversationViewController: EditActionBottomBarDelegate {
     @objc func cancel() {
         self.editInputBar.removeFromSuperview()
         self.tableView.setEditing(false, animated: true)
-        self.navigationItem.rightBarButtonItem = .init(image: .named("conversation.dots"),
-                                                         style: .plain, target: self, action: #selector(self.more(_:)))
+        self.setupNavigationMore()
     }
     
     func delete() {

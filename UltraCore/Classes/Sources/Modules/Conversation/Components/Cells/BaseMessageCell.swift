@@ -31,6 +31,7 @@ class BaseMessageCell: BaseCell {
     var longTapCallback:((MessageMenuAction) -> Void)?
     lazy var disposeBag: DisposeBag = .init()
     lazy var constants: MediaMessageConstants = .init(maxWidth: 300, maxHeight: 200)
+    lazy var contentLessThanConstant: CGFloat = 120
     
     let textView: UILabel = .init({
         $0.numberOfLines = 0
@@ -85,7 +86,7 @@ class BaseMessageCell: BaseCell {
             make.top.equalToSuperview()
             make.left.equalToSuperview().offset(kMediumPadding)
             make.bottom.equalToSuperview().offset(-(kMediumPadding - 2))
-            make.right.lessThanOrEqualToSuperview().offset(-120)
+            make.right.lessThanOrEqualToSuperview().offset(-contentLessThanConstant)
         }
 
         self.textView.snp.makeConstraints { make in
@@ -95,7 +96,7 @@ class BaseMessageCell: BaseCell {
         }
 
         self.deliveryDateLabel.snp.makeConstraints { make in
-            make.width.greaterThanOrEqualTo(36)
+            make.width.greaterThanOrEqualTo(38)
             make.bottom.equalTo(textView.snp.bottom)
             make.right.equalToSuperview().offset(-(kLowPadding + 1))
             make.left.equalTo(textView.snp.right).offset(kMediumPadding - 5)
@@ -145,6 +146,7 @@ class BaseMessageCell: BaseCell {
 extension BaseMessageCell: UIContextMenuInteractionDelegate {
     @available(iOS 13.0, *)
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+        self.cellActionCallback?()
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ -> UIMenu? in
             guard let `self` = self else { return nil }
             var action: [UIAction] = []
@@ -173,8 +175,10 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
             })
 
             let select = UIAction(title: MessageStrings.select.localized, image: .named("message.cell.select")) { [weak self] _ in
-                guard let `self` = self, let message = self.message else { return }
-                self.longTapCallback?(.select(message))
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
+                    guard let `self` = self, let message = self.message else { return }
+                    self.longTapCallback?(.select(message))
+                })
             }
 
             return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), select])

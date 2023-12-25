@@ -14,7 +14,7 @@ public protocol UltraCoreFutureDelegate: AnyObject {
     func availableToRecordVoice() -> Bool
     func localize(for key: String) -> String?
     func availableToReport(message: Any) -> Bool
-    
+    func availableToBlock(conversation: Any) -> Bool
 }
 
 public protocol UltraCoreSettingsDelegate: AnyObject {
@@ -61,7 +61,7 @@ public extension UltraCoreSettings {
          return ConversationsWireframe(appDelegate: UltraCoreSettings.delegate).viewController
      }
 
-    static func update(sid token: String, timeOut: TimeInterval = 4,
+    static func update(sid token: String, timeOut: TimeInterval = 0,
                        with callback: @escaping (Error?) -> Void) {
          AppSettingsImpl.shared.appStore.ssid = token
          AppSettingsImpl.shared.update(ssid: token, callback: { error in

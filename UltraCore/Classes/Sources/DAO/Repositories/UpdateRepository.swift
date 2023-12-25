@@ -134,7 +134,6 @@ private extension UpdateRepositoryImpl {
     
     func handle(of presence: Update.OneOf_OfPresence) {
         switch presence {
-
         case let .typing(typing):
             self.handle(user: typing)
         case let .audioRecording(pres):
@@ -149,14 +148,16 @@ private extension UpdateRepositoryImpl {
             self.handleIncoming(callRequest: callRequest)
         case let .callCancel(callrequest):
             self.dissmissCall(in: callrequest.room)
-        case .block(let blockMessage):
+        case let .block(blockMessage):
+            print("block \(blockMessage.textFormatString())")
             self.contactService
-                .block(user: blockMessage.user, blocked: blockMessage.state)
+                .block(user: blockMessage.user, blocked: true)
                 .subscribe()
                 .disposed(by: disposeBag)
-        case .unblock(let blockMessage):
+        case let .unblock(blockMessage):
+            print("unblock \(blockMessage.textFormatString())")
             self.contactService
-                .block(user: blockMessage.user, blocked: blockMessage.state)
+                .block(user: blockMessage.user, blocked: false)
                 .subscribe()
                 .disposed(by: disposeBag)
         }

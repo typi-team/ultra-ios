@@ -250,6 +250,8 @@ struct ComplainRequest {
 
   var type: ComplainTypeEnum = .abuse
 
+  var comment: String = String()
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -819,6 +821,7 @@ extension ComplainRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     1: .standard(proto: "chat_id"),
     2: .standard(proto: "message_id"),
     3: .same(proto: "type"),
+    4: .same(proto: "comment"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -830,6 +833,7 @@ extension ComplainRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
       case 1: try { try decoder.decodeSingularStringField(value: &self.chatID) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.messageID) }()
       case 3: try { try decoder.decodeSingularEnumField(value: &self.type) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.comment) }()
       default: break
       }
     }
@@ -845,6 +849,9 @@ extension ComplainRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     if self.type != .abuse {
       try visitor.visitSingularEnumField(value: self.type, fieldNumber: 3)
     }
+    if !self.comment.isEmpty {
+      try visitor.visitSingularStringField(value: self.comment, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -852,6 +859,7 @@ extension ComplainRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     if lhs.chatID != rhs.chatID {return false}
     if lhs.messageID != rhs.messageID {return false}
     if lhs.type != rhs.type {return false}
+    if lhs.comment != rhs.comment {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
