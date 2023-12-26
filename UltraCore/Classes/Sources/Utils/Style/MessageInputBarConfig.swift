@@ -15,4 +15,12 @@ public protocol MessageInputBarConfig {
     var sendMoneyViewTint: TwiceColor { get set }
     var recordViewTint: TwiceColor { get set }
     var messageContainerBackground: TwiceColor { get set }
+    
+    var blockedViewConfig: MessageInputBarBlockedConfig { get set }
+}
+
+public protocol MessageInputBarBlockedConfig {
+    var background: TwiceColor { get set }
+    var textConfig: TextViewConfig { get set }
+    var textBackgroundConfig: TwiceColor { get set }
 }

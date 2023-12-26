@@ -41,6 +41,7 @@ class ContactByUserIdInteractor: UseCase<String, ContactDisplayable> {
                             contact.userID = params
                             contact.lastname = lastname
                             contact.firstname = firstname
+                            contact.isBlocked = userByContact.hasContact ? userByContact.contact.isBlocked : userByContact.user.isBlocked
                         }))))
                     case let .failure(error):
                         observer(.failure(error))

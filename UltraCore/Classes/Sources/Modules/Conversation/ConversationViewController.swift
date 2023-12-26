@@ -274,6 +274,9 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     // MARK: - UITextViewDelegate
 
 extension ConversationViewController: MessageInputBarDelegate {
+    func unblock() {
+        self.presenter?.block()
+    }
     
     func pressedPlus(in view: MessageInputBar) {
         let viewController = FilesController()
