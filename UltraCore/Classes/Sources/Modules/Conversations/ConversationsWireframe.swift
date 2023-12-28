@@ -29,7 +29,8 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
                                                                                        contactService: appSettings.contactsService)
         let contactByUserIdInteractor = ContactByUserIdInteractor.init(delegate: UltraCoreSettings.delegate,
                                                                        contactsService: appSettings.contactsService)
-        
+        let messageSenderInteractor = SendMessageInteractor.init(messageService: appSettings.messageService)
+
         let contactToCreateChatByPhoneInteractor = ContactToCreateChatByPhoneInteractor.init(integrateService: appSettings.integrateService)
         let presenter = ConversationsPresenter(view: moduleViewController,
                                                updateRepository: appSettings.updateRepository,
@@ -40,7 +41,8 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
                                                contactByUserIdInteractor: contactByUserIdInteractor,
                                                retrieveContactStatusesInteractor: retrieveContactStatusesInteractor,
                                                deleteConversationInteractor: deleteConversationInteractor, contactToCreateChatByPhoneInteractor: contactToCreateChatByPhoneInteractor,
-                                               userStatusUpdateInteractor: UpdateOnlineInteractor(userService: appSettings.userService))
+                                               userStatusUpdateInteractor: UpdateOnlineInteractor(userService: appSettings.userService),
+                                               messageSenderInteractor: messageSenderInteractor)
         moduleViewController.presenter = presenter
     }
 }
