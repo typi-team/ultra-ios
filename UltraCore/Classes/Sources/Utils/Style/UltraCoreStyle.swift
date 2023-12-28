@@ -113,8 +113,8 @@ private class MessageInputBarConfigImpl: MessageInputBarConfig {
 }
 
 private class MessageInputBarBlockedConfigImpl: MessageInputBarBlockedConfig {
+    var dividerColor: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
     var background: TwiceColor = TwiceColorImpl(defaultColor: .gray100, darkColor: .gray700)
-    
     var textConfig: TextViewConfig =  LabelConfigImpl.init(darkColor: .white, defaultColor: .gray900, font: .defaultRegularSubHeadline,
                                                            tintColor: TwiceColorImpl(defaultColor: .green500, darkColor: .white))
     

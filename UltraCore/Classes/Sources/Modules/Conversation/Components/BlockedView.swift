@@ -15,6 +15,9 @@ class BlockView: UIView {
     weak var delegate: BlockViewDelegate?
 
     private var style: MessageInputBarBlockedConfig? { UltraCoreStyle.mesageInputBarConfig?.blockedViewConfig }
+    
+    private lazy var divider: UIView = .init { $0.backgroundColor = style?.dividerColor.color }
+    
 
     private lazy var blockView: UIButton = UIButton.init {
         $0.setTitle(ConversationStrings.unblock.localized.capitalized, for: .normal)
@@ -38,7 +41,12 @@ class BlockView: UIView {
 
     private func setupView() {
         self.addSubview(blockView)
+        self.addSubview(divider)
 
+        self.divider.snp.makeConstraints { make in
+            make.top.left.right.equalToSuperview()
+            make.height.equalTo(1)
+        }
         self.blockView.snp.makeConstraints { make in
             make.edges.equalToSuperview().inset(kMediumPadding)
         }
@@ -52,5 +60,6 @@ class BlockView: UIView {
         self.blockView.titleLabel?.font = style?.textConfig.font
         self.blockView.backgroundColor = style?.textBackgroundConfig.color
         self.blockView.setTitleColor(style?.textConfig.color, for: .normal)
+        self.divider.backgroundColor = style?.dividerColor.color
     }
 }

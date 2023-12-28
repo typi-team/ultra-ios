@@ -288,6 +288,7 @@ extension MessageInputBar {
         self.blockView.snp.makeConstraints { make in
             if isBlocked {
                 self.addSubview(blockView)
+                self.blockView.bringSubviewToFront(self)
                 self.blockView.snp.makeConstraints { make in
                     make.edges.equalToSuperview()
                 }

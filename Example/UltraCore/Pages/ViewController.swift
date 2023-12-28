@@ -18,6 +18,8 @@ class ViewController: UITabBarController {
         self.viewModel.viewDidLoad()
         self.setupView()
         self.setupVCs()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground(_:)), name: UIApplication.willEnterForegroundNotification, object: nil)
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -85,5 +87,9 @@ private extension ViewController {
     
     @objc func logout(_ sender: Any) {
         UltraCoreSettings.logout()
+    }
+    
+    @objc func willEnterForeground(_ sender: Any) {
+        self.viewModel.setupSID { _ in }
     }
 }

@@ -22,5 +22,6 @@ public protocol MessageInputBarConfig {
 public protocol MessageInputBarBlockedConfig {
     var background: TwiceColor { get set }
     var textConfig: TextViewConfig { get set }
+    var dividerColor: TwiceColor { get set }
     var textBackgroundConfig: TwiceColor { get set }
 }
