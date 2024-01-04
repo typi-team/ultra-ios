@@ -191,6 +191,8 @@ struct PhotoMessage {
   var height: Int32 = 0
 
   var preview: Data = Data()
+    
+  var placeholder: Data = Data()
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 

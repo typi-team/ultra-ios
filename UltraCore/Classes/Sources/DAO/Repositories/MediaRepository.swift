@@ -17,7 +17,8 @@ protocol MediaRepository {
     func isUploading(from message: Message) -> Bool
     func download(from message: Message) -> Single<Message>
     func image(from message: Message) -> UIImage?
-    func upload(file: FileUpload, in conversation: Conversation) -> Single<MessageSendRequest>
+    func upload(file: FileUpload, in conversation: Conversation, onPreUploadingFile: (MessageSendRequest) -> Void) -> Single<MessageSendRequest>
+    func upload(message: Message, in conversation: Conversation) -> Single<MessageSendRequest>
 }
 
 class MediaRepositoryImpl {
@@ -58,9 +59,9 @@ extension MediaRepositoryImpl: MediaRepository {
         return try! self.uploadingMedias.value().contains(where: { $0.fileID == message.fileID })
     }
 
-    func upload(file: FileUpload, in conversation: Conversation) -> Single<MessageSendRequest> {
+    func upload(file: FileUpload, in conversation: Conversation, onPreUploadingFile: (MessageSendRequest) -> Void) -> Single<MessageSendRequest> {
         if file.mime.containsImage {
-            return self.uploadImage(by: file, in: conversation)
+            return self.uploadImage(by: file, in: conversation, onPreUploadingFile: onPreUploadingFile)
         } else if file.mime.containsVideo {
             return self.uploadVideo(by: file, in: conversation)
         } else if file.mime.containsAudio{
@@ -68,6 +69,10 @@ extension MediaRepositoryImpl: MediaRepository {
         }else {
             return self.uploadFile(by: file, in: conversation)
         }
+    }
+    
+    func upload(message: Message, in conversation: Conversation) -> Single<MessageSendRequest> {
+        return uploadImage(by: message, data: message.photo.placeholder, in: conversation)
     }
     
     func image(from message: Message) -> UIImage? {
@@ -170,18 +175,9 @@ extension MediaRepositoryImpl: MediaRepository {
 
 private extension MediaRepositoryImpl {
     
-    func uploadImage(by file: FileUpload, in conversation: Conversation) -> Single<MessageSendRequest> {
-
-        var message = self.mediaUtils.createMessageForUpload(in: conversation, with: appStore.userID())
-        message.photo = .with({ photo in
-            photo.fileName = ""
-            photo.fileSize = Int64(file.data.count)
-            photo.mimeType = file.mime
-            photo.height = Int32(file.height)
-            photo.width = Int32(file.width)
-        })
-
-        return self.createFileSpaceInteractor.executeSingle(params: (file.data, message.photo.mimeType))
+    func uploadImage(by message: Message, data: Data, in conversation: Conversation) -> Single<MessageSendRequest> {
+        var message = message
+        return self.createFileSpaceInteractor.executeSingle(params: (data, message.photo.mimeType))
             .do(onSuccess: { [weak self] chunks in
                 guard let `self` = self else { return }
                 var images = try self.uploadingMedias.value()
@@ -195,7 +191,7 @@ private extension MediaRepositoryImpl {
             .do(onSuccess: { [weak self] chunks in
                 guard let `self` = self else { throw NSError.selfIsNill }
                 message.photo.fileID = chunks.first?.fileID ?? ""
-                try self.mediaUtils.write(file.data, file: message.photo.originalFileId, and: message.photo.extensions)
+                try self.mediaUtils.write(data, file: message.photo.originalFileId, and: message.photo.extensions)
             })
             .do(onSuccess: { [weak self] _ in
                 guard let `self` = self,
@@ -247,6 +243,22 @@ private extension MediaRepositoryImpl {
                 process.removeAll(where: { $0.fileID == message.photo.fileID })
                 self.uploadingMedias.on(.next(process))
             })
+    }
+    
+    
+    func uploadImage(by file: FileUpload, in conversation: Conversation, onPreUploadingFile: (MessageSendRequest) -> Void) -> Single<MessageSendRequest> {
+        var message = self.mediaUtils.createMessageForUpload(in: conversation, with: appStore.userID())
+        message.photo = .with({ photo in
+            photo.fileName = ""
+            photo.fileSize = Int64(file.data.count)
+            photo.mimeType = file.mime
+            photo.height = Int32(file.height)
+            photo.width = Int32(file.width)
+            photo.placeholder = file.data
+            photo.fileID = UUID().uuidString
+        })
+        preUploading(message: message, conversation: conversation, onCompletion: onPreUploadingFile)
+        return upload(message: message, in: conversation)
     }
     
     func uploadFile(by file: FileUpload, in conversation: Conversation) -> Single<MessageSendRequest> {
@@ -506,5 +518,16 @@ private extension MediaRepositoryImpl {
                 self.uploadingMedias.on(.next(process))
             })
     }
+    
+    private func preUploading(message: Message, conversation: Conversation, onCompletion: (MessageSendRequest) -> Void) {
+        let request = MessageSendRequest.with({ req in
+            req.peer.user = .with({ peer in
+                peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
+            })
+            req.message = message
+        })
+        onCompletion(request)
+    }
+
 }
 

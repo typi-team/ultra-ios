@@ -29,6 +29,7 @@ final class ConversationsPresenter: BasePresenter {
     fileprivate let deleteConversationInteractor: UseCase<(Conversation, Bool), Void>
     fileprivate let contactToCreateChatByPhoneInteractor: ContactToCreateChatByPhoneInteractor
     private let messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>
+    fileprivate let mediaRepository: MediaRepository
     private var conversationSending: Set<String> = []
     
     lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(conversationRepository.conversations(), updateRepository.typingUsers)
@@ -56,7 +57,8 @@ final class ConversationsPresenter: BasePresenter {
          deleteConversationInteractor: UseCase<(Conversation,Bool), Void>,
          contactToCreateChatByPhoneInteractor: ContactToCreateChatByPhoneInteractor,
          userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>,
-         messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>) {
+         messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>,
+         mediaRepository: MediaRepository) {
         self.view = view
         self.wireframe = wireframe
         self.updateRepository = updateRepository
@@ -69,6 +71,7 @@ final class ConversationsPresenter: BasePresenter {
         self.retrieveContactStatusesInteractor = retrieveContactStatusesInteractor
         self.contactToCreateChatByPhoneInteractor = contactToCreateChatByPhoneInteractor
         self.messageSenderInteractor = messageSenderInteractor
+        self.mediaRepository = mediaRepository
     }
 }
 
@@ -148,7 +151,14 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
                 self.getConversationByID(id: conversation.idintification) { messages in
                     let unsendedMessages = messages.filter { $0.seqNumber == 0 && !$0.isIncome }
                     unsendedMessages.forEach { message in
-                        self.resendMessage(message: message, conversation: conversation)
+                        if message.content != nil {
+                            self.resendFiles(
+                                message: message,
+                                conversation: conversation
+                            )
+                        } else {
+                            self.resendMessage(message: message, conversation: conversation)
+                        }
                     }
                 }
             }
@@ -178,6 +188,21 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
             .observe(on: MainScheduler.instance)
             .subscribe()
             .disposed(by: self.disposeBag)
+    }
+    
+    func resendFiles(message: Message, conversation: Conversation) {        
+        self.mediaRepository
+            .upload(message: message, in: conversation)
+            .flatMap({ [weak self] request in
+                guard let `self` = self else { throw NSError.selfIsNill }
+                return self.messageSenderInteractor.executeSingle(params: request)
+            })
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe(onSuccess: { _ in },
+                       onFailure: { error in PP.debug(error.localizedDescription)
+            })
+            .disposed(by: disposeBag)
     }
     
     private func startReachibilityNotifier() {

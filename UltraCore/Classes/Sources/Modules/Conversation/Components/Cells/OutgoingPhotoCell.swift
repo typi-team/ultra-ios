@@ -95,6 +95,10 @@ class OutgoingPhotoCell: MediaCell {
         } else if let image = self.mediaRepository.image(from: message) {
             self.mediaView.image = image
         } else {
+            if message.photo.preview.isEmpty {
+                mediaView.image = UIImage(data: message.photo.placeholder)
+                return
+            }
             self.dowloadImage(by: message)
         }
     }

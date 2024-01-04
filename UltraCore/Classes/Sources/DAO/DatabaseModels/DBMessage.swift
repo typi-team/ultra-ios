@@ -258,6 +258,7 @@ class DBPhotoMessage: Object {
     @objc dynamic var width: Int32 = 0
     @objc dynamic var height: Int32 = 0
     @objc dynamic var preview: Data = Data()
+    @objc dynamic var placeholder: Data = Data()
     
     override static func primaryKey() -> String? {
         return "fileID"
@@ -272,6 +273,7 @@ class DBPhotoMessage: Object {
         self.width = proto.width
         self.height = proto.height
         self.preview = proto.preview
+        self.placeholder = proto.placeholder
     }
     
     func toProto() -> PhotoMessage {
@@ -283,6 +285,7 @@ class DBPhotoMessage: Object {
         proto.width = self.width
         proto.height = self.height
         proto.preview = self.preview
+        proto.placeholder = self.placeholder
         return proto
     }
 }

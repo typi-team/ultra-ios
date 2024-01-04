@@ -42,7 +42,8 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
                                                retrieveContactStatusesInteractor: retrieveContactStatusesInteractor,
                                                deleteConversationInteractor: deleteConversationInteractor, contactToCreateChatByPhoneInteractor: contactToCreateChatByPhoneInteractor,
                                                userStatusUpdateInteractor: UpdateOnlineInteractor(userService: appSettings.userService),
-                                               messageSenderInteractor: messageSenderInteractor)
+                                               messageSenderInteractor: messageSenderInteractor,
+                                               mediaRepository: AppSettingsImpl.shared.mediaRepository)
         moduleViewController.presenter = presenter
     }
 }
