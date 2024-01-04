@@ -20,6 +20,7 @@ public protocol UltraCoreFutureDelegate: AnyObject {
 public protocol UltraCoreSettingsDelegate: AnyObject {
     func emptyConversationView() -> UIView?
     func info(from id: String) -> IContactInfo?
+    func token(callback: @escaping StringCallback)
     func serverConfig() -> ServerConfigurationProtocol?
     func contactViewController(contact id: String) -> UIViewController?
     func moneyViewController(callback: @escaping MoneyCallback) -> UIViewController?
@@ -64,20 +65,21 @@ public extension UltraCoreSettings {
     static func update(sid token: String, timeOut: TimeInterval = 0,
                        with callback: @escaping (Error?) -> Void) {
          AppSettingsImpl.shared.appStore.ssid = token
-         AppSettingsImpl.shared.update(ssid: token, callback: { error in
 
-             if error == nil {
+         AppSettingsImpl.shared.jwtTokenInteractorImpl
+             .executeSingle(params: token)
+             .do(onSuccess: { _ in
                  AppSettingsImpl.shared.updateRepository.setupSubscription()
-             }
-             
-             if AppSettingsImpl.shared.appStore.lastState == 0 {
-                 DispatchQueue.main.asyncAfter(deadline: .now() + timeOut, execute: {
-                     callback(error)
-                 })
-             } else {
-                 callback(error)
-             }
-         })
+                 if AppSettingsImpl.shared.appStore.lastState == 0 {
+                     DispatchQueue.main.asyncAfter(deadline: .now() + timeOut, execute: {
+                         callback(nil)
+                     })
+                 } else {
+                     callback(nil)
+                 }
+             }, onError: { callback($0) })
+             .subscribe()
+             .disposed(by: disposeBag)
      }
 
      static func update(firebase token: String) {

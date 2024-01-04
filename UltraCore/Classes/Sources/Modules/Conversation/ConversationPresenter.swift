@@ -32,7 +32,7 @@ final class ConversationPresenter {
     private let wireframe: ConversationWireframeInterface
     fileprivate let conversationRepository: ConversationRepository
     
-
+    private let blockContactInteractor: GRPCErrorUseCase<BlockParam, Void>
     private let deleteMessageInteractor: UseCase<([Message], Bool), Void>
     private let sendTypingInteractor: UseCase<String, SendTypingResponse>
     private let readMessageInteractor: UseCase<Message, MessagesReadResponse>
@@ -76,6 +76,7 @@ final class ConversationPresenter {
          wireframe: ConversationWireframeInterface,
          conversationRepository: ConversationRepository,
          deleteMessageInteractor: UseCase<([Message], Bool), Void>,
+         blockContactInteractor: GRPCErrorUseCase<BlockParam, Void>,
          messagesInteractor: UseCase<GetChatMessagesRequest, [Message]>,
          sendTypingInteractor: UseCase<String, SendTypingResponse>,
          readMessageInteractor: UseCase<Message, MessagesReadResponse>,
@@ -95,6 +96,7 @@ final class ConversationPresenter {
         self.sendMoneyInteractor = sendMoneyInteractor
         self.sendTypingInteractor = sendTypingInteractor
         self.readMessageInteractor = readMessageInteractor
+        self.blockContactInteractor = blockContactInteractor
         self.conversationRepository = conversationRepository
         self.deleteMessageInteractor = deleteMessageInteractor
         self.messageSenderInteractor = messageSenderInteractor
@@ -111,35 +113,19 @@ extension ConversationPresenter: ConversationPresenterInterface {
     func block() {
         guard let contact = self.conversation.peer else { return }
         let userId = contact.userID
-        if contact.isBlocked {
-            AppSettingsImpl.shared.userService.unblockUser(.with({
-                $0.userID = userId
-            }), callOptions: .default()).response.whenComplete({[weak self] result in
+        self.blockContactInteractor
+            .executeSingle(params: (userId, !contact.isBlocked))
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe (onSuccess: { [weak self] () in
                 guard let `self` = self else { return }
-                DispatchQueue.main.async {
-                    switch result {
-                    case .success:
-                        self.update(block: false, user: userId)
-                    case .failure(let error):
-                        self.view.show(error: error.localizedDescription)
-                    }
-                }
-            })
-        } else {
-            AppSettingsImpl.shared.userService.blockUser(.with({
-                $0.userID = userId
-            }), callOptions: .default()).response.whenComplete({[weak self] result in
+                
+                    self.update(block: false, user: userId)
+                
+            }, onFailure:  {[weak self ]error in
                 guard let `self` = self else { return }
-                DispatchQueue.main.async {
-                    switch result {
-                    case .success:
-                        self.update(block: true, user: userId)
-                    case .failure(let error):
-                        self.view.show(error: error.localizedDescription)
-                    }
-                }
-            })
-        }
+                self.view.show(error: error.localizedDescription)
+            }).disposed(by: self.disposeBag)
     }
     
     private func update(block: Bool, user id: String) {

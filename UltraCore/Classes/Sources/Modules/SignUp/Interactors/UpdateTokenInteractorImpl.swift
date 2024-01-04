@@ -1,26 +1,50 @@
 //
-//  JWTTokenInteractorImpl.swift
+//  UpdateTokenInteractorImpl.swift
 //  UltraCore
 //
-//  Created by Slam on 4/20/23.
+//  Created by Slam on 1/3/24.
 //
 
-import Foundation
 import RxSwift
-import GRPC
 
-class JWTTokenInteractorImpl: UseCase<String, IssueJwtResponse> {
+class UpdateTokenInteractorImpl: UseCase<Void, Void> {
 
     final let authService: AuthServiceClientProtocol
     final let appStore: AppSettingsStore
+    final weak var delegate: UltraCoreSettingsDelegate?
 
     init(appStore: AppSettingsStore,
-         authService: AuthServiceClientProtocol) {
+         authService: AuthServiceClientProtocol,
+         delegate: UltraCoreSettingsDelegate? = UltraCoreSettings.delegate) {
         self.appStore = appStore
+        self.delegate = delegate
         self.authService = authService
     }
 
-    override func executeSingle(params: String) -> Single<IssueJwtResponse> {
+    override func executeSingle(params: Void) -> Single<Void> {
+        return Single<String>.create { [weak self] observer -> Disposable in
+            guard let `self` = self else {
+                return Disposables.create()
+            }
+
+            if let delegate = self.delegate {
+                delegate.token { token in
+                    if let token = token {
+                        observer(.success(token))
+                    } else {
+                        observer(.failure(NSError.objectsIsNill))
+                    }
+                }
+            } else {
+                observer(.failure(NSError.objectsIsNill))
+            }
+
+            return Disposables.create()
+        }
+        .flatMap({ self.updateToken(params: $0) }).map { _ in () }
+    }
+    
+    private func updateToken(params: String) -> Single<IssueJwtResponse> {
         return Single.create { [weak self] observer -> Disposable in
             guard let `self` = self else {
                 return Disposables.create()
@@ -51,3 +75,4 @@ class JWTTokenInteractorImpl: UseCase<String, IssueJwtResponse> {
         })
     }
 }
+

@@ -32,4 +32,7 @@ protocol AppSettings: Any {
     var contactsService: ContactServiceClientProtocol { get }
     var conversationService: ChatServiceClientProtocol { get }
     var integrateService: IntegrationServiceClientProtocol { get }
+    
+    var updateTokenInteractor: UseCase<Void, Void> { get }
+    var jwtTokenInteractorImpl: UseCase<String, IssueJwtResponse> { get }
 }
