@@ -30,7 +30,7 @@ final class ConversationsPresenter: BasePresenter {
     fileprivate let contactToCreateChatByPhoneInteractor: ContactToCreateChatByPhoneInteractor
     private let messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>
     fileprivate let mediaRepository: MediaRepository
-    private var conversationSending: Set<String> = []
+    private var resendingMessages: Array<String> = []
     
     lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(conversationRepository.conversations(), updateRepository.typingUsers)
         .map({ conversations, typingUsers in
@@ -151,13 +151,16 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
                 self.getConversationByID(id: conversation.idintification) { messages in
                     let unsendedMessages = messages.filter { $0.seqNumber == 0 && !$0.isIncome }
                     unsendedMessages.forEach { message in
-                        if message.content != nil {
-                            self.resendFiles(
-                                message: message,
-                                conversation: conversation
-                            )
-                        } else {
-                            self.resendMessage(message: message, conversation: conversation)
+                        if !self.resendingMessages.contains(message.id) {
+                            self.resendingMessages.append(message.id)
+                            if message.content != nil {
+                                self.resendFiles(
+                                    message: message,
+                                    conversation: conversation
+                                )
+                            } else {
+                                self.resendMessage(message: message, conversation: conversation)
+                            }
                         }
                     }
                 }
@@ -190,7 +193,7 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
             .disposed(by: self.disposeBag)
     }
     
-    func resendFiles(message: Message, conversation: Conversation) {        
+    func resendFiles(message: Message, conversation: Conversation) {
         self.mediaRepository
             .upload(message: message, in: conversation)
             .flatMap({ [weak self] request in
@@ -225,13 +228,11 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
     private func getConversationByID(id: String, onCompletion: @escaping ([Message]) -> Void) {
         messageRepository
             .messages(chatID: id)
-            .map({ $0.sorted(by: { m1, m2 in m1.meta.created < m2.meta.created }) })
-            .subscribe(onNext: { [weak self] conversations in
-                guard let self, !self.conversationSending.contains(id) else { return }
-                conversationSending.insert(id)
-                onCompletion(conversations)
+            .do(onNext: { messages in
+                onCompletion(messages)
             })
+            .subscribe()
             .disposed(by: disposeBag)
     }
-    
+  
 }
