@@ -117,22 +117,12 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .executeSingle(params: (userId, !contact.isBlocked))
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
-            .subscribe (onSuccess: { [weak self] () in
-                guard let `self` = self else { return }
-                
-                    self.update(block: false, user: userId)
-                
-            }, onFailure:  {[weak self ]error in
+            .subscribe (onFailure:  {[weak self ]error in
                 guard let `self` = self else { return }
                 self.view.show(error: error.localizedDescription)
             }).disposed(by: self.disposeBag)
     }
-    
-    private func update(block: Bool, user id: String) {
-        self.contactRepository.block(user: id, blocked: block)
-            .subscribe()
-            .disposed(by: self.disposeBag)
-    }
+
     
     func report(_ messages: [Message]) {
         guard !messages.isEmpty else { return }

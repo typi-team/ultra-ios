@@ -7,6 +7,7 @@
 
 import Foundation
 import RxSwift
+import GRPC
 
 public typealias StringCallback = (String?) -> Void
 
@@ -14,10 +15,14 @@ class GRPCErrorUseCase<P, R> {
     final let updateTokenInteractor: UseCase<Void, Void> = AppSettingsImpl.shared.updateTokenInteractor
     
     func executeSingle(params: P) -> Single<R> {
-        return self.job(params: params)
+        self.job(params: params)
             .catch({ error -> Single<R> in
-                return self.handleGRPC(error: error)
-                    .flatMap({self.job(params: params)})
+                if (error as? GRPC.GRPCStatus)?.code == .unauthenticated {
+                    return self.handleGRPC(error: error)
+                        .flatMap({ self.job(params: params) })
+                } else {
+                    return Single.error(error)
+                }
             })
     }
     

@@ -79,7 +79,7 @@ extension ViewModel: UltraCoreFutureDelegate {
     }
     
     func availableToReport(message: Any) -> Bool {
-        false
+        true
     }
     
     func localize(for key: String) -> String? {
