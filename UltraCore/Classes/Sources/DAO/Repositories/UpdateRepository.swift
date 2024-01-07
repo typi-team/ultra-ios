@@ -27,6 +27,7 @@ class UpdateRepositoryImpl {
     fileprivate let messageService: MessageDBService
     fileprivate let updateClient: UpdatesServiceClientProtocol
     fileprivate let conversationService: ConversationDBService
+    fileprivate let pingPongInteractorImpl: GRPCErrorUseCase<Void, Void>
     fileprivate let contactByIDInteractor: UseCase<String, ContactDisplayable>
     fileprivate let deliveredMessageInteractor: UseCase<Message, MessagesDeliveredResponse>
     
@@ -39,6 +40,7 @@ class UpdateRepositoryImpl {
          contactService: ContactDBService,
          updateClient: UpdatesServiceClientProtocol,
          conversationService: ConversationDBService,
+         pingPongInteractorImpl: PingPongInteractorImpl,
          userByIDInteractor: UseCase<String, ContactDisplayable>,
          deliveredMessageInteractor: UseCase<Message, MessagesDeliveredResponse>) {
         self.updateClient = updateClient
@@ -47,6 +49,7 @@ class UpdateRepositoryImpl {
         self.contactService = contactService
         self.conversationService = conversationService
         self.contactByIDInteractor = userByIDInteractor
+        self.pingPongInteractorImpl = pingPongInteractorImpl
         self.deliveredMessageInteractor = deliveredMessageInteractor
     }
 }
@@ -60,17 +63,10 @@ extension UpdateRepositoryImpl: UpdateRepository {
     func sendPoingByTimer() {
         Timer.scheduledTimer(withTimeInterval: 12, repeats: true) { [weak self] timer in
             guard let `self` = self else { return timer.invalidate() }
-            self.updateClient.ping(PingRequest(), callOptions: .default())
-                .response
-                .whenComplete { result in
-                    switch result {
-                    case .success:
-                        break
-                    case let .failure(error):
-                        PP.error(error.localizedDescription)
-                        timer.invalidate()
-                    }
-                }
+            self.pingPongInteractorImpl
+                .executeSingle(params: ())
+                .subscribe()
+                .disposed(by: disposeBag)
         }
     }
     
@@ -114,7 +110,6 @@ private extension UpdateRepositoryImpl {
     
     func setupChangesSubscription(with state: UInt64) {
         let state: ListenRequest = .with { $0.localState = .with { $0.state = state } }
-        self.updateListenStream?.cancel(promise: nil)
         self.updateListenStream = updateClient.listen(state, callOptions: .default()) { [weak self] response in
             guard let `self` = self else { return }
             self.appStore.store(last: max(Int64(response.lastState), self.appStore.lastState))
@@ -149,13 +144,11 @@ private extension UpdateRepositoryImpl {
         case let .callCancel(callrequest):
             self.dissmissCall(in: callrequest.room)
         case let .block(blockMessage):
-            print("block \(blockMessage.textFormatString())")
             self.contactService
                 .block(user: blockMessage.user, blocked: true)
                 .subscribe()
                 .disposed(by: disposeBag)
         case let .unblock(blockMessage):
-            print("unblock \(blockMessage.textFormatString())")
             self.contactService
                 .block(user: blockMessage.user, blocked: false)
                 .subscribe()

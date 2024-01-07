@@ -5,7 +5,7 @@
 //  Created by Slam on 4/24/23.
 //
 
-import Foundation
+import GRPC
 
 extension NSError {
     static var selfIsNill: NSError {
@@ -16,5 +16,15 @@ extension NSError {
         let error = NSError.init(domain: "Skip this error, because object is nil", code: 101)
         PP.error(error.description)
         return error
+    }
+}
+
+extension Error {
+    var localeError: String {
+        if let grpcError = self as? GRPCStatus {
+            return "\(grpcError.message ?? "Not defined message") : \(grpcError.code)"
+        } else {
+            return self.localizedDescription
+        }
     }
 }

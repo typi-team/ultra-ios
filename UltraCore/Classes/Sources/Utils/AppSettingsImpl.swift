@@ -32,7 +32,16 @@ open class AppSettingsImpl: AppSettings  {
     
     lazy var channel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
                                                                             port: serverConfig.portOfServer),
-                                                              transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
+                                                              transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1)){
+        // Configure keepalive.
+        $0.connectionBackoff = ConnectionBackoff(initialBackoff: 1.0,
+                                                 maximumBackoff: 10.0,
+                                                 multiplier: 1.6,
+                                                 jitter: 0.2,
+                                                 minimumConnectionTimeout: 20.0,
+                                                 retries: .unlimited)
+        $0.idleTimeout = .zero
+     }
     lazy var fileChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
                                                                                port: serverConfig.portOfServer),
                                                                  transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
@@ -74,6 +83,7 @@ open class AppSettingsImpl: AppSettings  {
                                                                             contactService: contactDBService,
                                                                             updateClient: updateService,
                                                                             conversationService: conversationDBService,
+                                                                            pingPongInteractorImpl: PingPongInteractorImpl.init(updateClient: updateService),
                                                                             userByIDInteractor: ContactByUserIdInteractor.init(delegate: UltraCoreSettings.delegate,
                                                                                                                                contactsService: contactsService),
                                                                             deliveredMessageInteractor: DeliveredMessageInteractor.init(messageService: messageService))

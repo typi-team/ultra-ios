@@ -119,7 +119,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .observe(on: MainScheduler.instance)
             .subscribe (onFailure:  {[weak self ]error in
                 guard let `self` = self else { return }
-                self.view.show(error: error.localizedDescription)
+                self.view.show(error: error.localeError)
             }).disposed(by: self.disposeBag)
     }
 

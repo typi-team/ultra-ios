@@ -40,9 +40,7 @@ class JWTTokenInteractorImpl: UseCase<String, IssueJwtResponse> {
                 }
             }
 
-            return Disposables.create {
-                call.cancel(promise: nil)
-            }
+            return Disposables.create()
         }
         .do(onSuccess: { [weak self] response in
             guard let `self` = self else { return }
