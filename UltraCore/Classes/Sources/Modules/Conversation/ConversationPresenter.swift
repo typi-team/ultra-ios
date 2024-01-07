@@ -124,12 +124,12 @@ extension ConversationPresenter: ConversationPresenterInterface {
     }
 
     
-    func report(_ messages: [Message]) {
-        guard !messages.isEmpty else { return }
-        
+    func report(_ message: Message, with type: ComplainTypeEnum?, comment: String?) {
         AppSettingsImpl.shared.messageService.complain(.with({
+            $0.messageID = message.id
+            $0.comment = comment ?? ""
             $0.chatID = self.conversation.idintification
-            $0.messageID = messages.first!.id
+            $0.type = comment == nil ? .other : type ?? .other
         }), callOptions: .default()).response
             .whenComplete({[weak self] result in
                 guard let `self` = self else { return }

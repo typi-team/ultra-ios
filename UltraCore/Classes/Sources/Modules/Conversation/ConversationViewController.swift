@@ -18,6 +18,7 @@ import RxDataSources
 final class ConversationViewController: BaseViewController<ConversationPresenterInterface> {
     // MARK: - Properties
     
+    let reportTransitioningDelegate = SheetTransitioningDelegate()
     let sheetTransitioningDelegate = SheetTransitioningDelegate()
     fileprivate var mediaItem: URL?
     fileprivate var isDrawingTable: Bool = false
@@ -107,6 +108,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                     self.presentReportMessageView(message: message)
                 case let .copy(message):
                     UIPasteboard.general.string = message.text
+                case .reportDefined(message: let message, type: let type):
+                    self.presenter?.report(message, with: type, comment: nil)
                 }
             }
             
@@ -333,7 +336,7 @@ extension ConversationViewController: ConversationViewInterface {
     }
     
     func reported() {
-        self.showAlert(from: ConversationStrings.requestSent.localized)
+        self.showAlert(from: ConversationStrings.yourComplaintWillBeReviewedByModeratorsThankYou.localized)
     }
     
     
@@ -594,27 +597,17 @@ extension ConversationViewController: EditActionBottomBarDelegate {
     }
     
     func presentReportMessageView(message: Message) {
-        
-        let viewController = ActionsViewController({ controler in
-            controler.headlineText = ConversationStrings.areYouSure.localized
-            controler.regularText = ConversationStrings.ifAMessageContainsThreatsInappropriateContentOrViolatesAnyPlatformOrCommunity.localized
-            
-            controler.additionalButtons = [.init({
-                $0.titleLabel?.numberOfLines = 0
-                $0.backgroundColor = .green500
-                $0.setTitleColor(.white, for: .normal)
-                $0.setTitle(EditActionStrings.report.localized.capitalized, for: .normal)
-                $0.addAction { [weak self] in
-                    guard let `self` = self else { return }
-                    controler.dismiss(animated: true)
-                    self.presenter?.report([message])
-                    self.cancel()
-                }
-            })]
+        let viewController = ReportCommentController({ controler in
+            controler.saveAction = {[weak self] comment in
+                guard let `self` = self else { return }
+                controler.dismiss(animated: true)
+                self.presenter?.report(message, with: nil, comment: comment)
+                self.cancel()
+            }
         })
         
         viewController.modalPresentationStyle = .custom
-        viewController.transitioningDelegate = sheetTransitioningDelegate
+        viewController.transitioningDelegate = reportTransitioningDelegate
         present(viewController, animated: true)
     }
     
