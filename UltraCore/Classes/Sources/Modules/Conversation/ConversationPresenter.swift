@@ -125,12 +125,14 @@ extension ConversationPresenter: ConversationPresenterInterface {
 
     
     func report(_ message: Message, with type: ComplainTypeEnum?, comment: String?) {
-        AppSettingsImpl.shared.messageService.complain(.with({
+        let request = ComplainRequest.with({
             $0.messageID = message.id
             $0.comment = comment ?? ""
             $0.chatID = self.conversation.idintification
             $0.type = comment == nil ? .other : type ?? .other
-        }), callOptions: .default()).response
+        })
+        print(request)
+        AppSettingsImpl.shared.messageService.complain(request, callOptions: .default()).response
             .whenComplete({[weak self] result in
                 guard let `self` = self else { return }
                 DispatchQueue.main.async {
@@ -138,7 +140,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                     case .success:
                         self.view.reported()
                     case let .failure(error):
-                        self.view.show(error: error.localizedDescription)
+                        self.view.show(error: error.localeError)
                     }
                 }
             })

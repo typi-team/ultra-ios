@@ -76,7 +76,7 @@
 "conversation.deleteForEveryone" = "Удалить для всех";
 "conversation.givePermissionToRecordVoice" = "Give permission to record voice";
 "conversation.ifAMessageContainsThreatsInappropriateContentOrViolatesAnyPlatformOrCommunity" = "Если сообщение содержит угрозы, неподходящий контент или нарушает какие-либо правила платформы или сообщества, оно может быть обжаловано и подлежит удалению. Восстановление такого сообщения может быть невозможным";
-"conversation.yourComplaintWillBeReviewedByModeratorsThankYou" = "Вашу жалобу проверять модераторы. Спасибо!";
+"conversation.yourComplaintWillBeReviewedByModeratorsThankYou" = "Вашу жалобу проверят модераторы. Спасибо!";
 "conversation.areYouSure" = "Вы уверены?";
 "conversation.pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible" = "Пожалуйста, обратите внимание, что данные сообщения будут безвозвратно удалены, и восстановление не будет возможным";
 
@@ -105,7 +105,7 @@
 "message.impositionOfServices" = "Навязывание услуг";
 "message.insult" = "Оскорбление";
 "message.other" = "Другое";
-"message.additionalInformationInComments" = "Укажите дополнительную информацию в комментарии";
+"message.additionalInformationInComments" = "Вы можете указать дополнительную информацию в комментариях";
 "message.comment" = "Комментарий";
 // MARK: Base view
 "base.error" = "Ошибка";
