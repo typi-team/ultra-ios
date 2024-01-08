@@ -167,6 +167,8 @@ struct VoiceMessage {
   var mimeType: String = String()
 
   var fileName: String = String()
+    
+  var data: Data = Data()
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -212,6 +214,8 @@ struct FileMessage {
 
   var fileName: String = String()
 
+  var data: Data = Data()
+    
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -443,6 +447,8 @@ struct VideoMessage {
   var thumbFileID: String = String()
 
   var thumbPreview: Data = Data()
+    
+  var filePath: String = String()
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 

@@ -153,11 +153,16 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
                     unsendedMessages.forEach { message in
                         if !self.resendingMessages.contains(message.id) {
                             self.resendingMessages.append(message.id)
-                            if message.content != nil {
-                                self.resendFiles(
-                                    message: message,
-                                    conversation: conversation
-                                )
+                            if let content = message.content {
+                                switch content {
+                                case .audio, .voice, .photo, .video, .file:
+                                    self.resendFiles(
+                                        message: message,
+                                        conversation: conversation
+                                    )
+                                default:
+                                    self.resendMessage(message: message, conversation: conversation)
+                                }
                             } else {
                                 self.resendMessage(message: message, conversation: conversation)
                             }
@@ -210,6 +215,7 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
     
     private func startReachibilityNotifier() {
         reachability.whenReachable = { [weak self] reachability in
+            self?.resendingMessages.removeAll()
             self?.resendConversationsIfNeeded()
         }
         try? reachability.startNotifier()

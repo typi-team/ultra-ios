@@ -176,6 +176,10 @@ class OutgoingVideoCell: OutgoingPhotoCell {
         } else if let image = self.mediaRepository.image(from: message) {
             self.mediaView.image = image
         } else {
+            guard !message.photo.preview.isEmpty else {
+                mediaView.image = UIImage.init(data: message.video.thumbPreview)
+                return
+            }
             self.dowloadImage(by: message)
         }
     }

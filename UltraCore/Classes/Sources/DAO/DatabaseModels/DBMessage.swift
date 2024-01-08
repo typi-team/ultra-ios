@@ -225,6 +225,7 @@ class DBVoiceMessage: Object {
     @objc dynamic var fileSize: Int64 = 0
     @objc dynamic var mimeType: String = ""
     @objc dynamic var fileName: String = ""
+    @objc dynamic var data: Data = Data()
     
     override static func primaryKey() -> String? {
         return "fileID"
@@ -237,6 +238,7 @@ class DBVoiceMessage: Object {
         self.fileSize = proto.fileSize
         self.mimeType = proto.mimeType
         self.fileName = proto.fileName
+        self.data = proto.data
     }
     
     func toProto() -> VoiceMessage {
@@ -246,6 +248,7 @@ class DBVoiceMessage: Object {
         proto.fileSize = self.fileSize
         proto.mimeType = self.mimeType
         proto.fileName = self.fileName
+        proto.data = self.data
         return proto
     }
 }
@@ -299,6 +302,7 @@ class DBVideoMessage: Object {
     @objc dynamic var width: Int32 = 0
     @objc dynamic var height: Int32 = 0
     @objc dynamic var preview: Data = Data()
+    @objc dynamic var filePath: String = ""
     
     override static func primaryKey() -> String? {
         return "fileID"
@@ -314,6 +318,7 @@ class DBVideoMessage: Object {
         self.width = videoMessage.width
         self.height = videoMessage.height
         self.preview = videoMessage.thumbPreview
+        self.filePath = videoMessage.filePath
     }
 
     func toProto() -> VideoMessage {
@@ -326,6 +331,7 @@ class DBVideoMessage: Object {
         videoMessage.width = self.width
         videoMessage.height = self.height
         videoMessage.thumbPreview = self.preview
+        videoMessage.filePath = self.filePath
         return videoMessage
     }
 }
@@ -379,7 +385,8 @@ class DBFileMessage: Object {
     @objc dynamic var fileSize: Int64 = 0
     @objc dynamic var mimeType: String = ""
     @objc dynamic var fileName: String = ""
-
+    @objc dynamic var data: Data = Data()
+    
     override static func primaryKey() -> String? {
         return "fileID"
     }
@@ -390,6 +397,7 @@ class DBFileMessage: Object {
         self.fileSize = fileMessage.fileSize
         self.mimeType = fileMessage.mimeType
         self.fileName = fileMessage.fileName
+        self.data = fileMessage.data
     }
 
     func toProto() -> FileMessage {
@@ -398,6 +406,7 @@ class DBFileMessage: Object {
             fileMessage.fileSize = self.fileSize
             fileMessage.mimeType = self.mimeType
             fileMessage.fileName = self.fileName
+            fileMessage.data = self.data
         }
     }
 }
