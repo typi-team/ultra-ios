@@ -28,11 +28,6 @@ class ReportCommentController: BaseViewController<String> {
         $0.placeholder = MessageStrings.comment.localized
         $0.returnKeyType = .done
         $0.delegate = self
-        $0.addAction(for: .editingChanged, { [weak self] in
-            guard let `self` = self,
-                  let summValue = self.textField.text else { return }
-            self.saveButton.isEnabled = !summValue.isEmpty
-        })
         $0.padding.right += $0.padding.right
         $0.rightViewMode = .always
         $0.rightView = UIButton({
@@ -50,9 +45,9 @@ class ReportCommentController: BaseViewController<String> {
         $0.setTitleColor(.white, for: .normal)
         $0.setTitle(MessageStrings.report.localized.capitalized, for: .normal)
         $0.addAction { [weak self] in
-            guard let `self` = self, let text = self.textField.text, !text.isEmpty else { return }
+            guard let `self` = self else { return }
             self.dismiss(animated: true, completion: {
-                self.saveAction?(text)
+                self.saveAction?(self.textField.text ?? "")
             })
         }
     })

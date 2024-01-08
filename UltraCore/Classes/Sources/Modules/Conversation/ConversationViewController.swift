@@ -104,12 +104,10 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                     self.presentDeletedMessageView(messages: [message])
                 case .reply:
                     break
-                case let .report(message):
-                    self.presentReportMessageView(message: message)
                 case let .copy(message):
                     UIPasteboard.general.string = message.text
                 case .reportDefined(message: let message, type: let type):
-                    self.presenter?.report(message, with: type, comment: nil)
+                    self.presentReportMessageView(message, with: type)
                 }
             }
             
@@ -596,12 +594,12 @@ extension ConversationViewController: EditActionBottomBarDelegate {
         self.showInProgressAlert()
     }
     
-    func presentReportMessageView(message: Message) {
+    func presentReportMessageView(_ message: Message, with type: ComplainTypeEnum) {
         let viewController = ReportCommentController({ controler in
             controler.saveAction = {[weak self] comment in
                 guard let `self` = self else { return }
                 controler.dismiss(animated: true)
-                self.presenter?.report(message, with: nil, comment: comment)
+                self.presenter?.report(message, with: type, comment: comment)
                 self.cancel()
             }
         })

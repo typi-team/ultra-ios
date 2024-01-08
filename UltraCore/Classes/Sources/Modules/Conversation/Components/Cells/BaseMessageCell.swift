@@ -18,7 +18,6 @@ enum MessageMenuAction {
     case select(Message)
     case delete(Message)
     case reply(Message)
-    case report(Message)
     case copy(Message)
     case reportDefined(message: Message, type: ComplainTypeEnum)
 }
@@ -242,7 +241,7 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
                                  guard let `self` = self, let message = self.message else {
                                      return
                                  }
-                                 self.longTapCallback?(.report(message))
+            self.longTapCallback?(.reportDefined(message: message, type: .other))
                              })
 
         return UIMenu(title: MessageStrings.report.localized,

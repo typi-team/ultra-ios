@@ -131,7 +131,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
             $0.chatID = self.conversation.idintification
             $0.type = comment == nil ? .other : type ?? .other
         })
-        print(request)
+        print(request.textFormatString())
         AppSettingsImpl.shared.messageService.complain(request, callOptions: .default()).response
             .whenComplete({[weak self] result in
                 guard let `self` = self else { return }
