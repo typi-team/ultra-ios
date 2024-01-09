@@ -75,7 +75,7 @@ extension ViewModel: UltraCoreFutureDelegate {
     }
     
     func availableToRecordVoice() -> Bool {
-        true
+        false
     }
     
     func availableToReport(message: Any) -> Bool {

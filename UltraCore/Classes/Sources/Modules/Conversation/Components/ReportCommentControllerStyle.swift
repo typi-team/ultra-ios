@@ -11,7 +11,7 @@ public protocol ReportCommentControllerStyle {
     var backgroundColor: TwiceColor { get set }
 
     var headlineImage: TwiceImage { get set }
-    var titleConfig: LabelConfig { get set }
+    var headlineConfig: LabelConfig { get set }
     var textFieldConfig: LabelConfig { get set }
     var textFieldBackgroundColor: TwiceColor { get set }
     var reportButtonConfig: ElevatedButtonStyle { get set }
@@ -23,8 +23,8 @@ class ReportCommentControllerStyleImpl: ReportCommentControllerStyle {
     
     var headlineImage: TwiceImage = TwiceImageImpl(dark: .fromAssets( "conversation.report.placeholder")!, default: .fromAssets("conversation.report.placeholder")!)
     
-    var titleConfig: LabelConfig = LabelConfigImpl.init(darkColor: .white, defaultColor: .gray700,
-                                                        font: .defaultRegularFootnote,
+    var headlineConfig: LabelConfig = LabelConfigImpl.init(darkColor: .white, defaultColor: .gray700,
+                                                        font: .defaultRegularCallout,
                                                         placeholder: MessageStrings.comment.localized,
                                                         tintColor: TwiceColorImpl(defaultColor: .black, darkColor: .white))
     

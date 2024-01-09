@@ -18,25 +18,29 @@ class ReportCommentController: BaseViewController<String> {
         $0.contentMode = .scaleAspectFit
     }
     
-    fileprivate let regularLabel: RegularFootnote = .init({
+    fileprivate let headlineLabel: UILabel = .init({
         $0.textAlignment = .center
         $0.text = MessageStrings.additionalInformationInComments.localized
     })
     
-    fileprivate lazy var textField: UITextField = CustomTextField.init({
+    fileprivate lazy var textField: UITextField = PaddingTextField.init({
+        $0.padding = UIEdgeInsets(top: kMediumPadding, left: kLowPadding
+                                  , bottom: kMediumPadding, right: kLowPadding)
         $0.cornerRadius = kLowPadding
         $0.placeholder = MessageStrings.comment.localized
         $0.returnKeyType = .done
         $0.delegate = self
-        $0.padding.right += $0.padding.right
-        $0.rightViewMode = .always
+        
         $0.rightView = UIButton({
+            
             $0.setImage(.named("conversation_erase"), for: .normal)
             $0.addAction { [weak self] in
                 guard let `self` = self else { return }
                 self.textField.text = ""
             }
         })
+        
+        $0.rightViewMode = .always
     })
 
     fileprivate lazy var saveButton: ElevatedButton = .init({
@@ -71,8 +75,8 @@ class ReportCommentController: BaseViewController<String> {
         stack.addArrangedSubview(image)
         stack.setCustomSpacing(kHeadlinePadding, after: image)
         
-        stack.addArrangedSubview(regularLabel)
-        stack.setCustomSpacing(kHeadlinePadding, after: regularLabel)
+        stack.addArrangedSubview(headlineLabel)
+        stack.setCustomSpacing(kHeadlinePadding, after: headlineLabel)
         
         
         stack.addArrangedSubview(textField)
@@ -128,21 +132,15 @@ class ReportCommentController: BaseViewController<String> {
         self.cancelButton.titleLabel?.font = style?.cancelButtonConfig.titleConfig.font
         
         self.textField.font = style?.textFieldConfig.font
+        self.textField.tintColor = style?.textFieldConfig.color
         self.textField.textColor = style?.textFieldConfig.color
-        self.textField.textColor = style?.textFieldConfig.color
-        
         self.textField.backgroundColor = style?.textFieldBackgroundColor.color
         
-    }
-    
-    
-    
-    override func setupInitialData() {
-        self.textField.becomeFirstResponder()
+        self.headlineLabel.font = style?.headlineConfig.font
+        self.headlineLabel.textColor = style?.headlineConfig.color
     }
     
     override func changed(keyboard height: CGFloat) {
-        
         UIView.animate(withDuration: 0.3, animations: {
             self.view.frame.origin.y = UIScreen.main.bounds.height - self.view.frame.height - height
         })
