@@ -151,11 +151,13 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
             guard let `self` = self else { return nil }
             var action: [UIAction] = []
 
-            action.append(UIAction(title: MessageStrings.copy.localized, image: .named("message.cell.copy")) { [weak self] _ in
-                guard let `self` = self, let message = self.message else { return }
-                self.longTapCallback?(.copy(message))
-            })
-
+            if let message = self.message, !message.hasVoice {
+                action.append(UIAction(title: MessageStrings.copy.localized, image: .named("message.cell.copy")) { [weak self] _ in
+                    guard let `self` = self, let message = self.message else { return }
+                    self.longTapCallback?(.copy(message))
+                })
+            }
+            
             action.append(UIAction(title: MessageStrings.delete.localized, image: .named("message.cell.trash"), attributes: .destructive) { [weak self] _ in
                 guard let `self` = self, let message = self.message else { return }
                 self.longTapCallback?(.delete(message))

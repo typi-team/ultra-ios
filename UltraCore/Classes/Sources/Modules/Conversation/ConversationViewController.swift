@@ -124,6 +124,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                        UIApplication.shared.canOpenURL(url) {
                         UIApplication.shared.open(url, options: [:], completionHandler: nil)
                     }
+                case .voice:
+                    break
                 default:
                     guard let url = self.presenter?.mediaURL(from: message) else { return }
                     self.view.endEditing(true)
