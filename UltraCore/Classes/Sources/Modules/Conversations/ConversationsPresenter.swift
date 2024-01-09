@@ -175,7 +175,7 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()
-            .disposed(by: self.disposeBag)
+            .disposed(by: disposeBag)
     }
     
     private func startReachibilityNotifier() {
