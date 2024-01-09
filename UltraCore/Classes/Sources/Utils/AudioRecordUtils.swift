@@ -80,6 +80,10 @@ class AudioRecordUtils: NSObject {
         }
     }
     
+    var isRecording: Bool {
+        return audioRecorder?.isRecording ?? false
+    }
+    
     func stopRecording() {
         try? AVAudioSession.sharedInstance().setActive(false)
         self.timer?.invalidate()

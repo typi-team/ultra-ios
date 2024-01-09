@@ -18,6 +18,10 @@ protocol MessageInputBarDelegate: VoiceInputBarDelegate {
 
 class MessageInputBar: UIView {
 
+    var isRecording: Bool {
+        return audioRecordUtils.isRecording
+    }
+    
 //    MARK: Static properties
     
     fileprivate var lastTypingDate: Date = .init()
@@ -325,6 +329,7 @@ extension MessageInputBar: BlockViewDelegate {
 
 extension MessageInputBar: RecordViewDelegate {
     func onStart() {
+        AppSettingsImpl.shared.voiceRepository.stop()
         self.recordView.isHidden = false
         self.recordView.bringSubviewToFront(self)
         self.recordView.isUserInteractionEnabled = true
