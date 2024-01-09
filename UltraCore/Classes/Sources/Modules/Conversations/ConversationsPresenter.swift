@@ -29,7 +29,7 @@ final class ConversationsPresenter: BasePresenter {
     fileprivate let deleteConversationInteractor: UseCase<(Conversation, Bool), Void>
     fileprivate let contactToCreateChatByPhoneInteractor: ContactToCreateChatByPhoneInteractor
     private let messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>
-    private var conversationSending: Set<String> = []
+    private var messageSending: Array<String> = []
     
     lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(conversationRepository.conversations(), updateRepository.typingUsers)
         .map({ conversations, typingUsers in
@@ -141,25 +141,23 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
             .disposed(by: disposeBag)
     }
     
-    private func resendConversationsIfNeeded() {
-        getConversations { [weak self] conversations in
-            guard let self else { return }
-            conversations.forEach { conversation in
-                self.getConversationByID(id: conversation.idintification) { messages in
-                    let unsendedMessages = messages.filter { $0.seqNumber == 0 && !$0.isIncome }
-                    unsendedMessages.forEach { message in
-                        self.resendMessage(message: message, conversation: conversation)
-                    }
-                }
+    private func resendMessagesIfNeeded() {
+        getAllMessages { [weak self] messages in
+            let unsendedMessages = messages.filter { $0.seqNumber == 0 && !$0.isIncome }
+            unsendedMessages.forEach { message in
+                self?.resendMessage(message: message)
             }
         }
     }
-    
-    private func resendMessage(message: Message, conversation: Conversation) {
+
+    private func resendMessage(message: Message) {
+        guard !messageSending.contains(message.id) else { return }
+        messageSending.append(message.id)
         var message = message
+        
         var params = MessageSendRequest()
         params.peer.user = .with({ peer in
-            peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
+            peer.userID = message.receiver.userID
         })
         params.message = message
         messageSenderInteractor
@@ -182,29 +180,16 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
     
     private func startReachibilityNotifier() {
         reachability.whenReachable = { [weak self] reachability in
-            self?.resendConversationsIfNeeded()
+            self?.resendMessagesIfNeeded()
         }
         try? reachability.startNotifier()
     }
     
-    private func getConversations(onCompletion: @escaping ([Conversation]) -> Void) {
-        conversationRepository
-            .conversations()
-            .compactMap({ $0 })
-            .subscribe(onNext: { conversations in
-                onCompletion(conversations)
-            })
-            .disposed(by: disposeBag)
-    }
-    
-    private func getConversationByID(id: String, onCompletion: @escaping ([Message]) -> Void) {
+    private func getAllMessages(onCompletion: @escaping ([Message]) -> Void) {
         messageRepository
-            .messages(chatID: id)
-            .map({ $0.sorted(by: { m1, m2 in m1.meta.created < m2.meta.created }) })
-            .subscribe(onNext: { [weak self] conversations in
-                guard let self, !self.conversationSending.contains(id) else { return }
-                conversationSending.insert(id)
-                onCompletion(conversations)
+            .messages()
+            .subscribe(onNext: { messages in
+                onCompletion(messages)
             })
             .disposed(by: disposeBag)
     }
