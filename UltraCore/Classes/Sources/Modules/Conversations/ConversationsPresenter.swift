@@ -16,7 +16,7 @@ import IGListKit
 final class ConversationsPresenter: BasePresenter {
 
     // MARK: - Private properties -
-    private let reachability = try! Reachability()
+    private let reachability = try? Reachability()
     private let updateRepository: UpdateRepository
     private let messageRepository: MessageRepository
     private unowned let view: ConversationsViewInterface
@@ -179,10 +179,10 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
     }
     
     private func startReachibilityNotifier() {
-        reachability.whenReachable = { [weak self] reachability in
+        reachability?.whenReachable = { [weak self] reachability in
             self?.resendMessagesIfNeeded()
         }
-        try? reachability.startNotifier()
+        try? reachability?.startNotifier()
     }
     
     private func getAllMessages(onCompletion: @escaping ([Message]) -> Void) {
