@@ -16,9 +16,7 @@ import IGListKit
 final class ConversationsPresenter: BasePresenter {
 
     // MARK: - Private properties -
-    private let reachability = try? Reachability()
     private let updateRepository: UpdateRepository
-    private let messageRepository: MessageRepository
     private unowned let view: ConversationsViewInterface
     private let wireframe: ConversationsWireframeInterface
     fileprivate let contactDBService: ContactDBService
@@ -28,8 +26,7 @@ final class ConversationsPresenter: BasePresenter {
     fileprivate let userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>
     fileprivate let deleteConversationInteractor: UseCase<(Conversation, Bool), Void>
     fileprivate let contactToCreateChatByPhoneInteractor: ContactToCreateChatByPhoneInteractor
-    private let messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>
-    private var messageSending: Array<String> = []
+    fileprivate let resendMessagesInteractor: ResendingMessagesInteractorProtocol
     
     lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(conversationRepository.conversations(), updateRepository.typingUsers)
         .map({ conversations, typingUsers in
@@ -47,7 +44,6 @@ final class ConversationsPresenter: BasePresenter {
 
     init(view: ConversationsViewInterface,
          updateRepository: UpdateRepository,
-         messageRepository: MessageRepository,
          contactDBService: ContactDBService,
          wireframe: ConversationsWireframeInterface,
          conversationRepository: ConversationRepository,
@@ -56,11 +52,10 @@ final class ConversationsPresenter: BasePresenter {
          deleteConversationInteractor: UseCase<(Conversation,Bool), Void>,
          contactToCreateChatByPhoneInteractor: ContactToCreateChatByPhoneInteractor,
          userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>,
-         messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>) {
+         resendMessagesInteractor: ResendingMessagesInteractorProtocol) {
         self.view = view
         self.wireframe = wireframe
         self.updateRepository = updateRepository
-        self.messageRepository = messageRepository
         self.contactDBService = contactDBService
         self.conversationRepository = conversationRepository
         self.contactByUserIdInteractor = contactByUserIdInteractor
@@ -68,7 +63,7 @@ final class ConversationsPresenter: BasePresenter {
         self.deleteConversationInteractor = deleteConversationInteractor
         self.retrieveContactStatusesInteractor = retrieveContactStatusesInteractor
         self.contactToCreateChatByPhoneInteractor = contactToCreateChatByPhoneInteractor
-        self.messageSenderInteractor = messageSenderInteractor
+        self.resendMessagesInteractor = resendMessagesInteractor
     }
 }
 
@@ -77,7 +72,7 @@ final class ConversationsPresenter: BasePresenter {
 extension ConversationsPresenter: ConversationsPresenterInterface {
     
     func viewDidLoad() {
-        startReachibilityNotifier()
+        resendMessagesInteractor.viewDidLoad()
     }
     
     func delete(_ conversation: Conversation, all: Bool) {
@@ -140,58 +135,5 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
             })
             .disposed(by: disposeBag)
     }
-    
-    private func resendMessagesIfNeeded() {
-        getAllMessages { [weak self] messages in
-            let unsendedMessages = messages.filter { $0.seqNumber == 0 && !$0.isIncome }
-            unsendedMessages.forEach { message in
-                self?.resendMessage(message: message)
-            }
-        }
-    }
 
-    private func resendMessage(message: Message) {
-        guard !messageSending.contains(message.id) else { return }
-        messageSending.append(message.id)
-        var message = message
-        
-        var params = MessageSendRequest()
-        params.peer.user = .with({ peer in
-            peer.userID = message.receiver.userID
-        })
-        params.message = message
-        messageSenderInteractor
-            .executeSingle(params: params)
-            .flatMap({ [weak self] (response: MessageSendResponse) in
-                guard let `self` = self else {
-                    throw NSError.selfIsNill
-                }
-                message.meta.created = response.meta.created
-                message.state.delivered = false
-                message.state.read = false
-                message.seqNumber = response.seqNumber
-                return self.messageRepository.update(message: message)
-            })
-            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
-            .observe(on: MainScheduler.instance)
-            .subscribe()
-            .disposed(by: disposeBag)
-    }
-    
-    private func startReachibilityNotifier() {
-        reachability?.whenReachable = { [weak self] reachability in
-            self?.resendMessagesIfNeeded()
-        }
-        try? reachability?.startNotifier()
-    }
-    
-    private func getAllMessages(onCompletion: @escaping ([Message]) -> Void) {
-        messageRepository
-            .messages()
-            .subscribe(onNext: { messages in
-                onCompletion(messages)
-            })
-            .disposed(by: disposeBag)
-    }
-    
 }

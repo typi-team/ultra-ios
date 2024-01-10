@@ -32,9 +32,9 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
         let messageSenderInteractor = SendMessageInteractor.init(messageService: appSettings.messageService)
 
         let contactToCreateChatByPhoneInteractor = ContactToCreateChatByPhoneInteractor.init(integrateService: appSettings.integrateService)
+        let resendMessagesInteractor = ResendingMessagesInteractor(messageRepository: appSettings.messageRespository, mediaRepository: appSettings.mediaRepository, messageSenderInteractor: messageSenderInteractor)
         let presenter = ConversationsPresenter(view: moduleViewController,
                                                updateRepository: appSettings.updateRepository,
-                                               messageRepository: appSettings.messageRespository,
                                                contactDBService: appSettings.contactDBService,
                                                wireframe: self,
                                                conversationRepository: appSettings.conversationRespository,
@@ -42,7 +42,7 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
                                                retrieveContactStatusesInteractor: retrieveContactStatusesInteractor,
                                                deleteConversationInteractor: deleteConversationInteractor, contactToCreateChatByPhoneInteractor: contactToCreateChatByPhoneInteractor,
                                                userStatusUpdateInteractor: UpdateOnlineInteractor(userService: appSettings.userService),
-                                               messageSenderInteractor: messageSenderInteractor)
+                                               resendMessagesInteractor: resendMessagesInteractor)
         moduleViewController.presenter = presenter
     }
 }

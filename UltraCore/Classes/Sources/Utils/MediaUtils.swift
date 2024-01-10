@@ -28,6 +28,20 @@ class MediaUtils {
         return UIImage(data: data)
     }
     
+    func videoPreview(from message: Message) -> UIImage? {
+        let url = createDocumentsDirectory(file: message.video.originalVideoFileId, and: message.video.extensions)
+        let asset = AVURLAsset(url: url)
+        let imageGenerator = AVAssetImageGenerator(asset: asset)
+        imageGenerator.appliesPreferredTrackTransform = true
+        do {
+            let cgImage = try imageGenerator.copyCGImage(at: CMTime.zero,
+                                                         actualTime: nil)
+            return UIImage(cgImage: cgImage)
+        } catch {
+            return nil
+        }
+    }
+    
     func createMessageForUpload(in conversation: Conversation, with userID: String) -> Message {
         return Message.with { mess in
             mess.receiver = .with({ receiver in
@@ -42,10 +56,25 @@ class MediaUtils {
     
     @discardableResult
     func write(_ data: Data, file path: String, and extension: String) throws -> URL {
+        let fileURL = createDocumentsDirectory(file: path, and: `extension`)
+        try data.write(to: fileURL, options: .atomic)
+        return fileURL
+    }
+    
+    func delete(url: URL) {
+        if FileManager.default.fileExists(atPath: url.absoluteString) {
+            do {
+                try FileManager.default.removeItem(atPath: url.absoluteString)
+            } catch {
+                print("Could not delete file, probably read-only filesystem")
+            }
+        }
+    }
+    
+    private func createDocumentsDirectory(file path: String, and extension: String) -> URL {
         let fileManager = FileManager.default
         let documentsDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
         let fileURL = documentsDirectory.appendingPathComponent(path).appendingPathExtension(`extension`)
-        try data.write(to: fileURL, options: .atomic)
         return fileURL
     }
     
