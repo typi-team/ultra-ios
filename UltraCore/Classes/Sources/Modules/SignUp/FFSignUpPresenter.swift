@@ -67,6 +67,7 @@ extension FFSignUpPresenter: SignUpPresenterInterface {
                   "lastname": lastName,
                   "nickname": lastName,
                   "firstname": firstname,
+                  "device_id": UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
               ]) else { return }
 
         var request = URLRequest(url: url)

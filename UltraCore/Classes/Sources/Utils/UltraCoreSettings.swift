@@ -25,6 +25,7 @@ public protocol UltraCoreSettingsDelegate: AnyObject {
     func moneyViewController(callback: @escaping MoneyCallback) -> UIViewController?
     func contactsViewController(contactsCallback: @escaping ContactsCallback,
                                 openConverationCallback: @escaping UserIDCallback) -> UIViewController?
+    func notificationTokenUpdated(token: String)
 }
 
 private let disposeBag = DisposeBag()
@@ -90,8 +91,8 @@ public extension UltraCoreSettings {
              .response
              .whenComplete({ result in
                  switch result {
-                 case let .success(response):
-                     print(response)
+                 case .success:
+                     self.delegate?.notificationTokenUpdated(token: token)
                  case let .failure(error):
                      print(error)
                  }
