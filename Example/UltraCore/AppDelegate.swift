@@ -80,11 +80,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonData
-        let task = URLSession.shared.dataTask(with: request) {(data, response, error) in
-            if let error {
-                print(error)
-            }
-        }
+        let task = URLSession.shared.dataTask(with: request) {(data, response, error) in }
         task.resume()
     }
 }
