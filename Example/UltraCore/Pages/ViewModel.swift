@@ -7,6 +7,7 @@
 //
 import UltraCore
 import Foundation
+import FirebaseMessaging
 
 class ViewModel {
     fileprivate var timerUpdate: Timer?
@@ -17,7 +18,7 @@ class ViewModel {
     }
     
     func setupSID(callback: @escaping (Error?) -> Void) {
-                UltraCoreSettings.update(sid: UserDefaults.standard.string(forKey: "K_SID") ?? "", with: callback) 
+        UltraCoreSettings.update(sid: UserDefaults.standard.string(forKey: "K_SID") ?? "", with: callback)
     }
     
     func timer() {
@@ -25,6 +26,27 @@ class ViewModel {
             self.timerUpdate = Timer.scheduledTimer(timeInterval: 60, target: self, selector: #selector(self.runTimedCode), userInfo: nil, repeats: true)
             self.timerUpdate?.fire()
         })
+    }
+    
+    func didRegisterForRemoteNotifications() {
+        guard let url = URL(string: "https://ultra-dev.typi.team/mock/v1/device"),
+              let firebaseToken = Messaging.messaging().fcmToken,
+              let sidToken = UserDefaults.standard.string(forKey: "K_SID"),
+              let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+              let jsonData = try? JSONSerialization.data(withJSONObject: [
+                  "app_version": appVersion,
+                  "token": firebaseToken,
+                  "device_id": UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString,
+                  "platform": "IOS",
+                  "voip_push_token": ""
+              ]) else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue(sidToken, forHTTPHeaderField: "SID")
+        request.httpBody = jsonData
+        let task = URLSession.shared.dataTask(with: request) {(data, response, error) in }
+        task.resume()
     }
 }
 
@@ -71,9 +93,11 @@ private extension ViewModel {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonData
         
-        let task = URLSession.shared.dataTask(with: request) {(data, response, error) in
+        let task = URLSession.shared.dataTask(with: request) { [weak self] (data, response, error) in
              if let data = data,
                       let userResponse = try? JSONDecoder().decode(UserResponse.self, from: data) {
+                 UserDefaults.standard.set(userResponse.sid, forKey: "K_SID")
+                 self?.didRegisterForRemoteNotifications()
                  UltraCoreSettings.update(sid: userResponse.sid, with: {_ in })
             }
         }
