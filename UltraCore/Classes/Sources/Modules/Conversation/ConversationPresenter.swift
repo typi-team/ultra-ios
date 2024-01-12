@@ -11,6 +11,7 @@
 import Foundation
 import RxSwift
 import RealmSwift
+import AVFoundation
 
 final class ConversationPresenter {
 
@@ -39,6 +40,7 @@ final class ConversationPresenter {
     private let messagesInteractor: UseCase<GetChatMessagesRequest, [Message]>
     fileprivate let sendMoneyInteractor: UseCase<TransferPayload, TransferResponse>
     private let messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>
+    private var player: AVAudioPlayer?
 
 
     // MARK: - Public properties -
@@ -234,7 +236,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 message.state.delivered = false
                 message.state.read = false
                 message.seqNumber = response.seqNumber
-
+                self.messageSentSound()
                 return self.messageRepository.update(message: message)
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
@@ -280,7 +282,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 message.state.delivered = false
                 message.state.read = false
                 message.seqNumber = response.seqNumber
-
+                self.messageSentSound()
                 return self.messageRepository.update(message: message)
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
@@ -340,6 +342,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                     message.state.delivered = false
                     message.state.read = false
                     message.seqNumber = response.seqNumber
+                    self.messageSentSound()
                     return self.messageRepository.update(message: message)
                 })
                 .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
@@ -381,8 +384,9 @@ extension ConversationPresenter: ConversationPresenterInterface {
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
-            .subscribe(onSuccess: { _ in PP.debug(file.mime) },
-                       onFailure: { error in PP.debug(error.localizedDescription)
+            .subscribe(onSuccess: { [weak self] _ in
+                self?.messageSentSound()
+            }, onFailure: { error in PP.debug(error.localizedDescription)
             })
             .disposed(by: disposeBag)
     }
@@ -480,12 +484,30 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 message.state.delivered = false
                 message.state.read = false
                 message.seqNumber = response.seqNumber
-
+                self.messageSentSound()
                 return self.messageRepository.update(message: message)
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()
             .disposed(by: self.disposeBag)
+    }
+    
+    private func messageSentSound() {
+        let bundle = Bundle(for: AppSettingsImpl.self)
+        if let resourceURL = bundle.url(forResource: "UltraCore", withExtension: "bundle"),
+           let resourceBundle = Bundle(url: resourceURL),
+           let soundURL = resourceBundle.url(forResource: "outgoing", withExtension: "wav")
+        {
+            do {
+                try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
+                try AVAudioSession.sharedInstance().setActive(true)
+                if player == nil {
+                    player = try AVAudioPlayer(contentsOf: soundURL, fileTypeHint: AVFileType.wav.rawValue)
+                }
+                player?.prepareToPlay()
+                player?.play()
+            } catch {}
+        }
     }
 }
