@@ -487,5 +487,10 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .observe(on: MainScheduler.instance)
             .subscribe()
             .disposed(by: self.disposeBag)
+        sendVibration()
+    }
+    
+    private func sendVibration() {
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
 }
