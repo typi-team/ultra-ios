@@ -33,12 +33,12 @@ final class ConversationPresenter {
     fileprivate let conversationRepository: ConversationRepository
     
     private let blockContactInteractor: GRPCErrorUseCase<BlockParam, Void>
-    private let deleteMessageInteractor: UseCase<([Message], Bool), Void>
-    private let sendTypingInteractor: UseCase<String, SendTypingResponse>
-    private let readMessageInteractor: UseCase<Message, MessagesReadResponse>
-    private let messagesInteractor: UseCase<GetChatMessagesRequest, [Message]>
+    private let deleteMessageInteractor: GRPCErrorUseCase<([Message], Bool), Void>
+    private let sendTypingInteractor: GRPCErrorUseCase<String, SendTypingResponse>
+    private let readMessageInteractor: GRPCErrorUseCase<Message, MessagesReadResponse>
+    private let messagesInteractor: GRPCErrorUseCase<GetChatMessagesRequest, [Message]>
     fileprivate let sendMoneyInteractor: UseCase<TransferPayload, TransferResponse>
-    private let messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>
+    private let messageSenderInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendResponse>
 
 
     // MARK: - Public properties -
@@ -75,13 +75,13 @@ final class ConversationPresenter {
          contactRepository: ContactsRepository,
          wireframe: ConversationWireframeInterface,
          conversationRepository: ConversationRepository,
-         deleteMessageInteractor: UseCase<([Message], Bool), Void>,
+         deleteMessageInteractor: GRPCErrorUseCase<([Message], Bool), Void>,
          blockContactInteractor: GRPCErrorUseCase<BlockParam, Void>,
-         messagesInteractor: UseCase<GetChatMessagesRequest, [Message]>,
-         sendTypingInteractor: UseCase<String, SendTypingResponse>,
-         readMessageInteractor: UseCase<Message, MessagesReadResponse>,
+         messagesInteractor: GRPCErrorUseCase<GetChatMessagesRequest, [Message]>,
+         sendTypingInteractor: GRPCErrorUseCase<String, SendTypingResponse>,
+         readMessageInteractor: GRPCErrorUseCase<Message, MessagesReadResponse>,
          sendMoneyInteractor: UseCase<TransferPayload, TransferResponse>,
-         messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>) {
+         messageSenderInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendResponse>) {
         self.view = view
         self.userID = userID
         self.appStore = appStore

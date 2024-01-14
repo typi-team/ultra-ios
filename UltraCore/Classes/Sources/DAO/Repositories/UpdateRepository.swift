@@ -28,8 +28,8 @@ class UpdateRepositoryImpl {
     fileprivate let updateClient: UpdatesServiceClientProtocol
     fileprivate let conversationService: ConversationDBService
     fileprivate let pingPongInteractorImpl: GRPCErrorUseCase<Void, Void>
-    fileprivate let contactByIDInteractor: UseCase<String, ContactDisplayable>
-    fileprivate let deliveredMessageInteractor: UseCase<Message, MessagesDeliveredResponse>
+    fileprivate let contactByIDInteractor: GRPCErrorUseCase<String, ContactDisplayable>
+    fileprivate let deliveredMessageInteractor: GRPCErrorUseCase<Message, MessagesDeliveredResponse>
     
     
     fileprivate var updateListenStream: ServerStreamingCall<ListenRequest, Updates>?
@@ -40,9 +40,9 @@ class UpdateRepositoryImpl {
          contactService: ContactDBService,
          updateClient: UpdatesServiceClientProtocol,
          conversationService: ConversationDBService,
-         pingPongInteractorImpl: PingPongInteractorImpl,
-         userByIDInteractor: UseCase<String, ContactDisplayable>,
-         deliveredMessageInteractor: UseCase<Message, MessagesDeliveredResponse>) {
+         pingPongInteractorImpl: GRPCErrorUseCase<Void, Void>,
+         userByIDInteractor: GRPCErrorUseCase<String, ContactDisplayable>,
+         deliveredMessageInteractor: GRPCErrorUseCase<Message, MessagesDeliveredResponse>) {
         self.updateClient = updateClient
         self.appStore = appStore
         self.messageService = messageService
@@ -61,7 +61,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
     }
     
     func sendPoingByTimer() {
-        Timer.scheduledTimer(withTimeInterval: 12, repeats: true) { [weak self] timer in
+        Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] timer in
             guard let `self` = self else { return timer.invalidate() }
             self.pingPongInteractorImpl
                 .executeSingle(params: ())
@@ -114,7 +114,8 @@ private extension UpdateRepositoryImpl {
     
     func setupChangesSubscription(with state: UInt64) {
         let state: ListenRequest = .with { $0.localState = .with { $0.state = state } }
-        self.updateListenStream = updateClient.listen(state, callOptions: .default()) { [weak self] response in
+        self.updateListenStream?.cancel(promise: nil)
+        self.updateListenStream = updateClient.listen(state, callOptions: .default(include: false)) { [weak self] response in
             guard let `self` = self else { return }
             self.appStore.store(last: max(Int64(response.lastState), self.appStore.lastState))
             response.updates.forEach { update in

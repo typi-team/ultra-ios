@@ -8,7 +8,7 @@
 import Foundation
 import RxSwift
 
-class SendMessageInteractor: UseCase<MessageSendRequest, MessageSendResponse> {
+class SendMessageInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendResponse> {
     final let messageService: MessageServiceClientProtocol
     private let serialQueue = DispatchQueue(label: "com.ultra.sendMessageQueue")
 
@@ -16,8 +16,8 @@ class SendMessageInteractor: UseCase<MessageSendRequest, MessageSendResponse> {
         self.messageService = messageService
     }
 
-    override func executeSingle(params: MessageSendRequest) -> Single<MessageSendResponse> {
-        return Single.create { [weak self] observer in
+    override func job(params: MessageSendRequest) -> Single<MessageSendResponse> {
+        Single.create { [weak self] observer in
             guard let `self` = self else { return Disposables.create() }
 
             self.serialQueue.sync {
@@ -38,15 +38,15 @@ class SendMessageInteractor: UseCase<MessageSendRequest, MessageSendResponse> {
 }
 
 
-class ReadMessageInteractor: UseCase<Message, MessagesReadResponse> {
+class ReadMessageInteractor: GRPCErrorUseCase<Message, MessagesReadResponse> {
     final let messageService: MessageServiceClientProtocol
 
     init(messageService: MessageServiceClientProtocol) {
         self.messageService = messageService
     }
 
-    override func executeSingle(params: Message) -> Single<MessagesReadResponse> {
-        return Single.create { [weak self] observer -> Disposable in
+    override func job(params: Message) -> Single<MessagesReadResponse> {
+        Single.create { [weak self] observer -> Disposable in
             
             guard let `self` = self else { return Disposables.create() }
             self.messageService.read(params.readRequest, callOptions: .default()).response.whenComplete { result in
@@ -62,15 +62,15 @@ class ReadMessageInteractor: UseCase<Message, MessagesReadResponse> {
     }
 }
 
-class DeliveredMessageInteractor: UseCase<Message, MessagesDeliveredResponse> {
+class DeliveredMessageInteractor: GRPCErrorUseCase<Message, MessagesDeliveredResponse> {
     final let messageService: MessageServiceClientProtocol
 
     init(messageService: MessageServiceClientProtocol) {
         self.messageService = messageService
     }
 
-    override func executeSingle(params: Message) -> Single<MessagesDeliveredResponse> {
-        return Single.create { [weak self] observer -> Disposable in
+    override func job(params: Message) -> Single<MessagesDeliveredResponse> {
+        Single.create { [weak self] observer -> Disposable in
             
             guard let `self` = self else { return Disposables.create() }
             self.messageService.delivered(params.deliveredRequest, callOptions: .default())

@@ -21,8 +21,10 @@ class PingPongInteractorImpl: GRPCErrorUseCase<Void, Void> {
             call.response.whenComplete { result in
                     switch result {
                     case .success:
+                        PP.info("Ping is success")
                         observer(.success(()))
                     case let .failure(error):
+                        PP.error("Ping is failure")
                         observer(.failure(error))
                     }
                 }

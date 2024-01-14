@@ -65,7 +65,7 @@ class ViewModel {
     func timer() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 60, execute: {
             Timer.scheduledTimer(withTimeInterval: 60, repeats: true, block: { [weak self] _ in
-                self?.setupSID(callback: { _ in })
+//                self?.setupSID(callback: { _ in })
             })
         })
     }

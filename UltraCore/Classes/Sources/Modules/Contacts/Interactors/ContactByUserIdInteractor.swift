@@ -7,7 +7,7 @@
 import RxSwift
 import Foundation
 
-class ContactByUserIdInteractor: UseCase<String, ContactDisplayable> {
+class ContactByUserIdInteractor: GRPCErrorUseCase<String, ContactDisplayable> {
     
     fileprivate weak var  delegate: UltraCoreSettingsDelegate?
     
@@ -20,8 +20,8 @@ class ContactByUserIdInteractor: UseCase<String, ContactDisplayable> {
         self.delegate = delegate
     }
         
-    override func executeSingle(params: String) -> Single<ContactDisplayable> {
-        return Single<ContactDisplayable>.create { [weak self] observer -> Disposable in
+    override func job(params: String) -> Single<ContactDisplayable> {
+        Single<ContactDisplayable>.create { [weak self] observer -> Disposable in
             guard let `self` = self else { return Disposables.create() }
             let requestParam = ContactByUserIdRequest.with({ $0.userID = params })
             self.contactsService.getContactByUserId(requestParam, callOptions: .default())
