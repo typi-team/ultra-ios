@@ -80,7 +80,8 @@ public extension UltraCoreSettings {
                 case let .failure(error):
                     callback(error)
                 case let .success(value):
-                    AppSettingsImpl.shared.appStore.token = value.token
+                    AppSettingsImpl.shared.appStore.store(token: value.token)
+                    AppSettingsImpl.shared.appStore.store(userID: value.userID)
                     AppSettingsImpl.shared.updateRepository.setupSubscription()
                     if AppSettingsImpl.shared.appStore.lastState == 0 {
                         DispatchQueue.main.asyncAfter(deadline: .now() + timeOut, execute: {

@@ -83,7 +83,7 @@ open class AppSettingsImpl: AppSettings  {
     //    MARK: App main interactors, must be create once
     
     lazy var updateTokenInteractor: UseCase<Void, Void> = UpdateTokenInteractorImpl.init(appStore: appStore, authService: authService)
-    lazy var jwtTokenInteractorImpl: UseCase<String, IssueJwtResponse> = JWTTokenInteractorImpl.init(appStore: appStore, authService: authService)
+//    lazy var jwtTokenInteractorImpl: UseCase<String, IssueJwtResponse> = JWTTokenInteractorImpl.init(appStore: appStore, authService: authService)
     lazy var superMessageSaverInteractor: UseCase<MessageData, Conversation?> = SuperMessageSaverInteractor.init(appStore: appStore,
                                                                                                                  contactDBService: contactDBService,
                                                                                                                  messageDBService: messageDBService,
