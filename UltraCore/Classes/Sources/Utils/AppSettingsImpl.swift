@@ -32,16 +32,7 @@ open class AppSettingsImpl: AppSettings  {
     
     lazy var channel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
                                                                             port: serverConfig.portOfServer),
-                                                              transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1)){
-        // Configure keepalive.
-        $0.connectionBackoff = ConnectionBackoff(initialBackoff: 1.0,
-                                                 maximumBackoff: 10.0,
-                                                 multiplier: 1.6,
-                                                 jitter: 0.2,
-                                                 minimumConnectionTimeout: 20.0,
-                                                 retries: .unlimited)
-        $0.idleTimeout = .zero
-     }
+                                                              transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
     lazy var fileChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
                                                                                port: serverConfig.portOfServer),
                                                                  transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
@@ -93,10 +84,6 @@ open class AppSettingsImpl: AppSettings  {
     
     lazy var updateTokenInteractor: UseCase<Void, Void> = UpdateTokenInteractorImpl.init(appStore: appStore, authService: authService)
     lazy var jwtTokenInteractorImpl: UseCase<String, IssueJwtResponse> = JWTTokenInteractorImpl.init(appStore: appStore, authService: authService)
-    lazy var contactToConversationInteractor: ContactToConversationInteractor = ContactToConversationInteractor.init(contactDBService: contactDBService,
-                                                                                                                     contactsService: contactsService,
-                                                                                                                     integrateService: integrateService)
-    
     lazy var superMessageSaverInteractor: UseCase<MessageData, Conversation?> = SuperMessageSaverInteractor.init(appStore: appStore,
                                                                                                                  contactDBService: contactDBService,
                                                                                                                  messageDBService: messageDBService,

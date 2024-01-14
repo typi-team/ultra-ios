@@ -65,7 +65,11 @@ extension UpdateRepositoryImpl: UpdateRepository {
             guard let `self` = self else { return timer.invalidate() }
             self.pingPongInteractorImpl
                 .executeSingle(params: ())
-                .subscribe()
+                .subscribe(onSuccess: {
+                    PP.info("Ping pong is called success")
+                }, onFailure: {error in
+                    PP.error("Ping pong is called with error \(error.localeError)")
+                })
                 .disposed(by: disposeBag)
         }
     }

@@ -64,25 +64,41 @@ public extension UltraCoreSettings {
 
     static func update(sid token: String, timeOut: TimeInterval = 0,
                        with callback: @escaping (Error?) -> Void) {
-         AppSettingsImpl.shared.appStore.ssid = token
-
-         AppSettingsImpl.shared.jwtTokenInteractorImpl
-             .executeSingle(params: token)
-             .do(onSuccess: { _ in
-                 AppSettingsImpl.shared.updateRepository.setupSubscription()
-                 if AppSettingsImpl.shared.appStore.lastState == 0 {
-                     DispatchQueue.main.asyncAfter(deadline: .now() + timeOut, execute: {
-                         callback(nil)
-                     })
-                 } else {
-                     callback(nil)
-                 }
-             }, onError: { callback($0) })
-             .subscribe()
-             .disposed(by: disposeBag)
-     }
+        AppSettingsImpl.shared.appStore.ssid = token
+        // TODO: Refactor this case into interactor or something like this object
+        AppSettingsImpl
+            .shared
+            .authService
+            .issueJwt(.with({
+                $0.device = .ios
+                $0.sessionID = token
+                $0.deviceID = UIDevice.current.identifierForVendor?.uuidString ?? "Ну указано"
+            }), callOptions: .default())
+            .response
+            .whenComplete { result in
+                switch result {
+                case let .failure(error):
+                    callback(error)
+                case let .success(value):
+                    AppSettingsImpl.shared.appStore.token = value.token
+                    AppSettingsImpl.shared.updateRepository.setupSubscription()
+                    if AppSettingsImpl.shared.appStore.lastState == 0 {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + timeOut, execute: {
+                            callback(nil)
+                        })
+                    } else {
+                        callback(nil)
+                    }
+                }
+            }
+    }
 
      static func update(firebase token: String) {
+         if AppSettingsImpl.shared.appStore.token == nil {
+             PP.error("Don't call it without token")
+             return
+         }
+
          AppSettingsImpl.shared.deviceService.updateDevice(.with({
              $0.device = .ios
              $0.token = token
@@ -92,10 +108,10 @@ public extension UltraCoreSettings {
              .response
              .whenComplete({ result in
                  switch result {
-                 case let .success(response):
-                     print(response)
+                 case .success:
+                     PP.info("Data about device is updated")
                  case let .failure(error):
-                     print(error)
+                     PP.error("Data about device is updated with \(error.localeError)")
                  }
              })
      }
@@ -120,7 +136,11 @@ public extension UltraCoreSettings {
      }
     
     static func conversation(by contact: IContact, callback: @escaping (UIViewController?) -> Void){
-        _ = AppSettingsImpl.shared.contactToConversationInteractor.executeSingle(params: contact)
+        let shared = AppSettingsImpl.shared
+        _ = ContactToConversationInteractor(contactDBService: shared.contactDBService,
+                                            contactsService: shared.contactsService,
+                                            integrateService: shared.integrateService)
+            .executeSingle(params: contact)
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { conversation in

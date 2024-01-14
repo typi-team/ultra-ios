@@ -30,7 +30,10 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
         let contactByUserIdInteractor = ContactByUserIdInteractor.init(delegate: UltraCoreSettings.delegate,
                                                                        contactsService: appSettings.contactsService)
         
-        let contactToCreateChatByPhoneInteractor = ContactToCreateChatByPhoneInteractor.init(integrateService: appSettings.integrateService)
+        let contactToConversationInteractor = ContactToConversationInteractor.init(contactDBService: appSettings.contactDBService,
+                                                                                   contactsService: appSettings.contactsService,
+                                                                                   integrateService: appSettings.integrateService)
+        
         let presenter = ConversationsPresenter(view: moduleViewController,
                                                updateRepository: appSettings.updateRepository,
                                                messageRepository: appSettings.messageRespository,
@@ -39,7 +42,8 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
                                                conversationRepository: appSettings.conversationRespository,
                                                contactByUserIdInteractor: contactByUserIdInteractor,
                                                retrieveContactStatusesInteractor: retrieveContactStatusesInteractor,
-                                               deleteConversationInteractor: deleteConversationInteractor, contactToCreateChatByPhoneInteractor: contactToCreateChatByPhoneInteractor,
+                                               deleteConversationInteractor: deleteConversationInteractor,
+                                               contactToConversationInteractor: contactToConversationInteractor,
                                                userStatusUpdateInteractor: UpdateOnlineInteractor(userService: appSettings.userService))
         moduleViewController.presenter = presenter
     }

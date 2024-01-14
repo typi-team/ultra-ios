@@ -32,6 +32,8 @@ class ViewModel {
         UltraCoreSettings.futureDelegate = self
     }
     
+    var phone: String? {UserDefaults.standard.string(forKey: "phone") }
+    
     func setupSID(callback: @escaping (Error?) -> Void) {
         let userDef = UserDefaults.standard
         guard UserDefaults.standard.string(forKey: "K_SID") != nil,
@@ -63,7 +65,7 @@ class ViewModel {
     func timer() {
         DispatchQueue.main.asyncAfter(deadline: .now() + 60, execute: {
             Timer.scheduledTimer(withTimeInterval: 60, repeats: true, block: { [weak self] _ in
-//                self?.setupSID(callback: { _ in })
+                self?.setupSID(callback: { _ in })
             })
         })
     }
