@@ -12,8 +12,8 @@ import GRPC
 protocol UpdateRepository: AnyObject {
     
     func setupSubscription()
-    func startPintPong()
-    func stopPintPong()
+    func startPingPong()
+    func stopPingPong()
     func readAll(in conversation: Conversation)
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> { get set }
 }
@@ -61,12 +61,12 @@ extension UpdateRepositoryImpl: UpdateRepository {
         self.conversationService.realAllMessage(for: conversation.idintification)
     }
     
-    func stopPintPong() {
+    func stopPingPong() {
         PP.info("❌ stopPintPong")
         self.pintPongTimer?.invalidate()
     }
     
-    func startPintPong() {
+    func startPingPong() {
         PP.info("🐢 startPintPong")
         self.pintPongTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] timer in
             guard let `self` = self else { return timer.invalidate() }

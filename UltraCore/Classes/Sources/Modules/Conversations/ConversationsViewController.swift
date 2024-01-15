@@ -136,11 +136,11 @@ extension ConversationsViewController: ConversationsViewInterface {}
 extension ConversationsViewController {
     
     @objc func willEnterForeground(_ sender: Any) {
-        self.presenter?.updateStatus(is: true)
+        self.presenter?.sendOnline()
         self.presenter?.retrieveContactStatuses()
     }
     
     @objc func didEnterBackground(_ sender: Any) {
-        self.presenter?.updateStatus(is: false)
+        self.presenter?.sendAway()
     }
 }

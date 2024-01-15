@@ -67,7 +67,6 @@ public extension UltraCoreSettings {
         let shared = AppSettingsImpl.shared
         shared.appStore.ssid = token
         // TODO: Refactor this case into interactor or something like this object
-        shared.updateRepository.stopPintPong()
         shared
             .authService
             .issueJwt(.with({
@@ -81,10 +80,10 @@ public extension UltraCoreSettings {
                 case let .failure(error):
                     callback(error)
                 case let .success(value):
-                    shared.updateRepository.startPintPong()
                     shared.appStore.store(token: value.token)
                     shared.appStore.store(userID: value.userID)
                     shared.updateRepository.setupSubscription()
+                    shared.updateRepository.startPingPong()
                     if shared.appStore.lastState == 0 {
                         DispatchQueue.main.asyncAfter(deadline: .now() + timeOut, execute: {
                             callback(nil)
