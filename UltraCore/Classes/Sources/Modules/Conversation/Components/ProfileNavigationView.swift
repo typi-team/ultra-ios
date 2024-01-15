@@ -57,7 +57,7 @@ class ProfileNavigationView: UIView {
         
         self.sublineText.snp.makeConstraints { make in
             make.right.equalToSuperview()
-            make.bottom.equalTo(self.avatarImageView.snp.bottom)
+            make.bottom.equalToSuperview().inset(kLowPadding)
             make.top.equalTo(self.titleText.snp.bottom).offset(kLowPadding / 2)
             make.left.equalTo(self.avatarImageView.snp.right).offset(kMediumPadding)
         }
