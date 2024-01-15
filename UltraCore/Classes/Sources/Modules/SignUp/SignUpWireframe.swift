@@ -18,7 +18,6 @@ final class SignUpWireframe: BaseWireframe<SignUpViewController> {
             $0.modalPresentationStyle = .fullScreen
         })
         super.init(viewController: moduleViewController)
-        let jwtInteractor = JWTTokenInteractorImpl.init(appStore: appSettings.appStore, authService: appSettings.authService)
         let ffPresenter = FFSignUpPresenter.init(view: moduleViewController, wireframe: self)
         moduleViewController.presenter = ffPresenter
         

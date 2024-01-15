@@ -75,7 +75,6 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
         NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground(_:)), name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground(_:)), name: UIApplication.willEnterForegroundNotification, object: nil)
         
-        self.presenter?.setupUpdateSubscription()
         self.presenter?.conversation
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)

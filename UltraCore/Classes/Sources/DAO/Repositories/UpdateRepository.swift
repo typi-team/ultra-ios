@@ -12,7 +12,8 @@ import GRPC
 protocol UpdateRepository: AnyObject {
     
     func setupSubscription()
-    func sendPoingByTimer()
+    func startPintPong()
+    func stopPintPong()
     func readAll(in conversation: Conversation)
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> { get set }
 }
@@ -31,7 +32,7 @@ class UpdateRepositoryImpl {
     fileprivate let contactByIDInteractor: GRPCErrorUseCase<String, ContactDisplayable>
     fileprivate let deliveredMessageInteractor: GRPCErrorUseCase<Message, MessagesDeliveredResponse>
     
-    
+    fileprivate var pintPongTimer: Timer?
     fileprivate var updateListenStream: ServerStreamingCall<ListenRequest, Updates>?
     
     
@@ -60,8 +61,14 @@ extension UpdateRepositoryImpl: UpdateRepository {
         self.conversationService.realAllMessage(for: conversation.idintification)
     }
     
-    func sendPoingByTimer() {
-        Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] timer in
+    func stopPintPong() {
+        PP.info("❌ stopPintPong")
+        self.pintPongTimer?.invalidate()
+    }
+    
+    func startPintPong() {
+        PP.info("🐢 startPintPong")
+        self.pintPongTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] timer in
             guard let `self` = self else { return timer.invalidate() }
             self.pingPongInteractorImpl
                 .executeSingle(params: ())

@@ -93,10 +93,6 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
             .disposed(by: disposeBag)
     }
     
-    func setupUpdateSubscription() {
-        self.updateRepository.sendPoingByTimer()
-    }
-    
     func navigate(to conversation: Conversation) {
         self.updateRepository.readAll(in: conversation)
         self.wireframe.navigateToConversation(with: conversation)
