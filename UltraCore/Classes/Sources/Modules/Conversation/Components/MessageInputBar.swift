@@ -161,7 +161,7 @@ class MessageInputBar: UIView {
         }
 
         self.messageTextView.snp.makeConstraints { make in
-            make.height.equalTo(35)
+            make.height.equalTo(38)
             make.left.equalToSuperview().offset(kLowPadding)
             make.bottom.equalToSuperview().offset(-kLowPadding)
             make.top.equalToSuperview().offset(kLowPadding)

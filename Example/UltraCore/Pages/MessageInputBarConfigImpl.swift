@@ -9,7 +9,7 @@
 import UltraCore
 
 class MessageInputBarConfigImpl: MessageInputBarConfig {
-    var textConfig: TextViewConfig = LabelConfigImpl.init(darkColor: .white, defaultColor: .gray900, font: .defaultRegularSubHeadline,
+    var textConfig: TextViewConfig = LabelConfigImpl.init(darkColor: .white, defaultColor: .gray900,
                                                           tintColor: TwiceColorImpl(defaultColor: .green500, darkColor: .white))
     var dividerColor: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
     var background: TwiceColor = TwiceColorImpl(defaultColor: .gray100, darkColor: .gray700)
