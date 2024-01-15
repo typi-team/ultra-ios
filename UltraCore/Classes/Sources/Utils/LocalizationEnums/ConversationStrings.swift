@@ -46,6 +46,7 @@ enum ConversationStrings: String, StringLocalizable {
     case requestSent
     case givePermissionToRecordVoice
     case ifAMessageContainsThreatsInappropriateContentOrViolatesAnyPlatformOrCommunity
+    case yourComplaintWillBeReviewedByModeratorsThankYou
     
     var prefixOfTemplate: String { "conversation" }
     var localizableValue: String { rawValue }

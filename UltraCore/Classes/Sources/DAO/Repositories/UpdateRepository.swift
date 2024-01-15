@@ -12,7 +12,8 @@ import GRPC
 protocol UpdateRepository: AnyObject {
     
     func setupSubscription()
-    func sendPoingByTimer()
+    func startPingPong()
+    func stopPingPong()
     func readAll(in conversation: Conversation)
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> { get set }
 }
@@ -27,10 +28,11 @@ class UpdateRepositoryImpl {
     fileprivate let messageService: MessageDBService
     fileprivate let updateClient: UpdatesServiceClientProtocol
     fileprivate let conversationService: ConversationDBService
-    fileprivate let contactByIDInteractor: UseCase<String, ContactDisplayable>
-    fileprivate let deliveredMessageInteractor: UseCase<Message, MessagesDeliveredResponse>
+    fileprivate let pingPongInteractorImpl: GRPCErrorUseCase<Void, Void>
+    fileprivate let contactByIDInteractor: GRPCErrorUseCase<String, ContactDisplayable>
+    fileprivate let deliveredMessageInteractor: GRPCErrorUseCase<Message, MessagesDeliveredResponse>
     
-    
+    fileprivate var pintPongTimer: Timer?
     fileprivate var updateListenStream: ServerStreamingCall<ListenRequest, Updates>?
     
     
@@ -39,14 +41,16 @@ class UpdateRepositoryImpl {
          contactService: ContactDBService,
          updateClient: UpdatesServiceClientProtocol,
          conversationService: ConversationDBService,
-         userByIDInteractor: UseCase<String, ContactDisplayable>,
-         deliveredMessageInteractor: UseCase<Message, MessagesDeliveredResponse>) {
+         pingPongInteractorImpl: GRPCErrorUseCase<Void, Void>,
+         userByIDInteractor: GRPCErrorUseCase<String, ContactDisplayable>,
+         deliveredMessageInteractor: GRPCErrorUseCase<Message, MessagesDeliveredResponse>) {
         self.updateClient = updateClient
         self.appStore = appStore
         self.messageService = messageService
         self.contactService = contactService
         self.conversationService = conversationService
         self.contactByIDInteractor = userByIDInteractor
+        self.pingPongInteractorImpl = pingPongInteractorImpl
         self.deliveredMessageInteractor = deliveredMessageInteractor
     }
 }
@@ -57,20 +61,23 @@ extension UpdateRepositoryImpl: UpdateRepository {
         self.conversationService.realAllMessage(for: conversation.idintification)
     }
     
-    func sendPoingByTimer() {
-        Timer.scheduledTimer(withTimeInterval: 12, repeats: true) { [weak self] timer in
+    func stopPingPong() {
+        PP.info("❌ stopPintPong")
+        self.pintPongTimer?.invalidate()
+    }
+    
+    func startPingPong() {
+        PP.info("🐢 startPintPong")
+        self.pintPongTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] timer in
             guard let `self` = self else { return timer.invalidate() }
-            self.updateClient.ping(PingRequest(), callOptions: .default())
-                .response
-                .whenComplete { result in
-                    switch result {
-                    case .success:
-                        break
-                    case let .failure(error):
-                        PP.error(error.localizedDescription)
-                        timer.invalidate()
-                    }
-                }
+            self.pingPongInteractorImpl
+                .executeSingle(params: ())
+                .subscribe(onSuccess: {
+                    PP.info("Ping pong is called success")
+                }, onFailure: {error in
+                    PP.error("Ping pong is called with error \(error.localeError)")
+                })
+                .disposed(by: disposeBag)
         }
     }
     
@@ -115,7 +122,7 @@ private extension UpdateRepositoryImpl {
     func setupChangesSubscription(with state: UInt64) {
         let state: ListenRequest = .with { $0.localState = .with { $0.state = state } }
         self.updateListenStream?.cancel(promise: nil)
-        self.updateListenStream = updateClient.listen(state, callOptions: .default()) { [weak self] response in
+        self.updateListenStream = updateClient.listen(state, callOptions: .default(include: false)) { [weak self] response in
             guard let `self` = self else { return }
             self.appStore.store(last: max(Int64(response.lastState), self.appStore.lastState))
             response.updates.forEach { update in
@@ -149,13 +156,11 @@ private extension UpdateRepositoryImpl {
         case let .callCancel(callrequest):
             self.dissmissCall(in: callrequest.room)
         case let .block(blockMessage):
-            print("block \(blockMessage.textFormatString())")
             self.contactService
                 .block(user: blockMessage.user, blocked: true)
                 .subscribe()
                 .disposed(by: disposeBag)
         case let .unblock(blockMessage):
-            print("unblock \(blockMessage.textFormatString())")
             self.contactService
                 .block(user: blockMessage.user, blocked: false)
                 .subscribe()

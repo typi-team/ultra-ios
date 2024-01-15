@@ -18,6 +18,7 @@ import RxDataSources
 final class ConversationViewController: BaseViewController<ConversationPresenterInterface> {
     // MARK: - Properties
     
+    let reportTransitioningDelegate = SheetTransitioningDelegate()
     let sheetTransitioningDelegate = SheetTransitioningDelegate()
     fileprivate var mediaItem: URL?
     fileprivate var isDrawingTable: Bool = false
@@ -103,14 +104,16 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                     self.presentDeletedMessageView(messages: [message])
                 case .reply:
                     break
-                case let .report(message):
-                    self.presentReportMessageView(message: message)
                 case let .copy(message):
                     UIPasteboard.general.string = message.text
+                case .reportDefined(message: let message, type: let type):
+                    self.presentReportMessageView(message, with: type)
                 }
             }
             
             cell.cellActionCallback = {[weak self] () in
+                if let self = self,
+                    self.messageInputBar.isRecording {return}
                 self?.view.endEditing(true)
             }
             cell.actionCallback = {[weak self] message in
@@ -123,6 +126,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                        UIApplication.shared.canOpenURL(url) {
                         UIApplication.shared.open(url, options: [:], completionHandler: nil)
                     }
+                case .voice:
+                    break
                 default:
                     guard let url = self.presenter?.mediaURL(from: message) else { return }
                     self.view.endEditing(true)
@@ -274,6 +279,9 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     // MARK: - UITextViewDelegate
 
 extension ConversationViewController: MessageInputBarDelegate {
+    func unblock() {
+        self.presenter?.block()
+    }
     
     func pressedPlus(in view: MessageInputBar) {
         let viewController = FilesController()
@@ -330,7 +338,7 @@ extension ConversationViewController: ConversationViewInterface {
     }
     
     func reported() {
-        self.showAlert(from: ConversationStrings.requestSent.localized)
+        self.showAlert(from: ConversationStrings.yourComplaintWillBeReviewedByModeratorsThankYou.localized)
     }
     
     
@@ -590,28 +598,18 @@ extension ConversationViewController: EditActionBottomBarDelegate {
         self.showInProgressAlert()
     }
     
-    func presentReportMessageView(message: Message) {
-        
-        let viewController = ActionsViewController({ controler in
-            controler.headlineText = ConversationStrings.areYouSure.localized
-            controler.regularText = ConversationStrings.ifAMessageContainsThreatsInappropriateContentOrViolatesAnyPlatformOrCommunity.localized
-            
-            controler.additionalButtons = [.init({
-                $0.titleLabel?.numberOfLines = 0
-                $0.backgroundColor = .green500
-                $0.setTitleColor(.white, for: .normal)
-                $0.setTitle(EditActionStrings.report.localized.capitalized, for: .normal)
-                $0.addAction { [weak self] in
-                    guard let `self` = self else { return }
-                    controler.dismiss(animated: true)
-                    self.presenter?.report([message])
-                    self.cancel()
-                }
-            })]
+    func presentReportMessageView(_ message: Message, with type: ComplainTypeEnum) {
+        let viewController = ReportCommentController({ controler in
+            controler.saveAction = {[weak self] comment in
+                guard let `self` = self else { return }
+                controler.dismiss(animated: true)
+                self.presenter?.report(message, with: type, comment: comment)
+                self.cancel()
+            }
         })
         
         viewController.modalPresentationStyle = .custom
-        viewController.transitioningDelegate = sheetTransitioningDelegate
+        viewController.transitioningDelegate = reportTransitioningDelegate
         present(viewController, animated: true)
     }
     

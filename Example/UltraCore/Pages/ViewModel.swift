@@ -32,6 +32,8 @@ class ViewModel {
         UltraCoreSettings.futureDelegate = self
     }
     
+    var phone: String? {UserDefaults.standard.string(forKey: "phone") }
+    
     func setupSID(callback: @escaping (Error?) -> Void) {
         let userDef = UserDefaults.standard
         guard UserDefaults.standard.string(forKey: "K_SID") != nil,
@@ -59,14 +61,6 @@ class ViewModel {
             }
         }.resume()
     }
-
-    func timer() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 60, execute: {
-            Timer.scheduledTimer(withTimeInterval: 60, repeats: true, block: { [weak self] _ in
-                self?.setupSID(callback: { _ in })
-            })
-        })
-    }
 }
 
 extension ViewModel: UltraCoreFutureDelegate {
@@ -75,11 +69,11 @@ extension ViewModel: UltraCoreFutureDelegate {
     }
     
     func availableToRecordVoice() -> Bool {
-        false
+        true
     }
     
     func availableToReport(message: Any) -> Bool {
-        false
+        true
     }
     
     func localize(for key: String) -> String? {
@@ -92,6 +86,34 @@ extension ViewModel: UltraCoreFutureDelegate {
 }
 
 extension ViewModel: UltraCoreSettingsDelegate {
+    func token(callback: @escaping StringCallback) {
+        let userDef = UserDefaults.standard
+        guard UserDefaults.standard.string(forKey: "K_SID") != nil,
+              let lastname = userDef.string(forKey: "last_name"),
+              let firstname = userDef.string(forKey: "first_name"),
+              let phone = userDef.string(forKey: "phone") else {
+            return callback(nil)
+        }
+
+        guard let url = URL(string: "https://ultra-dev.typi.team/mock/v1/auth"),
+              let jsonData = try? JSONSerialization.data(withJSONObject: [
+                  "phone": phone,
+                  "lastname": lastname,
+                  "firstname": firstname,
+                  "nickname": firstname,
+              ]) else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonData
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let data = data,
+               let userResponse = try? JSONDecoder().decode(UserResponse.self, from: data) {
+                callback(userResponse.sid)
+            }
+        }.resume()
+    }
+    
     func emptyConversationView() -> UIView? {
         return nil
     }
