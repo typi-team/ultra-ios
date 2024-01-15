@@ -85,16 +85,21 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
             .disposed(by: disposeBag)
     }
     
-    func updateStatus(is online: Bool) {
-        self.userStatusUpdateInteractor.executeSingle(params: online)
+    func sendAway() {
+        self.updateRepository.stopPingPong()
+        self.userStatusUpdateInteractor.executeSingle(params: false)
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()
             .disposed(by: disposeBag)
     }
     
-    func setupUpdateSubscription() {
-        self.updateRepository.sendPoingByTimer()
+    func sendOnline() {
+        self.userStatusUpdateInteractor.executeSingle(params: true)
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe()
+            .disposed(by: disposeBag)
     }
     
     func navigate(to conversation: Conversation) {

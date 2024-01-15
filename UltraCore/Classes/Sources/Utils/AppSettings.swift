@@ -33,5 +33,4 @@ protocol AppSettings: Any {
     var integrateService: IntegrationServiceClientProtocol { get }
     
     var updateTokenInteractor: UseCase<Void, Void> { get }
-//    var jwtTokenInteractorImpl: UseCase<String, IssueJwtResponse> { get }
 }

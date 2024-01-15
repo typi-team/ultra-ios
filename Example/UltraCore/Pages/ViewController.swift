@@ -75,7 +75,6 @@ private extension ViewController {
                 if error != nil {
                     self.viewControllers?.append(self.createNavController(for: UltraCoreSettings.entrySignUpViewController(), title: NSLocalizedString("conversations.chats", comment: ""), image: UIImage(named: "chats")!))
                 } else {
-                    self.viewModel.timer()
                     self.viewControllers?.append(self.createNavController(for: UltraCoreSettings.entryConversationsViewController(), title: NSLocalizedString("conversations.chats", comment: ""), image: UIImage(named: "chats")!))
                 }
                 self.selectedIndex = 3

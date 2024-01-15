@@ -64,10 +64,10 @@ public extension UltraCoreSettings {
 
     static func update(sid token: String, timeOut: TimeInterval = 0,
                        with callback: @escaping (Error?) -> Void) {
-        AppSettingsImpl.shared.appStore.ssid = token
+        let shared = AppSettingsImpl.shared
+        shared.appStore.ssid = token
         // TODO: Refactor this case into interactor or something like this object
-        AppSettingsImpl
-            .shared
+        shared
             .authService
             .issueJwt(.with({
                 $0.device = .ios
@@ -80,10 +80,11 @@ public extension UltraCoreSettings {
                 case let .failure(error):
                     callback(error)
                 case let .success(value):
-                    AppSettingsImpl.shared.appStore.store(token: value.token)
-                    AppSettingsImpl.shared.appStore.store(userID: value.userID)
-                    AppSettingsImpl.shared.updateRepository.setupSubscription()
-                    if AppSettingsImpl.shared.appStore.lastState == 0 {
+                    shared.appStore.store(token: value.token)
+                    shared.appStore.store(userID: value.userID)
+                    shared.updateRepository.setupSubscription()
+                    shared.updateRepository.startPingPong()
+                    if shared.appStore.lastState == 0 {
                         DispatchQueue.main.asyncAfter(deadline: .now() + timeOut, execute: {
                             callback(nil)
                         })
