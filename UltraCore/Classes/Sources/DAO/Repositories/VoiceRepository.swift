@@ -58,10 +58,6 @@ class VoiceRepository: NSObject {
         )
     }
 
-    func pause() {
-        audioPlayer?.pause()
-    }
-
     func play(message: Message, atTime: TimeInterval = .zero) {
         guard let soundURL = self.mediaUtils.mediaURL(from: message) else { return }
         do {
