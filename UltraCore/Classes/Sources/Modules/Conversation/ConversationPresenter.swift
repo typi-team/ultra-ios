@@ -39,7 +39,7 @@ final class ConversationPresenter {
     private let messagesInteractor: UseCase<GetChatMessagesRequest, [Message]>
     fileprivate let sendMoneyInteractor: UseCase<TransferPayload, TransferResponse>
     private let messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>
-
+    private let makeVibrationInteractor: UseCase<UIImpactFeedbackGenerator.FeedbackStyle, Void>
 
     // MARK: - Public properties -
 
@@ -80,7 +80,8 @@ final class ConversationPresenter {
          sendTypingInteractor: UseCase<String, SendTypingResponse>,
          readMessageInteractor: UseCase<Message, MessagesReadResponse>,
          sendMoneyInteractor: UseCase<TransferPayload, TransferResponse>,
-         messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>) {
+         messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>,
+         makeVibrationInteractor: UseCase<UIImpactFeedbackGenerator.FeedbackStyle, Void>) {
         self.view = view
         self.userID = userID
         self.appStore = appStore
@@ -98,6 +99,7 @@ final class ConversationPresenter {
         self.conversationRepository = conversationRepository
         self.deleteMessageInteractor = deleteMessageInteractor
         self.messageSenderInteractor = messageSenderInteractor
+        self.makeVibrationInteractor = makeVibrationInteractor
     }
 }
 
@@ -491,6 +493,11 @@ extension ConversationPresenter: ConversationPresenterInterface {
     }
     
     private func sendVibration() {
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        makeVibrationInteractor
+            .executeSingle(params: .light)
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe()
+            .disposed(by: disposeBag)
     }
 }
