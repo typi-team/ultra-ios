@@ -7,6 +7,7 @@
 //
 import UltraCore
 import Foundation
+import FirebaseMessaging
 
 struct UserResponse: Codable {
     let sid: String
@@ -49,18 +50,42 @@ class ViewModel {
                   "lastname": lastname,
                   "firstname": firstname,
                   "nickname": firstname,
+                  "device_id": UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
               ]) else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonData
-        URLSession.shared.dataTask(with: request) { data, response, error in
+        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
             if let data = data,
-                let userResponse = try? JSONDecoder().decode(UserResponse.self, from: data) {
+               let userResponse = try? JSONDecoder().decode(UserResponse.self, from: data) {
+                self?.didRegisterForRemoteNotifications()
                 UltraCoreSettings.update(sid: userResponse.sid, with: callback)
             }
         }.resume()
     }
+    
+    func didRegisterForRemoteNotifications() {
+        guard let url = URL(string: "https://ultra-dev.typi.team/mock/v1/device"),
+              let firebaseToken = Messaging.messaging().fcmToken,
+              let sidToken = UserDefaults.standard.string(forKey: "K_SID"),
+              let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+              let jsonData = try? JSONSerialization.data(withJSONObject: [
+                  "app_version": appVersion,
+                  "token": firebaseToken,
+                  "device_id": UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString,
+                  "platform": "IOS",
+                  "voip_push_token": ""
+              ]) else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonData
+        request.setValue(sidToken, forHTTPHeaderField: "SID")
+        let task = URLSession.shared.dataTask(with: request) {(data, response, error) in }
+        task.resume()
+    }
+    
 }
 
 extension ViewModel: UltraCoreFutureDelegate {
@@ -145,4 +170,5 @@ extension ViewModel: UltraCoreSettingsDelegate {
     func availableToLocation() -> Bool {
         return true
     }
+
 }

@@ -112,13 +112,23 @@ extension UpdateRepositoryImpl: UpdateRepository {
                         response.contacts.forEach { contact in
                             self.update(contact: ContactDisplayableImpl(contact: contact))
                         }
-                        
+
+                        // TODO: - Temporary fix, refactor in reactive way later
+                        // We need to make sure that conversations are created first and then
+                        // the unread counter is updated.
+
+                        let group = DispatchGroup()
                         response.messages.forEach { message in
-                            self.update(message: message)
+                            group.enter()
+                            self.update(message: message, completion: {
+                                group.leave()
+                            })
                         }
                         
+                        group.notify(queue: DispatchQueue.main) {
+                            self.handleUnread(from: response.chats)
+                        }
                         self.appStore.store(last: Int64(response.state))
-                        self.handleUnread(from: response.chats)
                         self.setupChangesSubscription(with: response.state)
                     }
                 }
@@ -215,7 +225,7 @@ private extension UpdateRepositoryImpl {
     func handle(of update: Update.OneOf_OfUpdate) {
         switch update {
         case let .message(message):
-            self.update(message: message)
+            self.update(message: message, completion: { })
             self.handleNewMessageOnRead(message: message)
         case let .contact(contact):
             self.update(contact: ContactDisplayableImpl(contact: contact))
@@ -244,7 +254,7 @@ extension UpdateRepositoryImpl {
         self.conversationService.incrementUnread(for: message.receiver.chatID)
     }
     
-    func update(message: Message) {
+    func update(message: Message, completion: @escaping (() -> Void)) {
         let contactID = message.peerId(user: self.appStore.userID())
         let contact = self.contactService.contact(id: contactID)
         if contact == nil {
@@ -253,8 +263,10 @@ extension UpdateRepositoryImpl {
                 .flatMap({ self.contactService.save(contact: $0) })
                 .flatMap({ _ in self.conversationService.createIfNotExist(from: message) })
                 .flatMap({ self.messageService.update(message: message) })
-                .subscribe()
-                
+                .subscribe(onDisposed: {
+                    completion()
+                })
+
         } else {
             self.conversationService
                 .createIfNotExist(from: message)
