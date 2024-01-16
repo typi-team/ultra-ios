@@ -69,6 +69,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
         PP.info("❌ stopPintPong")
         self.pintPongTimer?.invalidate()
         self.updateListenStream?.cancel(promise: nil)
+        self.contactService.updateContact(status: .unknown)
     }
     
     func retreiveContactStatuses() {

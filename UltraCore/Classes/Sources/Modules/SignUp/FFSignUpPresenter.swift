@@ -82,10 +82,10 @@ extension FFSignUpPresenter: SignUpPresenterInterface {
             } else if let data = data,
                       let userResponse = try? JSONDecoder().decode(UserResponse.self, from: data) {
                 UserDefaults.standard.set(userResponse.sid, forKey: "K_SID")
-                UltraCoreSettings.update(sid: userResponse.sid) { error in
+                UltraCoreSettings.update(sid: userResponse.sid) {[weak self] error in
                     if let error = error {
                         PP.warning(error.localizedDescription)
-                    } else {
+                    } else if let `self` = self {
                         DispatchQueue.main.async {
                             self.view.open(view: UltraCoreSettings.entryConversationsViewController())
                         }

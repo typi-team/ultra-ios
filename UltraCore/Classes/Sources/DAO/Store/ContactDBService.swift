@@ -86,6 +86,20 @@ class ContactDBService {
         }
     }
     
+    func updateContact(status: UserStatusEnum) {
+        do {
+            let realm = Realm.myRealm()
+            try realm.write {
+                realm.objects(DBContact.self).forEach { contact in
+                    contact.statusValue = status.rawValue
+                    realm.add(contact, update: .all)
+                }
+            }
+        } catch {
+            PP.error(error.localizedDescription)
+        }
+    }
+    
     func update(contacts statuses: [UserStatus]) -> Single<[ContactDisplayable]> {
         return Single.create { completable in
             do {
