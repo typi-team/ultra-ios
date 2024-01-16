@@ -448,8 +448,8 @@ extension ConversationPresenter: ConversationPresenterInterface {
         
         self.conversationRepository
             .createIfNotExist(from: message)
-            .flatMap{ self.messageRepository.save(message: message)}
-            .flatMap{self.messageSenderInteractor.executeSingle(params: params)}
+            .flatMap { self.messageRepository.save(message: message) }
+            .flatMap { self.messageSenderInteractor.executeSingle(params: params) }
             .flatMap({ [weak self] (response: MessageSendResponse) in
                 guard let `self` = self else {
                     throw NSError.selfIsNill
@@ -463,16 +463,10 @@ extension ConversationPresenter: ConversationPresenterInterface {
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
-            .subscribe()
-            .disposed(by: self.disposeBag)
-        sendVibration()
-    }
-    
-    private func sendVibration() {
-        makeVibrationInteractor
-            .executeSingle(params: .light)
-            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
-            .observe(on: MainScheduler.instance)
+            .flatMap({ [weak self] _ in
+                guard let `self` = self else { throw NSError.selfIsNill }
+                return self.makeVibrationInteractor.executeSingle(params: .light)
+            })
             .subscribe()
             .disposed(by: disposeBag)
     }
