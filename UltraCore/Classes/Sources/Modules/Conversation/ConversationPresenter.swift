@@ -363,7 +363,18 @@ extension ConversationPresenter: ConversationPresenterInterface {
     
     func upload(file: FileUpload) {
         self.mediaRepository
-            .upload(file: file, in: conversation)
+            .upload(file: file, in: conversation,
+                    onPreUploadingFile: { [weak self] request in
+                guard let self else { return }
+                self.conversationRepository
+                    .createIfNotExist(from: request.message)
+                    .flatMap{ self.messageRepository.save(message: request.message)}
+                    .flatMap{ self.messageSenderInteractor.executeSingle(params: request)}
+                    .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+                    .observe(on: MainScheduler.instance)
+                    .subscribe()
+                    .disposed(by: self.disposeBag)
+            })
             .flatMap({ [weak self] request in
                 guard let `self` = self else { throw NSError.selfIsNill }
                 return self.messageSenderInteractor.executeSingle(params: request)

@@ -17,7 +17,6 @@ final class ConversationsPresenter: BasePresenter {
 
     // MARK: - Private properties -
     private let updateRepository: UpdateRepository
-    private let messageRepository: MessageRepository
     private weak var view: ConversationsViewInterface?
     private let wireframe: ConversationsWireframeInterface
     fileprivate let contactDBService: ContactDBService
@@ -27,6 +26,8 @@ final class ConversationsPresenter: BasePresenter {
     fileprivate let userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>
     fileprivate let deleteConversationInteractor: UseCase<(Conversation, Bool), Void>
     fileprivate let contactToConversationInteractor: ContactToConversationInteractor
+    fileprivate let resendMessagesInteractor: ResendingMessagesInteractor
+    fileprivate let reachabilityInteractor: ReachabilityInteractor
     
     lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(conversationRepository.conversations(), updateRepository.typingUsers)
         .map({ conversations, typingUsers in
@@ -44,7 +45,6 @@ final class ConversationsPresenter: BasePresenter {
 
     init(view: ConversationsViewInterface,
          updateRepository: UpdateRepository,
-         messageRepository: MessageRepository,
          contactDBService: ContactDBService,
          wireframe: ConversationsWireframeInterface,
          conversationRepository: ConversationRepository,
@@ -52,17 +52,20 @@ final class ConversationsPresenter: BasePresenter {
          retrieveContactStatusesInteractor: UseCase<Void, Void>,
          deleteConversationInteractor: UseCase<(Conversation,Bool), Void>,
          contactToConversationInteractor: ContactToConversationInteractor,
-         userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>) {
+         userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>,
+         resendMessagesInteractor: ResendingMessagesInteractor,
+         reachabilityInteractor: ReachabilityInteractor) {
         self.view = view
         self.wireframe = wireframe
         self.updateRepository = updateRepository
-        self.messageRepository = messageRepository
         self.contactDBService = contactDBService
         self.conversationRepository = conversationRepository
         self.contactByUserIdInteractor = contactByUserIdInteractor
         self.userStatusUpdateInteractor = userStatusUpdateInteractor
         self.deleteConversationInteractor = deleteConversationInteractor
         self.retrieveContactStatusesInteractor = retrieveContactStatusesInteractor
+        self.resendMessagesInteractor = resendMessagesInteractor
+        self.reachabilityInteractor = reachabilityInteractor
         self.contactToConversationInteractor = contactToConversationInteractor
     }
 }
@@ -70,6 +73,11 @@ final class ConversationsPresenter: BasePresenter {
 // MARK: - Extensions -
 
 extension ConversationsPresenter: ConversationsPresenterInterface {
+    
+    func viewDidLoad() {
+        startReachibilityNotifier()
+    }
+    
     func delete(_ conversation: Conversation, all: Bool) {
         self.deleteConversationInteractor.executeSingle(params: (conversation, all))
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
@@ -128,4 +136,20 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
             })
             .disposed(by: disposeBag)
     }
+    
+    private func startReachibilityNotifier() {
+        reachabilityInteractor.execute(params: ())
+            .subscribe(onNext: { [weak self] _ in
+                guard let self else { return }
+                self.resendMessagesInteractor
+                    .executeSingle(params: ())
+                    .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+                    .observe(on: MainScheduler.instance)
+                    .subscribe()
+                    .disposed(by: self.disposeBag)
+            })
+            .disposed(by: disposeBag)
+    }
+    
+
 }
