@@ -39,9 +39,10 @@ final class ConversationPresenter {
     private let readMessageInteractor: GRPCErrorUseCase<Message, MessagesReadResponse>
     private let messagesInteractor: GRPCErrorUseCase<GetChatMessagesRequest, [Message]>
     fileprivate let sendMoneyInteractor: UseCase<TransferPayload, TransferResponse>
+    private let makeVibrationInteractor: UseCase<UIImpactFeedbackGenerator.FeedbackStyle, Void>
     private let messageSenderInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendResponse>
     private let messageSentSoundInteractor: UseCase<MakeSoundInteractor.Sound, Void>
-
+    
     // MARK: - Public properties -
 
     lazy var messages: Observable<[Message]> = messageRepository.messages(chatID: conversation.idintification)
@@ -82,8 +83,11 @@ final class ConversationPresenter {
          sendTypingInteractor: GRPCErrorUseCase<String, SendTypingResponse>,
          readMessageInteractor: GRPCErrorUseCase<Message, MessagesReadResponse>,
          sendMoneyInteractor: UseCase<TransferPayload, TransferResponse>,
+
+         makeVibrationInteractor: UseCase<UIImpactFeedbackGenerator.FeedbackStyle, Void>,
          messageSenderInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendResponse>,
          messageSentSoundInteractor: UseCase<MakeSoundInteractor.Sound, Void>) {
+
         self.view = view
         self.userID = userID
         self.appStore = appStore
@@ -102,6 +106,7 @@ final class ConversationPresenter {
         self.conversationRepository = conversationRepository
         self.deleteMessageInteractor = deleteMessageInteractor
         self.messageSenderInteractor = messageSenderInteractor
+        self.makeVibrationInteractor = makeVibrationInteractor
         self.messageSentSoundInteractor = messageSentSoundInteractor
     }
 }
@@ -481,8 +486,8 @@ extension ConversationPresenter: ConversationPresenterInterface {
         
         self.conversationRepository
             .createIfNotExist(from: message)
-            .flatMap{ self.messageRepository.save(message: message)}
-            .flatMap{self.messageSenderInteractor.executeSingle(params: params)}
+            .flatMap { self.messageRepository.save(message: message) }
+            .flatMap { self.messageSenderInteractor.executeSingle(params: params) }
             .flatMap({ [weak self] (response: MessageSendResponse) in
                 guard let `self` = self else {
                     throw NSError.selfIsNill
@@ -499,8 +504,12 @@ extension ConversationPresenter: ConversationPresenterInterface {
             }
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
+            .flatMap({ [weak self] _ in
+                guard let `self` = self else { throw NSError.selfIsNill }
+                return self.makeVibrationInteractor.executeSingle(params: .light)
+            })
             .subscribe()
-            .disposed(by: self.disposeBag)
+            .disposed(by: disposeBag)
     }
 
 }

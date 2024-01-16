@@ -36,6 +36,7 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
         let archiveMessages = MessagesInteractor(messageDBService: appSettings.messageDBService, messageService: appSettings.messageService)
         let deleteInteractor = DeleteMessageInteractor.init(messageDBService: appSettings.messageDBService,
                                                             messageService: appSettings.messageService)
+        let makeVibrationInteractor = MakeVibrationInteractor()
         let messageSentSoundInteractor = MakeSoundInteractor()
         
         let blockContactInteractor = BlockContactInteractor(userService: appSettings.userService, contactDBService: appSettings.contactDBService)
@@ -55,6 +56,7 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
                                               sendTypingInteractor: sendTypingInteractor,
                                               readMessageInteractor: readMessageInteractor,
                                               sendMoneyInteractor: SendMoneyInteractor(),
+                                              makeVibrationInteractor: makeVibrationInteractor,
                                               messageSenderInteractor: messageSenderInteractor,
                                               messageSentSoundInteractor: messageSentSoundInteractor)
         moduleViewController.presenter = presenter
