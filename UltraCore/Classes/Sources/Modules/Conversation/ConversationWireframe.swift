@@ -36,7 +36,7 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
         let archiveMessages = MessagesInteractor(messageDBService: appSettings.messageDBService, messageService: appSettings.messageService)
         let deleteInteractor = DeleteMessageInteractor.init(messageDBService: appSettings.messageDBService,
                                                             messageService: appSettings.messageService)
-        let messageSentSoundInteractor = MessageSentSoundInteractor()
+        let messageSentSoundInteractor = MakeSoundInteractor()
         let presenter = ConversationPresenter(userID: appSettings.appStore.userID(),
                                               appStore: appSettings.appStore,
                                               conversation: conversation,

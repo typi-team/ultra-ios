@@ -40,7 +40,7 @@ final class ConversationPresenter {
     private let messagesInteractor: UseCase<GetChatMessagesRequest, [Message]>
     fileprivate let sendMoneyInteractor: UseCase<TransferPayload, TransferResponse>
     private let messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>
-    private let messageSentSoundInteractor: UseCase<MessageSentSoundInteractor.Sound, Void>
+    private let messageSentSoundInteractor: UseCase<MakeSoundInteractor.Sound, Void>
 
     // MARK: - Public properties -
 
@@ -82,7 +82,7 @@ final class ConversationPresenter {
          readMessageInteractor: UseCase<Message, MessagesReadResponse>,
          sendMoneyInteractor: UseCase<TransferPayload, TransferResponse>,
          messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>,
-         messageSentSoundInteractor: UseCase<MessageSentSoundInteractor.Sound, Void>) {
+         messageSentSoundInteractor: UseCase<MakeSoundInteractor.Sound, Void>) {
         self.view = view
         self.userID = userID
         self.appStore = appStore
@@ -239,7 +239,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 message.seqNumber = response.seqNumber
                 return self.messageRepository.update(message: message)
             })
-            .flatMap { _ in self.messageSentSoundInteractor.executeSingle(params: .outgoing) }
+            .flatMap { _ in self.messageSentSoundInteractor.executeSingle(params: .messageSent) }
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()
@@ -285,7 +285,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 message.seqNumber = response.seqNumber
                 return self.messageRepository.update(message: message)
             })
-            .flatMap { _ in self.messageSentSoundInteractor.executeSingle(params: .outgoing) }
+            .flatMap { _ in self.messageSentSoundInteractor.executeSingle(params: .messageSent) }
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()
@@ -345,7 +345,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                     message.seqNumber = response.seqNumber
                     return self.messageRepository.update(message: message)
                 })
-                .flatMap { _ in self.messageSentSoundInteractor.executeSingle(params: .outgoing) }
+                .flatMap { _ in self.messageSentSoundInteractor.executeSingle(params: .messageSent) }
                 .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
                 .observe(on: MainScheduler.instance)
                 .subscribe()
@@ -383,7 +383,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 guard let `self` = self else { throw NSError.selfIsNill }
                 return self.messageSenderInteractor.executeSingle(params: request)
             })
-            .flatMap { _ in self.messageSentSoundInteractor.executeSingle(params: .outgoing) }
+            .flatMap { _ in self.messageSentSoundInteractor.executeSingle(params: .messageSent) }
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { _ in PP.debug(file.mime) },
@@ -487,7 +487,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 message.seqNumber = response.seqNumber
                 return self.messageRepository.update(message: message)
             })
-            .flatMap { _ in self.messageSentSoundInteractor.executeSingle(params: .outgoing) }
+            .flatMap { _ in self.messageSentSoundInteractor.executeSingle(params: .messageSent) }
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()

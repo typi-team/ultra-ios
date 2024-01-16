@@ -1,7 +1,7 @@
 import RxSwift
 import AVFoundation
 
-class MessageSentSoundInteractor: UseCase<MessageSentSoundInteractor.Sound, Void> {
+class MakeSoundInteractor: UseCase<MakeSoundInteractor.Sound, Void> {
     
     private var player: AVAudioPlayer?
 
@@ -10,12 +10,12 @@ class MessageSentSoundInteractor: UseCase<MessageSentSoundInteractor.Sound, Void
             guard let `self` = self else {
                 return Disposables.create()
             }
-            self.messageSentSound(sound: params)
+            self.make(sound: params)
             return Disposables.create()
         }
     }
     
-    private func messageSentSound(sound: Sound) {
+    private func make(sound: Sound) {
         let bundle = Bundle(for: AppSettingsImpl.self)
         if let resourceURL = bundle.url(forResource: "UltraCore", withExtension: "bundle"),
            let resourceBundle = Bundle(url: resourceURL),
@@ -35,8 +35,8 @@ class MessageSentSoundInteractor: UseCase<MessageSentSoundInteractor.Sound, Void
    
 }
 
-extension MessageSentSoundInteractor {
+extension MakeSoundInteractor {
     enum Sound: String {
-        case outgoing
+        case messageSent = "outgoing"
     }
 }
