@@ -106,6 +106,22 @@ final class ConversationPresenter {
 // MARK: - Extensions -
 
 extension ConversationPresenter: ConversationPresenterInterface {
+
+    func subscribeToVisibility() {
+        Observable<Int>.interval(.seconds(30), scheduler: MainScheduler.instance)
+            .withLatestFrom(conversationRepository.conversations())
+            .map { [weak self] conversations -> Conversation? in
+                conversations.first(where: { $0.idintification == self?.conversation.idintification })
+            }
+            .subscribe(onNext: { [weak self] conversation in
+                guard let conversation = conversation else {
+                    return
+                }
+                self?.view.setup(conversation: conversation)
+            })
+            .disposed(by: disposeBag)
+    }
+
     func isBlock() -> Bool {
         return self.conversation.peer?.isBlocked ?? false
     }
@@ -374,6 +390,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
     
     
     func viewDidLoad() {
+        subscribeToVisibility()
         self.view.setup(conversation: conversation)
         
         self.updateRepository.typingUsers
