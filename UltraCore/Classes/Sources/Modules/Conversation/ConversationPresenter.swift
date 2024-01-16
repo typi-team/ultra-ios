@@ -108,18 +108,22 @@ final class ConversationPresenter {
 extension ConversationPresenter: ConversationPresenterInterface {
 
     func subscribeToVisibility() {
-        Observable<Int>.interval(.seconds(30), scheduler: MainScheduler.instance)
-            .withLatestFrom(conversationRepository.conversations())
-            .map { [weak self] conversations -> Conversation? in
-                conversations.first(where: { $0.idintification == self?.conversation.idintification })
-            }
-            .subscribe(onNext: { [weak self] conversation in
-                guard let conversation = conversation else {
-                    return
+        if let userID = self.conversation.peer?.userID {
+            let timerUpdate = Observable<Int>.interval(.seconds(30), scheduler: MainScheduler.instance)
+            Observable.combineLatest(timerUpdate, self.contactRepository.contacts())
+                .compactMap { _, contacts -> ContactDisplayable? in
+                    let selectedContact = contacts.filter { contact in contact.userID == userID }.first
+                    return selectedContact
                 }
-                self?.view.setup(conversation: conversation)
-            })
-            .disposed(by: disposeBag)
+                .do(onNext: { [weak self] contact in
+                    guard let `self` = self else { return }
+                    self.conversation.peer = contact
+                    self.view.blocked(is: contact.isBlocked)
+                    self.view.setup(conversation: self.conversation)
+                })
+                .subscribe()
+                .disposed(by: disposeBag)
+        }
     }
 
     func isBlock() -> Bool {
@@ -390,7 +394,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
     
     
     func viewDidLoad() {
-        subscribeToVisibility()
+        self.subscribeToVisibility()
         self.view.setup(conversation: conversation)
         
         self.updateRepository.typingUsers
@@ -406,20 +410,6 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 self.view.display(is: typingUser)
             })
             .disposed(by: disposeBag)
-        
-        if let userID = self.conversation.peer?.userID {
-            self.contactRepository
-                .contacts()
-                .map { $0.filter({ contact in contact.userID == userID }) }
-                .compactMap({ $0.first })
-                .subscribe(onNext: { [weak self] contact in
-                    guard let `self` = self else { return }
-                    self.conversation.peer = contact
-                    self.view.blocked(is: contact.isBlocked)
-                    self.view.setup(conversation: self.conversation)
-                })
-                .disposed(by: disposeBag)
-        }
         
         self.messageRepository.messages(chatID: conversation.idintification)
             .debounce(RxTimeInterval.milliseconds(400), scheduler: ConcurrentDispatchQueueScheduler(qos: .background))
