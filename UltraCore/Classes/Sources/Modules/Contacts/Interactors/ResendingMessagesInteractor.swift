@@ -1,15 +1,9 @@
 import RxSwift
 import Foundation
 
-protocol ResendingMessagesInteractorProtocol {
-    func viewDidLoad()
-}
-
-class ResendingMessagesInteractor: ResendingMessagesInteractorProtocol {
+final class ResendingMessagesInteractor: UseCase<Void, Void> {
     
     // MARK: - Properties
-    
-    private let reachability = try? Reachability()
     
     private var messageSending: Array<String> = []
         
@@ -33,15 +27,19 @@ class ResendingMessagesInteractor: ResendingMessagesInteractorProtocol {
         self.mediaRepository = mediaRepository
     }
 
-    // MARK: - ResendingMessagesInteractorProtocol
-    
-    func viewDidLoad() {
-        startReachibilityNotifier()
+    override func executeSingle(params: Void) -> Single<Void> {
+        return Single<Void>
+            .create { [weak self] observer -> Disposable in
+                guard let `self` = self else { return Disposables.create() }
+                self.resendMessagesIfNeeded()
+                return Disposables.create()
+            }
     }
     
     // MARK: - Methods
     
     private func resendMessagesIfNeeded() {
+        messageSending.removeAll()
         getAllMessages { [weak self] messages in
             guard let self else { return }
             let unsendedMessages = messages.filter { $0.seqNumber == 0 && !$0.isIncome }
@@ -102,14 +100,6 @@ class ResendingMessagesInteractor: ResendingMessagesInteractorProtocol {
             .disposed(by: disposeBag)
     }
     
-    private func startReachibilityNotifier() {
-        reachability?.whenReachable = { [weak self] reachability in
-            self?.messageSending.removeAll()
-            self?.resendMessagesIfNeeded()
-        }
-        try? reachability?.startNotifier()
-    }
-    
     private func getAllMessages(onCompletion: @escaping ([Message]) -> Void) {
         messageRepository
             .messages()
@@ -119,5 +109,4 @@ class ResendingMessagesInteractor: ResendingMessagesInteractorProtocol {
             })
             .disposed(by: disposeBag)
     }
-        
 }

@@ -26,7 +26,8 @@ final class ConversationsPresenter: BasePresenter {
     fileprivate let userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>
     fileprivate let deleteConversationInteractor: UseCase<(Conversation, Bool), Void>
     fileprivate let contactToCreateChatByPhoneInteractor: ContactToCreateChatByPhoneInteractor
-    fileprivate let resendMessagesInteractor: ResendingMessagesInteractorProtocol
+    fileprivate let resendMessagesInteractor: ResendingMessagesInteractor
+    private let reachability = try? Reachability()
     
     lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(conversationRepository.conversations(), updateRepository.typingUsers)
         .map({ conversations, typingUsers in
@@ -52,7 +53,7 @@ final class ConversationsPresenter: BasePresenter {
          deleteConversationInteractor: UseCase<(Conversation,Bool), Void>,
          contactToCreateChatByPhoneInteractor: ContactToCreateChatByPhoneInteractor,
          userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>,
-         resendMessagesInteractor: ResendingMessagesInteractorProtocol) {
+         resendMessagesInteractor: ResendingMessagesInteractor) {
         self.view = view
         self.wireframe = wireframe
         self.updateRepository = updateRepository
@@ -72,7 +73,7 @@ final class ConversationsPresenter: BasePresenter {
 extension ConversationsPresenter: ConversationsPresenterInterface {
     
     func viewDidLoad() {
-        resendMessagesInteractor.viewDidLoad()
+        startReachibilityNotifier()
     }
     
     func delete(_ conversation: Conversation, all: Bool) {
@@ -135,5 +136,19 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
             })
             .disposed(by: disposeBag)
     }
+    
+    private func startReachibilityNotifier() {
+        reachability?.whenReachable = { [weak self] reachability in
+            guard let self else { return }
+            self.resendMessagesInteractor
+                .executeSingle(params: ())
+                .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+                .observe(on: MainScheduler.instance)
+                .subscribe()
+                .disposed(by: self.disposeBag)
+        }
+        try? reachability?.startNotifier()
+    }
+    
 
 }
