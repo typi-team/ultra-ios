@@ -21,6 +21,11 @@ internal protocol ContactServiceClientProtocol: GRPCClient {
     callOptions: CallOptions?
   ) -> UnaryCall<ContactsImportRequest, ContactImportResponse>
 
+  func getContacts(
+    _ request: GetContactsRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<GetContactsRequest, GetContactsResponse>
+
   func getContactByUserId(
     _ request: ContactByUserIdRequest,
     callOptions: CallOptions?
@@ -52,6 +57,24 @@ extension ContactServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeImportInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to GetContacts
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to GetContacts.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  internal func getContacts(
+    _ request: GetContactsRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<GetContactsRequest, GetContactsResponse> {
+    return self.makeUnaryCall(
+      path: ContactServiceClientMetadata.Methods.getContacts.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetContactsInterceptors() ?? []
     )
   }
 
@@ -159,6 +182,11 @@ internal protocol ContactServiceAsyncClientProtocol: GRPCClient {
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<ContactsImportRequest, ContactImportResponse>
 
+  func makeGetContactsCall(
+    _ request: GetContactsRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<GetContactsRequest, GetContactsResponse>
+
   func makeGetContactByUserIDCall(
     _ request: ContactByUserIdRequest,
     callOptions: CallOptions?
@@ -189,6 +217,18 @@ extension ContactServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeImportInterceptors() ?? []
+    )
+  }
+
+  internal func makeGetContactsCall(
+    _ request: GetContactsRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<GetContactsRequest, GetContactsResponse> {
+    return self.makeAsyncUnaryCall(
+      path: ContactServiceClientMetadata.Methods.getContacts.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetContactsInterceptors() ?? []
     )
   }
 
@@ -228,6 +268,18 @@ extension ContactServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeImportInterceptors() ?? []
+    )
+  }
+
+  internal func getContacts(
+    _ request: GetContactsRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> GetContactsResponse {
+    return try await self.performAsyncUnaryCall(
+      path: ContactServiceClientMetadata.Methods.getContacts.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetContactsInterceptors() ?? []
     )
   }
 
@@ -278,6 +330,9 @@ internal protocol ContactServiceClientInterceptorFactoryProtocol: Sendable {
   /// - Returns: Interceptors to use when invoking '`import`'.
   func makeImportInterceptors() -> [ClientInterceptor<ContactsImportRequest, ContactImportResponse>]
 
+  /// - Returns: Interceptors to use when invoking 'getContacts'.
+  func makeGetContactsInterceptors() -> [ClientInterceptor<GetContactsRequest, GetContactsResponse>]
+
   /// - Returns: Interceptors to use when invoking 'getContactByUserId'.
   func makeGetContactByUserIdInterceptors() -> [ClientInterceptor<ContactByUserIdRequest, ContactByUserIdResponse>]
 
@@ -291,6 +346,7 @@ internal enum ContactServiceClientMetadata {
     fullName: "ContactService",
     methods: [
       ContactServiceClientMetadata.Methods.`import`,
+      ContactServiceClientMetadata.Methods.getContacts,
       ContactServiceClientMetadata.Methods.getContactByUserId,
       ContactServiceClientMetadata.Methods.getStatuses,
     ]
@@ -300,6 +356,12 @@ internal enum ContactServiceClientMetadata {
     internal static let `import` = GRPCMethodDescriptor(
       name: "Import",
       path: "/ContactService/Import",
+      type: GRPCCallType.unary
+    )
+
+    internal static let getContacts = GRPCMethodDescriptor(
+      name: "GetContacts",
+      path: "/ContactService/GetContacts",
       type: GRPCCallType.unary
     )
 
@@ -322,6 +384,8 @@ internal protocol ContactServiceProvider: CallHandlerProvider {
   var interceptors: ContactServiceServerInterceptorFactoryProtocol? { get }
 
   func `import`(request: ContactsImportRequest, context: StatusOnlyCallContext) -> EventLoopFuture<ContactImportResponse>
+
+  func getContacts(request: GetContactsRequest, context: StatusOnlyCallContext) -> EventLoopFuture<GetContactsResponse>
 
   func getContactByUserId(request: ContactByUserIdRequest, context: StatusOnlyCallContext) -> EventLoopFuture<ContactByUserIdResponse>
 
@@ -347,6 +411,15 @@ extension ContactServiceProvider {
         responseSerializer: ProtobufSerializer<ContactImportResponse>(),
         interceptors: self.interceptors?.makeImportInterceptors() ?? [],
         userFunction: self.`import`(request:context:)
+      )
+
+    case "GetContacts":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<GetContactsRequest>(),
+        responseSerializer: ProtobufSerializer<GetContactsResponse>(),
+        interceptors: self.interceptors?.makeGetContactsInterceptors() ?? [],
+        userFunction: self.getContacts(request:context:)
       )
 
     case "GetContactByUserId":
@@ -383,6 +456,11 @@ internal protocol ContactServiceAsyncProvider: CallHandlerProvider, Sendable {
     request: ContactsImportRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> ContactImportResponse
+
+  func getContacts(
+    request: GetContactsRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> GetContactsResponse
 
   func getContactByUserId(
     request: ContactByUserIdRequest,
@@ -423,6 +501,15 @@ extension ContactServiceAsyncProvider {
         wrapping: { try await self.`import`(request: $0, context: $1) }
       )
 
+    case "GetContacts":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<GetContactsRequest>(),
+        responseSerializer: ProtobufSerializer<GetContactsResponse>(),
+        interceptors: self.interceptors?.makeGetContactsInterceptors() ?? [],
+        wrapping: { try await self.getContacts(request: $0, context: $1) }
+      )
+
     case "GetContactByUserId":
       return GRPCAsyncServerHandler(
         context: context,
@@ -453,6 +540,10 @@ internal protocol ContactServiceServerInterceptorFactoryProtocol: Sendable {
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeImportInterceptors() -> [ServerInterceptor<ContactsImportRequest, ContactImportResponse>]
 
+  /// - Returns: Interceptors to use when handling 'getContacts'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeGetContactsInterceptors() -> [ServerInterceptor<GetContactsRequest, GetContactsResponse>]
+
   /// - Returns: Interceptors to use when handling 'getContactByUserId'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeGetContactByUserIdInterceptors() -> [ServerInterceptor<ContactByUserIdRequest, ContactByUserIdResponse>]
@@ -468,6 +559,7 @@ internal enum ContactServiceServerMetadata {
     fullName: "ContactService",
     methods: [
       ContactServiceServerMetadata.Methods.`import`,
+      ContactServiceServerMetadata.Methods.getContacts,
       ContactServiceServerMetadata.Methods.getContactByUserId,
       ContactServiceServerMetadata.Methods.getStatuses,
     ]
@@ -477,6 +569,12 @@ internal enum ContactServiceServerMetadata {
     internal static let `import` = GRPCMethodDescriptor(
       name: "Import",
       path: "/ContactService/Import",
+      type: GRPCCallType.unary
+    )
+
+    internal static let getContacts = GRPCMethodDescriptor(
+      name: "GetContacts",
+      path: "/ContactService/GetContacts",
       type: GRPCCallType.unary
     )
 

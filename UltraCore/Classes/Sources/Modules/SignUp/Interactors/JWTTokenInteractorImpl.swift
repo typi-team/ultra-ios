@@ -9,20 +9,27 @@ import Foundation
 import RxSwift
 import GRPC
 
-class JWTTokenInteractorImpl: UseCase<IssueJwtRequest, IssueJwtResponse> {
+class JWTTokenInteractorImpl: UseCase<String, IssueJwtResponse> {
 
     final let authService: AuthServiceClientProtocol
+    final let appStore: AppSettingsStore
 
-    init(authService: AuthServiceClientProtocol) {
+    init(appStore: AppSettingsStore,
+         authService: AuthServiceClientProtocol) {
+        self.appStore = appStore
         self.authService = authService
     }
 
-    override func executeSingle(params: IssueJwtRequest) -> Single<IssueJwtResponse> {
+    override func executeSingle(params: String) -> Single<IssueJwtResponse> {
         return Single.create { [weak self] observer -> Disposable in
             guard let `self` = self else {
                 return Disposables.create()
             }
-            let call = self.authService.issueJwt(params, callOptions: CallOptions.default())
+            let call = self.authService.issueJwt(.with({
+                $0.device = .ios
+                $0.sessionID = params
+                $0.deviceID = UIDevice.current.identifierForVendor?.uuidString ?? "Ну указано"
+            }), callOptions: .default())
 
             call.response.whenComplete { result in
                 switch result {
@@ -33,10 +40,12 @@ class JWTTokenInteractorImpl: UseCase<IssueJwtRequest, IssueJwtResponse> {
                 }
             }
 
-            return Disposables.create {
-                call.cancel(promise: nil)
-            }
+            return Disposables.create()
         }
+        .do(onSuccess: { [weak self] response in
+            guard let `self` = self else { return }
+            self.appStore.store(token: response.token)
+            self.appStore.store(userID: response.userID)
+        })
     }
 }
-

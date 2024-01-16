@@ -30,3 +30,8 @@ public extension TwiceImage {
         }
     }
 }
+
+struct TwiceImageImpl: TwiceImage {
+    var dark: UIImage
+    var `default`: UIImage
+}

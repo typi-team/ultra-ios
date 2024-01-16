@@ -8,7 +8,7 @@
 import RxSwift
 
 
-class CreateFileInteractor: UseCase<(data: Data, extens: String), [FileChunk]> {
+class CreateFileInteractor: GRPCErrorUseCase<(data: Data, extens: String), [FileChunk]> {
 
      private let fileService: FileServiceClientProtocol
 
@@ -16,8 +16,8 @@ class CreateFileInteractor: UseCase<(data: Data, extens: String), [FileChunk]> {
          self.fileService = fileService
      }
 
-    override func executeSingle(params: (data: Data, extens: String)) -> Single<[FileChunk]> {
-        return Single.create { [weak self] observer -> Disposable in
+    override func job(params: (data: Data, extens: String)) -> Single<[FileChunk]> {
+        Single.create { [weak self] observer -> Disposable in
 
             guard let `self` = self else { return Disposables.create() }
             let request = FileCreateRequest.with({

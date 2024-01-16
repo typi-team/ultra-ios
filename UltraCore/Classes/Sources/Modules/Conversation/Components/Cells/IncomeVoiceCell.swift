@@ -86,12 +86,16 @@ class IncomeVoiceCell: MediaCell {
             .currentVoice
             .subscribe(onNext: { [weak self] voice in
                 guard let `self` = self else { return }
+                self.durationLabel.text = self.message?.voice.duration.timeInterval.formatSeconds
                 if let voice = voice,
                    self.message?.voice.fileID == voice.voiceMessage.fileID,
                    self.isInSeekMessage?.voice.fileID != voice.voiceMessage.fileID {
                     let duration = voice.voiceMessage.duration.timeInterval
                     let value = (voice.currentTime / duration)
-
+                    let temp = (duration - voice.currentTime)
+                    var stromg = temp < 0.3 ? duration.formatSeconds : temp.formatSeconds
+                    print(stromg)
+                    self.durationLabel.text = stromg
                     self.slider.setValue(Float(value), animated: true)
                     self.controllerView.setImage(value == 0 ? self.playImage : self.pauseImage, for: .normal)
                 } else if voice?.voiceMessage.fileID == self.message?.voice.fileID {

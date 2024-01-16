@@ -7,7 +7,7 @@
 
 import RxSwift
 
-class DeleteMessageInteractor: UseCase<([Message], Bool), Void> {
+class DeleteMessageInteractor: GRPCErrorUseCase<([Message], Bool), Void> {
     
     fileprivate let messageDBService: MessageDBService
     fileprivate let messageService: MessageServiceClientProtocol
@@ -20,7 +20,7 @@ class DeleteMessageInteractor: UseCase<([Message], Bool), Void> {
     }
     
     override func executeSingle(params: ([Message], Bool)) -> Single<Void> {
-        return Single.create(subscribe: { observer -> Disposable in
+        Single.create(subscribe: { observer -> Disposable in
             let range = MessagesDeleteRequest.with({ request in
                 request.forEveryone = params.1
                 request.chatID = params.0.first?.receiver.chatID ?? ""
