@@ -30,7 +30,7 @@ class IncomeVoiceCell: MediaCell {
             guard let `self` = self, let message = self.message else { return }
             let fileID = try? self.voiceRepository.currentVoice.value()?.voiceMessage.fileID
             if  message.voice.fileID == fileID {
-                self.voiceRepository.stop()
+                self.voiceRepository.playPause()
                 self.controllerView.setImage(self.playImage, for: .normal)
             } else {
                 self.controllerView.setImage(self.pauseImage, for: .normal)
@@ -97,7 +97,7 @@ class IncomeVoiceCell: MediaCell {
                     print(stromg)
                     self.durationLabel.text = stromg
                     self.slider.setValue(Float(value), animated: true)
-                    self.controllerView.setImage(value == 0 ? self.playImage : self.pauseImage, for: .normal)
+                    self.controllerView.setImage(!voice.isPlaying ? self.playImage : self.pauseImage, for: .normal)
                 } else if voice?.voiceMessage.fileID == self.message?.voice.fileID {
                     //                IGNORE THIS CASE
                 } else if self.isInSeekMessage != nil {
