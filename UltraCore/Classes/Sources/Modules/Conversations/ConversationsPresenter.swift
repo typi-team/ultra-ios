@@ -86,12 +86,12 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
     }
     
     func sendAway() {
-        self.updateRepository.stopPingPong()
         self.userStatusUpdateInteractor.executeSingle(params: false)
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()
             .disposed(by: disposeBag)
+        self.updateRepository.stopPingPong()
     }
     
     func sendOnline() {

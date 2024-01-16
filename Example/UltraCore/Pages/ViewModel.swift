@@ -55,8 +55,8 @@ class ViewModel {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonData
         URLSession.shared.dataTask(with: request) { data, response, error in
-            if let data = data,
-               let userResponse = try? JSONDecoder().decode(UserResponse.self, from: data) {
+                if let data = data,
+                let userResponse = try? JSONDecoder().decode(UserResponse.self, from: data) {
                 UltraCoreSettings.update(sid: userResponse.sid, with: callback)
             }
         }.resume()
