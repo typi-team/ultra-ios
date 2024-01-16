@@ -25,8 +25,6 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
         let deleteConversationInteractor = DeleteConversationInteractor(conversationDBService: appSettings.conversationDBService,
                                                                         conversationService: appSettings.conversationService)
         
-        let retrieveContactStatusesInteractor = RetrieveContactStatusesInteractor.init(contactDBService: appSettings.contactDBService,
-                                                                                       contactService: appSettings.contactsService)
         let contactByUserIdInteractor = ContactByUserIdInteractor.init(delegate: UltraCoreSettings.delegate,
                                                                        contactsService: appSettings.contactsService)
         
@@ -41,10 +39,8 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
                                                wireframe: self,
                                                conversationRepository: appSettings.conversationRespository,
                                                contactByUserIdInteractor: contactByUserIdInteractor,
-                                               retrieveContactStatusesInteractor: retrieveContactStatusesInteractor,
                                                deleteConversationInteractor: deleteConversationInteractor,
-                                               contactToConversationInteractor: contactToConversationInteractor,
-                                               userStatusUpdateInteractor: UpdateOnlineInteractor(userService: appSettings.userService))
+                                               contactToConversationInteractor: contactToConversationInteractor)
         moduleViewController.presenter = presenter
     }
 }

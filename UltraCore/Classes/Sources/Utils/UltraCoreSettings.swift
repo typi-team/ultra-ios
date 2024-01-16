@@ -84,6 +84,7 @@ public extension UltraCoreSettings {
                     shared.appStore.store(userID: value.userID)
                     shared.updateRepository.setupSubscription()
                     shared.updateRepository.startPingPong()
+                    shared.updateRepository.retreiveContactStatuses()
                     if shared.appStore.lastState == 0 {
                         DispatchQueue.main.asyncAfter(deadline: .now() + timeOut, execute: {
                             callback(nil)

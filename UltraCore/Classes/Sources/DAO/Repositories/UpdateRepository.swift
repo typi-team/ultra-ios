@@ -14,6 +14,7 @@ protocol UpdateRepository: AnyObject {
     func setupSubscription()
     func startPingPong()
     func stopPingPong()
+    func retreiveContactStatuses()
     func readAll(in conversation: Conversation)
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> { get set }
 }
@@ -28,7 +29,9 @@ class UpdateRepositoryImpl {
     fileprivate let messageService: MessageDBService
     fileprivate let updateClient: UpdatesServiceClientProtocol
     fileprivate let conversationService: ConversationDBService
+    fileprivate let updateOnlineInteractor: UpdateOnlineInteractor
     fileprivate let pingPongInteractorImpl: GRPCErrorUseCase<Void, Void>
+    fileprivate let retrieveContactStatusesInteractorImpl: GRPCErrorUseCase<Void, Void>
     fileprivate let contactByIDInteractor: GRPCErrorUseCase<String, ContactDisplayable>
     fileprivate let deliveredMessageInteractor: GRPCErrorUseCase<Message, MessagesDeliveredResponse>
     
@@ -41,8 +44,10 @@ class UpdateRepositoryImpl {
          contactService: ContactDBService,
          updateClient: UpdatesServiceClientProtocol,
          conversationService: ConversationDBService,
+         updateOnlineInteractor: UpdateOnlineInteractor,
          pingPongInteractorImpl: GRPCErrorUseCase<Void, Void>,
          userByIDInteractor: GRPCErrorUseCase<String, ContactDisplayable>,
+         retrieveContactStatusesInteractorImpl: GRPCErrorUseCase<Void, Void>,
          deliveredMessageInteractor: GRPCErrorUseCase<Message, MessagesDeliveredResponse>) {
         self.updateClient = updateClient
         self.appStore = appStore
@@ -50,8 +55,10 @@ class UpdateRepositoryImpl {
         self.contactService = contactService
         self.conversationService = conversationService
         self.contactByIDInteractor = userByIDInteractor
+        self.updateOnlineInteractor = updateOnlineInteractor
         self.pingPongInteractorImpl = pingPongInteractorImpl
         self.deliveredMessageInteractor = deliveredMessageInteractor
+        self.retrieveContactStatusesInteractorImpl = retrieveContactStatusesInteractorImpl
     }
 }
 
@@ -67,18 +74,29 @@ extension UpdateRepositoryImpl: UpdateRepository {
         self.updateListenStream?.cancel(promise: nil)
     }
     
+    func retreiveContactStatuses() {
+        PP.info("📇 retreiveContactStatuses")
+        self.retrieveContactStatusesInteractorImpl.executeSingle(params: ())
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .subscribe()
+            .disposed(by: disposeBag)
+    }
+    
     func startPingPong() {
-        PP.info("🐢 startPintPong")
-        self.pintPongTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] timer in
-            guard let `self` = self else { return timer.invalidate() }
-            self.pingPongInteractorImpl
-                .executeSingle(params: ())
-                .subscribe(onSuccess: {
-                    PP.info("Ping pong is called success")
-                }, onFailure: {error in
-                    PP.error("Ping pong is called with error \(error.localeError)")
-                })
-                .disposed(by: disposeBag)
+        DispatchQueue.main.async {
+            PP.info("🐢 startPintPong")
+            self.pintPongTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] timer in
+                guard let `self` = self else { return timer.invalidate() }
+                self.pingPongInteractorImpl
+                    .executeSingle(params: ())
+                    .subscribe(onSuccess: {
+                        PP.info("Ping pong is called success")
+                    }, onFailure: {error in
+                        PP.error("Ping pong is called with error \(error.localeError)")
+                    })
+                    .disposed(by: disposeBag)
+            }
         }
     }
     

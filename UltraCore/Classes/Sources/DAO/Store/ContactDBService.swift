@@ -86,6 +86,31 @@ class ContactDBService {
         }
     }
     
+    func update(contacts statuses: [UserStatus]) -> Single<[ContactDisplayable]> {
+        return Single.create { completable in
+            do {
+                let realm = Realm.myRealm()
+                try realm.write {
+                    var listContact: [ContactDisplayable] = []
+                    statuses.forEach { status in
+                        if let contact = realm.object(ofType: DBContact.self, forPrimaryKey: status.userID) {
+                            contact.statusValue = status.status.rawValue
+                            contact.lastseen = status.lastSeen
+
+                            realm.add(contact, update: .all)
+                            listContact.append(contact.toInterface())
+                        }
+                    }
+                    
+                    completable(.success(listContact))
+                }
+            } catch {
+                completable(.failure(error))
+            }
+            return Disposables.create()
+        }
+    }
+    
     func save(contact interface: ContactDisplayable) -> Single<Void> {
         return Single.create { completable in
             do {

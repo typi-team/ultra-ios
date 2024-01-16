@@ -25,8 +25,6 @@ protocol ConversationsPresenterInterface: PresenterInterface {
     
     func navigateToContacts()
     func sendAway()
-    func sendOnline()
-    func retrieveContactStatuses()
     func delete(_ conversation: Conversation, all: Bool)
     func navigate(to conversation: Conversation)
 }

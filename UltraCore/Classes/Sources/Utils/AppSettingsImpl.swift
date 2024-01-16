@@ -73,10 +73,13 @@ open class AppSettingsImpl: AppSettings  {
                                                                             messageService: messageDBService,
                                                                             contactService: contactDBService,
                                                                             updateClient: updateService,
-                                                                            conversationService: conversationDBService,
+                                                                            conversationService: conversationDBService, 
+                                                                            updateOnlineInteractor: .init(userService: userService),
                                                                             pingPongInteractorImpl: PingPongInteractorImpl.init(updateClient: updateService),
                                                                             userByIDInteractor: ContactByUserIdInteractor.init(delegate: UltraCoreSettings.delegate,
                                                                                                                                contactsService: contactsService),
+                                                                            retrieveContactStatusesInteractorImpl: RetrieveContactStatusesInteractor(contactDBService: contactDBService,
+                                                                                                                                                    contactService: contactsService) ,
                                                                             deliveredMessageInteractor: DeliveredMessageInteractor.init(messageService: messageService))
     lazy var conversationRespository: ConversationRepository = ConversationRepositoryImpl(conversationService: conversationDBService)
     
