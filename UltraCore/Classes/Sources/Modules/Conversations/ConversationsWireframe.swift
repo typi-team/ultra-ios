@@ -34,9 +34,12 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
                                                                                    contactsService: appSettings.contactsService,
                                                                                    integrateService: appSettings.integrateService)
         
+        let messageSenderInteractor = SendMessageInteractor.init(messageService: appSettings.messageService)
+
+        let resendMessagesInteractor = ResendingMessagesInteractor(messageRepository: appSettings.messageRespository, mediaRepository: appSettings.mediaRepository, messageSenderInteractor: messageSenderInteractor)
+        let reachabilityInteractor = ReachabilityInteractor()
         let presenter = ConversationsPresenter(view: moduleViewController,
                                                updateRepository: appSettings.updateRepository,
-                                               messageRepository: appSettings.messageRespository,
                                                contactDBService: appSettings.contactDBService,
                                                wireframe: self,
                                                conversationRepository: appSettings.conversationRespository,
@@ -44,7 +47,9 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
                                                retrieveContactStatusesInteractor: retrieveContactStatusesInteractor,
                                                deleteConversationInteractor: deleteConversationInteractor,
                                                contactToConversationInteractor: contactToConversationInteractor,
-                                               userStatusUpdateInteractor: UpdateOnlineInteractor(userService: appSettings.userService))
+                                               userStatusUpdateInteractor: UpdateOnlineInteractor(userService: appSettings.userService),
+                                               resendMessagesInteractor: resendMessagesInteractor,
+                                               reachabilityInteractor: reachabilityInteractor)
         moduleViewController.presenter = presenter
     }
 }
