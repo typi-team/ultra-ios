@@ -98,7 +98,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
                         }
 
                         // TODO: - Temporary fix, refactor in reactive way later
-                        // We need to make conversations are created first and then
+                        // We need to make sure that conversations are created first and then
                         // the unread counter is updated.
 
                         let group = DispatchGroup()
