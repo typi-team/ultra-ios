@@ -74,7 +74,6 @@ open class AppSettingsImpl: AppSettings  {
                                                                             contactService: contactDBService,
                                                                             updateClient: updateService,
                                                                             conversationService: conversationDBService, 
-                                                                            updateOnlineInteractor: .init(userService: userService),
                                                                             pingPongInteractorImpl: PingPongInteractorImpl.init(updateClient: updateService),
                                                                             userByIDInteractor: ContactByUserIdInteractor.init(delegate: UltraCoreSettings.delegate,
                                                                                                                                contactsService: contactsService),

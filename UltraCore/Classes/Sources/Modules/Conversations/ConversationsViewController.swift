@@ -128,6 +128,6 @@ extension ConversationsViewController {
 extension ConversationsViewController: ConversationsViewInterface {}
 extension ConversationsViewController {
     @objc func didEnterBackground(_ sender: Any) {
-        self.presenter?.sendAway()
+        self.presenter?.stopPingPong()
     }
 }

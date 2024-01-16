@@ -24,7 +24,7 @@ protocol ConversationsPresenterInterface: PresenterInterface {
     var conversation: Observable<[Conversation]> { get set }
     
     func navigateToContacts()
-    func sendAway()
+    func stopPingPong()
     func delete(_ conversation: Conversation, all: Bool)
     func navigate(to conversation: Conversation)
 }
