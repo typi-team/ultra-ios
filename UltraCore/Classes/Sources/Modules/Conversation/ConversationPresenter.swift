@@ -32,13 +32,13 @@ final class ConversationPresenter {
     private let wireframe: ConversationWireframeInterface
     fileprivate let conversationRepository: ConversationRepository
     
-
-    private let deleteMessageInteractor: UseCase<([Message], Bool), Void>
-    private let sendTypingInteractor: UseCase<String, SendTypingResponse>
-    private let readMessageInteractor: UseCase<Message, MessagesReadResponse>
-    private let messagesInteractor: UseCase<GetChatMessagesRequest, [Message]>
+    private let blockContactInteractor: GRPCErrorUseCase<BlockParam, Void>
+    private let deleteMessageInteractor: GRPCErrorUseCase<([Message], Bool), Void>
+    private let sendTypingInteractor: GRPCErrorUseCase<String, SendTypingResponse>
+    private let readMessageInteractor: GRPCErrorUseCase<Message, MessagesReadResponse>
+    private let messagesInteractor: GRPCErrorUseCase<GetChatMessagesRequest, [Message]>
     fileprivate let sendMoneyInteractor: UseCase<TransferPayload, TransferResponse>
-    private let messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>
+    private let messageSenderInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendResponse>
 
 
     // MARK: - Public properties -
@@ -75,12 +75,13 @@ final class ConversationPresenter {
          contactRepository: ContactsRepository,
          wireframe: ConversationWireframeInterface,
          conversationRepository: ConversationRepository,
-         deleteMessageInteractor: UseCase<([Message], Bool), Void>,
-         messagesInteractor: UseCase<GetChatMessagesRequest, [Message]>,
-         sendTypingInteractor: UseCase<String, SendTypingResponse>,
-         readMessageInteractor: UseCase<Message, MessagesReadResponse>,
+         deleteMessageInteractor: GRPCErrorUseCase<([Message], Bool), Void>,
+         blockContactInteractor: GRPCErrorUseCase<BlockParam, Void>,
+         messagesInteractor: GRPCErrorUseCase<GetChatMessagesRequest, [Message]>,
+         sendTypingInteractor: GRPCErrorUseCase<String, SendTypingResponse>,
+         readMessageInteractor: GRPCErrorUseCase<Message, MessagesReadResponse>,
          sendMoneyInteractor: UseCase<TransferPayload, TransferResponse>,
-         messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>) {
+         messageSenderInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendResponse>) {
         self.view = view
         self.userID = userID
         self.appStore = appStore
@@ -95,6 +96,7 @@ final class ConversationPresenter {
         self.sendMoneyInteractor = sendMoneyInteractor
         self.sendTypingInteractor = sendTypingInteractor
         self.readMessageInteractor = readMessageInteractor
+        self.blockContactInteractor = blockContactInteractor
         self.conversationRepository = conversationRepository
         self.deleteMessageInteractor = deleteMessageInteractor
         self.messageSenderInteractor = messageSenderInteractor
@@ -111,52 +113,26 @@ extension ConversationPresenter: ConversationPresenterInterface {
     func block() {
         guard let contact = self.conversation.peer else { return }
         let userId = contact.userID
-        if contact.isBlocked {
-            AppSettingsImpl.shared.conversationService.unblockUser(.with({
-                $0.userID = userId
-                $0.chatID = self.conversation.idintification
-            }), callOptions: .default()).response.whenComplete({[weak self] result in
+        self.blockContactInteractor
+            .executeSingle(params: (userId, !contact.isBlocked))
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe (onFailure:  {[weak self ]error in
                 guard let `self` = self else { return }
-                DispatchQueue.main.async {
-                    switch result {
-                    case .success:
-                        self.update(block: false, user: userId)
-                    case .failure(let error):
-                        self.view.show(error: error.localizedDescription)
-                    }
-                }
-            })
-        } else {
-            AppSettingsImpl.shared.conversationService.blockUser(.with({
-                $0.chatID = self.conversation.idintification
-                $0.userID = userId
-            }), callOptions: .default()).response.whenComplete({[weak self] result in
-                guard let `self` = self else { return }
-                DispatchQueue.main.async {
-                    switch result {
-                    case .success:
-                        self.update(block: true, user: userId)
-                    case .failure(let error):
-                        self.view.show(error: error.localizedDescription)
-                    }
-                }
-            })
-        }
+                self.view.show(error: error.localeError)
+            }).disposed(by: self.disposeBag)
     }
+
     
-    private func update(block: Bool, user id: String) {
-        self.contactRepository.block(user: id, blocked: block)
-            .subscribe()
-            .disposed(by: self.disposeBag)
-    }
-    
-    func report(_ messages: [Message]) {
-        guard !messages.isEmpty else { return }
-        
-        AppSettingsImpl.shared.messageService.complain(.with({
+    func report(_ message: Message, with type: ComplainTypeEnum?, comment: String?) {
+        let request = ComplainRequest.with({
+            $0.messageID = message.id
+            $0.comment = comment ?? ""
             $0.chatID = self.conversation.idintification
-            $0.messageID = messages.first!.id
-        }), callOptions: .default()).response
+            $0.type = comment == nil ? .other : type ?? .other
+        })
+        print(request.textFormatString())
+        AppSettingsImpl.shared.messageService.complain(request, callOptions: .default()).response
             .whenComplete({[weak self] result in
                 guard let `self` = self else { return }
                 DispatchQueue.main.async {
@@ -164,7 +140,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                     case .success:
                         self.view.reported()
                     case let .failure(error):
-                        self.view.show(error: error.localizedDescription)
+                        self.view.show(error: error.localeError)
                     }
                 }
             })

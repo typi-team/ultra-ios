@@ -7,7 +7,7 @@
 
 import RxSwift
 
-class MessagesInteractor: UseCase<GetChatMessagesRequest, [Message]> {
+class MessagesInteractor: GRPCErrorUseCase<GetChatMessagesRequest, [Message]> {
     
     fileprivate let messageDBService: MessageDBService
     fileprivate let messageService: MessageServiceClientProtocol
@@ -18,8 +18,8 @@ class MessagesInteractor: UseCase<GetChatMessagesRequest, [Message]> {
         self.messageDBService = messageDBService
     }
     
-    override func executeSingle(params: GetChatMessagesRequest) -> Single<[Message]> {
-        return Single<[Message]>.create { [weak self] observer -> Disposable in
+    override func job(params: GetChatMessagesRequest) -> Single<[Message]> {
+        Single<[Message]>.create { [weak self] observer -> Disposable in
             guard let `self` = self else { return Disposables.create() }
             self.messageService.getChatMessages(params, callOptions: .default())
                 .response

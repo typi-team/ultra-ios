@@ -24,9 +24,9 @@ protocol ConversationsPresenterInterface: PresenterInterface {
     var conversation: Observable<[Conversation]> { get set }
     
     func navigateToContacts()
-    func setupUpdateSubscription()
+    func sendAway()
+    func sendOnline()
     func retrieveContactStatuses()
-    func updateStatus(is online: Bool)
     func delete(_ conversation: Conversation, all: Bool)
     func navigate(to conversation: Conversation)
 }

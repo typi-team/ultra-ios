@@ -18,8 +18,11 @@ class ViewController: UITabBarController {
         self.viewModel.viewDidLoad()
         self.setupView()
         self.setupVCs()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground(_:)), name: UIApplication.willEnterForegroundNotification, object: nil)
         self.setupSID()
     }
+    
 }
 
 private extension ViewController {
@@ -44,14 +47,21 @@ private extension ViewController {
                 $0.view.backgroundColor = UIColor(red: 243.0 / 255.0, green: 244.0 / 255.0, blue: 246.0 / 255.0, alpha: 1.0)
             }), title: NSLocalizedString("Платежи", comment: ""), image: UIImage(named: "payments")!),
             createNavController(for: UIViewController({
-                $0.view.backgroundColor = UIColor(red: 243.0 / 255.0, green: 244.0 / 255.0, blue: 246.0 / 255.0, alpha: 1.0)
-                $0.view.addSubview(UIButton.init({
-                    $0.setTitle("Выйти", for: .normal)
-                    $0.addTarget(self, action: #selector(self.logout(_:)), for: .touchUpInside)
+                $0.view.addSubview(UILabel{
+                    $0.text = viewModel.phone
                     $0.frame.origin = .init(x: 120, y: 120)
+                    $0.frame.size = .init(width: 120, height: 52)
+                })
+               $0.view.backgroundColor = UIColor(red: 243.0 / 255.0, green: 244.0 / 255.0, blue: 246.0 / 255.0, alpha: 1.0)
+               $0.view.addSubview(UIButton.init({
+                   $0.setTitle("Выйти", for: .normal)
+                   $0.addTarget(self, action: #selector(self.logout(_:)), for: .touchUpInside)
+                    $0.frame.origin = .init(x: 120, y: 120)
+                    $0.frame.origin = .init(x: 120, y: 240)
                     $0.frame.size = .init(width: 120, height: 52)
                     $0.setTitleColor(.green500, for: .normal)
                 }))
+
             }), title: NSLocalizedString("Расходы", comment: ""), image: UIImage(named: "banence")!),
         ]
         
@@ -64,8 +74,6 @@ private extension ViewController {
             DispatchQueue.main.async {
                 if error != nil {
                     self.viewControllers?.append(self.createNavController(for: UltraCoreSettings.entrySignUpViewController(), title: NSLocalizedString("conversations.chats", comment: ""), image: UIImage(named: "chats")!))
-                    self.viewModel.timer()
-                    UltraCoreSettings.printAllLocalizableStrings()
                 } else {
                     self.viewControllers?.append(self.createNavController(for: UltraCoreSettings.entryConversationsViewController(), title: NSLocalizedString("conversations.chats", comment: ""), image: UIImage(named: "chats")!))
                 }
@@ -81,5 +89,9 @@ private extension ViewController {
     
     @objc func logout(_ sender: Any) {
         UltraCoreSettings.logout()
+    }
+    
+    @objc func willEnterForeground(_ sender: Any) {
+        self.viewModel.setupSID { _ in }
     }
 }

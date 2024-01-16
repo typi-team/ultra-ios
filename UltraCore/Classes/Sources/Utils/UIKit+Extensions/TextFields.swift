@@ -7,7 +7,7 @@
 
 import UIKit
 
-class CustomTextField: UITextField {
+class PaddingTextField: UITextField {
     override init(frame: CGRect) {
         super.init(frame: frame)
         self.setupView()
@@ -35,9 +35,13 @@ class CustomTextField: UITextField {
     override open func editingRect(forBounds bounds: CGRect) -> CGRect {
         return bounds.inset(by: padding)
     }
+    
+    override func rightViewRect(forBounds bounds: CGRect) -> CGRect {
+        return CGRect(x: bounds.width - 36, y: 0, width: 24 , height: bounds.height)
+    }
 }
 
-class PhoneNumberTextField: CustomTextField, UITextFieldDelegate {
+class PhoneNumberTextField: PaddingTextField, UITextFieldDelegate {
 
     var changesCallback: VoidCallback?
     

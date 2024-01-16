@@ -18,7 +18,7 @@ final class ConversationsPresenter: BasePresenter {
     // MARK: - Private properties -
     private let updateRepository: UpdateRepository
     private let messageRepository: MessageRepository
-    private unowned let view: ConversationsViewInterface
+    private weak var view: ConversationsViewInterface?
     private let wireframe: ConversationsWireframeInterface
     fileprivate let contactDBService: ContactDBService
     private let conversationRepository: ConversationRepository
@@ -26,7 +26,7 @@ final class ConversationsPresenter: BasePresenter {
     fileprivate let contactByUserIdInteractor: ContactByUserIdInteractor
     fileprivate let userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>
     fileprivate let deleteConversationInteractor: UseCase<(Conversation, Bool), Void>
-    fileprivate let contactToCreateChatByPhoneInteractor: ContactToCreateChatByPhoneInteractor
+    fileprivate let contactToConversationInteractor: ContactToConversationInteractor
     
     lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(conversationRepository.conversations(), updateRepository.typingUsers)
         .map({ conversations, typingUsers in
@@ -51,7 +51,7 @@ final class ConversationsPresenter: BasePresenter {
          contactByUserIdInteractor: ContactByUserIdInteractor,
          retrieveContactStatusesInteractor: UseCase<Void, Void>,
          deleteConversationInteractor: UseCase<(Conversation,Bool), Void>,
-         contactToCreateChatByPhoneInteractor: ContactToCreateChatByPhoneInteractor,
+         contactToConversationInteractor: ContactToConversationInteractor,
          userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>) {
         self.view = view
         self.wireframe = wireframe
@@ -63,7 +63,7 @@ final class ConversationsPresenter: BasePresenter {
         self.userStatusUpdateInteractor = userStatusUpdateInteractor
         self.deleteConversationInteractor = deleteConversationInteractor
         self.retrieveContactStatusesInteractor = retrieveContactStatusesInteractor
-        self.contactToCreateChatByPhoneInteractor = contactToCreateChatByPhoneInteractor
+        self.contactToConversationInteractor = contactToConversationInteractor
     }
 }
 
@@ -85,17 +85,21 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
             .disposed(by: disposeBag)
     }
     
-    func updateStatus(is online: Bool) {
-        self.userStatusUpdateInteractor.executeSingle(params: online)
+    func sendAway() {
+        self.updateRepository.stopPingPong()
+        self.userStatusUpdateInteractor.executeSingle(params: false)
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()
             .disposed(by: disposeBag)
     }
     
-    func setupUpdateSubscription() {
-        self.updateRepository.setupSubscription()
-        self.updateRepository.sendPoingByTimer()
+    func sendOnline() {
+        self.userStatusUpdateInteractor.executeSingle(params: true)
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe()
+            .disposed(by: disposeBag)
     }
     
     func navigate(to conversation: Conversation) {
@@ -113,20 +117,14 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
     }
     
     func createChatBy(contact: IContact) {
-        self.contactToCreateChatByPhoneInteractor
+        self.contactToConversationInteractor
             .executeSingle(params: contact)
-            .flatMap({ contactByPhone -> Single<Conversation> in
-                self.contactByUserIdInteractor.executeSingle(params: contactByPhone.userID)
-                    .flatMap({ contact in
-                        self.contactDBService.save(contact: contact).map({contact})
-                    }).map({ ConversationImpl(contact: $0, idintification: contactByPhone.chatID) })
-                    
-            })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { [weak self] conversation in
-                
-                self?.wireframe.navigateToConversation(with: conversation)
+                if let conversation = conversation {
+                    self?.wireframe.navigateToConversation(with: conversation)
+                }
             })
             .disposed(by: disposeBag)
     }
