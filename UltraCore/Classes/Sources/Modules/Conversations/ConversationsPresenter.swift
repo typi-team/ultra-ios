@@ -27,8 +27,7 @@ final class ConversationsPresenter: BasePresenter {
     fileprivate let deleteConversationInteractor: UseCase<(Conversation, Bool), Void>
     fileprivate let contactToCreateChatByPhoneInteractor: ContactToCreateChatByPhoneInteractor
     fileprivate let resendMessagesInteractor: ResendingMessagesInteractor
-    private let reachability = try? Reachability()
-    
+    fileprivate let reachabilityInteractor: ReachabilityInteractor
     lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(conversationRepository.conversations(), updateRepository.typingUsers)
         .map({ conversations, typingUsers in
             return conversations.map { conversation in
@@ -53,7 +52,8 @@ final class ConversationsPresenter: BasePresenter {
          deleteConversationInteractor: UseCase<(Conversation,Bool), Void>,
          contactToCreateChatByPhoneInteractor: ContactToCreateChatByPhoneInteractor,
          userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>,
-         resendMessagesInteractor: ResendingMessagesInteractor) {
+         resendMessagesInteractor: ResendingMessagesInteractor,
+         reachabilityInteractor: ReachabilityInteractor) {
         self.view = view
         self.wireframe = wireframe
         self.updateRepository = updateRepository
@@ -65,6 +65,7 @@ final class ConversationsPresenter: BasePresenter {
         self.retrieveContactStatusesInteractor = retrieveContactStatusesInteractor
         self.contactToCreateChatByPhoneInteractor = contactToCreateChatByPhoneInteractor
         self.resendMessagesInteractor = resendMessagesInteractor
+        self.reachabilityInteractor = reachabilityInteractor
     }
 }
 
@@ -138,16 +139,17 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
     }
     
     private func startReachibilityNotifier() {
-        reachability?.whenReachable = { [weak self] reachability in
-            guard let self else { return }
-            self.resendMessagesInteractor
-                .executeSingle(params: ())
-                .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
-                .observe(on: MainScheduler.instance)
-                .subscribe()
-                .disposed(by: self.disposeBag)
-        }
-        try? reachability?.startNotifier()
+        reachabilityInteractor.execute(params: ())
+            .subscribe(onNext: { [weak self] _ in
+                guard let self else { return }
+                self.resendMessagesInteractor
+                    .executeSingle(params: ())
+                    .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+                    .observe(on: MainScheduler.instance)
+                    .subscribe()
+                    .disposed(by: self.disposeBag)
+            })
+            .disposed(by: disposeBag)
     }
     
 
