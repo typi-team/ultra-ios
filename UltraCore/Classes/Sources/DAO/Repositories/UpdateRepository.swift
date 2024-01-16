@@ -242,7 +242,6 @@ extension UpdateRepositoryImpl {
     func update(message: Message, completion: @escaping (() -> Void)) {
         let contactID = message.peerId(user: self.appStore.userID())
         let contact = self.contactService.contact(id: contactID)
-        print("[Chat ID]: \(message.receiver.chatID)")
         if contact == nil {
             _ = self.contactByIDInteractor
                 .executeSingle(params: contactID)
