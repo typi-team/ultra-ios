@@ -43,29 +43,51 @@ final class ResendingMessagesInteractor: UseCase<Void, Void> {
         getAllMessages { [weak self] messages in
             guard let self else { return }
             let unsendedMessages = messages.filter { $0.seqNumber == 0 && !$0.isIncome }
+            var textMessages: [Message] = []
+            var fileMessages: [Message] = []
             unsendedMessages.forEach { message in
                 guard !self.messageSending.contains(message.id) else { return }
                 self.messageSending.append(message.id)
                 if let content = message.content {
                     switch content {
                     case .audio, .voice, .photo, .video, .file:
-                        self.resendFiles(message: message)
+                        fileMessages.append(message)
                     default:
-                        self.resendMessage(message: message)
+                        textMessages.append(message)
                     }
                 } else {
-                    self.resendMessage(message: message)
+                    textMessages.append(message)
+                }
+            }
+            self.resendMessages(messages: textMessages) {
+                self.resendFiles(messages: fileMessages) {
+                    self.messageSending.removeAll()
                 }
             }
         }
     }
     
-    func resendFiles(message: Message) {
+    func resendFiles(messages: [Message], index: Int = 0, onCompletion:  @escaping () -> Void) {
+        guard index < messages.count else {
+            onCompletion()
+            return
+        }
+        let message = messages[index]
         self.mediaRepository
             .upload(message: message)
             .flatMap({ [weak self] request in
                 guard let `self` = self else { throw NSError.selfIsNill }
                 return self.messageSenderInteractor.executeSingle(params: request)
+            })
+            .flatMap({ [weak self] (response: MessageSendResponse) in
+                guard let `self` = self else {
+                    throw NSError.selfIsNill
+                }
+                return self.messageRepository.update(message: message)
+            })
+            .flatMap({ [weak self] result in
+                self?.resendFiles(messages: messages, index: index + 1, onCompletion: onCompletion)
+                return Single.just(result)
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
@@ -75,8 +97,12 @@ final class ResendingMessagesInteractor: UseCase<Void, Void> {
             .disposed(by: disposeBag)
     }
 
-    private func resendMessage(message: Message) {
-        var message = message
+    private func resendMessages(messages: [Message], index: Int = 0, onCompletion:  @escaping () -> Void) {
+        guard index < messages.count else {
+            onCompletion()
+            return
+        }
+        var message = messages[index]
         var params = MessageSendRequest()
         params.peer.user = .with({ peer in
             peer.userID = message.receiver.userID
@@ -96,7 +122,10 @@ final class ResendingMessagesInteractor: UseCase<Void, Void> {
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
-            .subscribe()
+            .subscribe(onSuccess: { [weak self] _ in
+                self?.resendMessages(messages: messages, index: index + 1, onCompletion: onCompletion)
+            }, onFailure: { error in PP.debug(error.localizedDescription)
+            })
             .disposed(by: disposeBag)
     }
     

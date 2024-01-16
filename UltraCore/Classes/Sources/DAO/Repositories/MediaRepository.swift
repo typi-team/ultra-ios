@@ -376,6 +376,7 @@ extension MediaRepositoryImpl {
                 let data = getDataFromURL(url: url) else {
             return Single.error(NSError.objectsIsNill)
         }
+        var messageToDelete = message
         var message = message
         var thumbnailData: Data = .init()
         return self.mediaUtils.thumbnailData(in: url)
@@ -422,6 +423,7 @@ extension MediaRepositoryImpl {
             })
             .flatMap({ [weak self] response -> Single<[FileChunk]> in
                 guard let `self` = self else { throw NSError.selfIsNill }
+                let _ = self.messageDBService.delete(messages: [messageToDelete], in: nil)
                 return self.messageDBService.save(message: message).map({ response })
             })
             .do(onSuccess: { [weak self] _ in
