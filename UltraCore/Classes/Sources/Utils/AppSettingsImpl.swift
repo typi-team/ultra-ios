@@ -74,6 +74,7 @@ open class AppSettingsImpl: AppSettings  {
                                                                             contactService: contactDBService,
                                                                             updateClient: updateService,
                                                                             conversationService: conversationDBService,
+                                                                            pingPongInteractorImpl: PingPongInteractorImpl.init(updateClient: updateService),
                                                                             userByIDInteractor: ContactByUserIdInteractor.init(delegate: UltraCoreSettings.delegate,
                                                                                                                                contactsService: contactsService),
                                                                             deliveredMessageInteractor: DeliveredMessageInteractor.init(messageService: messageService))
@@ -81,33 +82,13 @@ open class AppSettingsImpl: AppSettings  {
     
     //    MARK: App main interactors, must be create once
     
-    lazy var contactToConversationInteractor: ContactToConversationInteractor = ContactToConversationInteractor.init(contactDBService: contactDBService,
-                                                                                                                     contactsService: contactsService,
-                                                                                                                     integrateService: integrateService)
-    
+    lazy var updateTokenInteractor: UseCase<Void, Void> = UpdateTokenInteractorImpl.init(appStore: appStore, authService: authService)
     lazy var superMessageSaverInteractor: UseCase<MessageData, Conversation?> = SuperMessageSaverInteractor.init(appStore: appStore,
                                                                                                                  contactDBService: contactDBService,
                                                                                                                  messageDBService: messageDBService,
                                                                                                                  conversationDBService: conversationDBService,
                                                                                                                  messageService: messageService,
                                                                                                                  contactsService: contactsService)
-    
-    
-    func update(ssid: String, callback: @escaping (Error?) -> Void) {
-        let localService = JWTTokenInteractorImpl(authService: authService)
-        _ = localService.executeSingle(params: .with({
-            $0.device = .ios
-            $0.sessionID = ssid
-            $0.deviceID = UIDevice.current.identifierForVendor?.uuidString ?? "Ну указано"
-        }))
-            .do(onSuccess: { [weak self] response in
-                guard let `self` = self else { return }
-                self.appStore.store(token: response.token)
-                self.appStore.store(userID: response.userID)
-            }, onError: { callback($0) })
-            .do(onSuccess: { _ in callback(nil) })
-            .subscribe()
-    }
     
     func logout() {
         let realm = Realm.myRealm()

@@ -9,6 +9,7 @@ import Foundation
 import RxSwift
 import GRPC
 import NIOCore
+import Logging
 
 class UserIdInteractorImpl: UseCase<GetUserIdRequest, GetUserIdResponse> {
   final let authService: AuthServiceClientProtocol
@@ -39,16 +40,17 @@ class UserIdInteractorImpl: UseCase<GetUserIdRequest, GetUserIdResponse> {
 
 
 extension CallOptions {
-    static func `default`() -> CallOptions {
-        let appStore = AppSettingsImpl.shared.appStore
-        let isAuthed = appStore.isAuthed
-        if isAuthed {
-            let token = AppSettingsImpl.shared.appStore.token()
-            
+    static func `default`(include timeout: Bool = true) -> CallOptions {
+        var logger = Logger(label: "com.typi.ultra")
+        logger.logLevel = .trace
+
+        if let token = AppSettingsImpl.shared.appStore.token {
             return .init(customMetadata: .init(httpHeaders: ["Authorization": "Bearer \(token)"]),
-                         timeLimit: .timeout(.hours(12)))
-        }else {
-            return .init(timeLimit: .timeout(.hours(12)))
+                         timeLimit: timeout ? .timeout(.seconds(20)) : .none,
+                         logger: logger)
+        } else {
+            PP.error("Called default() when token is nill")
+            return .init(timeLimit: timeout ? .timeout(.seconds(20)) : .none, logger: logger)
         }
     }
 }

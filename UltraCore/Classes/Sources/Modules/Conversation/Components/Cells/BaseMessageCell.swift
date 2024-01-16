@@ -18,8 +18,8 @@ enum MessageMenuAction {
     case select(Message)
     case delete(Message)
     case reply(Message)
-    case report(Message)
     case copy(Message)
+    case reportDefined(message: Message, type: ComplainTypeEnum)
 }
 
 class BaseMessageCell: BaseCell {
@@ -31,6 +31,7 @@ class BaseMessageCell: BaseCell {
     var longTapCallback:((MessageMenuAction) -> Void)?
     lazy var disposeBag: DisposeBag = .init()
     lazy var constants: MediaMessageConstants = .init(maxWidth: 300, maxHeight: 200)
+    lazy var contentLessThanConstant: CGFloat = 120
     
     let textView: UILabel = .init({
         $0.numberOfLines = 0
@@ -85,7 +86,7 @@ class BaseMessageCell: BaseCell {
             make.top.equalToSuperview()
             make.left.equalToSuperview().offset(kMediumPadding)
             make.bottom.equalToSuperview().offset(-(kMediumPadding - 2))
-            make.right.lessThanOrEqualToSuperview().offset(-120)
+            make.right.lessThanOrEqualToSuperview().offset(-contentLessThanConstant)
         }
 
         self.textView.snp.makeConstraints { make in
@@ -95,7 +96,7 @@ class BaseMessageCell: BaseCell {
         }
 
         self.deliveryDateLabel.snp.makeConstraints { make in
-            make.width.greaterThanOrEqualTo(36)
+            make.width.greaterThanOrEqualTo(38)
             make.bottom.equalTo(textView.snp.bottom)
             make.right.equalToSuperview().offset(-(kLowPadding + 1))
             make.left.equalTo(textView.snp.right).offset(kMediumPadding - 5)
@@ -145,42 +146,113 @@ class BaseMessageCell: BaseCell {
 extension BaseMessageCell: UIContextMenuInteractionDelegate {
     @available(iOS 13.0, *)
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
+        self.cellActionCallback?()
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ -> UIMenu? in
             guard let `self` = self else { return nil }
             var action: [UIAction] = []
 
-            action.append(UIAction(title: MessageStrings.copy.localized, image: .named("message.cell.copy")) { [weak self] _ in
-                guard let `self` = self, let message = self.message else { return }
-                self.longTapCallback?(.copy(message))
-            })
-
-            //            if(self.message?.isIncome ?? false) {
-            //                action.append(UIAction(title: MessageStrings.reply.localized, image: .named("message.cell.reply")) { [weak self ]_ in
-            //                    guard let `self` = self, let message = self.message else { return }
-            //                    self.longTapCallback?(.reply(message))
-            //                })
-            //            }
-            if let message = self.message, message.isIncome, (UltraCoreSettings.futureDelegate?.availableToReport(message: message) ?? true) {
-                action.append(UIAction(title: MessageStrings.report.localized, image: .named("message.cell.report")) { [weak self] _ in
+            if let message = self.message, !message.hasVoice {
+                action.append(UIAction(title: MessageStrings.copy.localized, image: .named("message.cell.copy")) { [weak self] _ in
                     guard let `self` = self, let message = self.message else { return }
-                    self.longTapCallback?(.report(message))
+                    self.longTapCallback?(.copy(message))
                 })
             }
-
+            
             action.append(UIAction(title: MessageStrings.delete.localized, image: .named("message.cell.trash"), attributes: .destructive) { [weak self] _ in
                 guard let `self` = self, let message = self.message else { return }
                 self.longTapCallback?(.delete(message))
             })
 
             let select = UIAction(title: MessageStrings.select.localized, image: .named("message.cell.select")) { [weak self] _ in
-                guard let `self` = self, let message = self.message else { return }
-                self.longTapCallback?(.select(message))
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
+                    guard let `self` = self, let message = self.message else { return }
+                    self.longTapCallback?(.select(message))
+                })
             }
 
-            return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), select])
+            
+            if let message = self.message, message.isIncome,
+                (UltraCoreSettings.futureDelegate?.availableToReport(message: message) ?? true) {
+                return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), makeReportMenu(), select])
+            }else {
+                return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), select])
+            }
+            
+            
         }
     }
+    
+    @available(iOS 13.0, *)
+    func makeReportMenu() -> UIMenu {
+        let spam = UIAction(title: MessageStrings.spam.localized,
+                            image: .named("message.cell.trash"),
+                            identifier: nil) { [weak self] _ in
+            guard let `self` = self, let message = self.message else {
+                return
+            }
+            self.longTapCallback?(.reportDefined(message: message, type: ComplainTypeEnum.spam))
+        }
+
+        let personalData = UIAction(title: MessageStrings.personalData.localized,
+                                    image: .named("message.cell.personalData"),
+                                    identifier: nil) { [weak self] _ in
+            guard let `self` = self, let message = self.message else {
+                return
+            }
+            self.longTapCallback?(.reportDefined(message: message, type: ComplainTypeEnum.personalData))
+        }
+
+        let fraud = UIAction(title: MessageStrings.fraud.localized,
+                             image: .named("message.cell.fraud"),
+                             identifier: nil,
+                             discoverabilityTitle: "To share the iamge to any social media") { [weak self] _ in
+            guard let `self` = self, let message = self.message else {
+                return
+            }
+            self.longTapCallback?(.reportDefined(message: message, type: ComplainTypeEnum.fraud))
+        }
+
+        let impositionOfServices = UIAction(title: MessageStrings.impositionOfServices.localized,
+                                            image: .named("message.cell.impositionOfServices"),
+                                            identifier: nil,
+                                            discoverabilityTitle: nil,
+
+                                            handler: { [weak self] _ in
+                                                guard let `self` = self, let message = self.message else {
+                                                    return
+                                                }
+                                                self.longTapCallback?(.reportDefined(message: message, type: ComplainTypeEnum.serviceImposition))
+                                            })
+        let insult = UIAction(title: MessageStrings.insult.localized,
+                              image: .named("message.cell.insult"),
+                              identifier: nil,
+                              discoverabilityTitle: nil,
+
+                              handler: { [weak self] _ in
+                                  guard let `self` = self, let message = self.message else {
+                                      return
+                                  }
+                                  self.longTapCallback?(.reportDefined(message: message, type: ComplainTypeEnum.inappropriate))
+                              })
+        let other = UIAction(title: MessageStrings.other.localized,
+                             image: .named("message.cell.other"),
+                             identifier: nil,
+                             discoverabilityTitle: nil,
+
+                             handler: { [weak self] _ in
+                                 guard let `self` = self, let message = self.message else {
+                                     return
+                                 }
+            self.longTapCallback?(.reportDefined(message: message, type: .other))
+                             })
+
+        return UIMenu(title: MessageStrings.report.localized,
+                      image: .named("message.cell.report"),
+                      children: [spam, personalData, fraud, impositionOfServices, insult, other])
+    }
 }
+
+
 
 extension BaseMessageCell {
     @objc func handleLongPress(_ sender: UILongPressGestureRecognizer) {

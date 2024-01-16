@@ -9,7 +9,6 @@ import Logging
 protocol AppSettings: Any {
     
     var superMessageSaverInteractor: UseCase<MessageData, Conversation?> { get }
-    var contactToConversationInteractor: ContactToConversationInteractor { get }
     
     var appStore: AppSettingsStore { get set }
     
@@ -32,4 +31,6 @@ protocol AppSettings: Any {
     var contactsService: ContactServiceClientProtocol { get }
     var conversationService: ChatServiceClientProtocol { get }
     var integrateService: IntegrationServiceClientProtocol { get }
+    
+    var updateTokenInteractor: UseCase<Void, Void> { get }
 }

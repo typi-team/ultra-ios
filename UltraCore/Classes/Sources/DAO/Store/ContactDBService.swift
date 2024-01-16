@@ -98,6 +98,7 @@ class ContactDBService {
                         contact.imagePath = contactInfo.imagePath
                     }
                     
+                    contact.isBlocked = interface.isBlocked
                     if interface.status.lastSeen > contact.lastseen {
                         contact.lastseen = interface.status.lastSeen
                         contact.statusValue = interface.status.status.rawValue
