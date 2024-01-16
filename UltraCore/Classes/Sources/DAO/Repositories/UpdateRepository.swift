@@ -64,6 +64,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
     func stopPingPong() {
         PP.info("❌ stopPintPong")
         self.pintPongTimer?.invalidate()
+        self.updateListenStream?.cancel(promise: nil)
     }
     
     func startPingPong() {
@@ -121,7 +122,6 @@ private extension UpdateRepositoryImpl {
     
     func setupChangesSubscription(with state: UInt64) {
         let state: ListenRequest = .with { $0.localState = .with { $0.state = state } }
-        self.updateListenStream?.cancel(promise: nil)
         self.updateListenStream = updateClient.listen(state, callOptions: .default(include: false)) { [weak self] response in
             guard let `self` = self else { return }
             self.appStore.store(last: max(Int64(response.lastState), self.appStore.lastState))
