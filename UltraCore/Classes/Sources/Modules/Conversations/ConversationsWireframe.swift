@@ -29,9 +29,13 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
                                                                                        contactService: appSettings.contactsService)
         let contactByUserIdInteractor = ContactByUserIdInteractor.init(delegate: UltraCoreSettings.delegate,
                                                                        contactsService: appSettings.contactsService)
+        
+        let contactToConversationInteractor = ContactToConversationInteractor.init(contactDBService: appSettings.contactDBService,
+                                                                                   contactsService: appSettings.contactsService,
+                                                                                   integrateService: appSettings.integrateService)
+        
         let messageSenderInteractor = SendMessageInteractor.init(messageService: appSettings.messageService)
 
-        let contactToCreateChatByPhoneInteractor = ContactToCreateChatByPhoneInteractor.init(integrateService: appSettings.integrateService)
         let resendMessagesInteractor = ResendingMessagesInteractor(messageRepository: appSettings.messageRespository, mediaRepository: appSettings.mediaRepository, messageSenderInteractor: messageSenderInteractor)
         let reachabilityInteractor = ReachabilityInteractor()
         let presenter = ConversationsPresenter(view: moduleViewController,
@@ -41,7 +45,8 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
                                                conversationRepository: appSettings.conversationRespository,
                                                contactByUserIdInteractor: contactByUserIdInteractor,
                                                retrieveContactStatusesInteractor: retrieveContactStatusesInteractor,
-                                               deleteConversationInteractor: deleteConversationInteractor, contactToCreateChatByPhoneInteractor: contactToCreateChatByPhoneInteractor,
+                                               deleteConversationInteractor: deleteConversationInteractor,
+                                               contactToConversationInteractor: contactToConversationInteractor,
                                                userStatusUpdateInteractor: UpdateOnlineInteractor(userService: appSettings.userService),
                                                resendMessagesInteractor: resendMessagesInteractor,
                                                reachabilityInteractor: reachabilityInteractor)

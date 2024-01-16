@@ -47,6 +47,16 @@ internal protocol UserServiceClientProtocol: GRPCClient {
     _ request: BlockUnblockRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<BlockUnblockRequest, BlockUnblockResponse>
+
+  func deleteProfilePhoto(
+    _ request: DeleteProfilePhotoRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<DeleteProfilePhotoRequest, DeleteProfilePhotoResponse>
+
+  func getBlockedUsersList(
+    _ request: GetBlockedUsersListRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<GetBlockedUsersListRequest, GetBlockedUsersListResponse>
 }
 
 extension UserServiceClientProtocol {
@@ -163,6 +173,42 @@ extension UserServiceClientProtocol {
       interceptors: self.interceptors?.makeUnblockUserInterceptors() ?? []
     )
   }
+
+  /// Delete profile photo and send update to all contact owners
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to DeleteProfilePhoto.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  internal func deleteProfilePhoto(
+    _ request: DeleteProfilePhotoRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<DeleteProfilePhotoRequest, DeleteProfilePhotoResponse> {
+    return self.makeUnaryCall(
+      path: UserServiceClientMetadata.Methods.deleteProfilePhoto.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeDeleteProfilePhotoInterceptors() ?? []
+    )
+  }
+
+  /// Get blocked users list
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to GetBlockedUsersList.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  internal func getBlockedUsersList(
+    _ request: GetBlockedUsersListRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<GetBlockedUsersListRequest, GetBlockedUsersListResponse> {
+    return self.makeUnaryCall(
+      path: UserServiceClientMetadata.Methods.getBlockedUsersList.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetBlockedUsersListInterceptors() ?? []
+    )
+  }
 }
 
 @available(*, deprecated)
@@ -257,6 +303,16 @@ internal protocol UserServiceAsyncClientProtocol: GRPCClient {
     _ request: BlockUnblockRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<BlockUnblockRequest, BlockUnblockResponse>
+
+  func makeDeleteProfilePhotoCall(
+    _ request: DeleteProfilePhotoRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<DeleteProfilePhotoRequest, DeleteProfilePhotoResponse>
+
+  func makeGetBlockedUsersListCall(
+    _ request: GetBlockedUsersListRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<GetBlockedUsersListRequest, GetBlockedUsersListResponse>
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -340,6 +396,30 @@ extension UserServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeUnblockUserInterceptors() ?? []
     )
   }
+
+  internal func makeDeleteProfilePhotoCall(
+    _ request: DeleteProfilePhotoRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<DeleteProfilePhotoRequest, DeleteProfilePhotoResponse> {
+    return self.makeAsyncUnaryCall(
+      path: UserServiceClientMetadata.Methods.deleteProfilePhoto.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeDeleteProfilePhotoInterceptors() ?? []
+    )
+  }
+
+  internal func makeGetBlockedUsersListCall(
+    _ request: GetBlockedUsersListRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<GetBlockedUsersListRequest, GetBlockedUsersListResponse> {
+    return self.makeAsyncUnaryCall(
+      path: UserServiceClientMetadata.Methods.getBlockedUsersList.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetBlockedUsersListInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -415,6 +495,30 @@ extension UserServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeUnblockUserInterceptors() ?? []
     )
   }
+
+  internal func deleteProfilePhoto(
+    _ request: DeleteProfilePhotoRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> DeleteProfilePhotoResponse {
+    return try await self.performAsyncUnaryCall(
+      path: UserServiceClientMetadata.Methods.deleteProfilePhoto.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeDeleteProfilePhotoInterceptors() ?? []
+    )
+  }
+
+  internal func getBlockedUsersList(
+    _ request: GetBlockedUsersListRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> GetBlockedUsersListResponse {
+    return try await self.performAsyncUnaryCall(
+      path: UserServiceClientMetadata.Methods.getBlockedUsersList.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetBlockedUsersListInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -453,6 +557,12 @@ internal protocol UserServiceClientInterceptorFactoryProtocol: Sendable {
 
   /// - Returns: Interceptors to use when invoking 'unblockUser'.
   func makeUnblockUserInterceptors() -> [ClientInterceptor<BlockUnblockRequest, BlockUnblockResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'deleteProfilePhoto'.
+  func makeDeleteProfilePhotoInterceptors() -> [ClientInterceptor<DeleteProfilePhotoRequest, DeleteProfilePhotoResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'getBlockedUsersList'.
+  func makeGetBlockedUsersListInterceptors() -> [ClientInterceptor<GetBlockedUsersListRequest, GetBlockedUsersListResponse>]
 }
 
 internal enum UserServiceClientMetadata {
@@ -466,6 +576,8 @@ internal enum UserServiceClientMetadata {
       UserServiceClientMetadata.Methods.setStatus,
       UserServiceClientMetadata.Methods.blockUser,
       UserServiceClientMetadata.Methods.unblockUser,
+      UserServiceClientMetadata.Methods.deleteProfilePhoto,
+      UserServiceClientMetadata.Methods.getBlockedUsersList,
     ]
   )
 
@@ -505,6 +617,18 @@ internal enum UserServiceClientMetadata {
       path: "/UserService/UnblockUser",
       type: GRPCCallType.unary
     )
+
+    internal static let deleteProfilePhoto = GRPCMethodDescriptor(
+      name: "DeleteProfilePhoto",
+      path: "/UserService/DeleteProfilePhoto",
+      type: GRPCCallType.unary
+    )
+
+    internal static let getBlockedUsersList = GRPCMethodDescriptor(
+      name: "GetBlockedUsersList",
+      path: "/UserService/GetBlockedUsersList",
+      type: GRPCCallType.unary
+    )
   }
 }
 
@@ -533,6 +657,12 @@ internal protocol UserServiceProvider: CallHandlerProvider {
 
   /// Unblock user by id
   func unblockUser(request: BlockUnblockRequest, context: StatusOnlyCallContext) -> EventLoopFuture<BlockUnblockResponse>
+
+  /// Delete profile photo and send update to all contact owners
+  func deleteProfilePhoto(request: DeleteProfilePhotoRequest, context: StatusOnlyCallContext) -> EventLoopFuture<DeleteProfilePhotoResponse>
+
+  /// Get blocked users list
+  func getBlockedUsersList(request: GetBlockedUsersListRequest, context: StatusOnlyCallContext) -> EventLoopFuture<GetBlockedUsersListResponse>
 }
 
 extension UserServiceProvider {
@@ -601,6 +731,24 @@ extension UserServiceProvider {
         userFunction: self.unblockUser(request:context:)
       )
 
+    case "DeleteProfilePhoto":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<DeleteProfilePhotoRequest>(),
+        responseSerializer: ProtobufSerializer<DeleteProfilePhotoResponse>(),
+        interceptors: self.interceptors?.makeDeleteProfilePhotoInterceptors() ?? [],
+        userFunction: self.deleteProfilePhoto(request:context:)
+      )
+
+    case "GetBlockedUsersList":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<GetBlockedUsersListRequest>(),
+        responseSerializer: ProtobufSerializer<GetBlockedUsersListResponse>(),
+        interceptors: self.interceptors?.makeGetBlockedUsersListInterceptors() ?? [],
+        userFunction: self.getBlockedUsersList(request:context:)
+      )
+
     default:
       return nil
     }
@@ -652,6 +800,18 @@ internal protocol UserServiceAsyncProvider: CallHandlerProvider, Sendable {
     request: BlockUnblockRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> BlockUnblockResponse
+
+  /// Delete profile photo and send update to all contact owners
+  func deleteProfilePhoto(
+    request: DeleteProfilePhotoRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> DeleteProfilePhotoResponse
+
+  /// Get blocked users list
+  func getBlockedUsersList(
+    request: GetBlockedUsersListRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> GetBlockedUsersListResponse
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -727,6 +887,24 @@ extension UserServiceAsyncProvider {
         wrapping: { try await self.unblockUser(request: $0, context: $1) }
       )
 
+    case "DeleteProfilePhoto":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<DeleteProfilePhotoRequest>(),
+        responseSerializer: ProtobufSerializer<DeleteProfilePhotoResponse>(),
+        interceptors: self.interceptors?.makeDeleteProfilePhotoInterceptors() ?? [],
+        wrapping: { try await self.deleteProfilePhoto(request: $0, context: $1) }
+      )
+
+    case "GetBlockedUsersList":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<GetBlockedUsersListRequest>(),
+        responseSerializer: ProtobufSerializer<GetBlockedUsersListResponse>(),
+        interceptors: self.interceptors?.makeGetBlockedUsersListInterceptors() ?? [],
+        wrapping: { try await self.getBlockedUsersList(request: $0, context: $1) }
+      )
+
     default:
       return nil
     }
@@ -758,6 +936,14 @@ internal protocol UserServiceServerInterceptorFactoryProtocol: Sendable {
   /// - Returns: Interceptors to use when handling 'unblockUser'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeUnblockUserInterceptors() -> [ServerInterceptor<BlockUnblockRequest, BlockUnblockResponse>]
+
+  /// - Returns: Interceptors to use when handling 'deleteProfilePhoto'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeDeleteProfilePhotoInterceptors() -> [ServerInterceptor<DeleteProfilePhotoRequest, DeleteProfilePhotoResponse>]
+
+  /// - Returns: Interceptors to use when handling 'getBlockedUsersList'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeGetBlockedUsersListInterceptors() -> [ServerInterceptor<GetBlockedUsersListRequest, GetBlockedUsersListResponse>]
 }
 
 internal enum UserServiceServerMetadata {
@@ -771,6 +957,8 @@ internal enum UserServiceServerMetadata {
       UserServiceServerMetadata.Methods.setStatus,
       UserServiceServerMetadata.Methods.blockUser,
       UserServiceServerMetadata.Methods.unblockUser,
+      UserServiceServerMetadata.Methods.deleteProfilePhoto,
+      UserServiceServerMetadata.Methods.getBlockedUsersList,
     ]
   )
 
@@ -808,6 +996,18 @@ internal enum UserServiceServerMetadata {
     internal static let unblockUser = GRPCMethodDescriptor(
       name: "UnblockUser",
       path: "/UserService/UnblockUser",
+      type: GRPCCallType.unary
+    )
+
+    internal static let deleteProfilePhoto = GRPCMethodDescriptor(
+      name: "DeleteProfilePhoto",
+      path: "/UserService/DeleteProfilePhoto",
+      type: GRPCCallType.unary
+    )
+
+    internal static let getBlockedUsersList = GRPCMethodDescriptor(
+      name: "GetBlockedUsersList",
+      path: "/UserService/GetBlockedUsersList",
       type: GRPCCallType.unary
     )
   }

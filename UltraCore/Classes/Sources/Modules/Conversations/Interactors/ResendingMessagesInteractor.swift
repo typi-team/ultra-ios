@@ -9,7 +9,7 @@ final class ResendingMessagesInteractor: UseCase<Void, Void> {
         
     private let messageRepository: MessageRepository
     
-    private let messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>
+    private let messageSenderInteractor: SendMessageInteractor
     
     private let mediaRepository: MediaRepository
     
@@ -20,7 +20,7 @@ final class ResendingMessagesInteractor: UseCase<Void, Void> {
     init(
         messageRepository: MessageRepository,
         mediaRepository: MediaRepository,
-        messageSenderInteractor: UseCase<MessageSendRequest, MessageSendResponse>
+        messageSenderInteractor: SendMessageInteractor
     ) {
         self.messageRepository = messageRepository
         self.messageSenderInteractor = messageSenderInteractor

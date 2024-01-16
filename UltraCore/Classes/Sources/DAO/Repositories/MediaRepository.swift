@@ -27,19 +27,20 @@ class MediaRepositoryImpl {
     fileprivate let appStore: AppSettingsStore
     fileprivate let messageDBService: MessageDBService
     fileprivate let fileService: FileServiceClientProtocol
-    fileprivate let uploadFileInteractor: UseCase<[FileChunk], Void>
-    fileprivate let createFileSpaceInteractor: UseCase<(data: Data, extens: String), [FileChunk]>
+    fileprivate let uploadFileInteractor: GRPCErrorUseCase<[FileChunk], Void>
+    fileprivate let createFileSpaceInteractor: GRPCErrorUseCase<(data: Data, extens: String), [FileChunk]>
     
     var currentVoice: BehaviorSubject<[VoiceMessage]> = .init(value: [])
     var uploadingMedias: BehaviorSubject<[FileDownloadRequest]> = .init(value: [])
     var downloadingImages: BehaviorSubject<[FileDownloadRequest]> = .init(value: [])
     
     init(mediaUtils: MediaUtils,
-         uploadFileInteractor: UseCase<[FileChunk], Void>,
+         uploadFileInteractor: GRPCErrorUseCase<[FileChunk], Void>,
          appStore: AppSettingsStore = AppSettingsImpl.shared.appStore,
          fileService: FileServiceClientProtocol = AppSettingsImpl.shared.fileService,
          messageDBService: MessageDBService = AppSettingsImpl.shared.messageDBService,
-         createFileSpaceInteractor: UseCase<(data: Data, extens: String), [FileChunk]>) {
+         createFileSpaceInteractor: GRPCErrorUseCase<(data: Data, extens: String), [FileChunk]>) {
+        
         self.appStore = appStore
         self.mediaUtils = mediaUtils
         self.fileService = fileService

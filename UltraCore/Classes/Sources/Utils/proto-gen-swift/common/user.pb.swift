@@ -58,6 +58,8 @@ struct User {
 
   var unread: UInt64 = 0
 
+  var isBlocked: Bool = false
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -134,6 +136,7 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     5: .same(proto: "phone"),
     6: .same(proto: "photo"),
     7: .same(proto: "unread"),
+    8: .standard(proto: "is_blocked"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -149,6 +152,7 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
       case 5: try { try decoder.decodeSingularStringField(value: &self.phone) }()
       case 6: try { try decoder.decodeSingularMessageField(value: &self._photo) }()
       case 7: try { try decoder.decodeSingularUInt64Field(value: &self.unread) }()
+      case 8: try { try decoder.decodeSingularBoolField(value: &self.isBlocked) }()
       default: break
       }
     }
@@ -180,6 +184,9 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     if self.unread != 0 {
       try visitor.visitSingularUInt64Field(value: self.unread, fieldNumber: 7)
     }
+    if self.isBlocked != false {
+      try visitor.visitSingularBoolField(value: self.isBlocked, fieldNumber: 8)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -191,6 +198,7 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     if lhs.phone != rhs.phone {return false}
     if lhs._photo != rhs._photo {return false}
     if lhs.unread != rhs.unread {return false}
+    if lhs.isBlocked != rhs.isBlocked {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
