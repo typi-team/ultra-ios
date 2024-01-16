@@ -29,7 +29,9 @@ class MakeSoundInteractor: UseCase<MakeSoundInteractor.Sound, Void> {
                 }
                 player?.prepareToPlay()
                 player?.play()
-            } catch {}
+            } catch {
+                PP.debug(error.localizedDescription)
+            }
         }
     }
    

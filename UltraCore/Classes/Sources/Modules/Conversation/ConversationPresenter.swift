@@ -239,7 +239,10 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 message.seqNumber = response.seqNumber
                 return self.messageRepository.update(message: message)
             })
-            .flatMap { _ in self.messageSentSoundInteractor.executeSingle(params: .messageSent) }
+            .flatMap { [weak self] _ in
+                guard let self else { throw NSError.selfIsNill }
+                return self.messageSentSoundInteractor.executeSingle(params: .messageSent)
+            }
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()
@@ -285,7 +288,10 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 message.seqNumber = response.seqNumber
                 return self.messageRepository.update(message: message)
             })
-            .flatMap { _ in self.messageSentSoundInteractor.executeSingle(params: .messageSent) }
+            .flatMap { [weak self] _ in
+                guard let self else { throw NSError.selfIsNill }
+                return self.messageSentSoundInteractor.executeSingle(params: .messageSent)
+            }
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()
@@ -345,7 +351,10 @@ extension ConversationPresenter: ConversationPresenterInterface {
                     message.seqNumber = response.seqNumber
                     return self.messageRepository.update(message: message)
                 })
-                .flatMap { _ in self.messageSentSoundInteractor.executeSingle(params: .messageSent) }
+                .flatMap { [weak self] _ in
+                    guard let self else { throw NSError.selfIsNill }
+                    return self.messageSentSoundInteractor.executeSingle(params: .messageSent)
+                }
                 .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
                 .observe(on: MainScheduler.instance)
                 .subscribe()
@@ -383,7 +392,10 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 guard let `self` = self else { throw NSError.selfIsNill }
                 return self.messageSenderInteractor.executeSingle(params: request)
             })
-            .flatMap { _ in self.messageSentSoundInteractor.executeSingle(params: .messageSent) }
+            .flatMap { [weak self] _ in
+                guard let self else { throw NSError.selfIsNill }
+                return self.messageSentSoundInteractor.executeSingle(params: .messageSent)
+            }
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { _ in PP.debug(file.mime) },
@@ -487,7 +499,10 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 message.seqNumber = response.seqNumber
                 return self.messageRepository.update(message: message)
             })
-            .flatMap { _ in self.messageSentSoundInteractor.executeSingle(params: .messageSent) }
+            .flatMap { [weak self] _ in
+                guard let self else { throw NSError.selfIsNill }
+                return self.messageSentSoundInteractor.executeSingle(params: .messageSent)
+            }
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()
