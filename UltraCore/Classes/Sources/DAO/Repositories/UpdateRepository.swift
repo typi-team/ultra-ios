@@ -83,7 +83,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
     func startPingPong() {
         DispatchQueue.main.async {
             PP.info("🐢 startPintPong")
-            self.pintPongTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] timer in
+            self.pintPongTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] timer in
                 guard let `self` = self else { return timer.invalidate() }
                 self.pingPongInteractorImpl
                     .executeSingle(params: ())
