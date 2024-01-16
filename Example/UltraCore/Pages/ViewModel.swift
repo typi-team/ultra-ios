@@ -56,7 +56,7 @@ class ViewModel {
         request.httpBody = jsonData
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let data = data,
-               let userResponse = try? JSONDecoder().decode(UserResponse.self, from: data) {
+                let userResponse = try? JSONDecoder().decode(UserResponse.self, from: data) {
                 UltraCoreSettings.update(sid: userResponse.sid, with: callback)
             }
         }.resume()
