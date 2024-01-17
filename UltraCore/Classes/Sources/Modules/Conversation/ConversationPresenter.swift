@@ -50,18 +50,18 @@ final class ConversationPresenter {
         .do(onNext: { [weak self] messages in
             guard let `self` = self else { return }
             let messages = messages.filter({ $0.fileID != nil })
-                .filter({ self.mediaRepository.mediaURL(from: $0) == nil })
+                .filter({ [weak self] in self?.mediaRepository.mediaURL(from: $0) == nil })
             guard !messages.isEmpty else { return }
 
             Observable.from(messages)
                 .flatMap { [weak self] message in
-                    guard let `self` = self else { throw NSError.selfIsNill }
-                    return self.mediaRepository.download(from: message)
+                    guard let self else { throw NSError.selfIsNill }
+                    return mediaRepository.download(from: message)
                 }
                 .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
                 .observe(on: MainScheduler.instance)
                 .subscribe()
-                .disposed(by: self.disposeBag)
+                .disposed(by: disposeBag)
         })
 
     // MARK: - Lifecycle -
@@ -236,26 +236,30 @@ extension ConversationPresenter: ConversationPresenterInterface {
         
         self.conversationRepository
             .createIfNotExist(from: message)
-            .flatMap{ self.messageRepository.save(message: message)}
-            .flatMap{self.messageSenderInteractor.executeSingle(params: params)}
+            .flatMap({ [weak self] in
+                guard let self else { throw NSError.selfIsNill }
+                return messageRepository.save(message: message)
+            })
+            .flatMap({ [weak self] in
+                guard let self else { throw NSError.selfIsNill }
+                return messageSenderInteractor.executeSingle(params: params)
+            })
             .flatMap({ [weak self] (response: MessageSendResponse) in
-                guard let `self` = self else {
-                    throw NSError.selfIsNill
-                }
+                guard let self else { throw NSError.selfIsNill }
                 message.meta.created = response.meta.created
                 message.state.delivered = false
                 message.state.read = false
                 message.seqNumber = response.seqNumber
-                return self.messageRepository.update(message: message)
+                return messageRepository.update(message: message)
             })
             .flatMap { [weak self] _ in
                 guard let self else { throw NSError.selfIsNill }
-                return self.messageSentSoundInteractor.executeSingle(params: .messageSent)
+                return messageSentSoundInteractor.executeSingle(params: .messageSent)
             }
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()
-            .disposed(by: self.disposeBag)
+            .disposed(by: disposeBag)
     }
     
     func send(contact: ContactMessage) {
@@ -288,26 +292,25 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .flatMap{ self.messageRepository.save(message: message)}
             .flatMap{self.messageSenderInteractor.executeSingle(params: params)}
             .flatMap({ [weak self] (response: MessageSendResponse) in
-                guard let `self` = self else {
-                    throw NSError.selfIsNill
-                }
+                guard let self else { throw NSError.selfIsNill }
                 message.meta.created = response.meta.created
                 message.state.delivered = false
                 message.state.read = false
                 message.seqNumber = response.seqNumber
-                return self.messageRepository.update(message: message)
+                return messageRepository.update(message: message)
             })
             .flatMap { [weak self] _ in
                 guard let self else { throw NSError.selfIsNill }
-                return self.messageSentSoundInteractor.executeSingle(params: .messageSent)
+                return messageSentSoundInteractor.executeSingle(params: .messageSent)
             }
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()
-            .disposed(by: self.disposeBag)
+            .disposed(by: disposeBag)
     }
+    
     func delete(_ messages: [Message], all: Bool) {
-        self.deleteMessageInteractor.executeSingle(params: (messages, all))
+        deleteMessageInteractor.executeSingle(params: (messages, all))
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()
@@ -315,9 +318,8 @@ extension ConversationPresenter: ConversationPresenterInterface {
     }
     
     func openMoneyController() {
-        self.wireframe.openMoneyController(callback: { [weak self] value in
-            guard let `self` = self,
-                  let receiverID = self.conversation.peer?.userID else { return }
+        wireframe.openMoneyController(callback: { [weak self] value in
+            guard let self, let receiverID = self.conversation.peer?.userID else { return }
             var params = MessageSendRequest()
 
             params.peer.user = .with({ peer in
@@ -348,54 +350,59 @@ extension ConversationPresenter: ConversationPresenterInterface {
             
             self.conversationRepository
                 .createIfNotExist(from: message)
-                .flatMap { self.messageRepository.save(message: message) }
-                .flatMap { self.messageSenderInteractor.executeSingle(params: params) }
+                .flatMap({ [weak self] in
+                    guard let self else { throw NSError.selfIsNill }
+                    return messageRepository.save(message: message)
+                })
+                .flatMap({ [weak self] in
+                    guard let self else { throw NSError.selfIsNill }
+                    return messageSenderInteractor.executeSingle(params: params)
+                })
                 .flatMap({ [weak self] (response: MessageSendResponse) in
-                    guard let `self` = self else {
-                        throw NSError.selfIsNill
-                    }
+                    guard let self else { throw NSError.selfIsNill }
                     message.meta.created = response.meta.created
                     message.state.delivered = false
                     message.state.read = false
                     message.seqNumber = response.seqNumber
-                    return self.messageRepository.update(message: message)
+                    return messageRepository.update(message: message)
                 })
                 .flatMap { [weak self] _ in
                     guard let self else { throw NSError.selfIsNill }
-                    return self.messageSentSoundInteractor.executeSingle(params: .messageSent)
+                    return messageSentSoundInteractor.executeSingle(params: .messageSent)
                 }
                 .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
                 .observe(on: MainScheduler.instance)
                 .subscribe()
-                .disposed(by: self.disposeBag)
+                .disposed(by: disposeBag)
         })
     }
     
     func loadMoreMessages(maxSeqNumber: UInt64 ) {
-        self.messagesInteractor
-            .executeSingle(params: .with({
-                $0.chatID = self.conversation.idintification
+        messagesInteractor
+            .executeSingle(params: .with({ [weak self] in
+                guard let self else { return }
+                $0.chatID = conversation.idintification
                 $0.maxSeqNumber = UInt64(maxSeqNumber)
             }))
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
-            .subscribe(onSuccess: {[weak self] message in
-                guard let `self` = self else { return }
-                self.view?.stopRefresh(removeController: message.isEmpty)
+            .subscribe(onSuccess: { [weak self] message in
+                guard let self else { return }
+                view?.stopRefresh(removeController: message.isEmpty)
             })
             .disposed(by: disposeBag)
     }
     func navigateToContact() {
         guard let contact = self.conversation.peer else { return }
-        self.wireframe.navigateTo(contact: contact)
+        wireframe.navigateTo(contact: contact)
     }
     
     func mediaURL(from message: Message) -> URL? {
-        return self.mediaRepository.mediaURL(from: message)
+        return mediaRepository.mediaURL(from: message)
     }
     
     func upload(file: FileUpload) {
-        self.mediaRepository
+        mediaRepository
             .upload(file: file, in: conversation,
                     onPreUploadingFile: { [weak self] request in
                 guard let self else { return }
@@ -406,15 +413,15 @@ extension ConversationPresenter: ConversationPresenterInterface {
                     .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
                     .observe(on: MainScheduler.instance)
                     .subscribe()
-                    .disposed(by: self.disposeBag)
+                    .disposed(by: disposeBag)
             })
             .flatMap({ [weak self] request in
-                guard let `self` = self else { throw NSError.selfIsNill }
-                return self.messageSenderInteractor.executeSingle(params: request)
+                guard let self else { throw NSError.selfIsNill }
+                return messageSenderInteractor.executeSingle(params: request)
             })
             .flatMap { [weak self] _ in
                 guard let self else { throw NSError.selfIsNill }
-                return self.messageSentSoundInteractor.executeSingle(params: .messageSent)
+                return messageSentSoundInteractor.executeSingle(params: .messageSent)
             }
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
@@ -425,7 +432,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
     }
     
     func typing(is active: Bool) {
-        self.sendTypingInteractor
+        sendTypingInteractor
             .executeSingle(params: conversation.idintification)
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
@@ -435,31 +442,31 @@ extension ConversationPresenter: ConversationPresenterInterface {
     
     
     func viewDidLoad() {
-        self.subscribeToVisibility()
-        self.view?.setup(conversation: conversation)
+        subscribeToVisibility()
+        view?.setup(conversation: conversation)
         
-        self.updateRepository.typingUsers
+        updateRepository.typingUsers
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .map { [weak self] users -> UserTypingWithDate? in
-                guard let `self` = self else { return nil }
-                return users[self.conversation.idintification]
+                guard let self else { return nil }
+                return users[conversation.idintification]
             }
             .compactMap { $0 }
             .subscribe (onNext: { [weak self] typingUser in
-                guard let `self` = self else { return }
-                self.view?.display(is: typingUser)
+                guard let self else { return }
+                view?.display(is: typingUser)
             })
             .disposed(by: disposeBag)
         
-        self.messageRepository.messages(chatID: conversation.idintification)
+        messageRepository.messages(chatID: conversation.idintification)
             .debounce(RxTimeInterval.milliseconds(400), scheduler: ConcurrentDispatchQueueScheduler(qos: .background))
             .do(onNext: { [weak self] messages in
-                guard let `self` = self else { return }
+                guard let self else { return }
                 let unreadMessages = messages.filter({ $0.sender.userID != self.appStore.userID() }).filter({ $0.state.read == false })
                 guard let lastUnreadMessage = unreadMessages.last else { return }
-                self.updateRepository.readAll(in: self.conversation)
-                self.readMessageInteractor.executeSingle(params: lastUnreadMessage)
+                updateRepository.readAll(in: self.conversation)
+                readMessageInteractor.executeSingle(params: lastUnreadMessage)
                     .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
                     .subscribe()
                     .disposed(by: self.disposeBag)
@@ -472,8 +479,8 @@ extension ConversationPresenter: ConversationPresenterInterface {
         var params = MessageSendRequest()
         
         params.peer.user = .with({ [weak self] peer in
-            guard let `self` = self else { return }
-            peer.userID = self.conversation.peer?.userID ?? "u1FNOmSc0DAwM"
+            guard let self else { return }
+            peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
         })
         params.message.text = text
         params.message.id = UUID().uuidString
@@ -482,29 +489,36 @@ extension ConversationPresenter: ConversationPresenterInterface {
         var message = Message()
         message.text = text
         message.id = params.message.id
-        message.receiver = .with({[weak self] receiver in
-            guard let `self` = self else { return }
-            receiver.chatID = self.conversation.idintification
-            receiver.userID = self.conversation.peer?.userID ?? ""
+        message.receiver = .with({ [weak self] receiver in
+            guard let self else { return }
+            receiver.chatID = conversation.idintification
+            receiver.userID = conversation.peer?.userID ?? ""
         })
-        message.sender = .with({ $0.userID = self.userID })
+        message.sender = .with({ [weak self] in
+            guard let self else { return }
+            $0.userID = userID
+        })
         message.meta = .with({
             $0.created = Date().nanosec
         })
         
-        self.conversationRepository
+        conversationRepository
             .createIfNotExist(from: message)
-            .flatMap { self.messageRepository.save(message: message) }
-            .flatMap { self.messageSenderInteractor.executeSingle(params: params) }
+            .flatMap({ [weak self] in
+                guard let self else { throw NSError.selfIsNill }
+                return messageRepository.save(message: message)
+            })
+            .flatMap({ [weak self] in
+                guard let self else { throw NSError.selfIsNill }
+                return messageSenderInteractor.executeSingle(params: params)
+            })
             .flatMap({ [weak self] (response: MessageSendResponse) in
-                guard let `self` = self else {
-                    throw NSError.selfIsNill
-                }
+                guard let self else { throw NSError.selfIsNill }
                 message.meta.created = response.meta.created
                 message.state.delivered = false
                 message.state.read = false
                 message.seqNumber = response.seqNumber
-                return self.messageRepository.update(message: message)
+                return messageRepository.update(message: message)
             })
             .flatMap { [weak self] _ in
                 guard let self else { throw NSError.selfIsNill }
