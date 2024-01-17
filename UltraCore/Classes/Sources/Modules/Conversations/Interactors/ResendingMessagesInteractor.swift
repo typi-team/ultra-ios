@@ -39,7 +39,6 @@ final class ResendingMessagesInteractor: UseCase<Void, Void> {
     // MARK: - Methods
     
     private func resendMessagesIfNeeded() {
-        messageSending.removeAll()
         getAllMessages { [weak self] messages in
             guard let self else { return }
             let unsendedMessages = messages.filter { $0.seqNumber == 0 && !$0.isIncome }
@@ -79,20 +78,18 @@ final class ResendingMessagesInteractor: UseCase<Void, Void> {
                 guard let `self` = self else { throw NSError.selfIsNill }
                 return self.messageSenderInteractor.executeSingle(params: request)
             })
-            .flatMap({ [weak self] (response: MessageSendResponse) in
-                guard let `self` = self else {
-                    throw NSError.selfIsNill
-                }
-                return self.messageRepository.update(message: message)
-            })
             .flatMap({ [weak self] result in
+                if let index = self?.messageSending.firstIndex(where: { $0 == message.id }) {
+                    self?.messageSending.remove(at: index)
+                }
                 self?.resendFiles(messages: messages, index: index + 1, onCompletion: onCompletion)
                 return Single.just(result)
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { _ in },
-                       onFailure: { error in PP.debug(error.localizedDescription)
+                       onFailure: { [weak self] _ in
+                self?.resendFiles(messages: messages, index: index, onCompletion: onCompletion)
             })
             .disposed(by: disposeBag)
     }
@@ -120,11 +117,18 @@ final class ResendingMessagesInteractor: UseCase<Void, Void> {
                 message.seqNumber = response.seqNumber
                 return self.messageRepository.update(message: message)
             })
+            .flatMap({ [weak self] result in
+                if let index = self?.messageSending.firstIndex(where: { $0 == message.id }) {
+                    self?.messageSending.remove(at: index)
+                }
+                self?.resendMessages(messages: messages, index: index + 1, onCompletion: onCompletion)
+                return Single.just(result)
+            })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
-            .subscribe(onSuccess: { [weak self] _ in
-                self?.resendMessages(messages: messages, index: index + 1, onCompletion: onCompletion)
-            }, onFailure: { error in PP.debug(error.localizedDescription)
+            .subscribe(onSuccess: { _ in },
+                       onFailure: { [weak self] _ in
+                self?.resendMessages(messages: messages, index: index, onCompletion: onCompletion)
             })
             .disposed(by: disposeBag)
     }

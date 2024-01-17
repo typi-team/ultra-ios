@@ -285,6 +285,7 @@ extension MediaRepositoryImpl {
         }
         
         var message = message
+        let messageToDelete = message
         return self.createFileSpaceInteractor.executeSingle(params: (data, mimeType(message: message)))
             .do(onSuccess: { [weak self] chunks in
                 guard let `self` = self else { return }
@@ -326,6 +327,10 @@ extension MediaRepositoryImpl {
                       var file = process.first(where: { $0.fileID == message.fileID }) else { return }
                 file.fromChunkNumber = file.toChunkNumber - ((file.toChunkNumber * 80) / 100)
                 self.uploadingMedias.on(.next(process))
+            })
+            .flatMap({ [weak self] response -> Single<[FileChunk]> in
+                guard let `self` = self else { throw NSError.selfIsNill }
+                return self.messageDBService.delete(messages: [messageToDelete], in: nil).map({ response })
             })
             .flatMap({ [weak self] response -> Single<[FileChunk]> in
                 guard let `self` = self else { throw NSError.selfIsNill }
@@ -377,7 +382,7 @@ extension MediaRepositoryImpl {
                 let data = getDataFromURL(url: url) else {
             return Single.error(NSError.objectsIsNill)
         }
-        var messageToDelete = message
+        let messageToDelete = message
         var message = message
         var thumbnailData: Data = .init()
         return self.mediaUtils.thumbnailData(in: url)
@@ -424,7 +429,10 @@ extension MediaRepositoryImpl {
             })
             .flatMap({ [weak self] response -> Single<[FileChunk]> in
                 guard let `self` = self else { throw NSError.selfIsNill }
-                let _ = self.messageDBService.delete(messages: [messageToDelete], in: nil)
+                return self.messageDBService.delete(messages: [messageToDelete], in: nil).map({ response })
+            })
+            .flatMap({ [weak self] response -> Single<[FileChunk]> in
+                guard let `self` = self else { throw NSError.selfIsNill }
                 return self.messageDBService.save(message: message).map({ response })
             })
             .do(onSuccess: { [weak self] _ in
