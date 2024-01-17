@@ -9,7 +9,7 @@ import Foundation
 import RxSwift
 import GRPC
 
-public typealias StringCallback = (String?) -> Void
+public typealias StringCallback = (String) -> Void
 
 class GRPCErrorUseCase<P, R> {
     final let updateTokenInteractor: UseCase<Void, Void> = AppSettingsImpl.shared.updateTokenInteractor

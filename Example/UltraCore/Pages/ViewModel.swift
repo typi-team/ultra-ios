@@ -39,10 +39,6 @@ class ViewModel {
     
     func setupSID(callback: @escaping (Error?) -> Void) {
         token { [weak self] token in
-            guard let token = token else {
-                callback(NSError(domain: "SID is Empty", code: 101))
-                return
-            }
             self?.didRegisterForRemoteNotifications()
             UltraCoreSettings.update(sid: token, with: callback)
         }
@@ -100,7 +96,7 @@ extension ViewModel: UltraCoreSettingsDelegate {
               let lastname = userDef.string(forKey: "last_name"),
               let firstname = userDef.string(forKey: "first_name"),
               let phone = userDef.string(forKey: "phone") else {
-            return callback(nil)
+            fatalError()
         }
 
         guard let url = URL(string: "https://ultra-dev.typi.team/mock/v1/auth"),
@@ -130,7 +126,7 @@ extension ViewModel: UltraCoreSettingsDelegate {
             .subscribe { userResponse in
                 callback(userResponse.sid)
             } onError: { error in
-                callback(nil)
+                print(error.localizedDescription)
             }
             .disposed(by: disposeBag)
     }

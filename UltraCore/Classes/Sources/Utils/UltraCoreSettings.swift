@@ -62,31 +62,6 @@ public extension UltraCoreSettings {
          return ConversationsWireframe(appDelegate: UltraCoreSettings.delegate).viewController
      }
     
-    static func runReachibilty() {
-        let shared = AppSettingsImpl.shared
-        
-        InternetConnectionManager.shared
-            .isInternetAvailable
-            .debounce(.seconds(1), scheduler: MainScheduler.instance)
-            .do(onNext: { connected in
-                shared.updateRepository.stopSession()
-            })
-            .delay(.seconds(1), scheduler: MainScheduler.instance)
-            .subscribe(onNext: { isConnected in
-                if isConnected, let delegate = delegate {
-                    PP.debug("Internet connection available")
-                    delegate.token { sid in
-                        if let sid = sid {
-                            update(sid: sid, with: nil)
-                        }
-                    }
-                } else {
-                    PP.error("No internet connection")
-                }
-            })
-            .disposed(by: disposeBag)
-    }
-
     static func update(sid token: String, timeOut: TimeInterval = 0,
                        with callback: ((Error?) -> Void)?) {
         let shared = AppSettingsImpl.shared
