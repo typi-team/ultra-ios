@@ -118,7 +118,15 @@ extension ConversationPresenter: ConversationPresenterInterface {
     func subscribeToVisibility() {
         if let userID = self.conversation.peer?.userID {
             let timerUpdate = Observable<Int>.interval(.seconds(30), scheduler: MainScheduler.instance)
-            Observable.combineLatest(timerUpdate, self.contactRepository.contacts())
+            let contacts = self.contactRepository.contacts().do { [weak self] contacts in
+                guard let `self` = self, 
+                        let selectedContact = contacts.filter({ contact in contact.userID == userID }).first else { return }
+                    self.conversation.peer = selectedContact
+                    self.view?.blocked(is: selectedContact.isBlocked)
+                    self.view?.setup(conversation: self.conversation)
+                
+            }
+            Observable.combineLatest(timerUpdate, contacts)
                 .compactMap { _, contacts -> ContactDisplayable? in
                     let selectedContact = contacts.filter { contact in contact.userID == userID }.first
                     return selectedContact
