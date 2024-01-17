@@ -42,7 +42,7 @@ class UserIdInteractorImpl: UseCase<GetUserIdRequest, GetUserIdResponse> {
 extension CallOptions {
     static func `default`(include timeout: Bool = true) -> CallOptions {
         var logger = Logger(label: "com.typi.ultra")
-        logger.logLevel = .error
+        logger.logLevel = .warning
 
         if let token = AppSettingsImpl.shared.appStore.token {
             return .init(customMetadata: .init(httpHeaders: ["Authorization": "Bearer \(token)"]),

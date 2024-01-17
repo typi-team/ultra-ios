@@ -117,34 +117,28 @@ extension ConversationPresenter: ConversationPresenterInterface {
 
     func subscribeToVisibility() {
         if let userID = self.conversation.peer?.userID {
-            contactRepository.contacts().do(onNext: { [weak self] contacts in
-                guard let `self` = self,
-                      let contact = contacts.filter({ $0.userID == userID }).first else { return }
-                self.conversation.peer = contact
-                self.view?.blocked(is: contact.isBlocked)
-                self.view?.setup(conversation: self.conversation)
-            })
-            .concatMap { contacts -> Observable<[ContactDisplayable]> in
-                let contactsObservable = Observable.just(contacts)
-                let timerObservable = Observable<Int>
-                    .timer(.seconds(5), scheduler: MainScheduler.instance)
-                    .map { _ in [ContactDisplayable]() }
-
-                return Observable.concat(contactsObservable, timerObservable)
+            let timerUpdate = Observable<Int>.interval(.seconds(30), scheduler: MainScheduler.instance)
+            let contacts = self.contactRepository.contacts().do { [weak self] contacts in
+                guard let `self` = self, 
+                        let selectedContact = contacts.filter({ contact in contact.userID == userID }).first else { return }
+                    self.conversation.peer = selectedContact
+                    self.view?.blocked(is: selectedContact.isBlocked)
+                    self.view?.setup(conversation: self.conversation)
+                
             }
-            .compactMap { contacts in
-                let selectedContact = contacts.filter { contact in contact.userID == userID }.first
-                PP.warning(selectedContact.debugDescription)
-                return selectedContact
-            }
-            .do(onNext: { [weak self] contact in
-                guard let `self` = self else { return }
-                self.conversation.peer = contact
-                self.view?.blocked(is: contact.isBlocked)
-                self.view?.setup(conversation: self.conversation)
-            })
-            .subscribe()
-            .disposed(by: disposeBag)
+            Observable.combineLatest(timerUpdate, contacts)
+                .compactMap { _, contacts -> ContactDisplayable? in
+                    let selectedContact = contacts.filter { contact in contact.userID == userID }.first
+                    return selectedContact
+                }
+                .do(onNext: { [weak self] contact in
+                    guard let `self` = self else { return }
+                    self.conversation.peer = contact
+                    self.view?.blocked(is: contact.isBlocked)
+                    self.view?.setup(conversation: self.conversation)
+                })
+                .subscribe()
+                .disposed(by: disposeBag)
         }
     }
 
