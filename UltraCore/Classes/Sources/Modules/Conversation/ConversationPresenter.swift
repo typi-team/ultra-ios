@@ -11,6 +11,7 @@
 import Foundation
 import RxSwift
 import RealmSwift
+import AVFoundation
 
 final class ConversationPresenter {
 
@@ -26,7 +27,7 @@ final class ConversationPresenter {
     
     fileprivate let mediaRepository: MediaRepository
     fileprivate let updateRepository: UpdateRepository
-    private unowned let view: ConversationViewInterface
+    private weak var view: ConversationViewInterface?
     fileprivate let messageRepository: MessageRepository
     fileprivate let contactRepository: ContactsRepository
     private let wireframe: ConversationWireframeInterface
@@ -38,9 +39,10 @@ final class ConversationPresenter {
     private let readMessageInteractor: GRPCErrorUseCase<Message, MessagesReadResponse>
     private let messagesInteractor: GRPCErrorUseCase<GetChatMessagesRequest, [Message]>
     fileprivate let sendMoneyInteractor: UseCase<TransferPayload, TransferResponse>
+    private let makeVibrationInteractor: UseCase<UIImpactFeedbackGenerator.FeedbackStyle, Void>
     private let messageSenderInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendResponse>
-
-
+    private let messageSentSoundInteractor: UseCase<MakeSoundInteractor.Sound, Void>
+    
     // MARK: - Public properties -
 
     lazy var messages: Observable<[Message]> = messageRepository.messages(chatID: conversation.idintification)
@@ -81,7 +83,11 @@ final class ConversationPresenter {
          sendTypingInteractor: GRPCErrorUseCase<String, SendTypingResponse>,
          readMessageInteractor: GRPCErrorUseCase<Message, MessagesReadResponse>,
          sendMoneyInteractor: UseCase<TransferPayload, TransferResponse>,
-         messageSenderInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendResponse>) {
+
+         makeVibrationInteractor: UseCase<UIImpactFeedbackGenerator.FeedbackStyle, Void>,
+         messageSenderInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendResponse>,
+         messageSentSoundInteractor: UseCase<MakeSoundInteractor.Sound, Void>) {
+
         self.view = view
         self.userID = userID
         self.appStore = appStore
@@ -100,12 +106,48 @@ final class ConversationPresenter {
         self.conversationRepository = conversationRepository
         self.deleteMessageInteractor = deleteMessageInteractor
         self.messageSenderInteractor = messageSenderInteractor
+        self.makeVibrationInteractor = makeVibrationInteractor
+        self.messageSentSoundInteractor = messageSentSoundInteractor
     }
 }
 
 // MARK: - Extensions -
 
 extension ConversationPresenter: ConversationPresenterInterface {
+
+    func subscribeToVisibility() {
+        if let userID = self.conversation.peer?.userID {
+            contactRepository.contacts().do(onNext: { [weak self] contacts in
+                guard let `self` = self,
+                      let contact = contacts.filter({ $0.userID == userID }).first else { return }
+                self.conversation.peer = contact
+                self.view?.blocked(is: contact.isBlocked)
+                self.view?.setup(conversation: self.conversation)
+            })
+            .concatMap { contacts -> Observable<[ContactDisplayable]> in
+                let contactsObservable = Observable.just(contacts)
+                let timerObservable = Observable<Int>
+                    .timer(.seconds(5), scheduler: MainScheduler.instance)
+                    .map { _ in [ContactDisplayable]() }
+
+                return Observable.concat(contactsObservable, timerObservable)
+            }
+            .compactMap { contacts in
+                let selectedContact = contacts.filter { contact in contact.userID == userID }.first
+                PP.warning(selectedContact.debugDescription)
+                return selectedContact
+            }
+            .do(onNext: { [weak self] contact in
+                guard let `self` = self else { return }
+                self.conversation.peer = contact
+                self.view?.blocked(is: contact.isBlocked)
+                self.view?.setup(conversation: self.conversation)
+            })
+            .subscribe()
+            .disposed(by: disposeBag)
+        }
+    }
+
     func isBlock() -> Bool {
         return self.conversation.peer?.isBlocked ?? false
     }
@@ -119,7 +161,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .observe(on: MainScheduler.instance)
             .subscribe (onFailure:  {[weak self ]error in
                 guard let `self` = self else { return }
-                self.view.show(error: error.localeError)
+                self.view?.show(error: error.localeError)
             }).disposed(by: self.disposeBag)
     }
 
@@ -138,9 +180,9 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 DispatchQueue.main.async {
                     switch result {
                     case .success:
-                        self.view.reported()
+                        self.view?.reported()
                     case let .failure(error):
-                        self.view.show(error: error.localeError)
+                        self.view?.show(error: error.localeError)
                     }
                 }
             })
@@ -210,9 +252,12 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 message.state.delivered = false
                 message.state.read = false
                 message.seqNumber = response.seqNumber
-
                 return self.messageRepository.update(message: message)
             })
+            .flatMap { [weak self] _ in
+                guard let self else { throw NSError.selfIsNill }
+                return self.messageSentSoundInteractor.executeSingle(params: .messageSent)
+            }
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()
@@ -256,9 +301,12 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 message.state.delivered = false
                 message.state.read = false
                 message.seqNumber = response.seqNumber
-
                 return self.messageRepository.update(message: message)
             })
+            .flatMap { [weak self] _ in
+                guard let self else { throw NSError.selfIsNill }
+                return self.messageSentSoundInteractor.executeSingle(params: .messageSent)
+            }
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe()
@@ -318,6 +366,10 @@ extension ConversationPresenter: ConversationPresenterInterface {
                     message.seqNumber = response.seqNumber
                     return self.messageRepository.update(message: message)
                 })
+                .flatMap { [weak self] _ in
+                    guard let self else { throw NSError.selfIsNill }
+                    return self.messageSentSoundInteractor.executeSingle(params: .messageSent)
+                }
                 .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
                 .observe(on: MainScheduler.instance)
                 .subscribe()
@@ -335,7 +387,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: {[weak self] message in
                 guard let `self` = self else { return }
-                self.view.stopRefresh(removeController: message.isEmpty)
+                self.view?.stopRefresh(removeController: message.isEmpty)
             })
             .disposed(by: disposeBag)
     }
@@ -350,11 +402,26 @@ extension ConversationPresenter: ConversationPresenterInterface {
     
     func upload(file: FileUpload) {
         self.mediaRepository
-            .upload(file: file, in: conversation)
+            .upload(file: file, in: conversation,
+                    onPreUploadingFile: { [weak self] request in
+                guard let self else { return }
+                self.conversationRepository
+                    .createIfNotExist(from: request.message)
+                    .flatMap{ self.messageRepository.save(message: request.message)}
+                    .flatMap{ self.messageSenderInteractor.executeSingle(params: request)}
+                    .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+                    .observe(on: MainScheduler.instance)
+                    .subscribe()
+                    .disposed(by: self.disposeBag)
+            })
             .flatMap({ [weak self] request in
                 guard let `self` = self else { throw NSError.selfIsNill }
                 return self.messageSenderInteractor.executeSingle(params: request)
             })
+            .flatMap { [weak self] _ in
+                guard let self else { throw NSError.selfIsNill }
+                return self.messageSentSoundInteractor.executeSingle(params: .messageSent)
+            }
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { _ in PP.debug(file.mime) },
@@ -374,7 +441,8 @@ extension ConversationPresenter: ConversationPresenterInterface {
     
     
     func viewDidLoad() {
-        self.view.setup(conversation: conversation)
+        self.subscribeToVisibility()
+        self.view?.setup(conversation: conversation)
         
         self.updateRepository.typingUsers
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
@@ -386,23 +454,9 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .compactMap { $0 }
             .subscribe (onNext: { [weak self] typingUser in
                 guard let `self` = self else { return }
-                self.view.display(is: typingUser)
+                self.view?.display(is: typingUser)
             })
             .disposed(by: disposeBag)
-        
-        if let userID = self.conversation.peer?.userID {
-            self.contactRepository
-                .contacts()
-                .map { $0.filter({ contact in contact.userID == userID }) }
-                .compactMap({ $0.first })
-                .subscribe(onNext: { [weak self] contact in
-                    guard let `self` = self else { return }
-                    self.conversation.peer = contact
-                    self.view.blocked(is: contact.isBlocked)
-                    self.view.setup(conversation: self.conversation)
-                })
-                .disposed(by: disposeBag)
-        }
         
         self.messageRepository.messages(chatID: conversation.idintification)
             .debounce(RxTimeInterval.milliseconds(400), scheduler: ConcurrentDispatchQueueScheduler(qos: .background))
@@ -446,8 +500,8 @@ extension ConversationPresenter: ConversationPresenterInterface {
         
         self.conversationRepository
             .createIfNotExist(from: message)
-            .flatMap{ self.messageRepository.save(message: message)}
-            .flatMap{self.messageSenderInteractor.executeSingle(params: params)}
+            .flatMap { self.messageRepository.save(message: message) }
+            .flatMap { self.messageSenderInteractor.executeSingle(params: params) }
             .flatMap({ [weak self] (response: MessageSendResponse) in
                 guard let `self` = self else {
                     throw NSError.selfIsNill
@@ -456,12 +510,20 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 message.state.delivered = false
                 message.state.read = false
                 message.seqNumber = response.seqNumber
-
                 return self.messageRepository.update(message: message)
             })
+            .flatMap { [weak self] _ in
+                guard let self else { throw NSError.selfIsNill }
+                return self.messageSentSoundInteractor.executeSingle(params: .messageSent)
+            }
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
+            .flatMap({ [weak self] _ in
+                guard let `self` = self else { throw NSError.selfIsNill }
+                return self.makeVibrationInteractor.executeSingle(params: .light)
+            })
             .subscribe()
-            .disposed(by: self.disposeBag)
+            .disposed(by: disposeBag)
     }
+
 }

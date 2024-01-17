@@ -112,6 +112,16 @@ class MessageDBService {
         }
     }
     
+    //   MARK: Получение всех сообщений в базе
+    func messages() -> Observable<[Message]> {
+        return Observable.create { observer in
+            let realm = Realm.myRealm()
+            let messages = realm.objects(DBMessage.self)
+            observer.onNext(messages.map({$0.toProto()}))
+            return Disposables.create()
+        }
+    }
+    
 //    MARK: Сохранение сообщения в базу данных
     func save(message: Message) -> Single<Void> {
         return Single.create {[weak self] completable in

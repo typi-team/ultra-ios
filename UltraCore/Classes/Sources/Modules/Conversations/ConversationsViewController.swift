@@ -114,6 +114,8 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
                 self.presenter?.navigate(to: conversation)
             }
             .disposed(by: disposeBag)
+        
+        presenter?.viewDidLoad()
     }
 }
 
