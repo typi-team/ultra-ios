@@ -127,11 +127,9 @@ extension ViewModel: UltraCoreSettingsDelegate {
                     return Observable<Int>.timer(.seconds(5), scheduler: MainScheduler.instance)
                 }
             })
-            .debug("[Token fetch]")
             .subscribe { userResponse in
                 callback(userResponse.sid)
             } onError: { error in
-                print("Received error on token update - \(error.localizedDescription)")
                 callback(nil)
             }
             .disposed(by: disposeBag)
