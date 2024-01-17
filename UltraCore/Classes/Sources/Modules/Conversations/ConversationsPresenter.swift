@@ -28,6 +28,7 @@ final class ConversationsPresenter: BasePresenter {
     fileprivate let contactToConversationInteractor: ContactToConversationInteractor
     fileprivate let resendMessagesInteractor: ResendingMessagesInteractor
     fileprivate let reachabilityInteractor: ReachabilityInteractor
+    fileprivate let sessionInteractorImpl: SessionInteractorImpl
     
     lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(conversationRepository.conversations(), updateRepository.typingUsers)
         .map({ conversations, typingUsers in
@@ -54,7 +55,8 @@ final class ConversationsPresenter: BasePresenter {
          contactToConversationInteractor: ContactToConversationInteractor,
          userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>,
          resendMessagesInteractor: ResendingMessagesInteractor,
-         reachabilityInteractor: ReachabilityInteractor) {
+         reachabilityInteractor: ReachabilityInteractor,
+         sessionInteractorImpl: SessionInteractorImpl) {
         self.view = view
         self.wireframe = wireframe
         self.updateRepository = updateRepository
@@ -67,6 +69,7 @@ final class ConversationsPresenter: BasePresenter {
         self.resendMessagesInteractor = resendMessagesInteractor
         self.reachabilityInteractor = reachabilityInteractor
         self.contactToConversationInteractor = contactToConversationInteractor
+        self.sessionInteractorImpl = sessionInteractorImpl
     }
 }
 
@@ -147,6 +150,19 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
                     .observe(on: MainScheduler.instance)
                     .subscribe()
                     .disposed(by: self.disposeBag)
+//                self.sessionInteractorImpl
+//                    .executeSingle(params: ())
+//                    .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+//                    .observe(on: MainScheduler.instance)
+//                    .subscribe(onSuccess: { _ in
+//                        self.resendMessagesInteractor
+//                            .executeSingle(params: ())
+//                            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+//                            .observe(on: MainScheduler.instance)
+//                            .subscribe()
+//                            .disposed(by: self.disposeBag)
+//                    })
+//                    .disposed(by: self.disposeBag)
             })
             .disposed(by: disposeBag)
     }

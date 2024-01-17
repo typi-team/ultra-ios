@@ -38,6 +38,7 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
 
         let resendMessagesInteractor = ResendingMessagesInteractor(messageRepository: appSettings.messageRespository, mediaRepository: appSettings.mediaRepository, messageSenderInteractor: messageSenderInteractor)
         let reachabilityInteractor = ReachabilityInteractor()
+        let sessionInteractorImpl = SessionInteractorImpl()
         let presenter = ConversationsPresenter(view: moduleViewController,
                                                updateRepository: appSettings.updateRepository,
                                                contactDBService: appSettings.contactDBService,
@@ -49,7 +50,8 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
                                                contactToConversationInteractor: contactToConversationInteractor,
                                                userStatusUpdateInteractor: UpdateOnlineInteractor(userService: appSettings.userService),
                                                resendMessagesInteractor: resendMessagesInteractor,
-                                               reachabilityInteractor: reachabilityInteractor)
+                                               reachabilityInteractor: reachabilityInteractor,
+                                               sessionInteractorImpl: sessionInteractorImpl)
         moduleViewController.presenter = presenter
     }
 }

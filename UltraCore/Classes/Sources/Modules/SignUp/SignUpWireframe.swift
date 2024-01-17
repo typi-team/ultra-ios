@@ -18,7 +18,8 @@ final class SignUpWireframe: BaseWireframe<SignUpViewController> {
             $0.modalPresentationStyle = .fullScreen
         })
         super.init(viewController: moduleViewController)
-        let ffPresenter = FFSignUpPresenter.init(view: moduleViewController, wireframe: self)
+        let interactor = SessionInteractorImpl()
+        let ffPresenter = FFSignUpPresenter.init(view: moduleViewController, wireframe: self, interactor: interactor)
         moduleViewController.presenter = ffPresenter
         
     }

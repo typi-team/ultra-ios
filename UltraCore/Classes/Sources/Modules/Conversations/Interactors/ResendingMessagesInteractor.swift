@@ -12,7 +12,7 @@ final class ResendingMessagesInteractor: UseCase<Void, Void> {
     private let messageSenderInteractor: SendMessageInteractor
     
     private let mediaRepository: MediaRepository
-    
+        
     private lazy var disposeBag = DisposeBag()
 
     // MARK: - Init
