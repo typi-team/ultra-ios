@@ -61,9 +61,34 @@ public extension UltraCoreSettings {
      static func entryConversationsViewController() -> UIViewController {
          return ConversationsWireframe(appDelegate: UltraCoreSettings.delegate).viewController
      }
+    
+    static func runReachibilty() {
+        let shared = AppSettingsImpl.shared
+        
+        InternetConnectionManager.shared
+            .isInternetAvailable
+            .debounce(.seconds(1), scheduler: MainScheduler.instance)
+            .do(onNext: { connected in
+                shared.updateRepository.stopSession()
+            })
+            .delay(.seconds(1), scheduler: MainScheduler.instance)
+            .subscribe(onNext: { isConnected in
+                if isConnected, let delegate = delegate {
+                    PP.debug("Internet connection available")
+                    delegate.token { sid in
+                        if let sid = sid {
+                            update(sid: sid, with: nil)
+                        }
+                    }
+                } else {
+                    PP.error("No internet connection")
+                }
+            })
+            .disposed(by: disposeBag)
+    }
 
     static func update(sid token: String, timeOut: TimeInterval = 0,
-                       with callback: @escaping (Error?) -> Void) {
+                       with callback: ((Error?) -> Void)?) {
         let shared = AppSettingsImpl.shared
         shared.appStore.ssid = token
         // TODO: Refactor this case into interactor or something like this object
@@ -78,7 +103,7 @@ public extension UltraCoreSettings {
             .whenComplete { result in
                 switch result {
                 case let .failure(error):
-                    callback(error)
+                    callback?(error)
                 case let .success(value):
                     shared.appStore.store(token: value.token)
                     shared.appStore.store(userID: value.userID)
@@ -87,10 +112,10 @@ public extension UltraCoreSettings {
                     shared.updateRepository.retreiveContactStatuses()
                     if shared.appStore.lastState == 0 {
                         DispatchQueue.main.asyncAfter(deadline: .now() + timeOut, execute: {
-                            callback(nil)
+                            callback?(nil)
                         })
                     } else {
-                        callback(nil)
+                        callback?(nil)
                     }
                 }
             }

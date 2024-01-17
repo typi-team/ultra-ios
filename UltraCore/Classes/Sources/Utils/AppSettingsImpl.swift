@@ -84,6 +84,7 @@ open class AppSettingsImpl: AppSettings  {
     
     //    MARK: App main interactors, must be create once
     
+    lazy var reachabilityWithStatusInteractor = ReachabilityInteractor()
     lazy var updateTokenInteractor: UseCase<Void, Void> = UpdateTokenInteractorImpl.init(appStore: appStore, authService: authService)
     lazy var superMessageSaverInteractor: UseCase<MessageData, Conversation?> = SuperMessageSaverInteractor.init(appStore: appStore,
                                                                                                                  contactDBService: contactDBService,
