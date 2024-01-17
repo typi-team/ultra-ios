@@ -78,8 +78,10 @@ public extension UltraCoreSettings {
             .whenComplete { result in
                 switch result {
                 case let .failure(error):
+                    print("[ISSUE JWT] Error: \(error)")
                     callback(error)
                 case let .success(value):
+                    print("[ISSUE JWT] JWT: \(value.token)")
                     shared.appStore.store(token: value.token)
                     shared.appStore.store(userID: value.userID)
                     shared.updateRepository.setupSubscription()
