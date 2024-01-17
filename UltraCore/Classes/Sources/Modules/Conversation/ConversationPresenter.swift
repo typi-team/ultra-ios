@@ -27,7 +27,7 @@ final class ConversationPresenter {
     
     fileprivate let mediaRepository: MediaRepository
     fileprivate let updateRepository: UpdateRepository
-    private unowned let view: ConversationViewInterface
+    private weak var view: ConversationViewInterface?
     fileprivate let messageRepository: MessageRepository
     fileprivate let contactRepository: ContactsRepository
     private let wireframe: ConversationWireframeInterface
@@ -126,8 +126,8 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 .do(onNext: { [weak self] contact in
                     guard let `self` = self else { return }
                     self.conversation.peer = contact
-                    self.view.blocked(is: contact.isBlocked)
-                    self.view.setup(conversation: self.conversation)
+                    self.view?.blocked(is: contact.isBlocked)
+                    self.view?.setup(conversation: self.conversation)
                 })
                 .subscribe()
                 .disposed(by: disposeBag)
@@ -147,7 +147,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .observe(on: MainScheduler.instance)
             .subscribe (onFailure:  {[weak self ]error in
                 guard let `self` = self else { return }
-                self.view.show(error: error.localeError)
+                self.view?.show(error: error.localeError)
             }).disposed(by: self.disposeBag)
     }
 
@@ -166,9 +166,9 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 DispatchQueue.main.async {
                     switch result {
                     case .success:
-                        self.view.reported()
+                        self.view?.reported()
                     case let .failure(error):
-                        self.view.show(error: error.localeError)
+                        self.view?.show(error: error.localeError)
                     }
                 }
             })
@@ -373,7 +373,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: {[weak self] message in
                 guard let `self` = self else { return }
-                self.view.stopRefresh(removeController: message.isEmpty)
+                self.view?.stopRefresh(removeController: message.isEmpty)
             })
             .disposed(by: disposeBag)
     }
@@ -428,7 +428,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
     
     func viewDidLoad() {
         self.subscribeToVisibility()
-        self.view.setup(conversation: conversation)
+        self.view?.setup(conversation: conversation)
         
         self.updateRepository.typingUsers
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
@@ -440,7 +440,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .compactMap { $0 }
             .subscribe (onNext: { [weak self] typingUser in
                 guard let `self` = self else { return }
-                self.view.display(is: typingUser)
+                self.view?.display(is: typingUser)
             })
             .disposed(by: disposeBag)
         
