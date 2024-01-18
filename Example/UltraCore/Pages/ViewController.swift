@@ -20,7 +20,19 @@ class ViewController: UITabBarController {
         self.setupVCs()
         
         NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground(_:)), name: UIApplication.willEnterForegroundNotification, object: nil)
-        self.setupSID()
+        
+        self.viewModel.setupSID(callback: {[weak self] error in
+            guard let `self` = self else { return }
+            DispatchQueue.main.async {
+                if error != nil {
+                    self.viewControllers?.append(self.createNavController(for: UltraCoreSettings.entrySignUpViewController(), title: NSLocalizedString("conversations.chats", comment: ""), image: UIImage(named: "chats")!))
+                } else {
+                    self.viewControllers?.append(self.createNavController(for: UltraCoreSettings.entryConversationsViewController(), title: NSLocalizedString("conversations.chats", comment: ""), image: UIImage(named: "chats")!))
+                }
+                self.selectedIndex = 3
+            }
+        })
+        
     }
     
 }
@@ -66,20 +78,6 @@ private extension ViewController {
         ]
         
         self.selectedIndex = 3
-    }
-    
-    func setupSID() {
-        self.viewModel.setupSID(callback: {[weak self] error in
-            guard let `self` = self else { return }
-            DispatchQueue.main.async {
-                if error != nil {
-                    self.viewControllers?.append(self.createNavController(for: UltraCoreSettings.entrySignUpViewController(), title: NSLocalizedString("conversations.chats", comment: ""), image: UIImage(named: "chats")!))
-                } else {
-                    self.viewControllers?.append(self.createNavController(for: UltraCoreSettings.entryConversationsViewController(), title: NSLocalizedString("conversations.chats", comment: ""), image: UIImage(named: "chats")!))
-                }
-                self.selectedIndex = 3
-            }
-        })
     }
     
     func setupView() {

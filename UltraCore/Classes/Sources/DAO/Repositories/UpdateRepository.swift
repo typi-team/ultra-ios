@@ -131,9 +131,11 @@ extension UpdateRepositoryImpl: UpdateRepository {
                         }
                         self.appStore.store(last: Int64(response.state))
                         self.setupChangesSubscription(with: response.state)
+                        self.retreiveContactStatuses()
                     }
                 }
         } else {
+            self.retreiveContactStatuses()
             self.setupChangesSubscription(with: UInt64(appStore.lastState))
         }
     }
