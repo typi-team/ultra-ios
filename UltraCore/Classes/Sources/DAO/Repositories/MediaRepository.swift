@@ -87,8 +87,9 @@ extension MediaRepositoryImpl: MediaRepository {
             return Single.just(message)
         }
 
-        let maxChunkSize = message.fileSize / (512 * 1024)
-        
+        // Need to have at least 1 as a max chunk size for voice file to have progress.
+        let maxChunkSize = max((message.fileSize / (512 * 1024)), 1)
+
         return Single<Message>.create {[weak self] observer -> Disposable in
             guard let `self` = self else { return Disposables.create() }
             var params = FileDownloadRequest.with({
