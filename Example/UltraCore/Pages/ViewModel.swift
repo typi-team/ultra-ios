@@ -38,13 +38,16 @@ class ViewModel {
     var phone: String? {UserDefaults.standard.string(forKey: "phone") }
     
     func setupSID(callback: @escaping (Error?) -> Void) {
+        guard UserDefaults.standard.string(forKey: "phone") != nil else {
+            return callback(NSError.init(domain: "no saved account", code: 101))
+        }
         token { [weak self] token in
-            guard let token = token else {
-                callback(NSError(domain: "SID is Empty", code: 101))
-                return
+            if let token = token {
+                self?.didRegisterForRemoteNotifications()
+                UltraCoreSettings.update(sid: token, with: callback)
+            }else {
+                print("You must pass the token otherwise the connection will not work")
             }
-            self?.didRegisterForRemoteNotifications()
-            UltraCoreSettings.update(sid: token, with: callback)
         }
     }
     
@@ -96,8 +99,7 @@ extension ViewModel: UltraCoreFutureDelegate {
 extension ViewModel: UltraCoreSettingsDelegate {
     func token(callback: @escaping StringCallback) {
         let userDef = UserDefaults.standard
-        guard UserDefaults.standard.string(forKey: "K_SID") != nil,
-              let lastname = userDef.string(forKey: "last_name"),
+        guard let lastname = userDef.string(forKey: "last_name"),
               let firstname = userDef.string(forKey: "first_name"),
               let phone = userDef.string(forKey: "phone") else {
             return callback(nil)

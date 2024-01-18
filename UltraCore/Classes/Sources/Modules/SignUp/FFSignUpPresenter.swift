@@ -78,7 +78,7 @@ extension FFSignUpPresenter: SignUpPresenterInterface {
         let task = URLSession.shared.dataTask(with: request) {[weak self] (data, response, error) in
             guard let `self` = self else { return }
             if let error = error {
-                fatalError(error.localizedDescription)
+                print(error.localizedDescription)
             } else if let data = data,
                       let userResponse = try? JSONDecoder().decode(UserResponse.self, from: data) {
                 UserDefaults.standard.set(userResponse.sid, forKey: "K_SID")
