@@ -144,25 +144,19 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
         reachabilityInteractor.execute(params: ())
             .subscribe(onNext: { [weak self] _ in
                 guard let self else { return }
-                self.resendMessagesInteractor
+                self.sessionInteractorImpl
                     .executeSingle(params: ())
                     .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
                     .observe(on: MainScheduler.instance)
-                    .subscribe()
+                    .subscribe(onSuccess: { _ in
+                        self.resendMessagesInteractor
+                            .executeSingle(params: ())
+                            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+                            .observe(on: MainScheduler.instance)
+                            .subscribe()
+                            .disposed(by: self.disposeBag)
+                    })
                     .disposed(by: self.disposeBag)
-//                self.sessionInteractorImpl
-//                    .executeSingle(params: ())
-//                    .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
-//                    .observe(on: MainScheduler.instance)
-//                    .subscribe(onSuccess: { _ in
-//                        self.resendMessagesInteractor
-//                            .executeSingle(params: ())
-//                            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
-//                            .observe(on: MainScheduler.instance)
-//                            .subscribe()
-//                            .disposed(by: self.disposeBag)
-//                    })
-//                    .disposed(by: self.disposeBag)
             })
             .disposed(by: disposeBag)
     }
