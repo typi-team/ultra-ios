@@ -49,7 +49,7 @@
 "conversation.money" = "Деньги";
 "conversation.online" = "онлайн";
 "conversation.unknowNumber" = "";
-"conversation.prints" = "печатает";
+"conversation.prints" = "печатает...";
 "conversation.moneyTransfer" = "Переводы";
 "conversation.insertMoney" = "";
 "conversation.send" = "Отправить";
