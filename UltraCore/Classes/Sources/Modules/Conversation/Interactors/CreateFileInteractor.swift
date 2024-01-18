@@ -25,7 +25,7 @@ class CreateFileInteractor: GRPCErrorUseCase<(data: Data, extens: String), [File
                 $0.size = Int64(params.data.count)
                 $0.mimeType =  params.extens
             })
-
+            PP.debug("[Message]: Creating file with request - \(request)")
             self.fileService
                 .create(request, callOptions: .default())
                 .response
@@ -33,6 +33,7 @@ class CreateFileInteractor: GRPCErrorUseCase<(data: Data, extens: String), [File
                     guard let `self` = self else { return observer(.failure(NSError.selfIsNill)) }
                     switch result {
                     case let .success(response):
+                        PP.debug("[Message]: Created file with fileID \(response.fileID)")
                         observer(.success(self.splitDataIntoChunks(data: params.data, file: response)))
                     case let .failure(error):
                         observer(.failure(error))
