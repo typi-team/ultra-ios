@@ -173,7 +173,7 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
             
             if let message = self.message, message.isIncome,
                 (UltraCoreSettings.futureDelegate?.availableToReport(message: message) ?? true) {
-                return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), makeReportMenu(), select])
+                return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), self.makeReportMenu(), select])
             }else {
                 return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), select])
             }

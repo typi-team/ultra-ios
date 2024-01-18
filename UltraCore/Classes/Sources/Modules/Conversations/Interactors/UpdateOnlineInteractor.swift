@@ -6,7 +6,7 @@
 //
 import RxSwift
 
-class UpdateOnlineInteractor: UseCase<Bool, UpdateStatusResponse> {
+class UpdateOnlineInteractor: GRPCErrorUseCase<Bool, UpdateStatusResponse> {
     
     fileprivate let userService: UserServiceClientProtocol
     
@@ -14,8 +14,8 @@ class UpdateOnlineInteractor: UseCase<Bool, UpdateStatusResponse> {
         self.userService = userService
     }
     
-    override func executeSingle(params: Bool) -> Single<UpdateStatusResponse> {
-        return Single.create { [weak self] observer -> Disposable in
+    override func job(params: Bool) -> Single<UpdateStatusResponse> {
+        Single.create { [weak self] observer -> Disposable in
             guard let `self` = self else { return Disposables.create() }
             self.userService.setStatus(.with({ $0.status = params ? .online : .away }), callOptions: .default()).response.whenComplete { result in
                 switch result {

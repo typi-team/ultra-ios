@@ -21,9 +21,7 @@ final class ConversationsPresenter: BasePresenter {
     private let wireframe: ConversationsWireframeInterface
     fileprivate let contactDBService: ContactDBService
     private let conversationRepository: ConversationRepository
-    private let retrieveContactStatusesInteractor: UseCase<Void, Void>
     fileprivate let contactByUserIdInteractor: ContactByUserIdInteractor
-    fileprivate let userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>
     fileprivate let deleteConversationInteractor: UseCase<(Conversation, Bool), Void>
     fileprivate let contactToConversationInteractor: ContactToConversationInteractor
     fileprivate let resendMessagesInteractor: ResendingMessagesInteractor
@@ -49,10 +47,8 @@ final class ConversationsPresenter: BasePresenter {
          wireframe: ConversationsWireframeInterface,
          conversationRepository: ConversationRepository,
          contactByUserIdInteractor: ContactByUserIdInteractor,
-         retrieveContactStatusesInteractor: UseCase<Void, Void>,
          deleteConversationInteractor: UseCase<(Conversation,Bool), Void>,
          contactToConversationInteractor: ContactToConversationInteractor,
-         userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>,
          resendMessagesInteractor: ResendingMessagesInteractor,
          reachabilityInteractor: ReachabilityInteractor) {
         self.view = view
@@ -61,9 +57,7 @@ final class ConversationsPresenter: BasePresenter {
         self.contactDBService = contactDBService
         self.conversationRepository = conversationRepository
         self.contactByUserIdInteractor = contactByUserIdInteractor
-        self.userStatusUpdateInteractor = userStatusUpdateInteractor
         self.deleteConversationInteractor = deleteConversationInteractor
-        self.retrieveContactStatusesInteractor = retrieveContactStatusesInteractor
         self.resendMessagesInteractor = resendMessagesInteractor
         self.reachabilityInteractor = reachabilityInteractor
         self.contactToConversationInteractor = contactToConversationInteractor
@@ -85,29 +79,9 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
             .subscribe()
             .disposed(by: disposeBag)
     }
-    func retrieveContactStatuses() {
-        self.retrieveContactStatusesInteractor.execute(params: ())
-            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
-            .observe(on: MainScheduler.instance)
-            .subscribe()
-            .disposed(by: disposeBag)
-    }
     
-    func sendAway() {
-        self.updateRepository.stopPingPong()
-        self.userStatusUpdateInteractor.executeSingle(params: false)
-            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
-            .observe(on: MainScheduler.instance)
-            .subscribe()
-            .disposed(by: disposeBag)
-    }
-    
-    func sendOnline() {
-        self.userStatusUpdateInteractor.executeSingle(params: true)
-            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
-            .observe(on: MainScheduler.instance)
-            .subscribe()
-            .disposed(by: disposeBag)
+    func stopPingPong() {
+        self.updateRepository.stopSession()
     }
     
     func navigate(to conversation: Conversation) {
@@ -150,6 +124,4 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
             })
             .disposed(by: disposeBag)
     }
-    
-
 }
