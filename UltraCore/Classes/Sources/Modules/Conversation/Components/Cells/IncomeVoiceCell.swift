@@ -86,27 +86,7 @@ class IncomeVoiceCell: MediaCell {
             .currentVoice
             .subscribe(onNext: { [weak self] voice in
                 guard let `self` = self else { return }
-                self.durationLabel.text = self.message?.voice.duration.timeInterval.formatSeconds
-                if let voice = voice,
-                   self.message?.voice.fileID == voice.voiceMessage.fileID,
-                   self.isInSeekMessage?.voice.fileID != voice.voiceMessage.fileID {
-                    let duration = voice.voiceMessage.duration.timeInterval
-                    let value = (voice.currentTime / duration)
-                    let remainder = (duration - voice.currentTime)
-                    PP.warning(remainder.description)
-                    self.durationLabel.text = remainder < 0.3 ? duration.formatSeconds : remainder.formatSeconds
-                    self.slider.setValue(Float(value), animated: true)
-                    self.controllerView.setImage(!voice.isPlaying ? self.playImage : self.pauseImage, for: .normal)
-                } else if voice?.voiceMessage.fileID == self.message?.voice.fileID {
-                    //                IGNORE THIS CASE
-                } else if self.isInSeekMessage != nil {
-                    //                IGNORE THIS CASE
-                } else {
-                    self.slider.setValue(0.0, animated: true)
-                    self.controllerView.setImage(self.playImage, for: .normal)
-                }
-                
-                
+                self.setupVoiceMessageIntoView(voice: voice)
             })
             .disposed(by: disposeBag)
     }
@@ -114,6 +94,12 @@ class IncomeVoiceCell: MediaCell {
     override func setup(message: Message) {
         super.setup(message: message)
         self.durationLabel.text = message.voice.duration.timeInterval.formatSeconds
+        
+        if let currentVoice = try? voiceRepository.currentVoice.value(),
+           self.message?.voice.fileID == currentVoice.voiceMessage.fileID,
+           currentVoice.isPlaying {
+            self.setupView(currentVoice, slider: false)
+        }
     }
     
     @objc private func seekTo(_ sender: UISlider) {
@@ -140,10 +126,36 @@ class IncomeVoiceCell: MediaCell {
         self.durationLabel.text = 0.0.description
         self.controllerView.setImage(self.playImage, for: .normal)
     }
+    
+    fileprivate func setupView(_ voice: VoiceItem, slider animated: Bool = true) {
+        let duration = voice.voiceMessage.duration.timeInterval
+        let value = (voice.currentTime / duration)
+        let remainder = (duration - voice.currentTime)
+        PP.warning(remainder.description)
+        self.durationLabel.text = remainder < 0.3 ? duration.formatSeconds : remainder.formatSeconds
+        self.slider.setValue(Float(value), animated: animated)
+        self.controllerView.setImage(!voice.isPlaying ? self.playImage : self.pauseImage, for: .normal)
+    }
+    
+    private func setupVoiceMessageIntoView(voice: VoiceItem?) {
+       self.durationLabel.text = self.message?.voice.duration.timeInterval.formatSeconds
+       if let voice = voice,
+          self.message?.voice.fileID == voice.voiceMessage.fileID,
+          self.isInSeekMessage?.voice.fileID != voice.voiceMessage.fileID {
+           self.setupView(voice)
+       } else if voice?.voiceMessage.fileID == self.message?.voice.fileID {
+           //                IGNORE THIS CASE
+       } else if self.isInSeekMessage != nil {
+           //                IGNORE THIS CASE
+       } else {
+           self.slider.setValue(0.0, animated: true)
+           self.controllerView.setImage(self.playImage, for: .normal)
+       }
+   }
 }
 
 class OutcomeVoiceCell: IncomeVoiceCell {
-    fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
+    fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_loading"))
     
     
     override func setupView() {
