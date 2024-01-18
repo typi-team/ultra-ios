@@ -20,6 +20,7 @@ class ReportCommentController: BaseViewController<String> {
     
     fileprivate let headlineLabel: UILabel = .init({
         $0.textAlignment = .center
+        $0.numberOfLines = 0
         $0.text = MessageStrings.additionalInformationInComments.localized
     })
     
