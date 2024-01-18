@@ -34,6 +34,7 @@ class ContactByUserIdInteractor: GRPCErrorUseCase<String, ContactDisplayable> {
                         let lastname = userByContact.hasContact ? userByContact.contact.lastname : userByContact.user.lastname
                         let firstname = userByContact.hasContact ? userByContact.contact.firstname : userByContact.user.firstname
                         let phone = userByContact.hasContact ? userByContact.contact.phone : userByContact.user.phone
+                        let status = userByContact.contact.status
 
                         observer(.success(ContactDisplayableImpl(contact: .with({ contact in
                             contact.phone = phone
@@ -41,6 +42,9 @@ class ContactByUserIdInteractor: GRPCErrorUseCase<String, ContactDisplayable> {
                             contact.userID = params
                             contact.lastname = lastname
                             contact.firstname = firstname
+                            if status.lastSeen != 0 {
+                                contact.status = status
+                            }
                             contact.isBlocked = userByContact.hasContact ? userByContact.contact.isBlocked : userByContact.user.isBlocked
                         }))))
                     case let .failure(error):
