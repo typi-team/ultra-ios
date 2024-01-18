@@ -138,14 +138,12 @@ class IncomeVoiceCell: MediaCell {
             })
             .debounce(.milliseconds(200), scheduler: MainScheduler.instance)
             .asDriver(onErrorJustReturn: false)
-        // Animate if loading
         driver
             .drive(onNext: { [weak self] isLoading in
                 self?.spinner.isHidden = !isLoading
                 isLoading ? self?.spinner.startAnimating() : self?.spinner.stopAnimating()
             })
             .disposed(by: disposeBag)
-        // Hide play/pause controller if loading
         driver
             .drive(controllerView.rx.isHidden)
             .disposed(by: disposeBag)
