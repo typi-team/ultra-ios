@@ -151,7 +151,7 @@ class MessageDBService {
             do {
                 let realm = Realm.myRealm()
                 try realm.write {
-                    let notReadMessagesCount = messages.filter { !$0.isIncome && $0.state.read == false }.count
+                    let notReadMessagesCount = messages.filter { $0.isIncome && $0.state.read == false }.count
                     self.decreaseUnreadMessagesCount(in: conversationID, on: realm, count: notReadMessagesCount)
                     messages.forEach { message in
                         let dbMessage = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id)
@@ -198,7 +198,7 @@ class MessageDBService {
                     let messages = realm.objects(DBMessage.self)
                         .filter({ $0.receiver?.chatID == conversationID })
                         .filter({ self.isInRanges(number: Int64($0.seqNumber), ranges: ranges) })
-                    let notReadMessagesCount = messages.filter { !$0.isIncome && $0.state?.read == false }.count
+                    let notReadMessagesCount = messages.filter { $0.isIncome && $0.state?.read == false }.count
                     self.decreaseUnreadMessagesCount(in: conversationID, on: realm, count: notReadMessagesCount)
                     messages.forEach({ realm.delete($0) })
                     self.updateLastMessage(in: conversationID, on: realm)
