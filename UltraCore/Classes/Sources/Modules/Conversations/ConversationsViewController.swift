@@ -68,13 +68,7 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
     
     override func setupInitialData() {
         
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: {[weak self] in
-            self?.presenter?.retrieveContactStatuses()
-        })
-        
         NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground(_:)), name: UIApplication.didEnterBackgroundNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground(_:)), name: UIApplication.willEnterForegroundNotification, object: nil)
-        
         self.presenter?.conversation
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
@@ -134,15 +128,8 @@ extension ConversationsViewController {
 }
 
 extension ConversationsViewController: ConversationsViewInterface {}
-
 extension ConversationsViewController {
-    
-    @objc func willEnterForeground(_ sender: Any) {
-        self.presenter?.sendOnline()
-        self.presenter?.retrieveContactStatuses()
-    }
-    
     @objc func didEnterBackground(_ sender: Any) {
-        self.presenter?.sendAway()
+        self.presenter?.stopPingPong()
     }
 }

@@ -8,6 +8,7 @@
 import UltraCore
 import Foundation
 import FirebaseMessaging
+import RxSwift
 
 struct UserResponse: Codable {
     let sid: String
@@ -27,7 +28,8 @@ struct UserResponse: Codable {
 
 class ViewModel {
     fileprivate var timerUpdate: Timer?
-    
+    private let disposeBag = DisposeBag()
+
     func viewDidLoad() {
         UltraCoreSettings.delegate = self
         UltraCoreSettings.futureDelegate = self
@@ -36,33 +38,17 @@ class ViewModel {
     var phone: String? {UserDefaults.standard.string(forKey: "phone") }
     
     func setupSID(callback: @escaping (Error?) -> Void) {
-        let userDef = UserDefaults.standard
-        guard UserDefaults.standard.string(forKey: "K_SID") != nil,
-              let lastname = userDef.string(forKey: "last_name"),
-              let firstname = userDef.string(forKey: "first_name"),
-              let phone = userDef.string(forKey: "phone") else {
-            return callback(NSError(domain: "SID is Empty", code: 101))
+        guard UserDefaults.standard.string(forKey: "phone") != nil else {
+            return callback(NSError.init(domain: "no saved account", code: 101))
         }
-
-        guard let url = URL(string: "https://ultra-dev.typi.team/mock/v1/auth"),
-              let jsonData = try? JSONSerialization.data(withJSONObject: [
-                  "phone": phone,
-                  "lastname": lastname,
-                  "firstname": firstname,
-                  "nickname": firstname,
-                  "device_id": UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
-              ]) else { return }
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = jsonData
-        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
-            if let data = data,
-               let userResponse = try? JSONDecoder().decode(UserResponse.self, from: data) {
+        token { [weak self] token in
+            if let token = token {
                 self?.didRegisterForRemoteNotifications()
-                UltraCoreSettings.update(sid: userResponse.sid, with: callback)
+                UltraCoreSettings.update(sid: token, with: callback)
+            }else {
+                print("You must pass the token otherwise the connection will not work")
             }
-        }.resume()
+        }
     }
     
     func didRegisterForRemoteNotifications() {
@@ -113,8 +99,7 @@ extension ViewModel: UltraCoreFutureDelegate {
 extension ViewModel: UltraCoreSettingsDelegate {
     func token(callback: @escaping StringCallback) {
         let userDef = UserDefaults.standard
-        guard UserDefaults.standard.string(forKey: "K_SID") != nil,
-              let lastname = userDef.string(forKey: "last_name"),
+        guard let lastname = userDef.string(forKey: "last_name"),
               let firstname = userDef.string(forKey: "first_name"),
               let phone = userDef.string(forKey: "phone") else {
             return callback(nil)
@@ -131,12 +116,27 @@ extension ViewModel: UltraCoreSettingsDelegate {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonData
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if let data = data,
-               let userResponse = try? JSONDecoder().decode(UserResponse.self, from: data) {
-                callback(userResponse.sid)
+        URLSession.shared.rx.data(request: request)
+            .map {
+                try JSONDecoder().decode(UserResponse.self, from: $0)
             }
-        }.resume()
+            .retry(when: { errors in
+                return errors.enumerated().flatMap { (attempt, error) -> Observable<Int> in
+                    let maxAttempts = 20
+                    if attempt > maxAttempts {
+                        return Observable.error(error)
+                    }
+                    return Observable<Int>.timer(.seconds(5), scheduler: MainScheduler.instance)
+                }
+            })
+            .debug("[Token fetch]")
+            .subscribe { userResponse in
+                callback(userResponse.sid)
+            } onError: { error in
+                print("Received error on token update - \(error.localizedDescription)")
+                callback(nil)
+            }
+            .disposed(by: disposeBag)
     }
     
     func emptyConversationView() -> UIView? {

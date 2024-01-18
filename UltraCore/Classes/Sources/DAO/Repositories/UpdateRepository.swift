@@ -13,7 +13,8 @@ protocol UpdateRepository: AnyObject {
     
     func setupSubscription()
     func startPingPong()
-    func stopPingPong()
+    func stopSession()
+    func retreiveContactStatuses()
     func readAll(in conversation: Conversation)
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> { get set }
 }
@@ -29,6 +30,7 @@ class UpdateRepositoryImpl {
     fileprivate let updateClient: UpdatesServiceClientProtocol
     fileprivate let conversationService: ConversationDBService
     fileprivate let pingPongInteractorImpl: GRPCErrorUseCase<Void, Void>
+    fileprivate let retrieveContactStatusesInteractorImpl: GRPCErrorUseCase<Void, Void>
     fileprivate let contactByIDInteractor: GRPCErrorUseCase<String, ContactDisplayable>
     fileprivate let deliveredMessageInteractor: GRPCErrorUseCase<Message, MessagesDeliveredResponse>
     
@@ -43,6 +45,7 @@ class UpdateRepositoryImpl {
          conversationService: ConversationDBService,
          pingPongInteractorImpl: GRPCErrorUseCase<Void, Void>,
          userByIDInteractor: GRPCErrorUseCase<String, ContactDisplayable>,
+         retrieveContactStatusesInteractorImpl: GRPCErrorUseCase<Void, Void>,
          deliveredMessageInteractor: GRPCErrorUseCase<Message, MessagesDeliveredResponse>) {
         self.updateClient = updateClient
         self.appStore = appStore
@@ -52,6 +55,7 @@ class UpdateRepositoryImpl {
         self.contactByIDInteractor = userByIDInteractor
         self.pingPongInteractorImpl = pingPongInteractorImpl
         self.deliveredMessageInteractor = deliveredMessageInteractor
+        self.retrieveContactStatusesInteractorImpl = retrieveContactStatusesInteractorImpl
     }
 }
 
@@ -61,23 +65,36 @@ extension UpdateRepositoryImpl: UpdateRepository {
         self.conversationService.realAllMessage(for: conversation.idintification)
     }
     
-    func stopPingPong() {
+    func stopSession() {
         PP.info("❌ stopPintPong")
         self.pintPongTimer?.invalidate()
+        self.updateListenStream?.cancel(promise: nil)
+        self.contactService.updateContact(status: .unknown)
+    }
+    
+    func retreiveContactStatuses() {
+        PP.info("📇 retreiveContactStatuses")
+        self.retrieveContactStatusesInteractorImpl.executeSingle(params: ())
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .subscribe()
+            .disposed(by: disposeBag)
     }
     
     func startPingPong() {
-        PP.info("🐢 startPintPong")
-        self.pintPongTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] timer in
-            guard let `self` = self else { return timer.invalidate() }
-            self.pingPongInteractorImpl
-                .executeSingle(params: ())
-                .subscribe(onSuccess: {
-                    PP.info("Ping pong is called success")
-                }, onFailure: {error in
-                    PP.error("Ping pong is called with error \(error.localeError)")
-                })
-                .disposed(by: disposeBag)
+        DispatchQueue.main.async {
+            PP.info("🐢 startPintPong")
+            self.pintPongTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] timer in
+                guard let `self` = self else { return timer.invalidate() }
+                self.pingPongInteractorImpl
+                    .executeSingle(params: ())
+                    .subscribe(onSuccess: {
+                        PP.info("Ping pong is called success")
+                    }, onFailure: {error in
+                        PP.error("Ping pong is called with error \(error.localeError)")
+                    })
+                    .disposed(by: disposeBag)
+            }
         }
     }
     
@@ -114,9 +131,11 @@ extension UpdateRepositoryImpl: UpdateRepository {
                         }
                         self.appStore.store(last: Int64(response.state))
                         self.setupChangesSubscription(with: response.state)
+                        self.retreiveContactStatuses()
                     }
                 }
         } else {
+            self.retreiveContactStatuses()
             self.setupChangesSubscription(with: UInt64(appStore.lastState))
         }
     }
@@ -131,7 +150,6 @@ private extension UpdateRepositoryImpl {
     
     func setupChangesSubscription(with state: UInt64) {
         let state: ListenRequest = .with { $0.localState = .with { $0.state = state } }
-        self.updateListenStream?.cancel(promise: nil)
         self.updateListenStream = updateClient.listen(state, callOptions: .default(include: false)) { [weak self] response in
             guard let `self` = self else { return }
             self.appStore.store(last: max(Int64(response.lastState), self.appStore.lastState))

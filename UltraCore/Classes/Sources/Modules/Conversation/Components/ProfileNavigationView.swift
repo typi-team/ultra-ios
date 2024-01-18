@@ -106,6 +106,10 @@ class ProfileNavigationView: UIView {
         self.titleText.textColor = style.titleConfig.color
         self.sublineText.font = style.sublineConfig.font
         self.sublineText.textColor = style.sublineConfig.color
+        
+        if let conversation = self.conversation {
+            self.setup(conversation: conversation)
+        }
     }
 }
 
