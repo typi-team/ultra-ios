@@ -6,14 +6,30 @@
 //
 
 import Foundation
+import RxCocoa
+import RxSwift
+import SDWebImage
+
+
 
 class IncomeVoiceCell: MediaCell {
     
     fileprivate let playImage: UIImage? = .named("conversation_play_sound_icon")
     fileprivate let pauseImage: UIImage? = .named("conversation_pause_sound_icon")
-    
+    fileprivate let activityIndicator: UIActivityIndicatorView = {
+        let activityIndicator = UIActivityIndicatorView()
+        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+        if #available(iOS 13.0, *) {
+            activityIndicator.style = .medium
+        } else {
+            activityIndicator.style = .white
+        }
+        activityIndicator.isHidden = false
+        return activityIndicator
+    }()
+
     fileprivate let voiceRepository = AppSettingsImpl.shared.voiceRepository
-    
+
     fileprivate var isInSeekMessage: Message?
     
     fileprivate lazy var slider: UISlider = .init({
@@ -45,6 +61,7 @@ class IncomeVoiceCell: MediaCell {
         self.container.addSubview(controllerView)
         self.container.addSubview(durationLabel)
         self.container.addSubview(slider)
+        self.container.addSubview(activityIndicator)
     }
 
     override func setupConstraints() {
@@ -78,6 +95,9 @@ class IncomeVoiceCell: MediaCell {
             make.leading.equalTo(slider.snp.leading)
             make.bottom.equalToSuperview().offset(-kLowPadding)
         }
+        self.activityIndicator.snp.makeConstraints { make in
+            make.center.equalTo(controllerView)
+        }
     }
     
     override func additioanSetup() {
@@ -94,14 +114,40 @@ class IncomeVoiceCell: MediaCell {
     override func setup(message: Message) {
         super.setup(message: message)
         self.durationLabel.text = message.voice.duration.timeInterval.formatSeconds
-        
+        bindLoader()
         if let currentVoice = try? voiceRepository.currentVoice.value(),
            self.message?.voice.fileID == currentVoice.voiceMessage.fileID,
            currentVoice.isPlaying {
             self.setupView(currentVoice, slider: false)
         }
     }
-    
+
+    private func bindLoader() {
+        let driver = self.mediaRepository
+            .downloadingImages
+            .asObservable()
+            .map { [weak self] fileDownloadRequest in
+                fileDownloadRequest.first(where: { $0.fileID == self?.message?.fileID })
+            }
+            .map({ request -> Bool in
+                guard let request = request else {
+                    return false
+                }
+                let isLoading = request.fromChunkNumber < request.toChunkNumber
+                return isLoading
+            })
+            .debounce(.milliseconds(200), scheduler: MainScheduler.instance)
+            .asDriver(onErrorJustReturn: false)
+        // Animate if loading
+        driver
+            .drive(activityIndicator.rx.isAnimating)
+            .disposed(by: disposeBag)
+        // Hide play/pause controller if loading
+        driver
+            .drive(controllerView.rx.isHidden)
+            .disposed(by: disposeBag)
+    }
+
     @objc private func seekTo(_ sender: UISlider) {
         guard let message = self.message else { return }
         self.isInSeekMessage = nil
@@ -198,6 +244,10 @@ class OutcomeVoiceCell: IncomeVoiceCell {
         self.statusView.snp.makeConstraints { make in
             make.right.equalTo(deliveryDateLabel.snp.left).offset(-(kLowPadding / 2))
             make.centerY.equalTo(self.deliveryDateLabel.snp.centerY)
+        }
+
+        self.activityIndicator.snp.makeConstraints { make in
+            make.center.equalTo(controllerView)
         }
     }
     
