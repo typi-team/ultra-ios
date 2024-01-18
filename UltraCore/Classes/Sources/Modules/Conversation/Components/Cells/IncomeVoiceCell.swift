@@ -6,26 +6,25 @@
 //
 
 import Foundation
+import NVActivityIndicatorView
 import RxCocoa
 import RxSwift
 import SDWebImage
-
 
 
 class IncomeVoiceCell: MediaCell {
     
     fileprivate let playImage: UIImage? = .named("conversation_play_sound_icon")
     fileprivate let pauseImage: UIImage? = .named("conversation_pause_sound_icon")
-    fileprivate let activityIndicator: UIActivityIndicatorView = {
-        let activityIndicator = UIActivityIndicatorView()
-        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
-        if #available(iOS 13.0, *) {
-            activityIndicator.style = .medium
-        } else {
-            activityIndicator.style = .white
-        }
-        activityIndicator.isHidden = false
-        return activityIndicator
+    fileprivate let spinner: NVActivityIndicatorView = {
+        let spinner = NVActivityIndicatorView(
+            frame: CGRect(origin: .zero, size: .init(width: 30, height: 30)),
+            type: .circleStrokeSpin,
+            color: .black,
+            padding: 0
+        )
+        spinner.translatesAutoresizingMaskIntoConstraints = false
+        return spinner
     }()
 
     fileprivate let voiceRepository = AppSettingsImpl.shared.voiceRepository
@@ -61,7 +60,7 @@ class IncomeVoiceCell: MediaCell {
         self.container.addSubview(controllerView)
         self.container.addSubview(durationLabel)
         self.container.addSubview(slider)
-        self.container.addSubview(activityIndicator)
+        self.container.addSubview(spinner)
     }
 
     override func setupConstraints() {
@@ -95,8 +94,9 @@ class IncomeVoiceCell: MediaCell {
             make.leading.equalTo(slider.snp.leading)
             make.bottom.equalToSuperview().offset(-kLowPadding)
         }
-        self.activityIndicator.snp.makeConstraints { make in
+        self.spinner.snp.makeConstraints { make in
             make.center.equalTo(controllerView)
+            make.size.equalTo(30)
         }
     }
     
@@ -140,7 +140,10 @@ class IncomeVoiceCell: MediaCell {
             .asDriver(onErrorJustReturn: false)
         // Animate if loading
         driver
-            .drive(activityIndicator.rx.isAnimating)
+            .drive(onNext: { [weak self] isLoading in
+                self?.spinner.isHidden = !isLoading
+                isLoading ? self?.spinner.startAnimating() : self?.spinner.stopAnimating()
+            })
             .disposed(by: disposeBag)
         // Hide play/pause controller if loading
         driver
@@ -170,7 +173,9 @@ class IncomeVoiceCell: MediaCell {
         self.isInSeekMessage = nil
         self.slider.setValue(0.0, animated: true)
         self.durationLabel.text = 0.0.description
+        self.controllerView.isHidden = false
         self.controllerView.setImage(self.playImage, for: .normal)
+        self.spinner.isHidden = true
     }
     
     fileprivate func setupView(_ voice: VoiceItem, slider animated: Bool = true) {
@@ -246,8 +251,9 @@ class OutcomeVoiceCell: IncomeVoiceCell {
             make.centerY.equalTo(self.deliveryDateLabel.snp.centerY)
         }
 
-        self.activityIndicator.snp.makeConstraints { make in
+        self.spinner.snp.makeConstraints { make in
             make.center.equalTo(controllerView)
+            make.size.equalTo(30)
         }
     }
     

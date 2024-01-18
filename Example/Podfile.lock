@@ -69,6 +69,9 @@ PODS:
     - nanopb/encode (= 2.30909.1)
   - nanopb/decode (2.30909.1)
   - nanopb/encode (2.30909.1)
+  - NVActivityIndicatorView (5.1.1):
+    - NVActivityIndicatorView/Base (= 5.1.1)
+  - NVActivityIndicatorView/Base (5.1.1)
   - PodAsset (1.3.0)
   - PromisesObjC (2.3.1)
   - Protobuf (3.25.0)
@@ -225,6 +228,7 @@ PODS:
   - UltraCore (0.1.4):
     - gRPC-Swift
     - IGListKit
+    - NVActivityIndicatorView
     - PodAsset
     - Protobuf
     - RealmSwift
@@ -261,6 +265,7 @@ SPEC REPOS:
     - IGListKit
     - Logging
     - nanopb
+    - NVActivityIndicatorView
     - PodAsset
     - PromisesObjC
     - Protobuf
@@ -313,6 +318,7 @@ SPEC CHECKSUMS:
   IGListKit: fd5a5d21935298f5849fa49d426843cff97b77c7
   Logging: beeb016c9c80cf77042d62e83495816847ef108b
   nanopb: d4d75c12cd1316f4a64e3c6963f879ecd4b5e0d5
+  NVActivityIndicatorView: 1f6c5687f1171810aa27a3296814dc2d7dec3667
   PodAsset: 161b57cdf4d7307b0fb652cccab32fa8d5dc580b
   PromisesObjC: c50d2056b5253dadbd6c2bea79b0674bd5a52fa4
   Protobuf: 6a4183ec1d51649eb2be7b86ccc286e5c539219c
@@ -338,7 +344,7 @@ SPEC CHECKSUMS:
   SwiftNIOTLS: 598af547490133e9aac52aed0c23c4a90c31dcfc
   SwiftNIOTransportServices: 0b2b407819d82eb63af558c5396e33c945759503
   SwiftProtobuf: 69f02cd54fb03201c5e6bf8b76f687c5ef7541a3
-  UltraCore: 468266cf6531464fb4880aeee8065373a4fbfda1
+  UltraCore: 2daed707408c064f0874f144cbbd2a19058d4b77
 
 PODFILE CHECKSUM: ff697990069a85ca3a9ec730a3d59212535be22b
 
