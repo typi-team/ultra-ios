@@ -14,7 +14,7 @@ extension Int64 {
         case dayAndHourMinute = "d MMMM в HH:mm"
     }
     
-    var timeInterval: TimeInterval { TimeInterval(self / 1000000)}
+    var timeInterval: TimeInterval { TimeInterval(self) / 1000000}
     
     var date: Date { Date.init(nanoseconds: self)}
     

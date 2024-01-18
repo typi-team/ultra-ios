@@ -17,8 +17,8 @@ class IncomeVoiceCell: MediaCell {
     fileprivate var isInSeekMessage: Message?
     
     fileprivate lazy var slider: UISlider = .init({
-        $0.addTarget(self, action: #selector(self.seekTo(_:)), for: .touchUpInside)
-        $0.addTarget(self, action: #selector(self.beginSeek(_:)), for: .valueChanged)
+        $0.addTarget(self, action: #selector(self.seekTo(_:)), for: [.touchUpInside, .touchUpOutside, .touchDragExit])
+        $0.addTarget(self, action: #selector(self.beginSeek(_:)), for: .touchDown)
         $0.setThumbImage(.named("conversation.thumbImage"), for: .normal)
         
     })
@@ -92,10 +92,9 @@ class IncomeVoiceCell: MediaCell {
                    self.isInSeekMessage?.voice.fileID != voice.voiceMessage.fileID {
                     let duration = voice.voiceMessage.duration.timeInterval
                     let value = (voice.currentTime / duration)
-                    let temp = (duration - voice.currentTime)
-                    var stromg = temp < 0.3 ? duration.formatSeconds : temp.formatSeconds
-                    print(stromg)
-                    self.durationLabel.text = stromg
+                    let remainder = (duration - voice.currentTime)
+                    PP.warning(remainder.description)
+                    self.durationLabel.text = remainder < 0.3 ? duration.formatSeconds : remainder.formatSeconds
                     self.slider.setValue(Float(value), animated: true)
                     self.controllerView.setImage(!voice.isPlaying ? self.playImage : self.pauseImage, for: .normal)
                 } else if voice?.voiceMessage.fileID == self.message?.voice.fileID {
@@ -122,11 +121,16 @@ class IncomeVoiceCell: MediaCell {
         self.isInSeekMessage = nil
         let value = TimeInterval(sender.value) * message.voice.duration.timeInterval;
         self.voiceRepository.play(message: message, atTime: value)
+
     }
     
     @objc private func beginSeek(_ sender: UISlider) {
         guard let message = self.message else { return }
         self.isInSeekMessage = message
+    }
+    
+    deinit {
+        self.voiceRepository.stop()
     }
     
     override func prepareForReuse() {

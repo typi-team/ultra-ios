@@ -87,7 +87,7 @@ extension TimeInterval {
     var nanosec: Int64 { Int64(self * 1000 * 1000) }
     
     var formatSeconds: String {
-        let totalSeconds = Int(self)
+        let totalSeconds = Int(ceil(self))
         let minutes = totalSeconds / 60
         let remainingSeconds = totalSeconds % 60
         return "\(minutes):\(String(format: "%02d", remainingSeconds))"

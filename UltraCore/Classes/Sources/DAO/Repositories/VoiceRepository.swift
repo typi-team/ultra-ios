@@ -19,6 +19,12 @@ class VoiceItem: CustomStringConvertible {
         self.currentTime = currentTime
         self.isPlaying = isPlaying
     }
+    
+    var valueForSlider: Float {
+        let duration = voiceMessage.duration.timeInterval
+        let value = (currentTime / duration)
+        return Float(value)
+    }
 
     var description: String {
         return "[VoiceItem]: \(voiceMessage.fileID) \(currentTime) / \(voiceMessage.duration) isPlaying: \(isPlaying)"
@@ -47,11 +53,13 @@ class VoiceRepository: NSObject {
 
     func playPause() {
         if audioPlayer?.isPlaying ?? false {
-            audioPlayer?.pause()
+            self.audioPlayer?.pause()
+            self.timer?.invalidate()
         } else {
-            audioPlayer?.play()
+            self.audioPlayer?.play()
+            self.timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(updateTime), userInfo: nil, repeats: true)
         }
-        var currentItem = try? currentVoice.value()
+        let currentItem = try? currentVoice.value()
         currentItem?.isPlaying = audioPlayer?.isPlaying ?? false
         self.currentVoice.on(
             .next(currentItem)
