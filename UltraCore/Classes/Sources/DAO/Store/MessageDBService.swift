@@ -169,10 +169,17 @@ class MessageDBService {
     }
     
     func updateLastMessage(in conversationID: String?, on realm: Realm) {
-        if let conversationID = conversationID,
-            let conversaiton = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID),
-           conversaiton.message == nil {
-            conversaiton.message = realm.objects(DBMessage.self).where({$0.receiver.chatID == conversationID}).last
+        guard
+            let conversationID,
+            let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID)
+        else { return }
+        
+        if conversation.message == nil {
+            let lastMessage = realm.objects(DBMessage.self).where({$0.receiver.chatID == conversationID}).last
+            conversation.message = lastMessage
+        }
+        if conversation.unreadMessageCount > 0 {
+            conversation.unreadMessageCount -= 1
         }
     }
     
