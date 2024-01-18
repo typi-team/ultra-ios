@@ -232,7 +232,8 @@ extension Message {
     var hasPhoto: Bool { self.photo.fileID != "" }
     var hasVideo: Bool { self.video.fileID != "" }
     var hasVoice: Bool { self.voice.fileID != "" }
-    
+    var hasAudio: Bool { self.audio.fileID != "" }
+
     var fileID: String? {
         if hasPhoto {
             return photo.fileID
@@ -242,6 +243,8 @@ extension Message {
             return file.fileID
         } else if hasVoice {
             return voice.fileID
+        } else if hasAudio {
+            return audio.fileID
         } else {
             return nil
         }

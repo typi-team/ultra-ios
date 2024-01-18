@@ -408,7 +408,6 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 self.conversationRepository
                     .createIfNotExist(from: request.message)
                     .flatMap{ self.messageRepository.save(message: request.message)}
-                    .flatMap{ self.messageSenderInteractor.executeSingle(params: request)}
                     .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
                     .observe(on: MainScheduler.instance)
                     .subscribe()

@@ -17,7 +17,8 @@ class SendMessageInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendRes
     }
 
     override func job(params: MessageSendRequest) -> Single<MessageSendResponse> {
-        Single.create { [weak self] observer in
+        PP.debug("[Message] [Send]: Sending message with params \(params)")
+        return Single.create { [weak self] observer in
             guard let `self` = self else { return Disposables.create() }
 
             self.serialQueue.sync {

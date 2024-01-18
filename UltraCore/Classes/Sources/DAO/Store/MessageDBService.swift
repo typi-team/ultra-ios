@@ -21,6 +21,7 @@ class MessageDBService {
 
 //  MARK: Обновление сообщения в базе данных
     func update(message: Message) -> Single<Bool> {
+        PP.debug("[Message] [DB message update]: \(message)")
         return Single.create {[weak self ] completable in
             guard let `self` = self else { return Disposables.create() }
             do {
@@ -124,6 +125,7 @@ class MessageDBService {
     
 //    MARK: Сохранение сообщения в базу данных
     func save(message: Message) -> Single<Void> {
+        PP.debug("[Message] [DB message save]: \(message)")
         return Single.create {[weak self] completable in
             guard let `self` = self else { return Disposables.create() }
             do {
@@ -196,6 +198,7 @@ class MessageDBService {
     }
     
     func save(messages: [Message]) -> Single<Void> {
+        PP.debug("[Message] [DB MESSAGES save]: \(messages)")
         return Single.create {[weak self] completable in
             guard let `self` = self else { return Disposables.create() }
             do {
