@@ -8,7 +8,7 @@
 import UIKit
 
 
-protocol AnimationFinishedDelegate {
+protocol AnimationFinishedDelegate: AnyObject {
     func animationFinished()
 }
 
@@ -41,7 +41,7 @@ class BucketImageView: UIImageView, CAAnimationDelegate {
     private var micMidY, micOriginY: CGFloat!
     private var bucketY: CGFloat!
 
-    var animationDelegate: AnimationFinishedDelegate?
+    weak var animationDelegate: AnimationFinishedDelegate?
 
 
     override init(frame: CGRect) {
