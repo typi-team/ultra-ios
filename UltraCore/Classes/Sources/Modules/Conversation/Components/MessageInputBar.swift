@@ -51,10 +51,9 @@ class MessageInputBar: UIView {
     }
     
     private lazy var sendButton: UIButton = .init {[weak self] button in
-        guard let `self` = self else { return }
+        guard let self else { return }
         button.setImage(self.kInputPlusImage, for: .normal)
-        button.addAction { [weak self] in
-            guard let self else { return }
+        button.addAction {
             guard let message = self.messageTextView.text?.trimmingCharacters(in: .whitespacesAndNewlines),
                     !message.isEmpty else {
                 self.delegate?.pressedPlus(in: self)
@@ -66,11 +65,10 @@ class MessageInputBar: UIView {
         }
     }
     
-    private lazy var exchangesButton: UIButton = .init {[weak self] button in
-        guard let `self` = self else { return }
+    private lazy var exchangesButton: UIButton = .init { [weak self] button in
+        guard let self else { return }
         button.setImage(self.kInputExchangeImage, for: .normal)
-        button.addAction { [weak self] in
-            guard let self else { return }
+        button.addAction {
             self.delegate?.exchanges()
         }
         

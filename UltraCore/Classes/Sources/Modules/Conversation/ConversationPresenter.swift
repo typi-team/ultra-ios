@@ -387,8 +387,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { [weak self] message in
-                guard let self else { return }
-                view?.stopRefresh(removeController: message.isEmpty)
+                self?.view?.stopRefresh(removeController: message.isEmpty)
             })
             .disposed(by: disposeBag)
     }
@@ -454,8 +453,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
             }
             .compactMap { $0 }
             .subscribe (onNext: { [weak self] typingUser in
-                guard let self else { return }
-                view?.display(is: typingUser)
+                self?.view?.display(is: typingUser)
             })
             .disposed(by: disposeBag)
         
@@ -479,8 +477,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
         var params = MessageSendRequest()
         
         params.peer.user = .with({ [weak self] peer in
-            guard let self else { return }
-            peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
+            peer.userID = self?.conversation.peer?.userID ?? "u1FNOmSc0DAwM"
         })
         params.message.text = text
         params.message.id = UUID().uuidString
