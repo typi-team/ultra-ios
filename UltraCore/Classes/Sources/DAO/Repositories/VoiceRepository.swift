@@ -52,6 +52,9 @@ class VoiceRepository: NSObject {
             audioPlayer.play()
             
             self.timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(updateTime), userInfo: nil, repeats: true)
+            if let timer = self.timer {
+                RunLoop.main.add(timer, forMode: .common)
+            }
             self.audioPlayer = audioPlayer
             self.currentVoice.on(.next(.init(voiceMessage: message.voice, currentTime: atTime)))
         } catch {
