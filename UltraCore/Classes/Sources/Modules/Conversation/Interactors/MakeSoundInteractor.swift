@@ -23,7 +23,7 @@ class MakeSoundInteractor: UseCase<MakeSoundInteractor.Sound, Void> {
            let soundURL = resourceBundle.url(forResource: sound.rawValue, withExtension: "wav")
         {
             do {
-                try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
+                try AVAudioSession.sharedInstance().setCategory(.soloAmbient, mode: .default, options: [.mixWithOthers])
                 try AVAudioSession.sharedInstance().setActive(true)
                 if player == nil {
                     player = try AVAudioPlayer(contentsOf: soundURL, fileTypeHint: AVFileType.wav.rawValue)
