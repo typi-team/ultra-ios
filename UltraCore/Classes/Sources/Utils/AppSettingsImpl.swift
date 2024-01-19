@@ -31,44 +31,30 @@ open class AppSettingsImpl: AppSettings  {
     lazy var version: String = podAsset?.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.2"
     
     lazy var keepalive = ClientConnectionKeepalive(interval: .seconds(15), timeout: .seconds(10))
+    
+    lazy var connectionBackoff = ConnectionBackoff(initialBackoff: 1.0,
+                                                   maximumBackoff: 10.0,
+                                                   multiplier: 1.6,
+                                                   jitter: 0.2,
+                                                   minimumConnectionTimeout: 20.0,
+                                                   retries: .unlimited)
 
     lazy var channel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
                                                                             port: serverConfig.portOfServer),
                                                               transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1)) {
-        $0.keepalive = keepalive
-        $0.connectionBackoff = ConnectionBackoff(initialBackoff: 1.0,
-                                                 maximumBackoff: 10.0,
-                                                 multiplier: 1.6,
-                                                 jitter: 0.2,
-                                                 minimumConnectionTimeout: 20.0,
-                                                 retries: .unlimited)
-        $0.idleTimeout = TimeAmount.nanoseconds(30)
+        setupChannelConfiguration(configuration: &$0)
     }
 
     lazy var fileChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
                                                                                port: serverConfig.portOfServer),
                                                                  transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1)){
-        $0.keepalive = keepalive
-        $0.connectionBackoff = ConnectionBackoff(initialBackoff: 1.0,
-                                                 maximumBackoff: 10.0,
-                                                 multiplier: 1.6,
-                                                 jitter: 0.2,
-                                                 minimumConnectionTimeout: 20.0,
-                                                 retries: .unlimited)
-        $0.idleTimeout = TimeAmount.nanoseconds(30)
+        setupChannelConfiguration(configuration: &$0)
     }
 
     lazy var updateChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
                                                                                   port: serverConfig.portOfServer),
-                                                                    transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1)){
-        $0.keepalive = keepalive
-        $0.connectionBackoff = ConnectionBackoff(initialBackoff: 1.0,
-                                                 maximumBackoff: 10.0,
-                                                 multiplier: 1.6,
-                                                 jitter: 0.2,
-                                                 minimumConnectionTimeout: 20.0,
-                                                 retries: .unlimited)
-        $0.idleTimeout = TimeAmount.nanoseconds(30)
+                                                                    transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1)) {
+        setupChannelConfiguration(configuration: &$0)
     }
 
 //    MARK: GRPC Services
@@ -128,6 +114,12 @@ open class AppSettingsImpl: AppSettings  {
             realm.deleteAll()
         })
         self.appStore.deleteAll()
+    }
+    
+    private func setupChannelConfiguration(configuration: inout GRPCChannelPool.Configuration) {
+        configuration.keepalive = keepalive
+        configuration.connectionBackoff = connectionBackoff
+        configuration.idleTimeout = .zero
     }
 }
 
