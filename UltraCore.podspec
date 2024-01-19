@@ -49,5 +49,6 @@ Pod::Spec.new do |s|
    s.dependency 'SDWebImage'
    s.dependency 'RealmSwift'
    s.dependency 'RxDataSources'
+   s.dependency 'NVActivityIndicatorView'
    
 end

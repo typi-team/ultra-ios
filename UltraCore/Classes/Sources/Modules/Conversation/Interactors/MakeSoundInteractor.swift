@@ -11,6 +11,7 @@ class MakeSoundInteractor: UseCase<MakeSoundInteractor.Sound, Void> {
                 return Disposables.create()
             }
             self.make(sound: params)
+            observer(.success(()))
             return Disposables.create()
         }
     }

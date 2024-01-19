@@ -25,7 +25,10 @@ class PaddingTextField: UITextField {
     var padding = UIEdgeInsets(top: kMediumPadding, left: kHeadlinePadding, bottom: kMediumPadding, right: kHeadlinePadding)
 
     override open func textRect(forBounds bounds: CGRect) -> CGRect {
-        return bounds.inset(by: padding)
+        var rect = bounds.inset(by: padding)
+        let rightViewRect = rightViewRect(forBounds: bounds)
+        rect.size.width -= rightViewRect.width + kLowPadding
+        return rect
     }
 
     override open func placeholderRect(forBounds bounds: CGRect) -> CGRect {
@@ -33,7 +36,10 @@ class PaddingTextField: UITextField {
     }
 
     override open func editingRect(forBounds bounds: CGRect) -> CGRect {
-        return bounds.inset(by: padding)
+        var rect = bounds.inset(by: padding)
+        let rightViewRect = rightViewRect(forBounds: bounds)
+        rect.size.width -= rightViewRect.width + kLowPadding
+        return rect
     }
     
     override func rightViewRect(forBounds bounds: CGRect) -> CGRect {
