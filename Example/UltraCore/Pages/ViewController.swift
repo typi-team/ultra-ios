@@ -19,8 +19,6 @@ class ViewController: UITabBarController {
         self.setupView()
         self.setupVCs()
         
-        NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground(_:)), name: UIApplication.willEnterForegroundNotification, object: nil)
-        
         self.viewModel.setupSID(callback: {[weak self] error in
             guard let `self` = self else { return }
             DispatchQueue.main.async {
@@ -87,9 +85,5 @@ private extension ViewController {
     
     @objc func logout(_ sender: Any) {
         UltraCoreSettings.logout()
-    }
-    
-    @objc func willEnterForeground(_ sender: Any) {
-        self.viewModel.setupSID { _ in }
     }
 }
