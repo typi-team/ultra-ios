@@ -43,7 +43,7 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         $0.placeholderColor = .gray500
     })
 
-    fileprivate lazy var firstTextField = CustomTextField({
+    fileprivate lazy var firstTextField = PaddingTextField({
         $0.backgroundColor = .white
         $0.placeholder = "Ваше имя"
         $0.font = .defaultRegularBody
@@ -54,7 +54,7 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         }
     })
 
-    fileprivate lazy var lastTextField = CustomTextField({
+    fileprivate lazy var lastTextField = PaddingTextField({
         $0.returnKeyType = .done
         $0.backgroundColor = .white
         $0.font = .defaultRegularBody
@@ -171,8 +171,6 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
            let firstname = userDef.string(forKey: "first_name"),
            let phone = userDef.string(forKey: "phone") {
             self.presenter?.login(lastName: lastname, firstname: firstname, phone: phone)
-        } else {
-//            self.presenter?.login(lastName: "Test", firstname: "test", phone: "+77756043111")
         }
     }
 }

@@ -44,6 +44,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: {
             UltraCoreSettings.update(firebase: token)
+            ViewModel().didRegisterForRemoteNotifications()
         })
     }
 

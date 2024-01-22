@@ -21,6 +21,7 @@ class MessageDBService {
 
 //  MARK: Обновление сообщения в базе данных
     func update(message: Message) -> Single<Bool> {
+        PP.debug("[Message] [DB message update]: \(message)")
         return Single.create {[weak self ] completable in
             guard let `self` = self else { return Disposables.create() }
             do {
@@ -112,8 +113,19 @@ class MessageDBService {
         }
     }
     
+    //   MARK: Получение всех сообщений в базе
+    func messages() -> Observable<[Message]> {
+        return Observable.create { observer in
+            let realm = Realm.myRealm()
+            let messages = realm.objects(DBMessage.self)
+            observer.onNext(messages.map({$0.toProto()}))
+            return Disposables.create()
+        }
+    }
+    
 //    MARK: Сохранение сообщения в базу данных
     func save(message: Message) -> Single<Void> {
+        PP.debug("[Message] [DB message save]: \(message)")
         return Single.create {[weak self] completable in
             guard let `self` = self else { return Disposables.create() }
             do {
@@ -139,13 +151,14 @@ class MessageDBService {
             do {
                 let realm = Realm.myRealm()
                 try realm.write {
+                    let notReadMessagesCount = messages.filter { $0.isIncome && $0.state.read == false }.count
+                    self.decreaseUnreadMessagesCount(in: conversationID, on: realm, count: notReadMessagesCount)
                     messages.forEach { message in
                         let dbMessage = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id)
                         if let dbMessage = dbMessage {
                             realm.delete(dbMessage)
                         }
                     }
-
                     self.updateLastMessage(in: conversationID, on: realm)
                 }
                 observer(.success(()))
@@ -158,9 +171,21 @@ class MessageDBService {
     
     func updateLastMessage(in conversationID: String?, on realm: Realm) {
         if let conversationID = conversationID,
-            let conversaiton = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID),
+                    let conversaiton = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID),
            conversaiton.message == nil {
             conversaiton.message = realm.objects(DBMessage.self).where({$0.receiver.chatID == conversationID}).last
+        }
+    }
+    
+    func decreaseUnreadMessagesCount(in conversationID: String?, on realm: Realm, count: Int) {
+        guard
+            let conversationID,
+            let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID)
+        else { return }
+        if conversation.unreadMessageCount - count >= 0 {
+            conversation.unreadMessageCount -= count
+        } else {
+            conversation.unreadMessageCount = 0
         }
     }
     
@@ -173,6 +198,8 @@ class MessageDBService {
                     let messages = realm.objects(DBMessage.self)
                         .filter({ $0.receiver?.chatID == conversationID })
                         .filter({ self.isInRanges(number: Int64($0.seqNumber), ranges: ranges) })
+                    let notReadMessagesCount = messages.filter { $0.isIncome && $0.state?.read == false }.count
+                    self.decreaseUnreadMessagesCount(in: conversationID, on: realm, count: notReadMessagesCount)
                     messages.forEach({ realm.delete($0) })
                     self.updateLastMessage(in: conversationID, on: realm)
                 }
@@ -186,6 +213,7 @@ class MessageDBService {
     }
     
     func save(messages: [Message]) -> Single<Void> {
+        PP.debug("[Message] [DB MESSAGES save]: \(messages)")
         return Single.create {[weak self] completable in
             guard let `self` = self else { return Disposables.create() }
             do {

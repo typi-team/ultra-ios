@@ -8,7 +8,7 @@
 import RxSwift
 
 
-class CreateFileInteractor: UseCase<(data: Data, extens: String), [FileChunk]> {
+class CreateFileInteractor: GRPCErrorUseCase<(data: Data, extens: String), [FileChunk]> {
 
      private let fileService: FileServiceClientProtocol
 
@@ -16,8 +16,8 @@ class CreateFileInteractor: UseCase<(data: Data, extens: String), [FileChunk]> {
          self.fileService = fileService
      }
 
-    override func executeSingle(params: (data: Data, extens: String)) -> Single<[FileChunk]> {
-        return Single.create { [weak self] observer -> Disposable in
+    override func job(params: (data: Data, extens: String)) -> Single<[FileChunk]> {
+        Single.create { [weak self] observer -> Disposable in
 
             guard let `self` = self else { return Disposables.create() }
             let request = FileCreateRequest.with({
@@ -25,7 +25,7 @@ class CreateFileInteractor: UseCase<(data: Data, extens: String), [FileChunk]> {
                 $0.size = Int64(params.data.count)
                 $0.mimeType =  params.extens
             })
-
+            PP.debug("[Message]: Creating file with request - \(request)")
             self.fileService
                 .create(request, callOptions: .default())
                 .response
@@ -33,6 +33,7 @@ class CreateFileInteractor: UseCase<(data: Data, extens: String), [FileChunk]> {
                     guard let `self` = self else { return observer(.failure(NSError.selfIsNill)) }
                     switch result {
                     case let .success(response):
+                        PP.debug("[Message]: Created file with fileID \(response.fileID)")
                         observer(.success(self.splitDataIntoChunks(data: params.data, file: response)))
                     case let .failure(error):
                         observer(.failure(error))

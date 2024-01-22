@@ -86,6 +86,45 @@ class ContactDBService {
         }
     }
     
+    func updateContact(status: UserStatusEnum) {
+        do {
+            let realm = Realm.myRealm()
+            try realm.write {
+                realm.objects(DBContact.self).forEach { contact in
+                    contact.statusValue = status.rawValue
+                    realm.add(contact, update: .all)
+                }
+            }
+        } catch {
+            PP.error(error.localizedDescription)
+        }
+    }
+    
+    func update(contacts statuses: [UserStatus]) -> Single<[ContactDisplayable]> {
+        return Single.create { completable in
+            do {
+                let realm = Realm.myRealm()
+                try realm.write {
+                    var listContact: [ContactDisplayable] = []
+                    statuses.forEach { status in
+                        if let contact = realm.object(ofType: DBContact.self, forPrimaryKey: status.userID) {
+                            contact.statusValue = status.status.rawValue
+                            contact.lastseen = status.lastSeen
+
+                            realm.add(contact, update: .all)
+                            listContact.append(contact.toInterface())
+                        }
+                    }
+                    
+                    completable(.success(listContact))
+                }
+            } catch {
+                completable(.failure(error))
+            }
+            return Disposables.create()
+        }
+    }
+    
     func save(contact interface: ContactDisplayable) -> Single<Void> {
         return Single.create { completable in
             do {
@@ -98,6 +137,7 @@ class ContactDBService {
                         contact.imagePath = contactInfo.imagePath
                     }
                     
+                    contact.isBlocked = interface.isBlocked
                     if interface.status.lastSeen > contact.lastseen {
                         contact.lastseen = interface.status.lastSeen
                         contact.statusValue = interface.status.status.rawValue

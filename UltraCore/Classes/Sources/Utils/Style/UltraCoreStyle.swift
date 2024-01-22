@@ -38,29 +38,6 @@ private class OutcomeMessageCellConfigImpl: OutcomingMessageCellConfig {
 }
 
 
-private struct LabelConfigImpl: TextViewConfig {
-    var darkColor: UIColor = .white
-    var defaultColor: UIColor = .gray700
-    var font: UIFont = .defaultRegularBody
-    var placeholder: String = "\(ConversationStrings.insertText.localized)"
-    var tintColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
-}
-
-private class TwiceColorImpl: TwiceColor {
-    var defaultColor: UIColor
-    var darkColor: UIColor
-    
-    init(defaultColor: UIColor, darkColor: UIColor) {
-        self.defaultColor = defaultColor
-        self.darkColor = darkColor
-    }
-}
-
-private struct TwiceImageImpl: TwiceImage {
-    var dark: UIImage
-    var `default`: UIImage
-}
-
 public class UltraCoreStyle {
 //    MARK: UIImage
     public static var defaultPlaceholder: TwiceImage?
@@ -97,9 +74,13 @@ public class UltraCoreStyle {
     public static var callingConfig: CallPageStyle = CallPageStyleImpl()
 //    MARK: File page config
     public static var filePageConfig: FilesControllerConfig?
+//    MARK: Report page config
+    public static var reportCommentControllerStyle: ReportCommentControllerStyle? = ReportCommentControllerStyleImpl()
 }
 
 private class MessageInputBarConfigImpl: MessageInputBarConfig {
+    var blockedViewConfig: MessageInputBarBlockedConfig = MessageInputBarBlockedConfigImpl()
+    
     var textConfig: TextViewConfig = LabelConfigImpl.init(darkColor: .white, defaultColor: .gray900, font: .defaultRegularSubHeadline,
                                                           tintColor: TwiceColorImpl(defaultColor: .green500, darkColor: .white))
     var dividerColor: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
@@ -108,6 +89,15 @@ private class MessageInputBarConfigImpl: MessageInputBarConfig {
     var sendMoneyViewTint: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
     var recordViewTint: TwiceColor = TwiceColorImpl(defaultColor: .gray400, darkColor: .white)
     var messageContainerBackground: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
+}
+
+private class MessageInputBarBlockedConfigImpl: MessageInputBarBlockedConfig {
+    var dividerColor: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
+    var background: TwiceColor = TwiceColorImpl(defaultColor: .gray100, darkColor: .gray700)
+    var textConfig: TextViewConfig =  LabelConfigImpl.init(darkColor: .white, defaultColor: .gray900, font: .defaultRegularSubHeadline,
+                                                           tintColor: TwiceColorImpl(defaultColor: .green500, darkColor: .white))
+    
+    var textBackgroundConfig: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .green500)
 }
 
 private class VoiceInputBarConfigImpl: VoiceInputBarConfig {

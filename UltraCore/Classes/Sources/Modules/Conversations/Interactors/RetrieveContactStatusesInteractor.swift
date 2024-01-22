@@ -7,7 +7,7 @@
 
 import RxSwift
 
-class RetrieveContactStatusesInteractor: UseCase<Void, Void> {
+class RetrieveContactStatusesInteractor: GRPCErrorUseCase<Void, Void> {
     final let contactDBService: ContactDBService
     final let contactService: ContactServiceClientProtocol
     
@@ -17,8 +17,8 @@ class RetrieveContactStatusesInteractor: UseCase<Void, Void> {
          self.contactDBService = contactDBService
     }
     
-    override func execute(params: Void) -> Observable<Void> {
-        return Single<GetStatusesResponse>
+    override func job(params: Void) -> Single<Void> {
+        Single<GetStatusesResponse>
             .create { [weak self] observer -> Disposable in
                 guard let `self` = self else { return Disposables.create() }
                 self.contactService.getStatuses(.init(), callOptions: .default())
@@ -34,13 +34,8 @@ class RetrieveContactStatusesInteractor: UseCase<Void, Void> {
 
                 return Disposables.create()
             }
-            .asObservable()
-            .flatMap { user -> Observable<Void> in
-                return Observable<UserStatus>
-                    .from(user.statuses)
-                    .flatMap { status -> Single<Void> in
-                        return self.contactDBService.update(contact: status).map({_ in })
-                    }
+            .flatMap { user -> Single<Void> in
+                self.contactDBService.update(contacts: user.statuses).map({ _ in })
             }
     }
 

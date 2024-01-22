@@ -239,6 +239,7 @@ public class RecordView: UIView, CAAnimationDelegate {
         timer?.invalidate()
         timerLabel.text = "00:00"
         duration = 0
+        timer = nil
     }
 
     //this will be called when user lift his finger

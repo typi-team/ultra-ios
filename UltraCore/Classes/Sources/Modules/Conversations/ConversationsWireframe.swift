@@ -25,22 +25,28 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
         let deleteConversationInteractor = DeleteConversationInteractor(conversationDBService: appSettings.conversationDBService,
                                                                         conversationService: appSettings.conversationService)
         
-        let retrieveContactStatusesInteractor = RetrieveContactStatusesInteractor.init(contactDBService: appSettings.contactDBService,
-                                                                                       contactService: appSettings.contactsService)
         let contactByUserIdInteractor = ContactByUserIdInteractor.init(delegate: UltraCoreSettings.delegate,
                                                                        contactsService: appSettings.contactsService)
         
-        let contactToCreateChatByPhoneInteractor = ContactToCreateChatByPhoneInteractor.init(integrateService: appSettings.integrateService)
+        let contactToConversationInteractor = ContactToConversationInteractor.init(contactDBService: appSettings.contactDBService,
+                                                                                   contactsService: appSettings.contactsService,
+                                                                                   integrateService: appSettings.integrateService)
+        
+        let messageSenderInteractor = SendMessageInteractor.init(messageService: appSettings.messageService)
+
+        let resendMessagesInteractor = ResendingMessagesInteractor(messageRepository: appSettings.messageRespository, mediaRepository: appSettings.mediaRepository, messageSenderInteractor: messageSenderInteractor)
+        let reachabilityInteractor = ReachabilityInteractor()
         let presenter = ConversationsPresenter(view: moduleViewController,
                                                updateRepository: appSettings.updateRepository,
-                                               messageRepository: appSettings.messageRespository,
                                                contactDBService: appSettings.contactDBService,
                                                wireframe: self,
                                                conversationRepository: appSettings.conversationRespository,
                                                contactByUserIdInteractor: contactByUserIdInteractor,
-                                               retrieveContactStatusesInteractor: retrieveContactStatusesInteractor,
-                                               deleteConversationInteractor: deleteConversationInteractor, contactToCreateChatByPhoneInteractor: contactToCreateChatByPhoneInteractor,
-                                               userStatusUpdateInteractor: UpdateOnlineInteractor(userService: appSettings.userService))
+                                               deleteConversationInteractor: deleteConversationInteractor,
+                                               contactToConversationInteractor: contactToConversationInteractor,
+                                               resendMessagesInteractor: resendMessagesInteractor,
+                                               reachabilityInteractor: reachabilityInteractor)
+
         moduleViewController.presenter = presenter
     }
 }

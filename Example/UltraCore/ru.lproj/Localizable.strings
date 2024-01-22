@@ -49,7 +49,7 @@
 "conversation.money" = "Деньги";
 "conversation.online" = "онлайн";
 "conversation.unknowNumber" = "";
-"conversation.prints" = "печатает";
+"conversation.prints" = "печатает...";
 "conversation.moneyTransfer" = "Переводы";
 "conversation.insertMoney" = "";
 "conversation.send" = "Отправить";
@@ -76,7 +76,7 @@
 "conversation.deleteForEveryone" = "Удалить для всех";
 "conversation.givePermissionToRecordVoice" = "Give permission to record voice";
 "conversation.ifAMessageContainsThreatsInappropriateContentOrViolatesAnyPlatformOrCommunity" = "Если сообщение содержит угрозы, неподходящий контент или нарушает какие-либо правила платформы или сообщества, оно может быть обжаловано и подлежит удалению. Восстановление такого сообщения может быть невозможным";
-
+"conversation.yourComplaintWillBeReviewedByModeratorsThankYou" = "Вашу жалобу проверят модераторы. Спасибо!";
 "conversation.areYouSure" = "Вы уверены?";
 "conversation.pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible" = "Пожалуйста, обратите внимание, что данные сообщения будут безвозвратно удалены, и восстановление не будет возможным";
 
@@ -99,6 +99,14 @@
 "message.delete" = "Удалить";
 "message.select" = "Выбрать";
 "message.sorryButYouHaveBlockedThisChatIfYouHaveAnyQuestionsOrNeedAssistancePleaseContactOurSupportService" = "Простите, но вы заблокировали этот чат. Если у вас есть вопросы или вам необходима помощь, пожалуйста, обратитесь к нашей службе поддержки.";
+"message.spam" = "Спам";
+"message.personalData" = "Личные данные";
+"message.fraud" = "Мошенничество";
+"message.impositionOfServices" = "Навязывание услуг";
+"message.insult" = "Оскорбление";
+"message.other" = "Другое";
+"message.additionalInformationInComments" = "Вы можете указать дополнительную информацию в комментариях";
+"message.comment" = "Комментарий";
 // MARK: Base view
 "base.error" = "Ошибка";
 "base.close" = "Закрыть";

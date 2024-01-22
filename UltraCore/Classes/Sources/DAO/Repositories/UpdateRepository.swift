@@ -12,7 +12,9 @@ import GRPC
 protocol UpdateRepository: AnyObject {
     
     func setupSubscription()
-    func sendPoingByTimer()
+    func startPingPong()
+    func stopSession()
+    func retreiveContactStatuses()
     func readAll(in conversation: Conversation)
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> { get set }
 }
@@ -27,10 +29,12 @@ class UpdateRepositoryImpl {
     fileprivate let messageService: MessageDBService
     fileprivate let updateClient: UpdatesServiceClientProtocol
     fileprivate let conversationService: ConversationDBService
-    fileprivate let contactByIDInteractor: UseCase<String, ContactDisplayable>
-    fileprivate let deliveredMessageInteractor: UseCase<Message, MessagesDeliveredResponse>
+    fileprivate let pingPongInteractorImpl: GRPCErrorUseCase<Void, Void>
+    fileprivate let retrieveContactStatusesInteractorImpl: GRPCErrorUseCase<Void, Void>
+    fileprivate let contactByIDInteractor: GRPCErrorUseCase<String, ContactDisplayable>
+    fileprivate let deliveredMessageInteractor: GRPCErrorUseCase<Message, MessagesDeliveredResponse>
     
-    
+    fileprivate var pintPongTimer: Timer?
     fileprivate var updateListenStream: ServerStreamingCall<ListenRequest, Updates>?
     
     
@@ -39,15 +43,19 @@ class UpdateRepositoryImpl {
          contactService: ContactDBService,
          updateClient: UpdatesServiceClientProtocol,
          conversationService: ConversationDBService,
-         userByIDInteractor: UseCase<String, ContactDisplayable>,
-         deliveredMessageInteractor: UseCase<Message, MessagesDeliveredResponse>) {
+         pingPongInteractorImpl: GRPCErrorUseCase<Void, Void>,
+         userByIDInteractor: GRPCErrorUseCase<String, ContactDisplayable>,
+         retrieveContactStatusesInteractorImpl: GRPCErrorUseCase<Void, Void>,
+         deliveredMessageInteractor: GRPCErrorUseCase<Message, MessagesDeliveredResponse>) {
         self.updateClient = updateClient
         self.appStore = appStore
         self.messageService = messageService
         self.contactService = contactService
         self.conversationService = conversationService
         self.contactByIDInteractor = userByIDInteractor
+        self.pingPongInteractorImpl = pingPongInteractorImpl
         self.deliveredMessageInteractor = deliveredMessageInteractor
+        self.retrieveContactStatusesInteractorImpl = retrieveContactStatusesInteractorImpl
     }
 }
 
@@ -57,20 +65,36 @@ extension UpdateRepositoryImpl: UpdateRepository {
         self.conversationService.realAllMessage(for: conversation.idintification)
     }
     
-    func sendPoingByTimer() {
-        Timer.scheduledTimer(withTimeInterval: 12, repeats: true) { [weak self] timer in
-            guard let `self` = self else { return timer.invalidate() }
-            self.updateClient.ping(PingRequest(), callOptions: .default())
-                .response
-                .whenComplete { result in
-                    switch result {
-                    case .success:
-                        break
-                    case let .failure(error):
-                        PP.error(error.localizedDescription)
-                        timer.invalidate()
-                    }
-                }
+    func stopSession() {
+        PP.info("❌ stopPintPong")
+        self.pintPongTimer?.invalidate()
+        self.updateListenStream?.cancel(promise: nil)
+        self.contactService.updateContact(status: .unknown)
+    }
+    
+    func retreiveContactStatuses() {
+        PP.info("📇 retreiveContactStatuses")
+        self.retrieveContactStatusesInteractorImpl.executeSingle(params: ())
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .subscribe()
+            .disposed(by: disposeBag)
+    }
+    
+    func startPingPong() {
+        DispatchQueue.main.async {
+            PP.info("🐢 startPintPong")
+            self.pintPongTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] timer in
+                guard let `self` = self else { return timer.invalidate() }
+                self.pingPongInteractorImpl
+                    .executeSingle(params: ())
+                    .subscribe(onSuccess: {
+                        PP.info("Ping pong is called success")
+                    }, onFailure: {error in
+                        PP.error("Ping pong is called with error \(error.localeError)")
+                    })
+                    .disposed(by: disposeBag)
+            }
         }
     }
     
@@ -89,17 +113,29 @@ extension UpdateRepositoryImpl: UpdateRepository {
                         response.contacts.forEach { contact in
                             self.update(contact: ContactDisplayableImpl(contact: contact))
                         }
-                        
+
+                        // TODO: - Temporary fix, refactor in reactive way later
+                        // We need to make sure that conversations are created first and then
+                        // the unread counter is updated.
+
+                        let group = DispatchGroup()
                         response.messages.forEach { message in
-                            self.update(message: message)
+                            group.enter()
+                            self.update(message: message, completion: {
+                                group.leave()
+                            })
                         }
                         
+                        group.notify(queue: DispatchQueue.main) {
+                            self.handleUnread(from: response.chats)
+                        }
                         self.appStore.store(last: Int64(response.state))
-                        self.handleUnread(from: response.chats)
                         self.setupChangesSubscription(with: response.state)
+                        self.retreiveContactStatuses()
                     }
                 }
         } else {
+            self.retreiveContactStatuses()
             self.setupChangesSubscription(with: UInt64(appStore.lastState))
         }
     }
@@ -114,8 +150,7 @@ private extension UpdateRepositoryImpl {
     
     func setupChangesSubscription(with state: UInt64) {
         let state: ListenRequest = .with { $0.localState = .with { $0.state = state } }
-        self.updateListenStream?.cancel(promise: nil)
-        self.updateListenStream = updateClient.listen(state, callOptions: .default()) { [weak self] response in
+        self.updateListenStream = updateClient.listen(state, callOptions: .default(include: false)) { [weak self] response in
             guard let `self` = self else { return }
             self.appStore.store(last: max(Int64(response.lastState), self.appStore.lastState))
             response.updates.forEach { update in
@@ -134,7 +169,6 @@ private extension UpdateRepositoryImpl {
     
     func handle(of presence: Update.OneOf_OfPresence) {
         switch presence {
-
         case let .typing(typing):
             self.handle(user: typing)
         case let .audioRecording(pres):
@@ -149,14 +183,14 @@ private extension UpdateRepositoryImpl {
             self.handleIncoming(callRequest: callRequest)
         case let .callCancel(callrequest):
             self.dissmissCall(in: callrequest.room)
-        case .block(let blockMessage):
+        case let .block(blockMessage):
             self.contactService
-                .block(user: blockMessage.user, blocked: blockMessage.state)
+                .block(user: blockMessage.user, blocked: true)
                 .subscribe()
                 .disposed(by: disposeBag)
-        case .unblock(let blockMessage):
+        case let .unblock(blockMessage):
             self.contactService
-                .block(user: blockMessage.user, blocked: blockMessage.state)
+                .block(user: blockMessage.user, blocked: false)
                 .subscribe()
                 .disposed(by: disposeBag)
         }
@@ -194,7 +228,7 @@ private extension UpdateRepositoryImpl {
     func handle(of update: Update.OneOf_OfUpdate) {
         switch update {
         case let .message(message):
-            self.update(message: message)
+            self.update(message: message, completion: { })
             self.handleNewMessageOnRead(message: message)
         case let .contact(contact):
             self.update(contact: ContactDisplayableImpl(contact: contact))
@@ -223,7 +257,7 @@ extension UpdateRepositoryImpl {
         self.conversationService.incrementUnread(for: message.receiver.chatID)
     }
     
-    func update(message: Message) {
+    func update(message: Message, completion: @escaping (() -> Void)) {
         let contactID = message.peerId(user: self.appStore.userID())
         let contact = self.contactService.contact(id: contactID)
         if contact == nil {
@@ -232,8 +266,10 @@ extension UpdateRepositoryImpl {
                 .flatMap({ self.contactService.save(contact: $0) })
                 .flatMap({ _ in self.conversationService.createIfNotExist(from: message) })
                 .flatMap({ self.messageService.update(message: message) })
-                .subscribe()
-                
+                .subscribe(onDisposed: {
+                    completion()
+                })
+
         } else {
             self.conversationService
                 .createIfNotExist(from: message)

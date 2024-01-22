@@ -45,12 +45,12 @@ protocol ConversationPresenterInterface: PresenterInterface {
     func send(message text: String)
     func send(location: LocationMessage)
     func send(contact: ContactMessage)
-    func report(_ messages: [Message])
     func delete(_ messages: [Message], all: Bool)
     func loadMoreMessages(maxSeqNumber: UInt64)
     func mediaURL(from message: Message) -> URL?
     var messages: Observable<[Message]> { get set }
     func openMoneyController()
+    func report(_ message: Message, with type: ComplainTypeEnum?, comment: String?)
     
     func callVideo()
     func callVoice()

@@ -13,6 +13,7 @@ protocol MessageRepository: AnyObject {
     func save(message: Message) -> Single<Void>
     func update(message: Message) -> Single<Bool>
     func messages(chatID: String) -> Observable<[Message]>
+    func messages() -> Observable<[Message]>
 //    func readAllMessages(in chatID: String, to seq: Int)
 }
 
@@ -37,5 +38,9 @@ extension MessageRespositoryImpl : MessageRepository  {
 
     func messages(chatID: String) -> Observable<[Message]> {
         return self.messageService.messages(chatID: chatID)
+    }
+    
+    func messages() -> Observable<[Message]> {
+        return self.messageService.messages()
     }
 }

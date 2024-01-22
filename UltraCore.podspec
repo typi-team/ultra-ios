@@ -32,7 +32,7 @@ Pod::Spec.new do |s|
   s.source_files = 'UltraCore/Classes/Sources/**/*'
   
   s.resource_bundles = {
-      'UltraCore' => ['UltraCore/Assets/*.xcassets','UltraCore/Assets/*.lproj','UltraCore/Assets/*.pdf', 'UltraCore/Assets/Assets']
+      'UltraCore' => ['UltraCore/Assets/*.xcassets','UltraCore/Assets/*.lproj','UltraCore/Assets/*.pdf', 'UltraCore/Assets/Assets', 'UltraCore/Assets/*.wav']
   }
   
   s.resources = ['UltraCore/Assets/*.pdf', 'UltraCore/*.png', 'UltraCore/*']
@@ -49,5 +49,6 @@ Pod::Spec.new do |s|
    s.dependency 'SDWebImage'
    s.dependency 'RealmSwift'
    s.dependency 'RxDataSources'
+   s.dependency 'NVActivityIndicatorView'
    
 end
