@@ -132,4 +132,8 @@ extension ConversationsViewController {
     @objc func didEnterBackground(_ sender: Any) {
         self.presenter?.stopPingPong()
     }
+
+    @objc func didEnterForeground(_ sender: Any) {
+        self.presenter?.startPingPong()
+    }
 }
