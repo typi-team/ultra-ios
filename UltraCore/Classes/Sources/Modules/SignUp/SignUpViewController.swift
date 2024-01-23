@@ -160,7 +160,7 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         }
         
         self.logoImage.snp.makeConstraints { make in
-            make.height.equalTo(kHeadlinePadding * 2)
+            make.height.equalTo(88)
             make.width.equalTo(168)
         }
         
