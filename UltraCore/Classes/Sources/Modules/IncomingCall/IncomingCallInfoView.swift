@@ -46,7 +46,7 @@ final class IncomingCallInfoView: UIView {
     // MARK: - Methods
     
     func confige(view contact: ContactDisplayable) {
-        avatarView.config(contact: contact)
+        avatarView.set(contact: contact, placeholder: UltraCoreStyle.defaultPlaceholder?.image)
         companionLabel.text = contact.displaName
         phoneLabel.text = contact.phone
     }
