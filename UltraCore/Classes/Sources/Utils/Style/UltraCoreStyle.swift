@@ -76,6 +76,8 @@ public class UltraCoreStyle {
     public static var filePageConfig: FilesControllerConfig?
 //    MARK: Report page config
     public static var reportCommentControllerStyle: ReportCommentControllerStyle? = ReportCommentControllerStyleImpl()
+//    MARK: SignUp page config
+    public static var signUpStyle: SignUpStyle = SignUpStyleImpl()
 }
 
 private class MessageInputBarConfigImpl: MessageInputBarConfig {

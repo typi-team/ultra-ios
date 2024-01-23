@@ -10,8 +10,25 @@
 
 import UIKit
 import SnapKit
+import Foundation
+
+public protocol SignUpStyle {
+    var logoImage: TwiceImage? { get set }
+    var nextButtonEnabledColor: TwiceColor { get set }
+    var nextButtonDisabledColor: TwiceColor { get set }
+}
+
+class SignUpStyleImpl: SignUpStyle {
+    var logoImage: TwiceImage? = TwiceImageImpl.init(dark: .fromAssets("ff_logo_text")!, default: .fromAssets("ff_logo_text")!)
+    var nextButtonEnabledColor: TwiceColor = TwiceColorImpl(defaultColor: .black, darkColor: .white)
+    var nextButtonDisabledColor: TwiceColor = TwiceColorImpl(defaultColor: .black.withAlphaComponent(0.3), darkColor: .white)
+}
 
 final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
+    
+    fileprivate var style: SignUpStyle {
+        return UltraCoreStyle.signUpStyle
+    }
 
     fileprivate let logoImage = UIImageView({
         $0.contentMode = .scaleAspectFit
@@ -164,7 +181,6 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
     override func setupInitialData() {
         super.setupInitialData()
         self.handleButtonEnabling()
-        self.logoImage.image = .named("ff_logo_text")
         self.headlineText.text = "Для регистрации в чат сервисе введите ваши данные"
         let userDef = UserDefaults.standard
         if let lastname = userDef.string(forKey: "last_name"),
@@ -173,7 +189,14 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
             self.presenter?.login(lastName: lastname, firstname: firstname, phone: phone)
         }
     }
+    
+    override func setupStyle() {
+        super.setupStyle()
+        self.logoImage.image = style.logoImage?.image ?? .named("ff_logo_text")
+        self.nextButton.backgroundColor = style.nextButtonEnabledColor.color
+    }
 }
+
 
 extension SignUpViewController: SignUpViewInterface {
     func open(view controller: UIViewController) {
@@ -189,6 +212,6 @@ extension SignUpViewController {
     func handleButtonEnabling() {
         let isEnabled = (self.phoneTextField.text ?? "").count > 5 && (self.firstTextField.text ?? "").count > 1
         self.nextButton.isEnabled = isEnabled
-        self.nextButton.backgroundColor = isEnabled ? .green600 : .green100
+        self.nextButton.backgroundColor = isEnabled ? style.nextButtonEnabledColor.color : style.nextButtonDisabledColor.color
     }
 }
