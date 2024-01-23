@@ -9,7 +9,7 @@ import RxSwift
 
 final class FFSignUpPresenter {
     
-    private unowned let view: SignUpViewInterface
+    private weak var view: SignUpViewInterface?
     fileprivate let wireframe: SignUpWireframeInterface
     
     // MARK: - Lifecycle -g
@@ -87,7 +87,7 @@ extension FFSignUpPresenter: SignUpPresenterInterface {
                         PP.warning(error.localizedDescription)
                     } else if let `self` = self {
                         DispatchQueue.main.async {
-                            self.view.open(view: UltraCoreSettings.entryConversationsViewController())
+                            self.view?.open(view: UltraCoreSettings.entryConversationsViewController())
                         }
                     }
                 }
