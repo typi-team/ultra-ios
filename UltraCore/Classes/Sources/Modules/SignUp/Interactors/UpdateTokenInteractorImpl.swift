@@ -28,11 +28,12 @@ class UpdateTokenInteractorImpl: UseCase<Void, Void> {
             }
 
             if let delegate = self.delegate {
-                delegate.token { token in
-                    if let token = token {
+                delegate.token { result in
+                    switch result {
+                    case .success(let token):
                         observer(.success(token))
-                    } else {
-                        observer(.failure(NSError.objectsIsNill))
+                    case .failure(let error):
+                        observer(.failure(error))
                     }
                 }
             } else {

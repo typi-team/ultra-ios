@@ -79,7 +79,11 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
             .subscribe()
             .disposed(by: disposeBag)
     }
-    
+
+    func startPingPong() {
+        UltraCoreSettings.updateSession { _ in }
+    }
+
     func stopPingPong() {
         self.updateRepository.stopSession()
     }

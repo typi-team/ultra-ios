@@ -41,14 +41,7 @@ class ViewModel {
         guard UserDefaults.standard.string(forKey: "phone") != nil else {
             return callback(NSError.init(domain: "no saved account", code: 101))
         }
-        token { [weak self] token in
-            if let token = token {
-                self?.didRegisterForRemoteNotifications()
-                UltraCoreSettings.update(sid: token, with: callback)
-            }else {
-                print("You must pass the token otherwise the connection will not work")
-            }
-        }
+        UltraCoreSettings.updateSession(callback: callback)
     }
     
     func didRegisterForRemoteNotifications() {
@@ -97,12 +90,12 @@ extension ViewModel: UltraCoreFutureDelegate {
 }
 
 extension ViewModel: UltraCoreSettingsDelegate {
-    func token(callback: @escaping StringCallback) {
+    func token(callback: @escaping (Result<String, Error>) -> Void) {
         let userDef = UserDefaults.standard
         guard let lastname = userDef.string(forKey: "last_name"),
               let firstname = userDef.string(forKey: "first_name"),
               let phone = userDef.string(forKey: "phone") else {
-            return callback(nil)
+            return callback(.failure(NSError.init(domain: "no saved account", code: 101)))
         }
 
         guard let url = URL(string: "https://ultra-dev.typi.team/mock/v1/auth"),
@@ -120,25 +113,17 @@ extension ViewModel: UltraCoreSettingsDelegate {
             .map {
                 try JSONDecoder().decode(UserResponse.self, from: $0)
             }
-            .retry(when: { errors in
-                return errors.enumerated().flatMap { (attempt, error) -> Observable<Int> in
-                    let maxAttempts = 20
-                    if attempt > maxAttempts {
-                        return Observable.error(error)
-                    }
-                    return Observable<Int>.timer(.seconds(5), scheduler: MainScheduler.instance)
-                }
+            .do(onNext: { [weak self] _ in
+                self?.didRegisterForRemoteNotifications()
             })
-            .debug("[Token fetch]")
             .subscribe { userResponse in
-                callback(userResponse.sid)
+                callback(.success(userResponse.sid))
             } onError: { error in
-                print("Received error on token update - \(error.localizedDescription)")
-                callback(nil)
+                callback(.failure(error))
             }
             .disposed(by: disposeBag)
     }
-    
+
     func emptyConversationView() -> UIView? {
         return nil
     }
