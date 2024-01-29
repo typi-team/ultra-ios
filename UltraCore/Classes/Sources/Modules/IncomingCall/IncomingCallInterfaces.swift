@@ -46,8 +46,9 @@ protocol IncomingCallWireframeInterface: WireframeInterface {
 
 
 protocol IncomingCallViewInterface: ViewInterface {
-    func disconnectRoom() 
+    func disconnectRoom()
     func dispay(view contact: ContactDisplayable)
+    func connectRoom(with callInfo: CallInformation)
 }
 
 
