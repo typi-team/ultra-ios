@@ -16,16 +16,6 @@ class IncomeVoiceCell: MediaCell {
     
     fileprivate let playImage: UIImage? = .named("conversation_play_sound_icon")
     fileprivate let pauseImage: UIImage? = .named("conversation_pause_sound_icon")
-    fileprivate let spinner: NVActivityIndicatorView = {
-        let spinner = NVActivityIndicatorView(
-            frame: CGRect(origin: .zero, size: .init(width: 30, height: 30)),
-            type: .circleStrokeSpin,
-            color: .black,
-            padding: 0
-        )
-        spinner.translatesAutoresizingMaskIntoConstraints = false
-        return spinner
-    }()
 
     fileprivate let voiceRepository = AppSettingsImpl.shared.voiceRepository
 
@@ -201,6 +191,17 @@ class IncomeVoiceCell: MediaCell {
            self.controllerView.setImage(self.playImage, for: .normal)
        }
    }
+
+    override func makeSpinner() -> NVActivityIndicatorView {
+        let spinner = NVActivityIndicatorView(
+            frame: CGRect(origin: .zero, size: .init(width: 30, height: 30)),
+            type: .circleStrokeSpin,
+            color: .black,
+            padding: 0
+        )
+        spinner.translatesAutoresizingMaskIntoConstraints = false
+        return spinner
+    }
 }
 
 class OutcomeVoiceCell: IncomeVoiceCell {
