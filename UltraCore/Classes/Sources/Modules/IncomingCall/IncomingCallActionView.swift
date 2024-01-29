@@ -100,7 +100,15 @@ final class IncomingCallActionView: UIStackView {
             addArrangedSubview(cancelButton)
         }
     }
-    
+
+    func setAsActive() {
+        arrangedSubviews.forEach({ $0.removeFromSuperview() })
+        addArrangedSubview(mouthpieceButton)
+        addArrangedSubview(microButton)
+        addArrangedSubview(cameraButton)
+        addArrangedSubview(cancelButton)
+    }
+
     private func setup() {
         axis = .horizontal
         spacing = kMediumPadding

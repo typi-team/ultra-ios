@@ -19,10 +19,12 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
     })
 
     fileprivate lazy var localVideoView: VideoView = .init({
+        $0.isHidden = true
         $0.cornerRadius = kLowPadding
     })
 
     fileprivate lazy var remoteVideoView: VideoView = .init({
+        $0.isHidden = true
         $0.cornerRadius = kLowPadding
     })
 
@@ -32,15 +34,19 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
 
     fileprivate lazy var actionStackView = IncomingCallActionView(style: style, delegate: self)
 
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        view.backgroundColor = style.background.color
+    }
+
     override func setupViews() {
         super.setupViews()
 
-        view.backgroundColor = style.background.color
-
-        view.addSubview(localVideoView)
         view.addSubview(remoteVideoView)
         view.addSubview(infoView)
         view.addSubview(actionStackView)
+        view.addSubview(localVideoView)
     }
 
     override func setupConstraints() {
@@ -56,10 +62,10 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
             make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(view.snp.centerY).offset(-36)
         }
-        localVideoView.snp.makeConstraints { make in
+        remoteVideoView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        remoteVideoView.snp.makeConstraints { make in
+        localVideoView.snp.makeConstraints { make in
             make.trailing.equalToSuperview().inset(31)
             make.bottom.equalTo(actionStackView.snp.top).offset(-32)
             make.width.equalTo(90)
@@ -89,8 +95,8 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
 extension IncomingCallViewController: IncomingCallActionViewDelegate {
     
     func view(_ view: IncomingCallActionView, answerButtonDidTap button: UIButton) {
-        guard let callInfo = presenter?.getCallStatus() else { return }
-        connect(with: callInfo.callInfo)
+        guard let callStatus = presenter?.getCallStatus() else { return }
+        connectRoom(with: callStatus.callInfo)
     }
     
     func view(_ view: IncomingCallActionView, mouthpieceButtonDidTap button: UIButton) {
@@ -103,8 +109,9 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
     
     func view(_ view: IncomingCallActionView, cameraButtonDidTap button: UIButton) {
         let cameraEnabled = button.isSelected
-        _ = room.localParticipant?.set(source: .camera, enabled: cameraEnabled)
+        _ = room.localParticipant?.setCamera(enabled: cameraEnabled)
         infoView.isHidden = cameraEnabled
+        localVideoView.isHidden = !cameraEnabled
     }
     
     func view(_ view: IncomingCallActionView, cancelButtonDidTap button: UIButton) {
@@ -122,6 +129,16 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
 // MARK: - IncomingCallViewInterface
 
 extension IncomingCallViewController: IncomingCallViewInterface {
+    func connectRoom(with callInfo: CallInformation) {
+        room.connect(callInfo.host, callInfo.accessToken).then { [weak self] room in
+            guard let self else { return }
+            room.localParticipant?.setCamera(enabled: callInfo.video)
+            room.localParticipant?.setMicrophone(enabled: false)
+        }.catch { error in
+            self.dismiss(animated: true)
+        }
+    }
+
     func disconnectRoom() {
         self.room.disconnect().then({[weak self] () in
             self?.navigationController?.popViewController(animated: true)
@@ -139,8 +156,12 @@ extension IncomingCallViewController: IncomingCallViewInterface {
 
 extension IncomingCallViewController: RoomDelegateObjC {
     func room(_ room: Room, didUpdate connectionState: ConnectionStateObjC, oldValue oldConnectionState: ConnectionStateObjC) {
+        print("[ROOM]: old - \(oldConnectionState); new - \(connectionState)")
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
+            if connectionState == .connected {
+                self.actionStackView.setAsActive()
+            }
             self.infoView.setDuration(text: connectionState.desctiption)
             self.infoView.hidePhoneNumber()
             switch connectionState {
@@ -158,37 +179,60 @@ extension IncomingCallViewController: RoomDelegateObjC {
 
     func room(_ room: Room, localParticipant: LocalParticipant, didPublish publication: LocalTrackPublication) {
         guard let track = publication.track as? VideoTrack else {
-              return
-          }
-          DispatchQueue.main.async {
-              self.localVideoView.track = track
-          }
-      }
-
-      func room(_ room: Room, participant: RemoteParticipant, didSubscribe publication: RemoteTrackPublication, track: Track) {
-          guard let track = track as? VideoTrack else {
             return
-          }
-          DispatchQueue.main.async {
-              self.remoteVideoView.track = track
-          }
-      }
+        }
+        DispatchQueue.main.async {
+            self.localVideoView.track = track
+        }
+    }
+
+    func room(_ room: Room, participant: RemoteParticipant, didUpdate publication: RemoteTrackPublication, permission allowed: Bool) {
+        guard let track = publication.track as? VideoTrack else {
+            remoteVideoView.isHidden = true
+            return
+        }
+        DispatchQueue.main.async { [weak self] in
+            self?.remoteVideoView.isHidden = false
+            self?.remoteVideoView.track = track
+        }
+    }
+
+    func room(_ room: Room, participant: RemoteParticipant, didSubscribe publication: RemoteTrackPublication, track: Track) {
+        guard let track = track as? VideoTrack else {
+            remoteVideoView.isHidden = true
+            return
+        }
+        DispatchQueue.main.async { [weak self] in
+            self?.remoteVideoView.isHidden = false
+            self?.remoteVideoView.track = track
+        }
+    }
+
+    func room(_ room: Room, participant: RemoteParticipant, didUnsubscribe publication: RemoteTrackPublication, track: Track) {
+        guard let track = publication.track as? VideoTrack else {
+            remoteVideoView.isHidden = true
+            return
+        }
+        DispatchQueue.main.async { [weak self] in
+            self?.remoteVideoView.isHidden = false
+            self?.remoteVideoView.track = track
+        }
+    }
+
+    func room(_ room: Room, participant: RemoteParticipant, didUnpublish publication: RemoteTrackPublication) {
+        guard let track = publication.track as? VideoTrack else {
+            remoteVideoView.isHidden = true
+            return
+        }
+        DispatchQueue.main.async { [weak self] in
+            self?.remoteVideoView.isHidden = false
+            self?.remoteVideoView.track = track
+        }
+    }
+
 }
 
 //MARK: - Extensions
-
-private extension IncomingCallViewController {
-    func connect(with callInfo: CallInformation) {
-        room.connect(callInfo.host, callInfo.accessToken).then { [weak self] room in
-            guard let self, let status = self.presenter?.getCallStatus() else { return }
-            self.actionStackView.configure(status: status)
-            room.localParticipant?.setCamera(enabled: callInfo.video)
-            room.localParticipant?.setMicrophone(enabled: true)
-        }.catch { error in
-            self.dismiss(animated: true)
-        }
-    }
-}
 
 private extension ConnectionStateObjC {
     var desctiption: String {

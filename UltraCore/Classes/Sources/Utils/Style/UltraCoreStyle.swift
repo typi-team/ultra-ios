@@ -110,30 +110,17 @@ private class VoiceInputBarConfigImpl: VoiceInputBarConfig {
 }
 
 private class CallPageStyleImpl: CallPageStyle {
-    
-//    var background: TwiceColor = TwiceColorImpl(defaultColor: .from(hex: "#0F141B"), darkColor: .from(hex: "#0F141B"))
-    var background: TwiceColor = TwiceColorImpl(defaultColor: .black, darkColor: .black)
-    
-    var companionConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .white, font: .defaultRegularHeadline)
-    
+    var background: TwiceColor = TwiceColorImpl(defaultColor: .from(hex: "#0F141B"), darkColor: .from(hex: "#0F141B"))
+    var companionConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .white, font: .defaultRegularTitle2)
     var durationConfig: LabelConfig = LabelConfigImpl(darkColor: .gray400, defaultColor: .gray400, font: .defaultRegularBody)
-    
     var mouthpieceOnImage: UIImage = .fromAssets("calling.mouthpieceOn")!
-    
     var mouthpieceOffImage: UIImage = .fromAssets("calling.mouthpieceOff")!
-
     var micOnImage: UIImage = .fromAssets("calling.micOn")!
-
     var micOffImage: UIImage = .fromAssets("calling.micOff")!
-
     var cameraOnImage: UIImage = .fromAssets("calling.cameraOn")!
-
     var cameraOffImage: UIImage = .fromAssets("calling.cameraOff")!
-
     var answerImage: UIImage = .fromAssets("calling.answer")!
-
     var declineImage: UIImage = .fromAssets("calling.decline")!
-
     var closeImage: UIImage = .fromAssets("calling.close")!
 }
 

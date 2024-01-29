@@ -65,6 +65,7 @@ final class IncomingCallInfoView: UIView {
     }
     
     private func setupViews() {
+        backgroundColor = .clear
         addSubview(avatarView)
         addSubview(companionLabel)
         addSubview(dutationLabel)

@@ -18,6 +18,7 @@ final class IncomingCallWireframe: BaseWireframe<IncomingCallViewController> {
 
     init(call status: CallStatus) {
         let moduleViewController = IncomingCallViewController()
+        moduleViewController.modalPresentationStyle = .fullScreen
         super.init(viewController: moduleViewController)
 
         let presenter = IncomingCallPresenter.init(userId: appSettings.appStore.userID(),

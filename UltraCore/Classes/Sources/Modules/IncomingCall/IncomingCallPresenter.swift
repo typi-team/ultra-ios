@@ -90,6 +90,9 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
     }
     
     func viewDidLoad() {
+        if case .outcoming = callStatus {
+            self.view.connectRoom(with: callStatus.callInfo)
+        }
         if let contact = self.contactService.contact(id: self.callStatus.callInfo.sender) {
             self.view.dispay(view: contact)
         } else {
