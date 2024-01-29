@@ -31,7 +31,7 @@ class BaseMessageCell: BaseCell {
     var longTapCallback:((MessageMenuAction) -> Void)?
     lazy var disposeBag: DisposeBag = .init()
     lazy var constants: MediaMessageConstants = .init(maxWidth: 300, maxHeight: 200)
-    lazy var contentLessThanConstant: CGFloat = 120
+    lazy var bubbleWidth = UIScreen.main.bounds.width - kHeadlinePadding * 4
     
     let textView: UILabel = .init({
         $0.numberOfLines = 0
@@ -86,7 +86,7 @@ class BaseMessageCell: BaseCell {
             make.top.equalToSuperview()
             make.left.equalToSuperview().offset(kMediumPadding)
             make.bottom.equalToSuperview().offset(-(kMediumPadding - 2))
-            make.right.lessThanOrEqualToSuperview().offset(-contentLessThanConstant)
+            make.width.lessThanOrEqualTo(bubbleWidth)
         }
 
         self.textView.snp.makeConstraints { make in

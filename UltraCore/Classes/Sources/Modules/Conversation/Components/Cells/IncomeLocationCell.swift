@@ -25,10 +25,9 @@ class IncomeLocationCell: BaseMessageCell {
     override func setupConstraints() {
         self.container.snp.makeConstraints { make in
             make.top.equalToSuperview()
-            make.right.equalToSuperview().offset(-120)
             make.left.equalToSuperview().offset(kMediumPadding)
             make.bottom.equalToSuperview().offset(-(kMediumPadding - 2))
-            
+            make.width.lessThanOrEqualTo(bubbleWidth)
         }
 
         self.mediaView.snp.makeConstraints { make in
