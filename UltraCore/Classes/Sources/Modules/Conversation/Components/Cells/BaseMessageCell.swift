@@ -144,6 +144,9 @@ class BaseMessageCell: BaseCell {
 }
 
 extension BaseMessageCell: UIContextMenuInteractionDelegate {
+    
+    var reportStyle: ReportViewStyle { UltraCoreStyle.reportViewStyle }
+    
     @available(iOS 13.0, *)
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
         self.cellActionCallback?()
@@ -185,7 +188,7 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
     @available(iOS 13.0, *)
     func makeReportMenu() -> UIMenu {
         let spam = UIAction(title: MessageStrings.spam.localized,
-                            image: .named("message.cell.trash"),
+                            image: reportStyle.spam?.image,
                             identifier: nil) { [weak self] _ in
             guard let `self` = self, let message = self.message else {
                 return
@@ -194,7 +197,7 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
         }
 
         let personalData = UIAction(title: MessageStrings.personalData.localized,
-                                    image: .named("message.cell.personalData"),
+                                    image: reportStyle.personalData?.image,
                                     identifier: nil) { [weak self] _ in
             guard let `self` = self, let message = self.message else {
                 return
@@ -203,7 +206,7 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
         }
 
         let fraud = UIAction(title: MessageStrings.fraud.localized,
-                             image: .named("message.cell.fraud"),
+                             image: reportStyle.fraud?.image,
                              identifier: nil,
                              discoverabilityTitle: "To share the iamge to any social media") { [weak self] _ in
             guard let `self` = self, let message = self.message else {
@@ -213,7 +216,7 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
         }
 
         let impositionOfServices = UIAction(title: MessageStrings.impositionOfServices.localized,
-                                            image: .named("message.cell.impositionOfServices"),
+                                            image: reportStyle.impositionOfServices?.image,
                                             identifier: nil,
                                             discoverabilityTitle: nil,
 
@@ -224,7 +227,7 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
                                                 self.longTapCallback?(.reportDefined(message: message, type: ComplainTypeEnum.serviceImposition))
                                             })
         let insult = UIAction(title: MessageStrings.insult.localized,
-                              image: .named("message.cell.insult"),
+                              image: reportStyle.insult?.image,
                               identifier: nil,
                               discoverabilityTitle: nil,
 
@@ -235,7 +238,7 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
                                   self.longTapCallback?(.reportDefined(message: message, type: ComplainTypeEnum.inappropriate))
                               })
         let other = UIAction(title: MessageStrings.other.localized,
-                             image: .named("message.cell.other"),
+                             image: reportStyle.other?.image,
                              identifier: nil,
                              discoverabilityTitle: nil,
 
@@ -247,7 +250,7 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
                              })
 
         return UIMenu(title: MessageStrings.report.localized,
-                      image: .named("message.cell.report"),
+                      image: reportStyle.report?.image,
                       children: [spam, personalData, fraud, impositionOfServices, insult, other])
     }
 }
