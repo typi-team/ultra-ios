@@ -68,7 +68,7 @@ class IncomeVoiceCell: MediaCell {
             make.top.equalToSuperview()
             make.left.equalToSuperview().offset(kMediumPadding)
             make.bottom.equalToSuperview().offset(-(kMediumPadding - 2))
-            make.right.equalToSuperview().offset(-120)
+            make.width.equalTo(UIScreen.main.bounds.width - 120)
         }
         
         self.controllerView.snp.makeConstraints { make in
@@ -215,9 +215,9 @@ class OutcomeVoiceCell: IncomeVoiceCell {
     override func setupConstraints() {
         self.container.snp.makeConstraints { make in
             make.top.equalToSuperview()
-            make.left.equalToSuperview().offset(120)
             make.bottom.equalToSuperview().offset(-(kMediumPadding - 2))
             make.right.equalToSuperview().offset(-kMediumPadding)
+            make.width.equalTo(UIScreen.main.bounds.width - 120)
         }
         
         self.controllerView.snp.makeConstraints { make in

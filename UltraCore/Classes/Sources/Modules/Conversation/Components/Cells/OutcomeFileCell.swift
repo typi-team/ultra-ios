@@ -33,7 +33,7 @@ class OutcomeFileCell : BaseMessageCell {
             make.top.equalToSuperview()
             make.right.equalToSuperview().offset(-kMediumPadding)
             make.bottom.equalToSuperview().offset(-(kMediumPadding - 2))
-            make.left.greaterThanOrEqualToSuperview().offset(kHeadlinePadding * 4)
+            make.width.lessThanOrEqualTo(bubbleWidth)
         }
         
         self.moneyAvatarView.snp.makeConstraints { make in
