@@ -55,7 +55,7 @@ class ContactDisplayableImpl: ContactDisplayable {
         status = UserStatus.with({
             $0.lastSeen = dbContact.lastseen
             $0.userID = dbContact.userID
-            $0.status = .init(rawValue: dbContact.statusValue) ?? .unknown
+            $0.status = dbContact.lastseen == 0 ? .unknown : .init(rawValue: dbContact.statusValue) ?? .unknown
         })
     }
     
