@@ -61,6 +61,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.registerCell(type: IncomeLocationCell.self)
         tableView.registerCell(type: OutcomeLocationCell.self)
         tableView.registerCell(type: OutgoingMessageCell.self)
+        tableView.addGestureRecognizer(UITapGestureRecognizer.init(target: self, action: #selector(self.hideKeyboard(_: ))))
         tableView.contentInset = .zero
     }
     
@@ -440,6 +441,10 @@ extension ConversationViewController: QLPreviewControllerDataSource  {
 }
 
 extension ConversationViewController {
+    
+    @objc func hideKeyboard(_ sender: Any) {
+        self.view.endEditing(true)
+    }
     
     @objc func callWithVideo(_ sender: UIBarButtonItem) {
         self.presenter?.callVideo()
