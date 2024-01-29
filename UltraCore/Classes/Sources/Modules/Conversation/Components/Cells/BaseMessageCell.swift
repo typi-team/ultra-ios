@@ -146,7 +146,6 @@ class BaseMessageCell: BaseCell {
 extension BaseMessageCell: UIContextMenuInteractionDelegate {
     @available(iOS 13.0, *)
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
-        self.cellActionCallback?()
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ -> UIMenu? in
             guard let `self` = self else { return nil }
             var action: [UIAction] = []
