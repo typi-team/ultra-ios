@@ -264,6 +264,11 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.view.layoutIfNeeded()
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.messageInputBar.endEditing(true)
+    }
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         guard let cell = self.tableView.visibleCells.first as? BaseMessageCell,
