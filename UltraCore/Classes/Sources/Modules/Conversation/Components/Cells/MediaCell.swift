@@ -97,7 +97,7 @@ class MediaCell: BaseMessageCell {
         let spinner = NVActivityIndicatorView(
             frame: CGRect(origin: .zero, size: .init(width: 36, height: 36)),
             type: .circleStrokeSpin,
-            color: UIColor.green500,
+            color: UIColor.black,
             padding: 0
         )
         spinner.translatesAutoresizingMaskIntoConstraints = false
