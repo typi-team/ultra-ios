@@ -52,11 +52,19 @@ class ContactDisplayableImpl: ContactDisplayable {
         imagePath = dbContact.imagePath
         image = UIImage(data: dbContact.image ?? Data())
         
-        status = UserStatus.with({
-            $0.lastSeen = dbContact.lastseen
-            $0.userID = dbContact.userID
-            $0.status = dbContact.lastseen == 0 ? .unknown : .init(rawValue: dbContact.statusValue) ?? .unknown
-        })
+        if UserStatusEnum(rawValue: dbContact.statusValue) == .online {
+            status = UserStatus.with({
+                $0.lastSeen = dbContact.lastseen
+                $0.userID = dbContact.userID
+                $0.status = .init(rawValue: dbContact.statusValue) ?? .unknown
+            })
+        } else {
+            status = UserStatus.with({
+                $0.lastSeen = dbContact.lastseen
+                $0.userID = dbContact.userID
+                $0.status = dbContact.lastseen == 0 ? .unknown : .init(rawValue: dbContact.statusValue) ?? .unknown
+            })
+        }
     }
     
     init(contact: Contact) {
