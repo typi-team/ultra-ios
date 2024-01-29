@@ -614,9 +614,11 @@ extension ConversationViewController: EditActionBottomBarDelegate {
     }
     
     @objc func cancel() {
-        self.editInputBar.removeFromSuperview()
-        self.tableView.setEditing(false, animated: true)
-        self.setupNavigationMore()
+        editInputBar.removeFromSuperview()
+        tableView.setEditing(false, animated: true)
+        tableView.beginUpdates()
+        tableView.endUpdates()
+        setupNavigationMore()
     }
     
     func delete() {
