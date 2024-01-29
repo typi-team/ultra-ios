@@ -6,31 +6,41 @@
 //
 
 import UIKit
+import NVActivityIndicatorView
 import RxSwift
 
 class OutgoingPhotoCell: MediaCell {
-    
-    fileprivate let sameProgressInSameTime: RegularCaption3 = .init({
+
+    fileprivate let spinnerBackground: UIView = .init {
+        $0.backgroundColor = UIColor.white.withAlphaComponent(0.8)
         $0.isHidden = true
-        $0.cornerRadius = 4
-        $0.textAlignment = .left
-        $0.text = "  \(MessageStrings.uploadingInProgress.localized)...  "
-        $0.backgroundColor = UIColor.white.withAlphaComponent(0.7)
-    })
-    
+        $0.cornerRadius = 24
+    }
+    fileprivate let spinner: NVActivityIndicatorView = {
+        let spinner = NVActivityIndicatorView(
+            frame: CGRect(origin: .zero, size: .init(width: 36, height: 36)),
+            type: .circleStrokeSpin,
+            color: UIColor.green500,
+            padding: 0
+        )
+        spinner.translatesAutoresizingMaskIntoConstraints = false
+        spinner.startAnimating()
+        return spinner
+    }()
+
     fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
     
     override func setupView() {
         self.contentView.addSubview(container)
         self.backgroundColor = .clear
         self.container.addSubview(mediaView)
-        self.mediaView.addSubview(sameProgressInSameTime)
         self.mediaView.addSubview(downloadProgress)
         self.mediaView.addSubview(playView)
+        self.mediaView.addSubview(spinnerBackground)
+        self.spinnerBackground.addSubview(spinner)
         self.container.addSubview(deliveryWrapper)
         self.deliveryWrapper.addSubview(statusView)
         self.deliveryWrapper.addSubview(deliveryDateLabel)
-        self.sameProgressInSameTime.bringSubviewToFront(mediaView)
         self.additioanSetup()
     }
     
@@ -55,11 +65,6 @@ class OutgoingPhotoCell: MediaCell {
             make.height.equalTo(1)
             make.bottom.equalToSuperview()
         }
-
-        self.sameProgressInSameTime.snp.makeConstraints { make in
-            make.left.equalToSuperview().offset(12)
-            make.top.equalToSuperview().offset(2)
-        }
         
          self.deliveryWrapper.snp.makeConstraints { make in
             make.bottom.equalToSuperview().offset(-kLowPadding)
@@ -83,6 +88,16 @@ class OutgoingPhotoCell: MediaCell {
             make.center.equalToSuperview()
             make.width.height.equalTo(kHeadlinePadding * 2)
         }
+
+        self.spinnerBackground.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.size.equalTo(48)
+        }
+
+        self.spinner.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.size.equalTo(36)
+        }
     }
     
     override func setup(message: Message) {
@@ -101,7 +116,7 @@ class OutgoingPhotoCell: MediaCell {
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        self.sameProgressInSameTime.isHidden = true
+        self.spinnerBackground.isHidden = true
     }
     
     override func setupStyle() {
@@ -130,13 +145,13 @@ extension OutgoingPhotoCell {
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .do(onNext: { [weak self] request in
-                self?.sameProgressInSameTime.isHidden = true
+                self?.spinnerBackground.isHidden = true
                 guard let `self` = self, let request = request else { return  }
                 if request.fromChunkNumber >= request.toChunkNumber {
-                    self.sameProgressInSameTime.isHidden = true
+                    self.spinnerBackground.isHidden = true
                 } else {
-                    self.sameProgressInSameTime.isHidden = false
-                    
+                    self.spinnerBackground.isHidden = false
+
                 }
             })
             .map({ [weak self] request -> UIImage? in
@@ -154,7 +169,7 @@ extension OutgoingPhotoCell {
                 self.mediaView.image = image
             }, onError:  { [weak self] error in
                 guard let `self` = self else { return }
-                self.sameProgressInSameTime.isHidden = true
+                self.spinnerBackground.isHidden = true
             })
             .disposed(by: disposeBag)
     }
