@@ -11,30 +11,12 @@ import RxSwift
 
 class OutgoingPhotoCell: MediaCell {
 
-    fileprivate let spinnerBackground: UIView = .init {
-        $0.backgroundColor = UIColor.white.withAlphaComponent(0.8)
-        $0.isHidden = true
-        $0.cornerRadius = 24
-    }
-    fileprivate let spinner: NVActivityIndicatorView = {
-        let spinner = NVActivityIndicatorView(
-            frame: CGRect(origin: .zero, size: .init(width: 36, height: 36)),
-            type: .circleStrokeSpin,
-            color: UIColor.green500,
-            padding: 0
-        )
-        spinner.translatesAutoresizingMaskIntoConstraints = false
-        spinner.startAnimating()
-        return spinner
-    }()
-
     fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
     
     override func setupView() {
         self.contentView.addSubview(container)
         self.backgroundColor = .clear
         self.container.addSubview(mediaView)
-        self.mediaView.addSubview(downloadProgress)
         self.mediaView.addSubview(playView)
         self.mediaView.addSubview(spinnerBackground)
         self.spinnerBackground.addSubview(spinner)
@@ -58,12 +40,6 @@ class OutgoingPhotoCell: MediaCell {
             make.edges.equalToSuperview()
             make.width.equalTo(self.constants.maxWidth)
             make.height.equalTo(self.constants.maxHeight)
-        }
-        
-        self.downloadProgress.snp.makeConstraints { make in
-            make.left.right.equalToSuperview()
-            make.height.equalTo(1)
-            make.bottom.equalToSuperview()
         }
         
          self.deliveryWrapper.snp.makeConstraints { make in
@@ -139,13 +115,13 @@ extension OutgoingPhotoCell {
         self.mediaView.image = self.mediaRepository.image(from: message) ??
             UIImage(data: message.photo.preview) ??
             UIImage(data: message.video.thumbPreview)
+        self.spinnerBackground.isHidden = false
         self.mediaRepository
             .uploadingMedias
             .map({ $0.first(where: { $0.fileID == self.message?.fileID }) })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .do(onNext: { [weak self] request in
-                self?.spinnerBackground.isHidden = true
                 guard let `self` = self, let request = request else { return  }
                 if request.fromChunkNumber >= request.toChunkNumber {
                     self.spinnerBackground.isHidden = true
@@ -167,6 +143,7 @@ extension OutgoingPhotoCell {
             .subscribe(onNext: { [weak self] image in
                 guard let `self` = self else { return }
                 self.mediaView.image = image
+                self.playView.isHidden = !message.hasVideo
             }, onError:  { [weak self] error in
                 guard let `self` = self else { return }
                 self.spinnerBackground.isHidden = true
@@ -179,12 +156,12 @@ extension OutgoingPhotoCell {
 class OutgoingVideoCell: OutgoingPhotoCell {
     override func setup(message: Message) {
         super.setup(message: message)
-        self.playView.isHidden = !message.hasVideo
         self.statusView.image = statusImage(for: message)
         self.mediaView.image = UIImage.init(data: message.video.thumbPreview)
         if self.mediaRepository.isUploading(from: message) {
             self.uploadingProgress(for: message)
         } else if let image = self.mediaRepository.image(from: message) {
+            self.playView.isHidden = !message.hasVideo
             self.mediaView.image = image
         } else {
             if message.photo.preview.isEmpty {
