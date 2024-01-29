@@ -8,26 +8,25 @@
 import Foundation
 
 protocol AppSettingsStore {
-    func token() -> String
     func userID() -> String
     func store(token: String)
     func store(userID: String)
     func store(last state: Int64)
     
+    var token: String?  { get set }
     var lastState: Int64 { get }
-    var isAuthed: Bool { get }
     var ssid: String? { get set }
     func deleteAll()
 }
 
 class AppSettingsStoreImpl {
-    fileprivate let kToken = "kToken"
     fileprivate let kSID = "kSSID"
     fileprivate let kUserID = "kUserID"
     fileprivate let kLastState = "kLastState"
     fileprivate let userDefault = UserDefaults(suiteName: "com.ultaCore.messenger")
     
     var ssid: String?
+    var token: String?
 }
 
 extension AppSettingsStoreImpl: AppSettingsStore {
@@ -51,23 +50,14 @@ extension AppSettingsStoreImpl: AppSettingsStore {
         self.userDefault?.set(userID, forKey: kUserID)
     }
     
-    
-    var isAuthed: Bool { self.userDefault?.string(forKey: kToken) != nil }
-    
     func store(token: String) {
-        self.userDefault?.set(token, forKey: kToken)
-    }
-    
-    func token() -> String {
-        guard let token = self.userDefault?.string(forKey: kToken) else {
-            fatalError("call store(token:) before call this function")
-        }
-        return token
+        self.token = token
     }
     
     func deleteAll() {
-        [kToken,
-         kSID,
+        token = nil
+        ssid = nil
+        [kSID,
          kUserID,
          kLastState].forEach({ key in
             self.userDefault?.removeObject(forKey: key)

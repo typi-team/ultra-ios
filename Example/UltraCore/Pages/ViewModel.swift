@@ -7,88 +7,77 @@
 //
 import UltraCore
 import Foundation
+import FirebaseMessaging
+import RxSwift
+
+struct UserResponse: Codable {
+    let sid: String
+    let sidExpire: Int
+    let firstname: String
+    let lastname: String
+    let phone: String
+    
+    private enum CodingKeys: String, CodingKey {
+        case sid
+        case sidExpire = "sid_expire"
+        case firstname
+        case lastname
+        case phone
+    }
+}
 
 class ViewModel {
     fileprivate var timerUpdate: Timer?
-    
+    private let disposeBag = DisposeBag()
+
     func viewDidLoad() {
         UltraCoreSettings.delegate = self
         UltraCoreSettings.futureDelegate = self
     }
     
+    var phone: String? {UserDefaults.standard.string(forKey: "phone") }
+    
     func setupSID(callback: @escaping (Error?) -> Void) {
-                UltraCoreSettings.update(sid: UserDefaults.standard.string(forKey: "K_SID") ?? "", with: callback) 
+        guard UserDefaults.standard.string(forKey: "phone") != nil else {
+            return callback(NSError.init(domain: "no saved account", code: 101))
+        }
+        UltraCoreSettings.updateSession(callback: callback)
     }
     
-    func timer() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 60, execute: {
-            self.timerUpdate = Timer.scheduledTimer(timeInterval: 60, target: self, selector: #selector(self.runTimedCode), userInfo: nil, repeats: true)
-            self.timerUpdate?.fire()
-        })
-    }
-}
-
-private extension ViewModel {
-    @objc func runTimedCode(_ sender: Any) {
-        let userDef = UserDefaults.standard
-        guard let lastname = userDef.string(forKey: "last_name"),
-              let firstname = userDef.string(forKey: "first_name"),
-              let phone = userDef.string(forKey: "phone")else  {
-                  return
-        }
-        self.login(lastName: lastname, firstname: firstname, phone: phone)
-    }
-    
-    func login(lastName: String, firstname: String, phone number: String) {
-        
-        struct UserResponse: Codable {
-            let sid: String
-            let sidExpire: Int
-            let firstname: String
-            let lastname: String
-            let phone: String
-            
-            private enum CodingKeys: String, CodingKey {
-                case sid
-                case sidExpire = "sid_expire"
-                case firstname
-                case lastname
-                case phone
-            }
-        }
-        
-        guard let url = URL(string: "https://ultra-dev.typi.team/mock/v1/auth"),
+    func didRegisterForRemoteNotifications() {
+        guard let url = URL(string: "https://ultra-dev.typi.team/mock/v1/device"),
+              let firebaseToken = Messaging.messaging().fcmToken,
+              let sidToken = UserDefaults.standard.string(forKey: "K_SID"),
+              let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
               let jsonData = try? JSONSerialization.data(withJSONObject: [
-                  "phone": number,
-                  "lastname": lastName,
-                  "firstname": firstname,
-                  "nickname": firstname,
+                  "app_version": appVersion,
+                  "token": firebaseToken,
+                  "device_id": UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString,
+                  "platform": "IOS",
+                  "voip_push_token": ""
               ]) else { return }
-
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonData
-        
-        let task = URLSession.shared.dataTask(with: request) {(data, response, error) in
-             if let data = data,
-                      let userResponse = try? JSONDecoder().decode(UserResponse.self, from: data) {
-                 UltraCoreSettings.update(sid: userResponse.sid, with: {_ in })
-            }
-        }
-        
+        request.setValue(sidToken, forHTTPHeaderField: "SID")
+        let task = URLSession.shared.dataTask(with: request) {(data, response, error) in }
         task.resume()
     }
+    
 }
 
-
 extension ViewModel: UltraCoreFutureDelegate {
+    func availableToBlock(conversation: Any) -> Bool {
+        true 
+    }
+    
     func availableToRecordVoice() -> Bool {
-        false
+        true
     }
     
     func availableToReport(message: Any) -> Bool {
-        false
+        true
     }
     
     func localize(for key: String) -> String? {
@@ -101,6 +90,40 @@ extension ViewModel: UltraCoreFutureDelegate {
 }
 
 extension ViewModel: UltraCoreSettingsDelegate {
+    func token(callback: @escaping (Result<String, Error>) -> Void) {
+        let userDef = UserDefaults.standard
+        guard let lastname = userDef.string(forKey: "last_name"),
+              let firstname = userDef.string(forKey: "first_name"),
+              let phone = userDef.string(forKey: "phone") else {
+            return callback(.failure(NSError.init(domain: "no saved account", code: 101)))
+        }
+
+        guard let url = URL(string: "https://ultra-dev.typi.team/mock/v1/auth"),
+              let jsonData = try? JSONSerialization.data(withJSONObject: [
+                  "phone": phone,
+                  "lastname": lastname,
+                  "firstname": firstname,
+                  "nickname": firstname,
+              ]) else { return }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonData
+        URLSession.shared.rx.data(request: request)
+            .map {
+                try JSONDecoder().decode(UserResponse.self, from: $0)
+            }
+            .do(onNext: { [weak self] _ in
+                self?.didRegisterForRemoteNotifications()
+            })
+            .subscribe { userResponse in
+                callback(.success(userResponse.sid))
+            } onError: { error in
+                callback(.failure(error))
+            }
+            .disposed(by: disposeBag)
+    }
+
     func emptyConversationView() -> UIView? {
         return nil
     }
@@ -132,4 +155,5 @@ extension ViewModel: UltraCoreSettingsDelegate {
     func availableToLocation() -> Bool {
         return true
     }
+
 }

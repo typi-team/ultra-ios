@@ -33,6 +33,8 @@ struct DeviceRequest {
 
   var device: DeviceEnum = .web
 
+  var voipPushToken: String = String()
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -62,6 +64,7 @@ extension DeviceRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     2: .same(proto: "token"),
     3: .standard(proto: "app_version"),
     4: .same(proto: "device"),
+    5: .standard(proto: "voip_push_token"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -74,6 +77,7 @@ extension DeviceRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       case 2: try { try decoder.decodeSingularStringField(value: &self.token) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self.appVersion) }()
       case 4: try { try decoder.decodeSingularEnumField(value: &self.device) }()
+      case 5: try { try decoder.decodeSingularStringField(value: &self.voipPushToken) }()
       default: break
       }
     }
@@ -92,6 +96,9 @@ extension DeviceRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if self.device != .web {
       try visitor.visitSingularEnumField(value: self.device, fieldNumber: 4)
     }
+    if !self.voipPushToken.isEmpty {
+      try visitor.visitSingularStringField(value: self.voipPushToken, fieldNumber: 5)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -100,6 +107,7 @@ extension DeviceRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if lhs.token != rhs.token {return false}
     if lhs.appVersion != rhs.appVersion {return false}
     if lhs.device != rhs.device {return false}
+    if lhs.voipPushToken != rhs.voipPushToken {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

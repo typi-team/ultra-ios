@@ -8,6 +8,7 @@
 import Foundation
 
 protocol MessageInputBarDelegate: VoiceInputBarDelegate {
+    func unblock()
     func exchanges()
     func message(text: String)
     func typing(is active: Bool)
@@ -17,6 +18,10 @@ protocol MessageInputBarDelegate: VoiceInputBarDelegate {
 
 class MessageInputBar: UIView {
 
+    var isRecording: Bool {
+        return audioRecordUtils.isRecording
+    }
+    
 //    MARK: Static properties
     
     fileprivate var lastTypingDate: Date = .init()
@@ -40,12 +45,13 @@ class MessageInputBar: UIView {
     
     private lazy var messageTextView: UITextView = MessageTextView.init {[weak self] textView in
         textView.delegate = self
+        textView.inputAccessoryView = nil
         textView.cornerRadius = kLowPadding
         textView.placeholder = self?.style?.textConfig.placeholder ?? ""
     }
     
     private lazy var sendButton: UIButton = .init {[weak self] button in
-        guard let `self` = self else { return }
+        guard let self else { return }
         button.setImage(self.kInputPlusImage, for: .normal)
         button.addAction {
             guard let message = self.messageTextView.text?.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -59,8 +65,8 @@ class MessageInputBar: UIView {
         }
     }
     
-    private lazy var exchangesButton: UIButton = .init {[weak self] button in
-        guard let `self` = self else { return }
+    private lazy var exchangesButton: UIButton = .init { [weak self] button in
+        guard let self else { return }
         button.setImage(self.kInputExchangeImage, for: .normal)
         button.addAction {
             self.delegate?.exchanges()
@@ -71,7 +77,8 @@ class MessageInputBar: UIView {
         }
     }
     
-    private lazy var recordView: RecordView = .init({
+    private lazy var recordView: RecordView = .init({ [weak self] in
+        guard let self else { return }
         $0.delegate = self
         $0.isHidden = true
         $0.isUserInteractionEnabled = false
@@ -84,10 +91,8 @@ class MessageInputBar: UIView {
         button.clipsToBounds = false
     }
     
-    private lazy var blockLabel: LabelWithInsets = .init {
-        $0.textAlignment = .center
-        $0.isUserInteractionEnabled = true
-        $0.text = MessageStrings.sorryButYouHaveBlockedThisChatIfYouHaveAnyQuestionsOrNeedAssistancePleaseContactOurSupportService.localized
+    private lazy var blockView: BlockView = BlockView.init {
+        $0.delegate = self
     }
     
 //    MARK: Public properties
@@ -100,6 +105,7 @@ class MessageInputBar: UIView {
         self.setupViews()
         self.setupConstraints()
         self.setupStyle()
+        self.traitCollectionDidChange(UIScreen.main.traitCollection)
     }
     
     required init?(coder: NSCoder) {
@@ -111,7 +117,7 @@ class MessageInputBar: UIView {
         self.messageTextView.font = style?.textConfig.font
         self.messageTextView.textColor = style?.textConfig.color
         self.divider.backgroundColor = style?.dividerColor.color
-        self.blockLabel.backgroundColor = style?.background.color
+        self.blockView.backgroundColor = style?.background.color
         self.containerStack.backgroundColor = style?.messageContainerBackground.color
         self.messageTextView.backgroundColor = style?.messageContainerBackground.color
         self.messageTextView.tintColor = style?.textConfig.tintColor.color
@@ -284,14 +290,15 @@ extension UITextView: NSTextStorageDelegate {
 
 extension MessageInputBar {
     func block(_ isBlocked: Bool) {
-        self.blockLabel.snp.makeConstraints { make in
+        self.blockView.snp.makeConstraints { make in
             if isBlocked {
-                self.addSubview(blockLabel)
-                self.blockLabel.snp.makeConstraints { make in
+                self.addSubview(blockView)
+                self.blockView.bringSubviewToFront(self)
+                self.blockView.snp.makeConstraints { make in
                     make.edges.equalToSuperview()
                 }
             } else {
-                self.blockLabel.removeFromSuperview()
+                self.blockView.removeFromSuperview()
             }
         }
     }
@@ -315,8 +322,15 @@ extension MessageInputBar: AudioRecordUtilsDelegate {
     }
 }
 
+extension MessageInputBar: BlockViewDelegate {
+    func unblock() {
+        self.delegate?.unblock()
+    }
+}
+
 extension MessageInputBar: RecordViewDelegate {
     func onStart() {
+        AppSettingsImpl.shared.voiceRepository.stop()
         self.recordView.isHidden = false
         self.recordView.bringSubviewToFront(self)
         self.recordView.isUserInteractionEnabled = true

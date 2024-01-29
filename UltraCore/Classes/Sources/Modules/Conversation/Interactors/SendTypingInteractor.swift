@@ -7,15 +7,15 @@
 import RxSwift
 import Foundation
 
-class SendTypingInteractor: UseCase<String, SendTypingResponse> {
+class SendTypingInteractor: GRPCErrorUseCase<String, SendTypingResponse> {
     final let messageService: MessageServiceClientProtocol
 
     init(messageService: MessageServiceClientProtocol) {
         self.messageService = messageService
     }
 
-    override func executeSingle(params: String) -> Single<SendTypingResponse> {
-        return Single.create { [weak self] observer in
+    override func job(params: String) -> Single<SendTypingResponse> {
+        Single.create { [weak self] observer in
             guard let `self` = self else { return Disposables.create() }
 
             self.messageService

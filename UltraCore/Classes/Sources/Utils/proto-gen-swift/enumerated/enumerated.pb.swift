@@ -55,7 +55,7 @@ enum DeviceEnum: SwiftProtobuf.Enum {
 
 extension DeviceEnum: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [DeviceEnum] = [
+  static var allCases: [DeviceEnum] = [
     .web,
     .ios,
     .android,
@@ -102,7 +102,7 @@ enum ChatTypeEnum: SwiftProtobuf.Enum {
 
 extension ChatTypeEnum: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [ChatTypeEnum] = [
+  static var allCases: [ChatTypeEnum] = [
     .peerToPeer,
     .simpleGroup,
     .group,
@@ -171,7 +171,7 @@ enum MessageTypeEnum: SwiftProtobuf.Enum {
 
 extension MessageTypeEnum: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [MessageTypeEnum] = [
+  static var allCases: [MessageTypeEnum] = [
     .text,
     .audio,
     .voice,
@@ -226,7 +226,7 @@ enum UserStatusEnum: SwiftProtobuf.Enum {
 
 extension UserStatusEnum: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [UserStatusEnum] = [
+  static var allCases: [UserStatusEnum] = [
     .unknown,
     .online,
     .offline,
@@ -271,7 +271,7 @@ enum UserTypeEnum: SwiftProtobuf.Enum {
 
 extension UserTypeEnum: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [UserTypeEnum] = [
+  static var allCases: [UserTypeEnum] = [
     .userTypeUnknown,
     .user,
     .bot,
@@ -322,7 +322,7 @@ enum MediaTypeEnum: SwiftProtobuf.Enum {
 
 extension MediaTypeEnum: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [MediaTypeEnum] = [
+  static var allCases: [MediaTypeEnum] = [
     .mediaUnknown,
     .mediaPhoto,
     .mediaVideo,
@@ -371,7 +371,7 @@ enum MoneyStatusEnum: SwiftProtobuf.Enum {
 
 extension MoneyStatusEnum: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [MoneyStatusEnum] = [
+  static var allCases: [MoneyStatusEnum] = [
     .moneyStatusUnknown,
     .inProgress,
     .completed,
@@ -419,7 +419,7 @@ enum StockStatusEnum: SwiftProtobuf.Enum {
 
 extension StockStatusEnum: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [StockStatusEnum] = [
+  static var allCases: [StockStatusEnum] = [
     .stockStatusUnknown,
     .stockStatusInProgress,
     .stockStatusCompleted,
@@ -467,7 +467,7 @@ enum CoinStatusEnum: SwiftProtobuf.Enum {
 
 extension CoinStatusEnum: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [CoinStatusEnum] = [
+  static var allCases: [CoinStatusEnum] = [
     .coinStatusUnknown,
     .coinStatusInProgress,
     .coinStatusCompleted,
@@ -506,7 +506,7 @@ enum ComplainMessageEnum: SwiftProtobuf.Enum {
 
 extension ComplainMessageEnum: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [ComplainMessageEnum] = [
+  static var allCases: [ComplainMessageEnum] = [
     .received,
   ]
 }
@@ -518,6 +518,10 @@ enum ComplainTypeEnum: SwiftProtobuf.Enum {
   case abuse // = 0
   case spam // = 1
   case inappropriate // = 2
+  case personalData // = 3
+  case other // = 4
+  case fraud // = 5
+  case serviceImposition // = 6
   case UNRECOGNIZED(Int)
 
   init() {
@@ -529,6 +533,10 @@ enum ComplainTypeEnum: SwiftProtobuf.Enum {
     case 0: self = .abuse
     case 1: self = .spam
     case 2: self = .inappropriate
+    case 3: self = .personalData
+    case 4: self = .other
+    case 5: self = .fraud
+    case 6: self = .serviceImposition
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -538,6 +546,10 @@ enum ComplainTypeEnum: SwiftProtobuf.Enum {
     case .abuse: return 0
     case .spam: return 1
     case .inappropriate: return 2
+    case .personalData: return 3
+    case .other: return 4
+    case .fraud: return 5
+    case .serviceImposition: return 6
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -548,10 +560,14 @@ enum ComplainTypeEnum: SwiftProtobuf.Enum {
 
 extension ComplainTypeEnum: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [ComplainTypeEnum] = [
+  static var allCases: [ComplainTypeEnum] = [
     .abuse,
     .spam,
     .inappropriate,
+    .personalData,
+    .other,
+    .fraud,
+    .serviceImposition,
   ]
 }
 
@@ -616,7 +632,7 @@ enum PhotoSize: SwiftProtobuf.Enum {
 
 extension PhotoSize: CaseIterable {
   // The compiler won't synthesize support with the UNRECOGNIZED case.
-  static let allCases: [PhotoSize] = [
+  static var allCases: [PhotoSize] = [
     .blur,
     .s,
     .w,
@@ -743,6 +759,10 @@ extension ComplainTypeEnum: SwiftProtobuf._ProtoNameProviding {
     0: .same(proto: "ABUSE"),
     1: .same(proto: "SPAM"),
     2: .same(proto: "INAPPROPRIATE"),
+    3: .same(proto: "PERSONAL_DATA"),
+    4: .same(proto: "OTHER"),
+    5: .same(proto: "FRAUD"),
+    6: .same(proto: "SERVICE_IMPOSITION"),
   ]
 }
 

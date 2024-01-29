@@ -27,6 +27,15 @@ enum MessageStrings: String, StringLocalizable {
     case delete
     case select
     
+    case spam
+    case personalData
+    case fraud
+    case impositionOfServices
+    case insult
+    case other
+    case additionalInformationInComments
+    case comment
+    
     case sorryButYouHaveBlockedThisChatIfYouHaveAnyQuestionsOrNeedAssistancePleaseContactOurSupportService
 
     var prefixOfTemplate: String { "message" }

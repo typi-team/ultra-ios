@@ -67,6 +67,7 @@ extension FFSignUpPresenter: SignUpPresenterInterface {
                   "lastname": lastName,
                   "nickname": lastName,
                   "firstname": firstname,
+                  "device_id": UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
               ]) else { return }
 
         var request = URLRequest(url: url)
@@ -77,13 +78,14 @@ extension FFSignUpPresenter: SignUpPresenterInterface {
         let task = URLSession.shared.dataTask(with: request) {[weak self] (data, response, error) in
             guard let `self` = self else { return }
             if let error = error {
-                fatalError(error.localizedDescription)
+                print(error.localizedDescription)
             } else if let data = data,
                       let userResponse = try? JSONDecoder().decode(UserResponse.self, from: data) {
-                UltraCoreSettings.update(sid: userResponse.sid) { error in
+                UserDefaults.standard.set(userResponse.sid, forKey: "K_SID")
+                UltraCoreSettings.update(sid: userResponse.sid) {[weak self] error in
                     if let error = error {
                         PP.warning(error.localizedDescription)
-                    } else {
+                    } else if let `self` = self {
                         DispatchQueue.main.async {
                             self.view.open(view: UltraCoreSettings.entryConversationsViewController())
                         }

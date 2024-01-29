@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import GRPC
 
 enum LogLevel: Int {
     case verbose = 0
@@ -45,6 +46,16 @@ class PP {
     static func error(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
         if PP.logLevel.rawValue <= LogLevel.error.rawValue {
             log("[ERROR 🤬] \(message)", file: file, function: function, line: line)
+        }
+    }
+    
+    static func grpc(_ error: Error, file: String = #file, function: String = #function, line: Int = #line) {
+        if PP.logLevel.rawValue <= LogLevel.error.rawValue {
+            if let grpcError = error as? GRPCStatus {
+                PP.error("\(grpcError.message ?? "Not defined message") : \(grpcError.code)")
+            } else {
+                PP.error(error.localizedDescription)
+            }
         }
     }
 

@@ -17,16 +17,15 @@ final class ConversationsPresenter: BasePresenter {
 
     // MARK: - Private properties -
     private let updateRepository: UpdateRepository
-    private let messageRepository: MessageRepository
-    private unowned let view: ConversationsViewInterface
+    private weak var view: ConversationsViewInterface?
     private let wireframe: ConversationsWireframeInterface
     fileprivate let contactDBService: ContactDBService
     private let conversationRepository: ConversationRepository
-    private let retrieveContactStatusesInteractor: UseCase<Void, Void>
     fileprivate let contactByUserIdInteractor: ContactByUserIdInteractor
-    fileprivate let userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>
     fileprivate let deleteConversationInteractor: UseCase<(Conversation, Bool), Void>
-    fileprivate let contactToCreateChatByPhoneInteractor: ContactToCreateChatByPhoneInteractor
+    fileprivate let contactToConversationInteractor: ContactToConversationInteractor
+    fileprivate let resendMessagesInteractor: ResendingMessagesInteractor
+    fileprivate let reachabilityInteractor: ReachabilityInteractor
     
     lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(conversationRepository.conversations(), updateRepository.typingUsers)
         .map({ conversations, typingUsers in
@@ -44,32 +43,35 @@ final class ConversationsPresenter: BasePresenter {
 
     init(view: ConversationsViewInterface,
          updateRepository: UpdateRepository,
-         messageRepository: MessageRepository,
          contactDBService: ContactDBService,
          wireframe: ConversationsWireframeInterface,
          conversationRepository: ConversationRepository,
          contactByUserIdInteractor: ContactByUserIdInteractor,
-         retrieveContactStatusesInteractor: UseCase<Void, Void>,
          deleteConversationInteractor: UseCase<(Conversation,Bool), Void>,
-         contactToCreateChatByPhoneInteractor: ContactToCreateChatByPhoneInteractor,
-         userStatusUpdateInteractor: UseCase<Bool, UpdateStatusResponse>) {
+         contactToConversationInteractor: ContactToConversationInteractor,
+         resendMessagesInteractor: ResendingMessagesInteractor,
+         reachabilityInteractor: ReachabilityInteractor) {
         self.view = view
         self.wireframe = wireframe
         self.updateRepository = updateRepository
-        self.messageRepository = messageRepository
         self.contactDBService = contactDBService
         self.conversationRepository = conversationRepository
         self.contactByUserIdInteractor = contactByUserIdInteractor
-        self.userStatusUpdateInteractor = userStatusUpdateInteractor
         self.deleteConversationInteractor = deleteConversationInteractor
-        self.retrieveContactStatusesInteractor = retrieveContactStatusesInteractor
-        self.contactToCreateChatByPhoneInteractor = contactToCreateChatByPhoneInteractor
+        self.resendMessagesInteractor = resendMessagesInteractor
+        self.reachabilityInteractor = reachabilityInteractor
+        self.contactToConversationInteractor = contactToConversationInteractor
     }
 }
 
 // MARK: - Extensions -
 
 extension ConversationsPresenter: ConversationsPresenterInterface {
+    
+    func viewDidLoad() {
+        startReachibilityNotifier()
+    }
+    
     func delete(_ conversation: Conversation, all: Bool) {
         self.deleteConversationInteractor.executeSingle(params: (conversation, all))
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
@@ -77,25 +79,13 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
             .subscribe()
             .disposed(by: disposeBag)
     }
-    func retrieveContactStatuses() {
-        self.retrieveContactStatusesInteractor.execute(params: ())
-            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
-            .observe(on: MainScheduler.instance)
-            .subscribe()
-            .disposed(by: disposeBag)
+
+    func startPingPong() {
+        UltraCoreSettings.updateSession { _ in }
     }
-    
-    func updateStatus(is online: Bool) {
-        self.userStatusUpdateInteractor.executeSingle(params: online)
-            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
-            .observe(on: MainScheduler.instance)
-            .subscribe()
-            .disposed(by: disposeBag)
-    }
-    
-    func setupUpdateSubscription() {
-        self.updateRepository.setupSubscription()
-        self.updateRepository.sendPoingByTimer()
+
+    func stopPingPong() {
+        self.updateRepository.stopSession()
     }
     
     func navigate(to conversation: Conversation) {
@@ -113,20 +103,28 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
     }
     
     func createChatBy(contact: IContact) {
-        self.contactToCreateChatByPhoneInteractor
+        self.contactToConversationInteractor
             .executeSingle(params: contact)
-            .flatMap({ contactByPhone -> Single<Conversation> in
-                self.contactByUserIdInteractor.executeSingle(params: contactByPhone.userID)
-                    .flatMap({ contact in
-                        self.contactDBService.save(contact: contact).map({contact})
-                    }).map({ ConversationImpl(contact: $0, idintification: contactByPhone.chatID) })
-                    
-            })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { [weak self] conversation in
-                
-                self?.wireframe.navigateToConversation(with: conversation)
+                if let conversation = conversation {
+                    self?.wireframe.navigateToConversation(with: conversation)
+                }
+            })
+            .disposed(by: disposeBag)
+    }
+    
+    private func startReachibilityNotifier() {
+        reachabilityInteractor.execute(params: ())
+            .subscribe(onNext: { [weak self] _ in
+                guard let self else { return }
+                self.resendMessagesInteractor
+                    .executeSingle(params: ())
+                    .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+                    .observe(on: MainScheduler.instance)
+                    .subscribe()
+                    .disposed(by: self.disposeBag)
             })
             .disposed(by: disposeBag)
     }

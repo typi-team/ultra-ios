@@ -9,13 +9,25 @@ import Foundation
 import AVFAudio
 import RxSwift
 
-class VoiceItem {
+class VoiceItem: CustomStringConvertible {
     let voiceMessage: VoiceMessage
     var currentTime: TimeInterval = 0.0
-    
-    init(voiceMessage: VoiceMessage, currentTime: TimeInterval) {
+    var isPlaying: Bool
+
+    init(voiceMessage: VoiceMessage, currentTime: TimeInterval, isPlaying: Bool) {
         self.voiceMessage = voiceMessage
         self.currentTime = currentTime
+        self.isPlaying = isPlaying
+    }
+    
+    var valueForSlider: Float {
+        let duration = voiceMessage.duration.timeInterval
+        let value = (currentTime / duration)
+        return Float(value)
+    }
+
+    var description: String {
+        return "[VoiceItem]: \(voiceMessage.fileID) \(currentTime) / \(voiceMessage.duration) isPlaying: \(isPlaying)"
     }
 }
 
@@ -38,7 +50,22 @@ class VoiceRepository: NSObject {
         self.timer?.invalidate()
         try? AVAudioSession.sharedInstance().setActive(false)
     }
-    
+
+    func playPause() {
+        if audioPlayer?.isPlaying ?? false {
+            self.audioPlayer?.pause()
+            self.timer?.invalidate()
+        } else {
+            self.audioPlayer?.play()
+            self.timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(updateTime), userInfo: nil, repeats: true)
+        }
+        let currentItem = try? currentVoice.value()
+        currentItem?.isPlaying = audioPlayer?.isPlaying ?? false
+        self.currentVoice.on(
+            .next(currentItem)
+        )
+    }
+
     func play(message: Message, atTime: TimeInterval = .zero) {
         guard let soundURL = self.mediaUtils.mediaURL(from: message) else { return }
         do {
@@ -53,7 +80,9 @@ class VoiceRepository: NSObject {
             
             self.timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(updateTime), userInfo: nil, repeats: true)
             self.audioPlayer = audioPlayer
-            self.currentVoice.on(.next(.init(voiceMessage: message.voice, currentTime: atTime)))
+            self.currentVoice.on(
+                .next(.init(voiceMessage: message.voice, currentTime: atTime, isPlaying: audioPlayer.isPlaying))
+            )
         } catch {
             self.stop()
             PP.error(error.localizedDescription)

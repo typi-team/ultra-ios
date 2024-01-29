@@ -28,7 +28,7 @@
 "contacts.grantAccess" = "Give access";
 
 "contacts.minuteSingularForm" = "minute";
-"contacts.minutePluralForm" = "minututes";
+"contacts.minutePluralForm" = "minutes";
 "contacts.minutePluralForm2" = "minute";
 
 "contacts.hourSingularForm" = "hour";
@@ -46,7 +46,7 @@
 "conversation.money" = "Money";
 "conversation.online" = "online";
 "conversation.unknowNumber" = "";
-"conversation.prints" = "prints";
+"conversation.prints" = "prints...";
 "conversation.moneyTransfer" = "Transfer";
 "conversation.insertMoney" = "";
 "conversation.send" = "Send";
@@ -73,6 +73,7 @@
 "conversation.deleteForEveryone" = "Delete for everyone";
 "conversation.givePermissionToRecordVoice" = "Give permission to record voice";
 "conversation.ifAMessageContainsThreatsInappropriateContentOrViolatesAnyPlatformOrCommunity" = "If a message contains threats, inappropriate content, or violates any platform or community rules, it can be reported and is subject to removal. Restoring such a message may be impossible";
+"conversation.yourComplaintWillBeReviewedByModeratorsThankYou" = "Moderators will review your complaint. Thank you!";
 
 "conversation.areYouSure" = "Are you sure?";
 "conversation.pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible" = "Please note that message data will be permanently deleted and recovery will not be possible";
@@ -94,7 +95,14 @@
 "message.delete" = "Delete";
 "message.select" = "Select";
 "message.sorryButYouHaveBlockedThisChatIfYouHaveAnyQuestionsOrNeedAssistancePleaseContactOurSupportService" = "Sorry, but you have blocked this chat. If you have any questions or need assistance, please contact our support service";
-
+"message.spam" = "Spam";
+"message.personalData" = "Personal data";
+"message.fraud" = "Fraud";
+"message.impositionOfServices" = "Imposition of services";
+"message.insult" = "Insult";
+"message.other" = "Other";
+"message.additionalInformationInComments" = "Additional information in comments";
+"message.comment" = "Comment";
 // MARK: Base view
 "base.freedomChatDoesNotHaveAccessToYourContacts" = "Freedom Chat does not have access to your contacts";
 "base.goToSettingsAndSwitchContactsToOn" = "Go to the settings and switch Contacts to ON";

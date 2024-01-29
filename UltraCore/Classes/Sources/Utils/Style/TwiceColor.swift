@@ -30,3 +30,14 @@ public extension TwiceColor {
         }
     }
 }
+
+
+class TwiceColorImpl: TwiceColor {
+    var defaultColor: UIColor
+    var darkColor: UIColor
+    
+    init(defaultColor: UIColor, darkColor: UIColor) {
+        self.defaultColor = defaultColor
+        self.darkColor = darkColor
+    }
+}

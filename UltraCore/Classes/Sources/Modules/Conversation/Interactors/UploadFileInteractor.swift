@@ -7,7 +7,7 @@
 
 import RxSwift
 
-class UploadFileInteractor: UseCase<[FileChunk], Void> {
+class UploadFileInteractor: GRPCErrorUseCase<[FileChunk], Void> {
 
      private let fileService: FileServiceClientProtocol
 
@@ -15,7 +15,7 @@ class UploadFileInteractor: UseCase<[FileChunk], Void> {
          self.fileService = fileService
      }
 
-    override func executeSingle(params: [FileChunk]) -> Single<Void> {
+    override func job(params: [FileChunk]) -> Single<Void> {
         Observable.from(params)
             .concatMap({self.upload(chunk: $0)})
             .toArray()
@@ -36,6 +36,7 @@ class UploadFileInteractor: UseCase<[FileChunk], Void> {
                 .whenComplete({ result in
                     switch result {
                     case .success:
+                        PP.debug("[Message]: Finished uploading file \(chunk.fileID)")
                         observer(.success(()))
                     case let .failure(error):
                         observer(.failure(error))
