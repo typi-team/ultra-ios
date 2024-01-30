@@ -7,6 +7,8 @@
 
 import UIKit
 import NVActivityIndicatorView
+import RxCocoa
+import RxSwift
 
 class OutcomeFileCell : BaseMessageCell {
     
@@ -17,7 +19,7 @@ class OutcomeFileCell : BaseMessageCell {
     })
     fileprivate let spinner: NVActivityIndicatorView = {
         let spinner = NVActivityIndicatorView(
-            frame: CGRect(origin: .zero, size: .init(width: 30, height: 30)),
+            frame: CGRect(origin: .zero, size: .init(width: 20, height: 20)),
             type: .circleStrokeSpin,
             color: .black,
             padding: 0
@@ -27,8 +29,15 @@ class OutcomeFileCell : BaseMessageCell {
         spinner.translatesAutoresizingMaskIntoConstraints = false
         return spinner
     }()
-
     fileprivate let moneyCaptionlabel: RegularFootnote = .init({ $0.text = MessageStrings.fileWithoutSmile.localized })
+    fileprivate let mediaRepository: MediaRepository = AppSettingsImpl.shared.mediaRepository
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        
+        spinner.isHidden = true
+        fileIconView.isHidden = false
+    }
     
     override func setupView() {
         super.setupView()
@@ -83,7 +92,7 @@ class OutcomeFileCell : BaseMessageCell {
 
         self.spinner.snp.makeConstraints { make in
             make.center.equalTo(fileIconView)
-            make.size.equalTo(30)
+            make.size.equalTo(20)
         }
     }
     
@@ -92,11 +101,37 @@ class OutcomeFileCell : BaseMessageCell {
         self.textView.text = message.file.fileName
         self.statusView.image = message.statusImage
         self.spinner.isHidden = message.state.delivered == true
-        self.fileIconView.isHidden = !self.spinner.isHidden
     }
     
     override func setupStyle() {
         super.setupStyle()
         self.fileIconView.image = UltraCoreStyle.outcomeMessageCell?.fileIconImage?.image ?? UIImage.named("contact_file_icon")
+        bindLoader()
+    }
+    
+    private func bindLoader() {
+        let driver = mediaRepository
+            .uploadingMedias
+            .map { [weak self] requests in
+                requests.first(where: { $0.fileID == self?.message?.fileID })
+            }
+            .map { request in
+                guard let request = request else {
+                    return false
+                }
+                return request.fromChunkNumber < request.toChunkNumber
+            }
+            .distinctUntilChanged()
+            .debounce(.milliseconds(100), scheduler: MainScheduler.instance)
+            .asDriver(onErrorJustReturn: false)
+        driver
+            .drive { [weak self] isLoading in
+                self?.spinner.isHidden = !isLoading
+                isLoading ? self?.spinner.startAnimating() : self?.spinner.stopAnimating()
+            }
+            .disposed(by: disposeBag)
+        driver
+            .drive(fileIconView.rx.isHidden)
+            .disposed(by: disposeBag)
     }
 }
