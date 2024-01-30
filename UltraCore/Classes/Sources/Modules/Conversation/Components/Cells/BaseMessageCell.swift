@@ -153,7 +153,7 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
             guard let `self` = self else { return nil }
             var action: [UIAction] = []
 
-            if let message = self.message, !message.hasVoice {
+            if let message = self.message, !message.hasAttachment {
                 action.append(UIAction(title: MessageStrings.copy.localized, image: .named("message.cell.copy")) { [weak self] _ in
                     guard let `self` = self, let message = self.message else { return }
                     self.longTapCallback?(.copy(message))
