@@ -25,16 +25,6 @@ protocol ConversationViewInterface: ViewInterface {
     func blocked(is blocked: Bool)
 }
 
-struct FileUpload {
-    let url: URL?
-    let data: Data
-    let mime: MimeType
-    let width: CGFloat
-    let height: CGFloat
-    
-    var duration: TimeInterval = 0.0
-}
-
 protocol ConversationPresenterInterface: PresenterInterface {
     func block()
     func viewDidLoad()

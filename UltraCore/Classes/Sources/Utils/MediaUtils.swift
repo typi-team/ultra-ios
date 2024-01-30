@@ -125,7 +125,6 @@ class MediaUtils {
     }
 }
 
-typealias MimeType = String
 
 extension URL {
     func mimeType() -> MimeType {
