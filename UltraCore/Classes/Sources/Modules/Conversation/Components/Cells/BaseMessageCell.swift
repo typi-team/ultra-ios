@@ -149,31 +149,29 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
     
     @available(iOS 13.0, *)
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ -> UIMenu? in
+        guard let message else { return nil }
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self, message] _ -> UIMenu? in
             guard let `self` = self else { return nil }
             var action: [UIAction] = []
 
-            if let message = self.message, !message.hasAttachment {
-                action.append(UIAction(title: MessageStrings.copy.localized, image: .named("message.cell.copy")) { [weak self] _ in
-                    guard let `self` = self, let message = self.message else { return }
+            if  !message.hasAttachment {
+                action.append(UIAction(title: MessageStrings.copy.localized, image: .named("message.cell.copy")) { _ in
                     self.longTapCallback?(.copy(message))
                 })
             }
             
-            action.append(UIAction(title: MessageStrings.delete.localized, image: .named("message.cell.trash"), attributes: .destructive) { [weak self] _ in
-                guard let `self` = self, let message = self.message else { return }
+            action.append(UIAction(title: MessageStrings.delete.localized, image: .named("message.cell.trash"), attributes: .destructive) { _ in
                 self.longTapCallback?(.delete(message))
             })
 
-            let select = UIAction(title: MessageStrings.select.localized, image: .named("message.cell.select")) { [weak self] _ in
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
-                    guard let `self` = self, let message = self.message else { return }
+            let select = UIAction(title: MessageStrings.select.localized, image: .named("message.cell.select")) { _ in
+                self.cellActionCallback?()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
                     self.longTapCallback?(.select(message))
                 })
             }
-
             
-            if let message = self.message, message.isIncome,
+            if message.isIncome,
                 (UltraCoreSettings.futureDelegate?.availableToReport(message: message) ?? true) {
                 return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), self.makeReportMenu(), select])
             }else {
