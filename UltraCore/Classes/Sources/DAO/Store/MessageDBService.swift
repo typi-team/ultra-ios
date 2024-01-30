@@ -113,6 +113,20 @@ class MessageDBService {
         }
     }
     
+    func lastMessage(chatID: String) -> Single<Message> {
+        return Single.create { completable in
+            let realm = Realm.myRealm()
+            let messages = (realm.objects(DBMessage.self).where { $0.receiver.chatID.equals(chatID) })
+                                        .compactMap { $0.toProto() }.sorted(by: { m1, m2 in m1.meta.created < m2.meta.created })
+            if let lastMessage = messages.last {
+                completable(.success(lastMessage))
+            } else {
+                completable(.failure(NSError.objectsIsNill))
+            }
+            return Disposables.create()
+        }
+    }
+    
     //   MARK: Получение всех сообщений в базе
     func messages() -> Observable<[Message]> {
         return Observable.create { observer in
