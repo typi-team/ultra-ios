@@ -264,6 +264,11 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.view.layoutIfNeeded()
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.messageInputBar.endEditing(true)
+    }
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         guard let cell = self.tableView.visibleCells.first as? BaseMessageCell,
@@ -619,9 +624,11 @@ extension ConversationViewController: EditActionBottomBarDelegate {
     }
     
     @objc func cancel() {
-        self.editInputBar.removeFromSuperview()
-        self.tableView.setEditing(false, animated: true)
-        self.setupNavigationMore()
+        editInputBar.removeFromSuperview()
+        tableView.setEditing(false, animated: true)
+        tableView.beginUpdates()
+        tableView.endUpdates()
+        setupNavigationMore()
     }
     
     func delete() {

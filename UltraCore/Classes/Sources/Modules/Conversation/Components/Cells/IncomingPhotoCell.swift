@@ -27,7 +27,7 @@ class IncomingPhotoCell: MediaCell {
             make.top.equalToSuperview()
             make.left.equalToSuperview().offset(kMediumPadding)
             make.bottom.equalToSuperview().offset(-(kMediumPadding - 2))
-            make.right.lessThanOrEqualToSuperview().offset(-contentLessThanConstant)
+            make.width.lessThanOrEqualTo(bubbleWidth)
         }
 
         self.mediaView.snp.makeConstraints { make in

@@ -123,6 +123,7 @@ class ReportCommentController: BaseViewController<String> {
         super.setupStyle()
         
         self.image.image = style?.headlineImage.image
+        self.view.backgroundColor = style?.backgroundColor.color
         
         self.saveButton.backgroundColor = style?.reportButtonConfig.backgroundColor.color
         self.saveButton.setTitleColor(style?.reportButtonConfig.titleConfig.color, for: .normal)

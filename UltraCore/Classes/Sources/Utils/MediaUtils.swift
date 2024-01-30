@@ -255,6 +255,12 @@ extension Message {
             return photo.fileSize
         } else if hasVideo {
             return video.fileSize
+        } else if hasFile {
+            return file.fileSize
+        } else if hasAudio {
+            return audio.fileSize
+        } else if hasVoice {
+            return voice.fileSize
         } else {
             return 0
         }
