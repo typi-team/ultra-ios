@@ -265,5 +265,9 @@ extension Message {
             return 0
         }
     }
+    
+    var hasAttachment: Bool {
+        hasFile || hasPhoto || hasVideo || hasVoice || hasAudio
+    }
 }
 
