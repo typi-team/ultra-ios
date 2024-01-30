@@ -56,23 +56,23 @@ class IncomeFileCell : BaseMessageCell {
             make.width.lessThanOrEqualTo(bubbleWidth)
         }
         
+        self.fileIconView.snp.makeConstraints { make in
+            make.left.equalToSuperview().offset(kMediumPadding)
+            make.top.equalToSuperview().offset(kMediumPadding)
+            make.bottom.equalToSuperview().offset(-kMediumPadding)
+            make.width.equalTo(16)
+        }
+        
         self.textView.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(kMediumPadding)
-            make.left.equalToSuperview().offset(kMediumPadding)
+            make.left.equalTo(fileIconView.snp.right).offset(kMediumPadding)
+            make.right.equalToSuperview().offset(-kMediumPadding)
         }
         
         self.moneyCaptionlabel.snp.makeConstraints { make in
-            make.top.equalTo(textView.snp.bottom).offset(1)
-            make.left.equalToSuperview().offset(kMediumPadding)
             make.bottom.equalTo(fileIconView.snp.bottom)
-        }
-
-        self.fileIconView.snp.makeConstraints { make in
-            make.left.equalTo(textView.snp.right).offset(kLowPadding)
-            make.top.equalToSuperview().offset(kMediumPadding)
-            make.right.equalToSuperview().offset(-kMediumPadding)
-            make.bottom.equalToSuperview().offset(-kMediumPadding)
-            make.width.equalTo(16)
+            make.top.equalTo(textView.snp.bottom).offset(1)
+            make.left.equalTo(fileIconView.snp.right).offset(kMediumPadding)
         }
         
         self.spinner.snp.makeConstraints { make in
@@ -82,8 +82,7 @@ class IncomeFileCell : BaseMessageCell {
 
         self.deliveryDateLabel.snp.makeConstraints { make in
             make.centerY.equalTo(moneyCaptionlabel.snp.centerY)
-            make.right.equalTo(fileIconView.snp.left).offset(-kMediumPadding)
-            make.left.equalTo(self.moneyCaptionlabel.snp.right).offset(kLowPadding / 2)
+            make.right.equalToSuperview().offset(-kMediumPadding)
         }
     }
 
