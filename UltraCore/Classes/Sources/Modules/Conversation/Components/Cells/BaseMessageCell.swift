@@ -145,6 +145,7 @@ class BaseMessageCell: BaseCell {
 
 extension BaseMessageCell: UIContextMenuInteractionDelegate {
     
+    var messageStyle: MessageCellStyle { UltraCoreStyle.messageCellStyle }
     var reportStyle: ReportViewStyle { UltraCoreStyle.reportViewStyle }
     
     @available(iOS 13.0, *)
@@ -155,18 +156,18 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
             var action: [UIAction] = []
 
             if let message = self.message, !message.hasVoice {
-                action.append(UIAction(title: MessageStrings.copy.localized, image: .named("message.cell.copy")) { [weak self] _ in
+                action.append(UIAction(title: MessageStrings.copy.localized, image: messageStyle.copy?.image) { [weak self] _ in
                     guard let `self` = self, let message = self.message else { return }
                     self.longTapCallback?(.copy(message))
                 })
             }
             
-            action.append(UIAction(title: MessageStrings.delete.localized, image: .named("message.cell.trash"), attributes: .destructive) { [weak self] _ in
+            action.append(UIAction(title: MessageStrings.delete.localized, image: messageStyle.delete?.image, attributes: .destructive) { [weak self] _ in
                 guard let `self` = self, let message = self.message else { return }
                 self.longTapCallback?(.delete(message))
             })
 
-            let select = UIAction(title: MessageStrings.select.localized, image: .named("message.cell.select")) { [weak self] _ in
+            let select = UIAction(title: MessageStrings.select.localized, image: messageStyle.select?.image) { [weak self] _ in
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
                     guard let `self` = self, let message = self.message else { return }
                     self.longTapCallback?(.select(message))

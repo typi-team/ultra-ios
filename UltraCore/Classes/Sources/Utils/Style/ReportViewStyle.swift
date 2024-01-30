@@ -7,6 +7,12 @@
 
 import Foundation
 
+public protocol MessageCellStyle {
+    var copy: TwiceImage? { get set }
+    var delete: TwiceImage? { get set }
+    var select: TwiceImage? { get set }
+}
+
 public protocol ReportViewStyle {
     var spam: TwiceImage? { get set }
     var personalData: TwiceImage? { get set }
@@ -18,7 +24,12 @@ public protocol ReportViewStyle {
 }
 
 
-struct ReportViewStyleImpl: ReportViewStyle {
+struct ReportViewStyleImpl: MessageCellStyle, ReportViewStyle {
+    
+    var copy: TwiceImage? = TwiceImageImpl.init(dark: .named("message.cell.copy")!, default: .named("message.cell.copy")!)
+    var delete: TwiceImage? = TwiceImageImpl(dark: .named("message.cell.trash")!, default: .named("message.cell.trash")!)
+    var select: TwiceImage? = TwiceImageImpl(dark: .named("message.cell.select")!, default: .named("message.cell.select")!)
+    
     var spam: TwiceImage? = TwiceImageImpl.init(dark: .named("message.cell.trash")!, default: .named("message.cell.trash")!)
     var personalData: TwiceImage? = TwiceImageImpl(dark: .named("message.cell.personalData")!, default: .named("message.cell.personalData")!)
     var fraud: TwiceImage? = TwiceImageImpl(dark: .named("message.cell.fraud")!, default: .named("message.cell.fraud")!)
