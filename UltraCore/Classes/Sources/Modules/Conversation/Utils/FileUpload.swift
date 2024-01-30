@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import MobileCoreServices
 
 typealias MimeType = String
 
@@ -32,6 +33,10 @@ struct FileUpload {
 
 extension MimeType {
     var `extension`: String {
+        if let mimeUTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, self as CFString, nil)?.takeRetainedValue(),
+           let extUTI = UTTypeCopyPreferredTagWithClass(mimeUTI, kUTTagClassFilenameExtension)?.takeRetainedValue() {
+            return extUTI as String
+        }
         return mimeTypesToExtension[self] ?? "unknown"
     }
 }
