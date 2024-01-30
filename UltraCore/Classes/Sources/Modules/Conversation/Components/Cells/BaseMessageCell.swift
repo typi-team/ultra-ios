@@ -31,7 +31,7 @@ class BaseMessageCell: BaseCell {
     var longTapCallback:((MessageMenuAction) -> Void)?
     lazy var disposeBag: DisposeBag = .init()
     lazy var constants: MediaMessageConstants = .init(maxWidth: 300, maxHeight: 200)
-    lazy var contentLessThanConstant: CGFloat = 120
+    lazy var bubbleWidth = UIScreen.main.bounds.width - kHeadlinePadding * 4
     
     let textView: UILabel = .init({
         $0.numberOfLines = 0
@@ -86,7 +86,7 @@ class BaseMessageCell: BaseCell {
             make.top.equalToSuperview()
             make.left.equalToSuperview().offset(kMediumPadding)
             make.bottom.equalToSuperview().offset(-(kMediumPadding - 2))
-            make.right.lessThanOrEqualToSuperview().offset(-contentLessThanConstant)
+            make.width.lessThanOrEqualTo(bubbleWidth)
         }
 
         self.textView.snp.makeConstraints { make in
@@ -150,14 +150,12 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
     
     @available(iOS 13.0, *)
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
-        self.cellActionCallback?()
-        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self] _ -> UIMenu? in
+        guard let message else { return nil }
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self, message] _ -> UIMenu? in
             guard let `self` = self else { return nil }
             var action: [UIAction] = []
-
-            if let message = self.message, !message.hasVoice {
-                action.append(UIAction(title: MessageStrings.copy.localized, image: messageStyle.copy?.image) { [weak self] _ in
-                    guard let `self` = self, let message = self.message else { return }
+            if  !message.hasAttachment {
+                action.append(UIAction(title: MessageStrings.copy.localized, image: .named("message.cell.copy")) { _ in
                     self.longTapCallback?(.copy(message))
                 })
             }
@@ -167,15 +165,14 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
                 self.longTapCallback?(.delete(message))
             })
 
-            let select = UIAction(title: MessageStrings.select.localized, image: messageStyle.select?.image) { [weak self] _ in
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
-                    guard let `self` = self, let message = self.message else { return }
+            let select = UIAction(title: MessageStrings.select.localized, image: messageStyle.select?.image) { _ in
+                self.cellActionCallback?()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
                     self.longTapCallback?(.select(message))
                 })
             }
-
             
-            if let message = self.message, message.isIncome,
+            if message.isIncome,
                 (UltraCoreSettings.futureDelegate?.availableToReport(message: message) ?? true) {
                 return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), self.makeReportMenu(), select])
             }else {

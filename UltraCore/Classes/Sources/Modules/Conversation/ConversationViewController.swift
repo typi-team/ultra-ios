@@ -22,6 +22,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     let sheetTransitioningDelegate = SheetTransitioningDelegate()
     fileprivate var mediaItem: URL?
     fileprivate var isDrawingTable: Bool = false
+    lazy var dismissKeyboardGesture = UITapGestureRecognizer.init(target: self, action: #selector(hideKeyboard))
     
     // MARK: - Views
     fileprivate lazy var refreshControl = UIRefreshControl{
@@ -61,6 +62,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.registerCell(type: IncomeLocationCell.self)
         tableView.registerCell(type: OutcomeLocationCell.self)
         tableView.registerCell(type: OutgoingMessageCell.self)
+        tableView.addGestureRecognizer(dismissKeyboardGesture)
         tableView.contentInset = .zero
     }
     
@@ -263,6 +265,11 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.view.layoutIfNeeded()
     }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.messageInputBar.endEditing(true)
+    }
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         guard let cell = self.tableView.visibleCells.first as? BaseMessageCell,
@@ -441,6 +448,10 @@ extension ConversationViewController: QLPreviewControllerDataSource  {
 
 extension ConversationViewController {
     
+    @objc func hideKeyboard(_ sender: Any) {
+        self.view.endEditing(true)
+    }
+    
     @objc func callWithVideo(_ sender: UIBarButtonItem) {
         self.presenter?.callVideo()
     }
@@ -570,22 +581,20 @@ extension ConversationViewController {
     }
     
     func presentEditController(for message: Message, indexPath: IndexPath) {
-        self.navigationItem.rightBarButtonItem = .init(image: .named("icon_close"), style: .done, target: self, action: #selector(self.cancel))
-        self.tableView.allowsMultipleSelectionDuringEditing = true
-        self.tableView.setEditing(!tableView.isEditing, animated: true)
+        dismissKeyboardGesture.isEnabled = false
+        navigationItem.rightBarButtonItem = .init(image: .named("icon_close"), style: .done, target: self, action: #selector(self.cancel))
+        tableView.allowsMultipleSelectionDuringEditing = true
+        tableView.setEditing(!tableView.isEditing, animated: true)
         
         if(tableView.isEditing) {
-            self.view.addSubview(editInputBar)
+            view.addSubview(editInputBar)
             editInputBar.snp.makeConstraints({make in
                 make.edges.equalTo(self.messageInputBar)
             })
         } else {
-            self.editInputBar.removeFromSuperview()
+            editInputBar.removeFromSuperview()
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: {
-            self.tableView.reloadData()
-            self.tableView.selectRow(at: indexPath, animated: true, scrollPosition: .middle)
-        })
+        tableView.selectRow(at: indexPath, animated: true, scrollPosition: .middle)
     }
 }
 
@@ -614,9 +623,12 @@ extension ConversationViewController: EditActionBottomBarDelegate {
     }
     
     @objc func cancel() {
-        self.editInputBar.removeFromSuperview()
-        self.tableView.setEditing(false, animated: true)
-        self.setupNavigationMore()
+        dismissKeyboardGesture.isEnabled = true
+        editInputBar.removeFromSuperview()
+        tableView.setEditing(false, animated: true)
+        tableView.beginUpdates()
+        tableView.endUpdates()
+        setupNavigationMore()
     }
     
     func delete() {
