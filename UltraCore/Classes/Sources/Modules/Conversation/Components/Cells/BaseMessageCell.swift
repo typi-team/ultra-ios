@@ -145,6 +145,7 @@ class BaseMessageCell: BaseCell {
 
 extension BaseMessageCell: UIContextMenuInteractionDelegate {
     
+    var messageStyle: MessageCellStyle { UltraCoreStyle.messageCellStyle }
     var reportStyle: ReportViewStyle { UltraCoreStyle.reportViewStyle }
     
     @available(iOS 13.0, *)
@@ -153,18 +154,18 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self, message] _ -> UIMenu? in
             guard let `self` = self else { return nil }
             var action: [UIAction] = []
-
             if  !message.hasAttachment {
                 action.append(UIAction(title: MessageStrings.copy.localized, image: .named("message.cell.copy")) { _ in
                     self.longTapCallback?(.copy(message))
                 })
             }
             
-            action.append(UIAction(title: MessageStrings.delete.localized, image: .named("message.cell.trash"), attributes: .destructive) { _ in
+            action.append(UIAction(title: MessageStrings.delete.localized, image: messageStyle.delete?.image, attributes: .destructive) { [weak self] _ in
+                guard let `self` = self, let message = self.message else { return }
                 self.longTapCallback?(.delete(message))
             })
 
-            let select = UIAction(title: MessageStrings.select.localized, image: .named("message.cell.select")) { _ in
+            let select = UIAction(title: MessageStrings.select.localized, image: messageStyle.select?.image) { _ in
                 self.cellActionCallback?()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
                     self.longTapCallback?(.select(message))

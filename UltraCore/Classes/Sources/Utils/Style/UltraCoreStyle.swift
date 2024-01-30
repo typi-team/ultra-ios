@@ -77,6 +77,7 @@ public class UltraCoreStyle {
 //    MARK: Report page config
     public static var reportCommentControllerStyle: ReportCommentControllerStyle? = ReportCommentControllerStyleImpl()
     public static var reportViewStyle: ReportViewStyle = ReportViewStyleImpl()
+    public static var messageCellStyle: MessageCellStyle = ReportViewStyleImpl()
 }
 
 private class MessageInputBarConfigImpl: MessageInputBarConfig {
