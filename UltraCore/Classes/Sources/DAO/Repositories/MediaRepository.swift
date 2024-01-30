@@ -104,7 +104,7 @@ extension MediaRepositoryImpl: MediaRepository {
             self.downloadingImages.on(.next(inProgressValues))
 
             self.fileService
-                .download(params, callOptions: .default(), handler: { chunk in
+                .download(params, callOptions: .default(include: false), handler: { chunk in
                     data.append(chunk.data)
                     params.fromChunkNumber = chunk.seqNum
                     PP.info((Float(params.fromChunkNumber) / Float(params.toChunkNumber)).description)
@@ -363,12 +363,12 @@ extension MediaRepositoryImpl {
             })
             .do(onSuccess: { [weak self] _ in
                 guard let `self` = self, var process = try? self.uploadingMedias.value() else { return }
-                process.removeAll(where: { $0.fileID == message.photo.fileID })
+                process.removeAll(where: { $0.fileID == message.fileID })
                 self.uploadingMedias.on(.next(process))
             }, onError: {[weak self] (error: Error) in
                 PP.warning(error.localizedDescription)
                 guard let `self` = self, var process = try? self.uploadingMedias.value() else { return }
-                process.removeAll(where: { $0.fileID == message.photo.fileID })
+                process.removeAll(where: { $0.fileID == message.fileID })
                 self.uploadingMedias.on(.next(process))
             })
     }
