@@ -149,6 +149,12 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
     var reportStyle: ReportViewStyle { UltraCoreStyle.reportViewStyle }
     
     @available(iOS 13.0, *)
+    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration, dismissalPreviewForItemWithIdentifier identifier: NSCopying) -> UITargetedPreview? {
+        cellActionCallback?()
+        return nil
+    }
+    
+    @available(iOS 13.0, *)
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
         guard let message else { return nil }
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self, message] _ -> UIMenu? in
@@ -160,14 +166,14 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
                 })
             }
             
-            action.append(UIAction(title: MessageStrings.delete.localized, image: messageStyle.delete?.image, attributes: .destructive) { [weak self] _ in
-                guard let `self` = self, let message = self.message else { return }
+            action.append(UIAction(title: MessageStrings.delete.localized, image: messageStyle.delete?.image, attributes: .destructive) { _ in
+                self.cellActionCallback?()
                 self.longTapCallback?(.delete(message))
             })
 
             let select = UIAction(title: MessageStrings.select.localized, image: messageStyle.select?.image) { _ in
                 self.cellActionCallback?()
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
                     self.longTapCallback?(.select(message))
                 })
             }
