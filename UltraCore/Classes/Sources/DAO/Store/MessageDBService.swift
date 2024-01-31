@@ -187,7 +187,10 @@ class MessageDBService {
         if let conversationID = conversationID,
                     let conversaiton = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID),
            conversaiton.message == nil {
-            conversaiton.message = realm.objects(DBMessage.self).where({$0.receiver.chatID == conversationID}).last
+            conversaiton.message = realm.objects(DBMessage.self)
+                .where({$0.receiver.chatID == conversationID})
+                .sorted(by: { $0.meta?.created ?? 0 < $1.meta?.created ?? 0 })
+                .last
         }
     }
     
