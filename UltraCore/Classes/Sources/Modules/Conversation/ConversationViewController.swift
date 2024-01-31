@@ -303,6 +303,7 @@ extension ConversationViewController: MessageInputBarDelegate {
     }
     
     func pressedPlus(in view: MessageInputBar) {
+        view.endEditing(true)
         let viewController = FilesController()
         viewController.resultCallback = {[weak self] action in
             guard let `self` = self else { return }
