@@ -23,8 +23,6 @@ enum MessageMenuAction {
 }
 
 class BaseMessageCell: BaseCell {
-    fileprivate lazy var cellAction = UITapGestureRecognizer.init(target: self, action: #selector(self.handleCellPress(_:)))
-    
     var message: Message?
     var cellActionCallback: (() -> Void)?
     var actionCallback: ((Message) -> Void)?
@@ -60,8 +58,6 @@ class BaseMessageCell: BaseCell {
         super.additioanSetup()
         
         self.selectionStyle = .gray
-        
-        self.contentView.addGestureRecognizer(cellAction)
         
         if #available(iOS 13.0, *) {
             
@@ -149,14 +145,11 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
     var reportStyle: ReportViewStyle { UltraCoreStyle.reportViewStyle }
     
     @available(iOS 13.0, *)
-    func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configuration: UIContextMenuConfiguration, dismissalPreviewForItemWithIdentifier identifier: NSCopying) -> UITargetedPreview? {
-        cellActionCallback?()
-        return nil
-    }
-    
-    @available(iOS 13.0, *)
     func contextMenuInteraction(_ interaction: UIContextMenuInteraction, configurationForMenuAtLocation location: CGPoint) -> UIContextMenuConfiguration? {
-        guard let message else { return nil }
+        guard let message else {
+            return nil
+        }
+        cellActionCallback?()
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { [weak self, message] _ -> UIMenu? in
             guard let `self` = self else { return nil }
             var action: [UIAction] = []
@@ -167,12 +160,10 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
             }
             
             action.append(UIAction(title: MessageStrings.delete.localized, image: messageStyle.delete?.image, attributes: .destructive) { _ in
-                self.cellActionCallback?()
                 self.longTapCallback?(.delete(message))
             })
 
             let select = UIAction(title: MessageStrings.select.localized, image: messageStyle.select?.image) { _ in
-                self.cellActionCallback?()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
                     self.longTapCallback?(.select(message))
                 })
@@ -275,10 +266,6 @@ extension BaseMessageCell {
             return
         }
         self.actionCallback?(message)
-     }
-    
-    @objc func handleCellPress(_ sender: UILongPressGestureRecognizer) {
-        self.cellActionCallback?()
      }
     
     override func setEditing(_ editing: Bool, animated: Bool) {
