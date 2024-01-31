@@ -36,7 +36,7 @@ class UploadFileInteractor: GRPCErrorUseCase<[FileChunk], Void> {
                 .whenComplete({ result in
                     switch result {
                     case .success:
-                        PP.debug("[Message]: Finished uploading file \(chunk.fileID)")
+                        PP.debug("[Message]: Finished uploading chunk \(chunk.seqNum) for file \(chunk.fileID)")
                         observer(.success(()))
                     case let .failure(error):
                         observer(.failure(error))

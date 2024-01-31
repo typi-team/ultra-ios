@@ -31,7 +31,7 @@ class IncomeMoneyCell : BaseMessageCell {
             make.top.equalToSuperview()
             make.left.equalToSuperview().offset(kMediumPadding)
             make.bottom.equalToSuperview().offset(-(kMediumPadding - 2))
-            make.right.lessThanOrEqualToSuperview().offset(-contentLessThanConstant)
+            make.width.lessThanOrEqualTo(bubbleWidth)
         }
         
         self.moneyHeadlineLabel.snp.makeConstraints { make in

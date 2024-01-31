@@ -37,5 +37,5 @@ class ReportCommentControllerStyleImpl: ReportCommentControllerStyle {
     
     var reportButtonConfig: ElevatedButtonStyle = ElevatedButtonStyleImpl()
     
-    var cancelButtonConfig: ElevatedButtonStyle = ElevatedButtonStyleImpl(backgroundColor: TwiceColorImpl(defaultColor: .white, darkColor: .white), titleConfig: LabelConfigImpl(darkColor: .green500, defaultColor: .green500, font: .defaultRegularCallout))
+    var cancelButtonConfig: ElevatedButtonStyle = ElevatedButtonStyleImpl(backgroundColor: TwiceColorImpl(defaultColor: .white, darkColor: .white), titleConfig: LabelConfigImpl(darkColor: .gray700, defaultColor: .gray700, font: .defaultRegularCallout))
 }
