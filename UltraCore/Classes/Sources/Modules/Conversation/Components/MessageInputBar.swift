@@ -195,6 +195,10 @@ class MessageInputBar: UIView {
         }
     }
     
+    func dismiss() {
+        messageTextView.resignFirstResponder()
+    }
+    
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         self.setupStyle()
