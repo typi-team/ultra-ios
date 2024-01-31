@@ -108,11 +108,14 @@ final class MoneyTransferViewController: BaseViewController<MoneyTransferPresent
         self.summTextField.becomeFirstResponder()
     }
     
-    override func changed(keyboard height: CGFloat) {
-        
-        UIView.animate(withDuration: 0.3, animations: {
+    override func changedKeyboard(
+        height: CGFloat,
+        animationDuration: Double,
+        animationOptions: UIView.AnimationOptions
+    ) {
+        UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
             self.view.frame.origin.y = UIScreen.main.bounds.height - self.view.frame.height - height
-        })
+        }
     }
 }
 

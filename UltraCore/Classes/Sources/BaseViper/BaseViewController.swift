@@ -78,17 +78,44 @@ extension UIViewController {
     }
 
     @objc func keyboardWillShow(notification: NSNotification) {
-        guard let userInfo = notification.userInfo else { return }
-        guard let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else { return }
-        self.changed(keyboard: keyboardFrame.height)
+        guard
+            let userInfo = notification.userInfo,
+            let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+            let durationValue = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double,
+            let curveValue = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt
+        else {
+            return
+        }
+        
+        self.changedKeyboard(
+            height: keyboardFrame.height,
+            animationDuration: durationValue,
+            animationOptions: UIView.AnimationOptions(rawValue: curveValue << 16)
+        )
     }
     
-    @objc func changed(keyboard height: CGFloat) {
+    @objc func changedKeyboard(
+        height: CGFloat,
+        animationDuration: Double,
+        animationOptions: UIView.AnimationOptions
+    ) {
         fatalError("implement this methode")
     }
 
     @objc func keyboardWillHide(notification: NSNotification) {
-        self.changed(keyboard: 0)
+        guard
+            let userInfo = notification.userInfo,
+            let durationValue = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double,
+            let curveValue = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt
+        else {
+            return
+        }
+        
+        self.changedKeyboard(
+            height: 0,
+            animationDuration: durationValue,
+            animationOptions: UIView.AnimationOptions(rawValue: curveValue << 16)
+        )
     }
     
     @objc func textFieldDidChange(_ sender: UITextField) {
