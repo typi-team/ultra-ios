@@ -594,7 +594,7 @@ extension ConversationViewController {
         } else {
             editInputBar.removeFromSuperview()
         }
-        tableView.selectRow(at: indexPath, animated: true, scrollPosition: .middle)
+        tableView.selectRow(at: indexPath, animated: true, scrollPosition: .none)
     }
 }
 
