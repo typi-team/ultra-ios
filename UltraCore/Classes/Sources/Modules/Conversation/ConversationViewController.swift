@@ -250,19 +250,31 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
 //            .disposed(by: disposeBag)
     }
     
-    override func changed(keyboard height: CGFloat) {
-        
-        if let indexPath = self.tableView.indexPathsForVisibleRows?.last {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
-                self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
-            })
+    override func changedKeyboard(
+        height: CGFloat,
+        animationDuration: Double,
+        animationOptions: UIView.AnimationOptions
+    ) {
+        if 
+            let indexPath = self.tableView.indexPathsForVisibleRows?.last,
+            tableView.contentSize.height > tableView.frame.height 
+        {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) { [weak self] in
+                guard let self = self else { return }
+                let cellRect = self.tableView.rectForRow(at: indexPath)
+                UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
+                    self.tableView.contentOffset = CGPoint(x: 0, y: cellRect.maxY - self.tableView.frame.height)
+                }
+            }
         }
         
-        self.messageInputBar.snp.updateConstraints { make in
-            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin).offset(height > 0 ? -(height - 36) : 0)
+        UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
+            self.messageInputBar.snp.updateConstraints { make in
+                make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottomMargin)
+                    .offset(height > 0 ? -(height - 36) : 0)
+            }
+            self.view.layoutIfNeeded()
         }
-
-        self.view.layoutIfNeeded()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
