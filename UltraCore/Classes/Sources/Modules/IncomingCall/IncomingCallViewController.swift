@@ -104,13 +104,12 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
     }
     
     func view(_ view: IncomingCallActionView, microButtonDidTap button: UIButton) {
-        _ = room.localParticipant?.set(source: .microphone, enabled: !button.isSelected)
+        _ = room.localParticipant?.setMicrophone(enabled: !button.isSelected)
     }
     
     func view(_ view: IncomingCallActionView, cameraButtonDidTap button: UIButton) {
         let cameraEnabled = button.isSelected
         _ = room.localParticipant?.setCamera(enabled: cameraEnabled)
-        infoView.isHidden = cameraEnabled
         localVideoView.isHidden = !cameraEnabled
     }
     
@@ -130,9 +129,9 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
 
 extension IncomingCallViewController: IncomingCallViewInterface {
     func connectRoom(with callInfo: CallInformation) {
-        room.connect(callInfo.host, callInfo.accessToken).then { [weak self] room in
-            guard let self else { return }
+        room.connect(callInfo.host, callInfo.accessToken).then { room in
             room.localParticipant?.setCamera(enabled: callInfo.video)
+            // TO-DO: change to true
             room.localParticipant?.setMicrophone(enabled: false)
         }.catch { error in
             self.dismiss(animated: true)
@@ -186,17 +185,6 @@ extension IncomingCallViewController: RoomDelegateObjC {
         }
     }
 
-    func room(_ room: Room, participant: RemoteParticipant, didUpdate publication: RemoteTrackPublication, permission allowed: Bool) {
-        guard let track = publication.track as? VideoTrack else {
-            remoteVideoView.isHidden = true
-            return
-        }
-        DispatchQueue.main.async { [weak self] in
-            self?.remoteVideoView.isHidden = false
-            self?.remoteVideoView.track = track
-        }
-    }
-
     func room(_ room: Room, participant: RemoteParticipant, didSubscribe publication: RemoteTrackPublication, track: Track) {
         guard let track = track as? VideoTrack else {
             remoteVideoView.isHidden = true
@@ -207,27 +195,15 @@ extension IncomingCallViewController: RoomDelegateObjC {
             self?.remoteVideoView.track = track
         }
     }
-
-    func room(_ room: Room, participant: RemoteParticipant, didUnsubscribe publication: RemoteTrackPublication, track: Track) {
-        guard let track = publication.track as? VideoTrack else {
-            remoteVideoView.isHidden = true
+    
+    func room(_ room: Room, participant: Participant, didUpdate publication: TrackPublication, muted: Bool) {
+        guard publication.track is VideoTrack else {
             return
         }
         DispatchQueue.main.async { [weak self] in
-            self?.remoteVideoView.isHidden = false
-            self?.remoteVideoView.track = track
+            self?.remoteVideoView.isHidden = muted
         }
-    }
-
-    func room(_ room: Room, participant: RemoteParticipant, didUnpublish publication: RemoteTrackPublication) {
-        guard let track = publication.track as? VideoTrack else {
-            remoteVideoView.isHidden = true
-            return
-        }
-        DispatchQueue.main.async { [weak self] in
-            self?.remoteVideoView.isHidden = false
-            self?.remoteVideoView.track = track
-        }
+        print("[UPDATE] participant - \(participant), publication - \(publication), muted - \(muted)")
     }
 
 }
