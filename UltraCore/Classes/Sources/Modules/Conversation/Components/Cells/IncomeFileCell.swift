@@ -86,6 +86,7 @@ class IncomeFileCell : BaseMessageCell {
 
         self.deliveryDateLabel.snp.makeConstraints { make in
             make.centerY.equalTo(fileLabel.snp.centerY)
+            make.left.greaterThanOrEqualTo(fileLabel.snp.right).offset(kMediumPadding)
             make.right.equalToSuperview().offset(-kMediumPadding)
         }
     }
