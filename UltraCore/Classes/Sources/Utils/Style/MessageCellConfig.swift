@@ -46,3 +46,9 @@ public protocol ConversationHeaderConfig {
     var sublineConfig: LabelConfig { get set }
     var onlineColor: TwiceColor {get set }
 }
+
+public protocol FileCellConfig {
+    var fileTextConfig: LabelConfig { get set }
+    var loaderTintColor: TwiceColor { get set }
+    var loaderBackgroundColor: TwiceColor { get set }
+}
