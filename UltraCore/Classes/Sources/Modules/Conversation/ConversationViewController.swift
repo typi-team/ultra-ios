@@ -184,7 +184,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.tableView.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.top.equalTo(navigationDivider.snp.bottom)
-            make.bottom.equalTo(messageInputBar.snp.topMargin).offset(-10)
+            make.bottom.equalTo(messageInputBar.snp.topMargin).offset(-8)
         }
         
         self.messageHeadline.snp.makeConstraints { make in
