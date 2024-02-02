@@ -29,7 +29,11 @@ class OutcomeFileCell : BaseMessageCell {
         spinner.translatesAutoresizingMaskIntoConstraints = false
         return spinner
     }()
-    fileprivate let moneyCaptionlabel: RegularFootnote = .init({ $0.text = MessageStrings.fileWithoutSmile.localized })
+    fileprivate let fileLabel: RegularFootnote = .init({
+        $0.text = MessageStrings.fileWithoutSmile.localized
+        $0.textColor = UltraCoreStyle.fileCellConfig.fileTextConfig.color
+        $0.font = UltraCoreStyle.fileCellConfig.fileTextConfig.font
+    })
     fileprivate let mediaRepository: MediaRepository = AppSettingsImpl.shared.mediaRepository
     
     override func prepareForReuse() {
@@ -44,7 +48,7 @@ class OutcomeFileCell : BaseMessageCell {
 
         self.container.addSubview(fileIconView)
         self.container.addSubview(textView)
-        self.container.addSubview(moneyCaptionlabel)
+        self.container.addSubview(fileLabel)
         self.container.addSubview(spinner)
         self.container.addSubview(statusView)
         self.container.backgroundColor = .gray200
@@ -72,21 +76,21 @@ class OutcomeFileCell : BaseMessageCell {
             make.right.equalToSuperview().offset(kMediumPadding).offset(-kMediumPadding)
         }
         
-        self.moneyCaptionlabel.snp.makeConstraints { make in
+        self.fileLabel.snp.makeConstraints { make in
             make.bottom.equalTo(fileIconView.snp.bottom)
             make.top.equalTo(textView.snp.bottom).offset(1)
             make.left.equalTo(fileIconView.snp.right).offset(kMediumPadding)
         }
 
         self.statusView.snp.makeConstraints { make in
-            make.left.greaterThanOrEqualTo(self.moneyCaptionlabel.snp.right).offset(kLowPadding / 2)
-            make.centerY.equalTo(moneyCaptionlabel.snp.centerY)
+            make.left.greaterThanOrEqualTo(self.fileLabel.snp.right).offset(kLowPadding)
+            make.centerY.equalTo(fileLabel.snp.centerY)
         }
         
         self.deliveryDateLabel.snp.makeConstraints { make in
             make.left.equalTo(self.statusView.snp.right).offset(kLowPadding / 2)
             make.right.equalToSuperview().offset(-kMediumPadding)
-            make.bottom.equalTo(moneyCaptionlabel.snp.bottom)
+            make.bottom.equalTo(fileLabel.snp.bottom)
             make.centerY.equalTo(statusView.snp.centerY)
         }
 

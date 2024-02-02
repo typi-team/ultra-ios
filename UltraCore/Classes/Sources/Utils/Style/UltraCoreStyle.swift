@@ -78,6 +78,7 @@ public class UltraCoreStyle {
     public static var reportCommentControllerStyle: ReportCommentControllerStyle? = ReportCommentControllerStyleImpl()
     public static var reportViewStyle: ReportViewStyle = ReportViewStyleImpl()
     public static var messageCellStyle: MessageCellStyle = ReportViewStyleImpl()
+    public static var fileCellConfig: FileCellConfig = FileCellConfigImpl()
 }
 
 private class MessageInputBarConfigImpl: MessageInputBarConfig {
@@ -161,4 +162,12 @@ private class ConversationHeaderConfigImpl: ConversationHeaderConfig {
     var onlineColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
     var titleConfig: LabelConfig =  LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularHeadline)
     var sublineConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
+}
+
+private class FileCellConfigImpl: FileCellConfig {
+    var fileTextConfig: LabelConfig = LabelConfigImpl(
+        darkColor: UltraCoreStyle.regularFootnoteConfig.color,
+        defaultColor: UltraCoreStyle.regularFootnoteConfig.color,
+        font: UltraCoreStyle.regularFootnoteConfig.font
+    )
 }
