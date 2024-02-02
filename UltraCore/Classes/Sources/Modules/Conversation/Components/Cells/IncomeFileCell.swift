@@ -27,7 +27,7 @@ class IncomeFileCell : BaseMessageCell {
         let spinner = NVActivityIndicatorView(
             frame: CGRect(origin: .zero, size: .init(width: 20, height: 20)),
             type: .circleStrokeSpin,
-            color: .black,
+            color: UltraCoreStyle.fileCellConfig.loaderTintColor.color,
             padding: 0
         )
         spinner.startAnimating()

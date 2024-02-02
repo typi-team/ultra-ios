@@ -165,6 +165,11 @@ private class ConversationHeaderConfigImpl: ConversationHeaderConfig {
 }
 
 private class FileCellConfigImpl: FileCellConfig {
+    var loaderTintColor: TwiceColor = TwiceColorImpl(defaultColor: .black, darkColor: .black)
+    var loaderBackgroundColor: TwiceColor = TwiceColorImpl(
+        defaultColor: .white.withAlphaComponent(0.8),
+        darkColor: .white.withAlphaComponent(0.8)
+    )
     var fileTextConfig: LabelConfig = LabelConfigImpl(
         darkColor: UltraCoreStyle.regularFootnoteConfig.color,
         defaultColor: UltraCoreStyle.regularFootnoteConfig.color,

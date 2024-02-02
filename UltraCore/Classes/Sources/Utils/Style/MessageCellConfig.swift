@@ -49,4 +49,6 @@ public protocol ConversationHeaderConfig {
 
 public protocol FileCellConfig {
     var fileTextConfig: LabelConfig { get set }
+    var loaderTintColor: TwiceColor { get set }
+    var loaderBackgroundColor: TwiceColor { get set }
 }
