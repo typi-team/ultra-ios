@@ -19,6 +19,12 @@ class ProfileNavigationView: UIView {
     fileprivate let sublineText: UILabel = .init({
         $0.isUserInteractionEnabled = false
     })
+    fileprivate lazy var labelStack: UIStackView = {
+        let stack = UIStackView(arrangedSubviews: [titleText, sublineText])
+        stack.spacing = 0
+        stack.axis = .vertical
+        return stack
+    }()
     
     fileprivate let avatarImageView: UIImageView = .init {
         
@@ -49,23 +55,15 @@ class ProfileNavigationView: UIView {
             make.bottom.equalToSuperview().offset(-(kLowPadding / 2))
         }
         
-        self.titleText.snp.makeConstraints { make in
-            make.right.equalToSuperview()
-            make.top.equalTo(self.avatarImageView.snp.top)
-            make.left.equalTo(self.avatarImageView.snp.right).offset(kMediumPadding)
-        }
-        
-        self.sublineText.snp.makeConstraints { make in
-            make.right.equalToSuperview()
-            make.bottom.equalTo(self.avatarImageView.snp.bottom)
-            make.top.equalTo(self.titleText.snp.bottom).offset(kLowPadding / 2)
+        self.labelStack.snp.makeConstraints { make in
+            make.centerY.equalTo(self.avatarImageView.snp.centerY)
+            make.right.equalToSuperview().offset(kLowPadding)
             make.left.equalTo(self.avatarImageView.snp.right).offset(kMediumPadding)
         }
     }
     
     func setupView() {
-        self.addSubview(sublineText)
-        self.addSubview(titleText)
+        self.addSubview(labelStack)
         self.addSubview(avatarImageView)
         
         self.addGestureRecognizer(UITapGestureRecognizer.init(target: self, action: #selector(self.tapHandle(_:))))
