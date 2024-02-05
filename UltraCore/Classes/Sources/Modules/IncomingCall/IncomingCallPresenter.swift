@@ -57,7 +57,6 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
     }
     
     func reject() {
-        
         self.callService.reject(RejectCallRequest.with({
             $0.room = self.callStatus.callInfo.room
             $0.callerUserID = self.callStatus.callInfo.sender

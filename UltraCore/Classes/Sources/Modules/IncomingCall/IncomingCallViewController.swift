@@ -14,10 +14,11 @@ import LiveKitClient
 final class IncomingCallViewController: BaseViewController<IncomingCallPresenterInterface> {
     
     fileprivate lazy var room = Room(delegate: self)
-    fileprivate lazy var timer: Timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true, block: {[weak self] timer in
-        self?.infoView.setDuration(text: timer.tolerance.description)
-    })
-
+    
+    fileprivate var displayLink: CADisplayLink?
+    
+    fileprivate var date: Date?
+    
     fileprivate lazy var localVideoView: VideoView = .init({
         $0.isHidden = true
         $0.cornerRadius = kLowPadding
@@ -79,14 +80,19 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
         presenter?.viewDidLoad()
         guard let status = presenter?.getCallStatus() else { return }
         actionStackView.configure(status: status)
+        
         switch status {
-        case let .incoming(request), let .outcoming(request):
+        case let .incoming(request):
+            room.localParticipant?.setCamera(enabled: request.video)
+        case let .outcoming(request):
+            infoView.setDuration(text: CallStrings.connecting.localized)
             room.localParticipant?.setCamera(enabled: request.video)
         }
     }
 
     deinit {
-        _ = self.room.disconnect()
+        endTimer()
+        room.disconnect()
     }
 }
 
@@ -104,12 +110,12 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
     }
     
     func view(_ view: IncomingCallActionView, microButtonDidTap button: UIButton) {
-        _ = room.localParticipant?.set(source: .microphone, enabled: !button.isSelected)
+        room.localParticipant?.setMicrophone(enabled: !button.isSelected)
     }
     
     func view(_ view: IncomingCallActionView, cameraButtonDidTap button: UIButton) {
         let cameraEnabled = button.isSelected
-        _ = room.localParticipant?.setCamera(enabled: cameraEnabled)
+        room.localParticipant?.setCamera(enabled: cameraEnabled)
         infoView.isHidden = cameraEnabled
         localVideoView.isHidden = !cameraEnabled
     }
@@ -129,11 +135,23 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
 // MARK: - IncomingCallViewInterface
 
 extension IncomingCallViewController: IncomingCallViewInterface {
+    
     func connectRoom(with callInfo: CallInformation) {
         room.connect(callInfo.host, callInfo.accessToken).then { [weak self] room in
-            guard let self else { return }
+            guard let self, let status = presenter?.getCallStatus() else { return }
             room.localParticipant?.setCamera(enabled: callInfo.video)
             room.localParticipant?.setMicrophone(enabled: false)
+            switch status {
+            case .incoming:
+                DispatchQueue.main.async { [weak self] in
+                    guard let self else { return }
+                    infoView.hidePhoneNumber()
+                    actionStackView.setAsActive()
+                    startTimer()
+                }
+            default:
+                break
+            }
         }.catch { error in
             self.dismiss(animated: true)
         }
@@ -152,92 +170,113 @@ extension IncomingCallViewController: IncomingCallViewInterface {
     }
 }
 
-// MARK: - RoomDelegateObjC
+// MARK: - RoomDelegate
 
-extension IncomingCallViewController: RoomDelegateObjC {
-    func room(_ room: Room, didUpdate connectionState: ConnectionStateObjC, oldValue oldConnectionState: ConnectionStateObjC) {
-        print("[ROOM]: old - \(oldConnectionState); new - \(connectionState)")
+extension IncomingCallViewController: RoomDelegate {
+    
+    func room(_ room: Room, participantDidJoin participant: RemoteParticipant) {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            if connectionState == .connected {
-                self.actionStackView.setAsActive()
-            }
-            self.infoView.setDuration(text: connectionState.desctiption)
-            self.infoView.hidePhoneNumber()
-            switch connectionState {
-            case .disconnected, .connecting, .reconnecting:
-                self.timer.invalidate()
-            case .connected:
-                self.timer.fire()
+            infoView.hidePhoneNumber()
+            actionStackView.setAsActive()
+            startTimer()
+        }
+    }
+    
+    func room(_ room: Room, participantDidLeave participant: RemoteParticipant) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            endTimer()
+            disconnectRoom()
+        }
+    }
+    
+    func room(_ room: Room, localParticipant: LocalParticipant, didPublish publication: LocalTrackPublication) {
+        guard publication.track is VideoTrack else {
+            return
+        }
+        configureParticipantTrack(isHidden: false)
+    }
+ 
+    func room(_ room: Room, participant: RemoteParticipant, didSubscribe publication: RemoteTrackPublication, track: Track) {
+        guard track is VideoTrack else {
+            remoteVideoView.isHidden = true
+            return
+        }
+        configureParticipantTrack(isHidden: false)
+    }
+    
+    func room(_ room: Room, participant: Participant, didUpdate publication: TrackPublication, muted: Bool) {
+        guard publication.track is VideoTrack else {
+            return
+        }
+        configureParticipantTrack(isHidden: muted)
+    }
+    
+    private func configureParticipantTrack(isHidden: Bool) {
+        let remoteParticipant = room.remoteParticipants.first?.value
+        let localParticipant = room.localParticipant
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            if remoteParticipant?.isCameraEnabled() ?? false && localParticipant?.isCameraEnabled() ?? false {
+                remoteVideoView.track = remoteParticipant?.videoTracks.first?.track as? VideoTrack
+                localVideoView.track = localParticipant?.videoTracks.first?.track as? VideoTrack
+                remoteVideoView.isHidden = isHidden
+                localVideoView.isHidden = isHidden
+                infoView.isHidden = !isHidden
+            } else {
+                if localParticipant?.isCameraEnabled() ?? false {
+                    remoteVideoView.track = localParticipant?.videoTracks.first?.track as? VideoTrack
+                    remoteVideoView.isHidden = isHidden
+                } else {
+                    remoteVideoView.isHidden = true
+                    localVideoView.isHidden = true
+                    infoView.isHidden = false
+                }
             }
         }
+    }
+    
+    private func startTimer() {
+        guard displayLink == nil else { return }
+
+        displayLink = CADisplayLink(target: self, selector: #selector(displayRefreshed))
+        displayLink?.add(to: .main, forMode: .default)
+        date = Date()
+    }
+
+    @objc
+    private func displayRefreshed(displayLink: CADisplayLink) {
+        guard let startDate = date else { return }
+        let elepsadeTime = Int(Date().timeIntervalSince(startDate).rounded(.toNearestOrEven))
+        infoView.setDuration(text: timeFormatted(elepsadeTime))
+    }
+
+    func endTimer() {
+        displayLink?.invalidate()
+        displayLink = nil
+        date = nil
+    }
+    
+    private func timeFormatted(_ second: Int) -> String {
+        let seconds: Int = second % 60
+        let minutes: Int = (second / 60) % 60
+        return String(format: "%02d:%02d", minutes, seconds)
     }
 
     func room(_ room: Room, didUpdate metadata: String?) {
         PP.debug(metadata ?? "as")
     }
-
-    func room(_ room: Room, localParticipant: LocalParticipant, didPublish publication: LocalTrackPublication) {
-        guard let track = publication.track as? VideoTrack else {
-            return
-        }
-        DispatchQueue.main.async {
-            self.localVideoView.track = track
-        }
-    }
-
-    func room(_ room: Room, participant: RemoteParticipant, didUpdate publication: RemoteTrackPublication, permission allowed: Bool) {
-        guard let track = publication.track as? VideoTrack else {
-            remoteVideoView.isHidden = true
-            return
-        }
-        DispatchQueue.main.async { [weak self] in
-            self?.remoteVideoView.isHidden = false
-            self?.remoteVideoView.track = track
-        }
-    }
-
-    func room(_ room: Room, participant: RemoteParticipant, didSubscribe publication: RemoteTrackPublication, track: Track) {
-        guard let track = track as? VideoTrack else {
-            remoteVideoView.isHidden = true
-            return
-        }
-        DispatchQueue.main.async { [weak self] in
-            self?.remoteVideoView.isHidden = false
-            self?.remoteVideoView.track = track
-        }
-    }
-
-    func room(_ room: Room, participant: RemoteParticipant, didUnsubscribe publication: RemoteTrackPublication, track: Track) {
-        guard let track = publication.track as? VideoTrack else {
-            remoteVideoView.isHidden = true
-            return
-        }
-        DispatchQueue.main.async { [weak self] in
-            self?.remoteVideoView.isHidden = false
-            self?.remoteVideoView.track = track
-        }
-    }
-
-    func room(_ room: Room, participant: RemoteParticipant, didUnpublish publication: RemoteTrackPublication) {
-        guard let track = publication.track as? VideoTrack else {
-            remoteVideoView.isHidden = true
-            return
-        }
-        DispatchQueue.main.async { [weak self] in
-            self?.remoteVideoView.isHidden = false
-            self?.remoteVideoView.track = track
-        }
-    }
-
+    
 }
 
 //MARK: - Extensions
 
-private extension ConnectionStateObjC {
+private extension ConnectionState {
     var desctiption: String {
         switch self {
-        case .connected:return CallStrings.connected.localized
+        case .connected:
+            return CallStrings.connected.localized
         case .disconnected:
             return CallStrings.disconnected.localized
         case .connecting:

@@ -116,3 +116,8 @@
 "base.inTheProcessOfRealizationAUniqueFunctionalityMaturesWhichWillAddMagicAndEfficiencyToOurProduct" = "В процессе воплощения созревает уникальный функционал, который добавит магии и эффективности в наш продукт";
 
 "conversation.requestSent" = "Request sent";
+
+// MARK: - Call
+"call.connecting" = "Соединение...";
+"call.disconnected" = "Отключен";
+"call.reconnecting" = "Соединение...";

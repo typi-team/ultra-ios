@@ -112,3 +112,7 @@
 "base.inTheProcessOfRealizationAUniqueFunctionalityMaturesWhichWillAddMagicAndEfficiencyToOurProduct" = "In the process of realization, a unique functionality matures, which will add magic and efficiency to our product.";
 
 "conversation.requestSent" = "Request sent";
+
+"call.connecting" = "Connecting...";
+"call.disconnected" = "Disconnected";
+"call.reconnecting" = "Connecting...";
