@@ -116,7 +116,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             cell.cellActionCallback = {[weak self] () in
                 if let self = self,
                     self.messageInputBar.isRecording {return}
-                self?.messageInputBar.dismiss()
                 self?.view.endEditing(true)
             }
             cell.actionCallback = {[weak self] message in
