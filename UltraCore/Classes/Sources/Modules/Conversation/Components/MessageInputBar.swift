@@ -45,7 +45,7 @@ class MessageInputBar: UIView {
     
     private lazy var messageTextView: UITextView = MessageTextView.init {[weak self] textView in
         textView.delegate = self
-        textView.inputAccessoryView = nil
+        textView.inputAccessoryView = UIView()
         textView.cornerRadius = kLowPadding
         textView.placeholder = self?.style?.textConfig.placeholder ?? ""
     }
@@ -93,6 +93,10 @@ class MessageInputBar: UIView {
     
     private lazy var blockView: BlockView = BlockView.init {
         $0.delegate = self
+    }
+    
+    private var bottomInset: CGFloat {
+        return UIApplication.shared.windows.first?.safeAreaInsets.bottom ?? 0
     }
     
 //    MARK: Public properties
@@ -162,7 +166,7 @@ class MessageInputBar: UIView {
 
         self.containerStack.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(kMediumPadding - 4)
-            make.bottom.equalToSuperview().offset(-(kMediumPadding - 4))
+            make.bottom.equalToSuperview().offset(-(kMediumPadding - 4 + bottomInset))
             make.leading.equalTo(exchangesButton.snp.trailing).offset(kLowPadding)
         }
 

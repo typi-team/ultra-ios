@@ -184,7 +184,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.tableView.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.top.equalTo(navigationDivider.snp.bottom)
-            make.bottom.equalTo(messageInputBar.snp.topMargin).offset(-10)
+            make.bottom.equalTo(messageInputBar.snp.topMargin).offset(-8)
         }
         
         self.messageHeadline.snp.makeConstraints { make in
@@ -194,7 +194,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         
         self.messageInputBar.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin)
+            make.bottom.equalTo(view.snp.bottom)
         }
     }
     
@@ -270,7 +270,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         
         UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
             self.messageInputBar.snp.updateConstraints { make in
-                make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottomMargin)
+                make.bottom.equalTo(self.view.snp.bottom)
                     .offset(height > 0 ? -(height - 36) : 0)
             }
             self.view.layoutIfNeeded()
