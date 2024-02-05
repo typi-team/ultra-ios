@@ -14,6 +14,6 @@ public protocol ElevatedButtonStyle {
 
 
 struct ElevatedButtonStyleImpl: ElevatedButtonStyle {
-    var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .green500)
+    var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .black, darkColor: .white)
     var titleConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .white, font: .defaultRegularCallout)
 }
