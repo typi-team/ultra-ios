@@ -10,6 +10,7 @@
 
 import UIKit
 import LiveKitClient
+import AVFAudio
 
 final class IncomingCallViewController: BaseViewController<IncomingCallPresenterInterface> {
     
@@ -18,6 +19,8 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
     fileprivate var displayLink: CADisplayLink?
     
     fileprivate var date: Date?
+    
+    fileprivate let audioQueue = DispatchQueue(label: "audio")
     
     fileprivate lazy var localVideoView: VideoView = .init({
         $0.isHidden = true
@@ -34,7 +37,7 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
     fileprivate lazy var infoView = IncomingCallInfoView(style: style)
 
     fileprivate lazy var actionStackView = IncomingCallActionView(style: style, delegate: self)
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -88,6 +91,7 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
             infoView.setDuration(text: CallStrings.connecting.localized)
             room.localParticipant?.setCamera(enabled: request.video)
         }
+        setSpeaker(false)
     }
 
     deinit {
@@ -100,13 +104,34 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
 
 extension IncomingCallViewController: IncomingCallActionViewDelegate {
     
+    func view(_ view: IncomingCallActionView, switchCameraButtonDidTap button: UIButton) {
+        let localVideoTrack = room.localParticipant?.firstCameraVideoTrack as? LocalVideoTrack
+        let cameraCapturer = localVideoTrack?.capturer as? CameraCapturer
+        
+        button.isEnabled = false
+        
+        let remoteParticipant = room.remoteParticipants.first?.value
+        let videoView: VideoView
+        if remoteParticipant?.isCameraEnabled() ?? false {
+            videoView = localVideoView
+        } else {
+            videoView = remoteVideoView
+        }
+        videoView.applyBlurEffect()
+        cameraCapturer?.switchCameraPosition()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            videoView.removeBlurEffect()
+            button.isEnabled = true
+        }
+    }
+    
     func view(_ view: IncomingCallActionView, answerButtonDidTap button: UIButton) {
         guard let callStatus = presenter?.getCallStatus() else { return }
         connectRoom(with: callStatus.callInfo)
     }
     
     func view(_ view: IncomingCallActionView, mouthpieceButtonDidTap button: UIButton) {
-//        _ = room.localParticipant?.isSpeaking = button.isSelected
+        setSpeaker(button.isSelected)
     }
     
     func view(_ view: IncomingCallActionView, microButtonDidTap button: UIButton) {
@@ -115,6 +140,13 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
     
     func view(_ view: IncomingCallActionView, cameraButtonDidTap button: UIButton) {
         let cameraEnabled = button.isSelected
+        if cameraEnabled {
+            actionStackView.setAsActiveCamera()
+            actionStackView.mouthpieceButton.isSelected = true
+            setSpeaker(true)
+        } else {
+            actionStackView.setAsActive()
+        }
         room.localParticipant?.setCamera(enabled: cameraEnabled)
         infoView.isHidden = cameraEnabled
         localVideoView.isHidden = !cameraEnabled
@@ -130,6 +162,17 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
         presenter?.reject()
     }
     
+    private func setSpeaker(_ isEnabled: Bool) {
+        audioQueue.async {
+            let audioSession = AVAudioSession.sharedInstance()
+            try? audioSession.setCategory(
+                .playAndRecord,
+                mode: .voiceChat,
+                options: isEnabled ? [.defaultToSpeaker, .allowBluetooth, .allowBluetoothA2DP] : [.duckOthers, .allowBluetooth, .allowBluetoothA2DP])
+            try? audioSession.setActive(true)
+        }
+    }
+    
 }
 
 // MARK: - IncomingCallViewInterface
@@ -140,7 +183,7 @@ extension IncomingCallViewController: IncomingCallViewInterface {
         room.connect(callInfo.host, callInfo.accessToken).then { [weak self] room in
             guard let self, let status = presenter?.getCallStatus() else { return }
             room.localParticipant?.setCamera(enabled: callInfo.video)
-            room.localParticipant?.setMicrophone(enabled: false)
+            room.localParticipant?.setMicrophone(enabled: true)
             switch status {
             case .incoming:
                 DispatchQueue.main.async { [weak self] in
@@ -173,6 +216,15 @@ extension IncomingCallViewController: IncomingCallViewInterface {
 // MARK: - RoomDelegate
 
 extension IncomingCallViewController: RoomDelegate {
+    
+    func room(_ room: Room, didUpdate connectionState: ConnectionState, oldValue: ConnectionState) {
+        switch connectionState {
+        case .reconnecting:
+            infoView.setDuration(text: connectionState.desctiption)
+        default:
+            break
+        }
+    }
     
     func room(_ room: Room, participantDidJoin participant: RemoteParticipant) {
         DispatchQueue.main.async { [weak self] in
@@ -216,6 +268,7 @@ extension IncomingCallViewController: RoomDelegate {
     private func configureParticipantTrack(isHidden: Bool) {
         let remoteParticipant = room.remoteParticipants.first?.value
         let localParticipant = room.localParticipant
+                
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             if remoteParticipant?.isCameraEnabled() ?? false && localParticipant?.isCameraEnabled() ?? false {
@@ -227,7 +280,8 @@ extension IncomingCallViewController: RoomDelegate {
             } else {
                 if localParticipant?.isCameraEnabled() ?? false {
                     remoteVideoView.track = localParticipant?.videoTracks.first?.track as? VideoTrack
-                    remoteVideoView.isHidden = isHidden
+                    remoteVideoView.isHidden = false
+                    localVideoView.isHidden = true
                 } else {
                     remoteVideoView.isHidden = true
                     localVideoView.isHidden = true
@@ -283,6 +337,23 @@ private extension ConnectionState {
             return CallStrings.connecting.localized
         case .reconnecting:
             return CallStrings.reconnecting.localized
+        }
+    }
+}
+
+extension UIView {
+    func applyBlurEffect() {
+        let blurEffect = UIBlurEffect(style: .dark)
+        let blurEffectView = UIVisualEffectView(effect: blurEffect)
+        blurEffectView.frame = bounds
+        blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        addSubview(blurEffectView)
+    }
+    
+    func removeBlurEffect() {
+        let blurredEffectViews = self.subviews.filter{$0 is UIVisualEffectView}
+        blurredEffectViews.forEach{ blurView in
+            blurView.removeFromSuperview()
         }
     }
 }

@@ -7,6 +7,7 @@ protocol IncomingCallActionViewDelegate: AnyObject {
     func view(_ view: IncomingCallActionView, cameraButtonDidTap button: UIButton)
     func view(_ view: IncomingCallActionView, cancelButtonDidTap button: UIButton)
     func view(_ view: IncomingCallActionView, rejectButtonDidTap button: UIButton)
+    func view(_ view: IncomingCallActionView, switchCameraButtonDidTap button: UIButton)
 }
 
 final class IncomingCallActionView: UIStackView {
@@ -25,7 +26,7 @@ final class IncomingCallActionView: UIStackView {
         }
     }
     
-    fileprivate lazy var mouthpieceButton: UIButton = .init {
+    lazy var mouthpieceButton: UIButton = .init {
         $0.setImage(style.mouthpieceOffImage, for: .normal)
         $0.setImage(style.mouthpieceOnImage, for: .selected)
         $0.addAction { [weak self] in
@@ -42,6 +43,16 @@ final class IncomingCallActionView: UIStackView {
             guard let self else { return }
             self.microButton.isSelected.toggle()
             self.delegate?.view(self, microButtonDidTap: self.microButton)
+        }
+    }
+    
+    fileprivate lazy var switchCameraButton: UIButton = .init {
+        $0.setImage(style.switchFrontCameraImage, for: .normal)
+        $0.setImage(style.switchBackCameraImage, for: .selected)
+        $0.addAction { [weak self] in
+            guard let self else { return }
+            self.switchCameraButton.isSelected.toggle()
+            self.delegate?.view(self, switchCameraButtonDidTap: self.switchCameraButton)
         }
     }
 
@@ -106,6 +117,14 @@ final class IncomingCallActionView: UIStackView {
         addArrangedSubview(mouthpieceButton)
         addArrangedSubview(microButton)
         addArrangedSubview(cameraButton)
+        addArrangedSubview(cancelButton)
+    }
+    
+    func setAsActiveCamera() {
+        arrangedSubviews.forEach({ $0.removeFromSuperview() })
+        addArrangedSubview(cameraButton)
+        addArrangedSubview(microButton)
+        addArrangedSubview(switchCameraButton)
         addArrangedSubview(cancelButton)
     }
 

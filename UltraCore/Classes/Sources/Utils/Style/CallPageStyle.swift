@@ -25,4 +25,7 @@ public protocol CallPageStyle {
     
     var answerImage: UIImage { get set }
     var declineImage: UIImage { get set }
+    
+    var switchFrontCameraImage: UIImage { get set }
+    var switchBackCameraImage: UIImage { get set }
 }

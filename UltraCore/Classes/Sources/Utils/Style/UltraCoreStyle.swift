@@ -124,6 +124,8 @@ private class CallPageStyleImpl: CallPageStyle {
     var answerImage: UIImage = .fromAssets("calling.answer")!
     var declineImage: UIImage = .fromAssets("calling.decline")!
     var closeImage: UIImage = .fromAssets("calling.close")!
+    var switchFrontCameraImage: UIImage = .fromAssets("calling.switchCameraPosition")!
+    var switchBackCameraImage: UIImage = .fromAssets("calling.switchCameraPosition")!
 }
 
 private class ConversationCellConfigImpl: ConversationCellConfig {
