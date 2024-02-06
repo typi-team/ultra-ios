@@ -43,11 +43,14 @@ class MessageInputBar: UIView {
         $0.clipsToBounds = false
     }
     
-    private lazy var messageTextView: UITextView = MessageTextView.init {[weak self] textView in
+    private lazy var messageTextView: UITextView = MessageInputTextView.init {[weak self] textView in
         textView.delegate = self
         textView.inputAccessoryView = UIView()
         textView.cornerRadius = kLowPadding
-        textView.placeholder = self?.style?.textConfig.placeholder ?? ""
+        textView.placeholderText = self?.style?.textConfig.placeholder ?? ""
+        textView.textColor = .gray900
+        textView.tintColor = .green500
+        textView.font = .defaultRegularSubHeadline
     }
     
     private lazy var sendButton: UIButton = .init {[weak self] button in
@@ -171,7 +174,6 @@ class MessageInputBar: UIView {
         }
 
         self.messageTextView.snp.makeConstraints { make in
-            make.height.equalTo(35)
             make.left.equalToSuperview().offset(kLowPadding)
             make.bottom.equalToSuperview().offset(-kLowPadding)
             make.top.equalToSuperview().offset(kLowPadding)
@@ -193,7 +195,7 @@ class MessageInputBar: UIView {
         
         self.recordView.snp.makeConstraints { make in
             make.top.equalToSuperview()
-            make.bottom.equalToSuperview()
+            make.bottom.equalToSuperview().offset(-bottomInset)
             make.left.equalToSuperview().offset(kMediumPadding)
             make.right.equalTo(microButton.snp.right)
         }
@@ -206,13 +208,9 @@ class MessageInputBar: UIView {
 }
 
 
-extension MessageInputBar: UITextViewDelegate {
+extension MessageInputBar: MessageInputTextViewDelegate {
     
     func textViewDidChange(_ textView: UITextView) {
-       
-        textView.snp.updateConstraints { make in
-            make.height.equalTo(min(textView.heightOfInsertedText() + kLowPadding * 2 + 1, kTextFieldMaxHeight))
-        }
 
         if let text = textView.text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             self.microButton.isHidden = true
@@ -228,53 +226,16 @@ extension MessageInputBar: UITextViewDelegate {
             self.delegate?.typing(is: true)
         }
     }
-}
-
-
-extension UITextView {
-
-    private class PlaceholderLabel: UILabel { }
-
-    private var placeholderLabel: PlaceholderLabel {
-        if let label = subviews.compactMap({ $0 as? PlaceholderLabel }).first {
-            return label
-        } else {
-            let label = PlaceholderLabel(frame: .zero)
-            label.font = font
-            label.textColor = .gray500
-            addSubview(label)
-            label.snp.makeConstraints { make in
-                make.centerY.equalToSuperview()
-                make.left.equalToSuperview().offset(4)
-                make.right.equalToSuperview()
-            }
-            return label
+    
+    func textViewDidChangeHeight(_ textView: MessageInputTextView, height: CGFloat) {
+        UIView.animate(withDuration: 0.2, delay: 0.0, options: .curveLinear) {
+            self.layoutIfNeeded()
         }
     }
-
-    @IBInspectable
-    var placeholder: String {
-        get {
-            return subviews.compactMap( { $0 as? PlaceholderLabel }).first?.text ?? ""
-        }
-        set {
-            let placeholderLabel = self.placeholderLabel
-            placeholderLabel.text = newValue
-            placeholderLabel.numberOfLines = 0
-            self.addSubview(placeholderLabel)
-            textStorage.delegate = self
-        }
-    }
-
+    
 }
 
 extension UITextView: NSTextStorageDelegate {
-
-    public func textStorage(_ textStorage: NSTextStorage, didProcessEditing editedMask: NSTextStorage.EditActions, range editedRange: NSRange, changeInLength delta: Int) {
-        if editedMask.contains(.editedCharacters) {
-            placeholderLabel.isHidden = !text.isEmpty
-        }
-    }
     
     func heightOfInsertedText() ->CGFloat {
         guard let text = text else { return 0.0 }
