@@ -43,7 +43,7 @@ class MessageInputBar: UIView {
         $0.clipsToBounds = false
     }
     
-    private lazy var messageTextView: UITextView = MessageInputTextView.init {[weak self] textView in
+    private lazy var messageTextView: MessageInputTextView = MessageInputTextView.init {[weak self] textView in
         textView.delegate = self
         textView.inputAccessoryView = UIView()
         textView.cornerRadius = kLowPadding
@@ -101,7 +101,11 @@ class MessageInputBar: UIView {
     private var bottomInset: CGFloat {
         return UIApplication.shared.windows.first?.safeAreaInsets.bottom ?? 0
     }
-    
+
+    private var microButtonWidth: CGFloat {
+        (UltraCoreSettings.futureDelegate?.availableToRecordVoice() ?? true) ? 36 : 0
+    }
+
 //    MARK: Public properties
     
     weak var delegate: MessageInputBarDelegate?
@@ -187,7 +191,7 @@ class MessageInputBar: UIView {
         }
         
         self.microButton.snp.makeConstraints { make in
-            make.width.height.equalTo((UltraCoreSettings.futureDelegate?.availableToRecordVoice() ?? true) ? 36 : 0)
+            make.width.height.equalTo(microButtonWidth)
             make.bottom.equalToSuperview().offset(-kLowPadding)
             make.right.equalToSuperview().offset(-kLowPadding)
             make.left.equalTo(messageTextView.snp.right).offset(kLowPadding)
@@ -215,10 +219,11 @@ extension MessageInputBar: MessageInputTextViewDelegate {
         if let text = textView.text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             self.microButton.isHidden = true
             self.sendButton.setImage(self.kInputSendImage, for: .normal)
-            
+            self.microButton.snp.updateConstraints { $0.width.equalTo(0) }
         } else {
             self.microButton.isHidden = false
             self.sendButton.setImage(self.kInputPlusImage, for: .normal)
+            self.microButton.snp.updateConstraints { $0.width.equalTo(microButtonWidth) }
         }
 
         if Date().timeIntervalSince(lastTypingDate) > kTypingMinInterval {
