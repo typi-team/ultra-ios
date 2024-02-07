@@ -50,9 +50,16 @@ class MessageInputTextView: UITextView {
     }
     
     override var intrinsicContentSize: CGSize {
-        return CGSize(width: UIView.noIntrinsicMetric, height: heightConstraint?.constant ?? 30)
+        return CGSize(
+            width: UIView.noIntrinsicMetric,
+            height: heightConstraint?.constant ?? desiredHeight
+        )
     }
-    
+
+    private var desiredHeight: CGFloat {
+        sizeThatFits(CGSize(width: frame.width, height: CGFloat.greatestFiniteMagnitude)).height
+    }
+
     private func associateConstraints() {
         for constraint in constraints {
             if constraint.firstAttribute == .height && constraint.relation == .equal {
@@ -60,47 +67,9 @@ class MessageInputTextView: UITextView {
             }
         }
     }
-    
-    private func forceLayoutSubviews() {
-        oldSize = .zero
-        setNeedsLayout()
-        layoutIfNeeded()
-    }
-    
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        
-        if text == oldText && bounds.size == oldSize {
-            return
-        }
-        
-        oldText = text
-        oldSize = bounds.size
-        
-        let size = sizeThatFits(CGSize(width: bounds.size.width, height: .greatestFiniteMagnitude))
-        var height = size.height
-        
-        height = min(height, maxHeight)
-        
-        if heightConstraint == nil {
-            heightConstraint = NSLayoutConstraint(
-                item: self,
-                attribute: .height,
-                relatedBy: .equal, 
-                toItem: nil,
-                attribute: .notAnAttribute,
-                multiplier: 1.0,
-                constant: height
-            )
-            addConstraint(heightConstraint!)
-        }
-        
-        if height != heightConstraint?.constant {
-            heightConstraint?.constant = height
-            if let delegate = delegate as? MessageInputTextViewDelegate {
-                delegate.textViewDidChangeHeight(self, height: height)
-            }
-        }
+
+    private func updateScrollState() {
+        isScrollEnabled = frame.height >= maxHeight
     }
     
     override func draw(_ rect: CGRect) {
@@ -137,6 +106,29 @@ class MessageInputTextView: UITextView {
             return
         }
         
+        let height = min(desiredHeight, maxHeight)
+
+        if heightConstraint == nil {
+            heightConstraint = NSLayoutConstraint(
+                item: self,
+                attribute: .height,
+                relatedBy: .equal,
+                toItem: nil,
+                attribute: .notAnAttribute,
+                multiplier: 1.0,
+                constant: height
+            )
+            addConstraint(heightConstraint!)
+            heightConstraint?.isActive = true
+        }
+
+        if height != heightConstraint?.constant {
+            heightConstraint?.constant = height
+            if let delegate = delegate as? MessageInputTextViewDelegate {
+                delegate.textViewDidChangeHeight(self, height: height)
+            }
+        }
+        updateScrollState()
         setNeedsDisplay()
     }
     
