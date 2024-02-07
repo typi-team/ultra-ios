@@ -181,6 +181,7 @@ class MessageInputBar: UIView {
             make.left.equalToSuperview().offset(kLowPadding)
             make.bottom.equalToSuperview().offset(-kLowPadding)
             make.top.equalToSuperview().offset(kLowPadding)
+            make.right.equalToSuperview().offset(-kLowPadding)
         }
 
         self.sendButton.snp.makeConstraints { make in
@@ -194,7 +195,6 @@ class MessageInputBar: UIView {
             make.width.height.equalTo(microButtonWidth)
             make.bottom.equalToSuperview().offset(-kLowPadding)
             make.right.equalToSuperview().offset(-kLowPadding)
-            make.left.equalTo(messageTextView.snp.right).offset(kLowPadding)
         }
         
         self.recordView.snp.makeConstraints { make in
@@ -219,11 +219,9 @@ extension MessageInputBar: MessageInputTextViewDelegate {
         if let text = textView.text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             self.microButton.isHidden = true
             self.sendButton.setImage(self.kInputSendImage, for: .normal)
-            self.microButton.snp.updateConstraints { $0.width.equalTo(0) }
         } else {
             self.microButton.isHidden = false
             self.sendButton.setImage(self.kInputPlusImage, for: .normal)
-            self.microButton.snp.updateConstraints { $0.width.equalTo(microButtonWidth) }
         }
 
         if Date().timeIntervalSince(lastTypingDate) > kTypingMinInterval {
