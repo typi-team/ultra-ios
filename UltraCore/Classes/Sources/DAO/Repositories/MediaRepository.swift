@@ -16,6 +16,7 @@ protocol MediaRepository {
     func mediaURL(from message: Message) -> URL?
     func isUploading(from message: Message) -> Bool
     func download(from message: Message) -> Single<Message>
+    func previewImage(from message: Message) -> UIImage?
     func image(from message: Message) -> UIImage?
     func videoPreview(from message: Message) -> UIImage?
     func upload(file: FileUpload, in conversation: Conversation, onPreUploadingFile: (MessageSendRequest) -> Void) -> Single<MessageSendRequest>
@@ -71,7 +72,11 @@ extension MediaRepositoryImpl: MediaRepository {
             return self.uploadFile(by: file, in: conversation, onPreUploadingFile: onPreUploadingFile)
         }
     }
-    
+
+    func previewImage(from message: Message) -> UIImage? {
+        return self.mediaUtils.previewImage(from: message)
+    }
+
     func image(from message: Message) -> UIImage? {
         return self.mediaUtils.image(from: message)
     }
@@ -129,7 +134,7 @@ extension MediaRepositoryImpl: MediaRepository {
                                 observer(.success(message))
                             } else if message.hasPhoto {
                                 try self.mediaUtils.write(data, file: message.photo.originalFileId, and: message.photo.extensions)
-                                try self.mediaUtils.write(data, file: message.photo.previewFileId, and: message.photo.extensions)
+                                try self.mediaUtils.compressedWrite(data, file: message.photo.previewFileId, and: message.photo.extensions)
                                 
                                 params.fromChunkNumber = params.toChunkNumber
                                 var images = try? self.downloadingImages.value()
