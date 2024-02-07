@@ -18,7 +18,12 @@ protocol MediaRepository {
     func download(from message: Message) -> Single<Message>
     func image(from message: Message) -> UIImage?
     func videoPreview(from message: Message) -> UIImage?
-    func upload(file: FileUpload, in conversation: Conversation, onPreUploadingFile: (MessageSendRequest) -> Void) -> Single<MessageSendRequest>
+    func upload(
+        file: FileUpload,
+        in conversation: Conversation,
+        isVoice: Bool,
+        onPreUploadingFile: (MessageSendRequest) -> Void
+    ) -> Single<MessageSendRequest>
     func upload(message: Message) -> Single<MessageSendRequest>
 }
 
@@ -60,12 +65,17 @@ extension MediaRepositoryImpl: MediaRepository {
         return try! self.uploadingMedias.value().contains(where: { $0.fileID == message.fileID })
     }
 
-    func upload(file: FileUpload, in conversation: Conversation, onPreUploadingFile: (MessageSendRequest) -> Void) -> Single<MessageSendRequest> {
+    func upload(
+        file: FileUpload,
+        in conversation: Conversation,
+        isVoice: Bool,
+        onPreUploadingFile: (MessageSendRequest) -> Void
+    ) -> Single<MessageSendRequest> {
         if file.mime.containsImage {
             return self.uploadImage(by: file, in: conversation, onPreUploadingFile: onPreUploadingFile)
         } else if file.mime.containsVideo {
             return self.uploadVideo(by: file, in: conversation, onPreUploadingFile: onPreUploadingFile)
-        } else if file.mime.containsAudio{
+        } else if isVoice {
             return self.uploadVoice(by: file, in: conversation, onPreUploadingFile: onPreUploadingFile)
         }else {
             return self.uploadFile(by: file, in: conversation, onPreUploadingFile: onPreUploadingFile)
