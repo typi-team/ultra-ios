@@ -75,6 +75,8 @@
 "conversation.deleteFromMe" = "Удалить у меня";
 "conversation.deleteForEveryone" = "Удалить для всех";
 "conversation.givePermissionToRecordVoice" = "Give permission to record voice";
+"conversation.givePermissionToCamera" = "Дайте разрешение камере";
+"conversation.cameraPermissionRestricted" = "Camera access is restricted";
 "conversation.ifAMessageContainsThreatsInappropriateContentOrViolatesAnyPlatformOrCommunity" = "Если сообщение содержит угрозы, неподходящий контент или нарушает какие-либо правила платформы или сообщества, оно может быть обжаловано и подлежит удалению. Восстановление такого сообщения может быть невозможным";
 "conversation.yourComplaintWillBeReviewedByModeratorsThankYou" = "Вашу жалобу проверят модераторы. Спасибо!";
 "conversation.areYouSure" = "Вы уверены?";

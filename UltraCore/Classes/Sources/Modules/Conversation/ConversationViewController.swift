@@ -9,6 +9,7 @@
 //
 
 import UIKit
+import AVFoundation
 import RxCocoa
 import RxSwift
 import QuickLook
@@ -392,13 +393,21 @@ private extension ConversationViewController {
     }
     
     func openMedia(type: UIImagePickerController.SourceType) {
-        let controller = UIImagePickerController()
-        controller.delegate = self
-        controller.sourceType = type
-        controller.videoQuality = .typeMedium
-        controller.mediaTypes = ["public.movie", "public.image"]
-        controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
-        self.present(controller, animated: true)
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .denied:
+            showSettingAlert(from: ConversationStrings.givePermissionToCamera.localized)
+        case .restricted:
+            showAlert(from: ConversationStrings.cameraPermissionRestricted.localized)
+        default:
+            let controller = UIImagePickerController()
+            controller.delegate = self
+            controller.sourceType = type
+            controller.videoQuality = .typeMedium
+            controller.mediaTypes = ["public.movie", "public.image"]
+            controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
+            self.present(controller, animated: true)
+        }
+
     }
     
     func openDocument() {
