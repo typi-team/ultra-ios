@@ -105,6 +105,7 @@ class MessageInputBar: UIView {
     private var microButtonWidth: CGFloat {
         (UltraCoreSettings.futureDelegate?.availableToRecordVoice() ?? true) ? 36 : 0
     }
+    private var tempText: String?
 
 //    MARK: Public properties
     
@@ -260,12 +261,26 @@ extension MessageInputBar {
     func block(_ isBlocked: Bool) {
         self.blockView.snp.makeConstraints { make in
             if isBlocked {
+                guard !subviews.contains(blockView) else {
+                    return
+                }
+                self.tempText = messageTextView.text
+                self.messageTextView.text = ""
+                self.messageTextView.setNeedsDisplay()
                 self.addSubview(blockView)
                 self.blockView.bringSubviewToFront(self)
                 self.blockView.snp.makeConstraints { make in
-                    make.edges.equalToSuperview()
+                    make.top.left.right.equalToSuperview()
+                    make.bottom.equalToSuperview().offset(-bottomInset)
                 }
             } else {
+                guard subviews.contains(blockView) else {
+                    return
+                }
+                if let tempText = tempText {
+                    messageTextView.text = tempText
+                    self.tempText = nil
+                }
                 self.blockView.removeFromSuperview()
             }
         }
