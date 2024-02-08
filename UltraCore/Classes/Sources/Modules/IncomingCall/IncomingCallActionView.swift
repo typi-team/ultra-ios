@@ -36,14 +36,15 @@ final class IncomingCallActionView: UIStackView {
         }
     }
 
-    fileprivate lazy var microButton: UIButton = .init {
-        $0.setImage(style.micOnImage, for: .normal)
-        $0.setImage(style.micOffImage, for: .selected)
+    lazy var microButton: UIButton = .init {
+        $0.setImage(style.micOnImage, for: .selected)
+        $0.setImage(style.micOffImage, for: .normal)
         $0.addAction { [weak self] in
             guard let self else { return }
             self.microButton.isSelected.toggle()
             self.delegate?.view(self, microButtonDidTap: self.microButton)
         }
+        $0.isSelected = true
     }
     
     fileprivate lazy var switchCameraButton: UIButton = .init {

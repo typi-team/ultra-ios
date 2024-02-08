@@ -120,3 +120,7 @@
 "call.reject" = "Reject connection";
 "call.incomeAudioCalling" = "Incoming audio call...";
 "call.incomeVideoCalling" = "Incoming audio call...";
+"call.errorAccessTitle" = "Error";
+"call.errorAccessToCamera" = "The application does not have access to the camera";
+"call.errorAccessToMicrophone" = "The application does not have access to the microphone";
+

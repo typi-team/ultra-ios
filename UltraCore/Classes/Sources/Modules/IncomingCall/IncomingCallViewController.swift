@@ -11,6 +11,7 @@
 import UIKit
 import LiveKitClient
 import AVFAudio
+import AVFoundation
 
 final class IncomingCallViewController: BaseViewController<IncomingCallPresenterInterface> {
     
@@ -153,7 +154,7 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
     }
     
     func view(_ view: IncomingCallActionView, microButtonDidTap button: UIButton) {
-        room.localParticipant?.setMicrophone(enabled: !button.isSelected)
+        setMicrophoneIfPossible(enabled: button.isSelected)
     }
     
     func view(_ view: IncomingCallActionView, cameraButtonDidTap button: UIButton) {
@@ -164,11 +165,11 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
         } else {
             actionStackView.setAsActiveAudio()
         }
-        room.localParticipant?.setCamera(enabled: cameraEnabled)
-        remakeInfoViewConstraints(isVideo: cameraEnabled)
+        setVideoCallIfPossible(enabled: cameraEnabled)
     }
   
     func view(_ view: IncomingCallActionView, cancelButtonDidTap button: UIButton) {
+        endTimer()
         infoView.setDuration(text: CallStrings.cancel.localized)
         presenter?.cancel()
     }
@@ -201,8 +202,12 @@ extension IncomingCallViewController: IncomingCallViewInterface {
             if case .incoming = status {
                 configureStartCall()
             }
-            room.localParticipant?.setCamera(enabled: callInfo.video)
-            room.localParticipant?.setMicrophone(enabled: true)
+            if callInfo.video && actionStackView.cameraButton.isSelected {
+                setVideoCallIfPossible(enabled: callInfo.video)
+            }
+            if actionStackView.microButton.isSelected {
+                setMicrophoneIfPossible(enabled: actionStackView.microButton.isSelected)
+            }
         }.catch { error in
             self.dismiss(animated: true)
         }
@@ -301,6 +306,60 @@ extension IncomingCallViewController: RoomDelegate {
             }
         }
     }
+        
+    private func setVideoCallIfPossible(enabled: Bool) {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            room.localParticipant?.setCamera(enabled: enabled)
+            remakeInfoViewConstraints(isVideo: enabled)
+        case .denied, .restricted:
+            showSettingAlert(from: CallStrings.errorAccessToCamera.localized, with: CallStrings.errorAccessTitle.localized)
+            deniedCameraPermission()
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { granted in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self else { return }
+                    if granted {
+                        room.localParticipant?.setCamera(enabled: enabled)
+                        remakeInfoViewConstraints(isVideo: enabled)
+                    } else {
+                        deniedCameraPermission()
+                    }
+                }
+            }
+        default: break
+        }
+    }
+    
+    private func deniedCameraPermission() {
+        actionStackView.cameraButton.isSelected = false
+        actionStackView.mouthpieceButton.isSelected = false
+        actionStackView.setAsActiveAudio()
+        remakeInfoViewConstraints(isVideo: false)
+        setSpeaker(false)
+    }
+    
+    private func setMicrophoneIfPossible(enabled: Bool) {
+        switch AVAudioSession.sharedInstance().recordPermission {
+        case .granted:
+            room.localParticipant?.setMicrophone(enabled: enabled)
+        case .denied:
+            showSettingAlert(from: CallStrings.errorAccessToMicrophone.localized, with: CallStrings.errorAccessTitle.localized)
+            actionStackView.microButton.isSelected = false
+        case .undetermined:
+            AVAudioSession.sharedInstance().requestRecordPermission { granted in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self else { return }
+                    if granted {
+                        room.localParticipant?.setMicrophone(enabled: enabled)
+                    } else {
+                        actionStackView.microButton.isSelected = false
+                    }
+                }
+            }
+        default: break
+        }
+    }
     
     private func startTimer() {
         guard displayLink == nil else { return }
@@ -327,10 +386,6 @@ extension IncomingCallViewController: RoomDelegate {
         let seconds: Int = second % 60
         let minutes: Int = (second / 60) % 60
         return String(format: "%02d:%02d", minutes, seconds)
-    }
-
-    func room(_ room: Room, didUpdate metadata: String?) {
-        PP.debug(metadata ?? "as")
     }
     
 }

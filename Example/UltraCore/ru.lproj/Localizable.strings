@@ -125,3 +125,6 @@
 "call.reject" = "Отклонить соединение";
 "call.incomeAudioCalling" = "Входящий аудио звонок...";
 "call.incomeVideoCalling" = "Входящий видео звонок...";
+"call.errorAccessTitle" = "Ошибка";
+"call.errorAccessToCamera" = "Приложение не имеет доступа к камере";
+"call.errorAccessToMicrophone" = "Приложение не имеет доступа к микрофону";

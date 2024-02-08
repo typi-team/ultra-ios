@@ -214,7 +214,7 @@ private extension UpdateRepositoryImpl {
             .flatMap({ self.contactService.save(contact: $0) })
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { () in
-                if let topController = UIApplication.topViewController() {
+                if let topController = UIApplication.topViewController(), !(topController is IncomingCallViewController)  {
                     topController.presentWireframeWithNavigation(IncomingCallWireframe(call:.incoming(callRequest)))
                 }
             })

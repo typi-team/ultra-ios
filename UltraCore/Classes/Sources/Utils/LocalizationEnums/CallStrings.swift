@@ -15,6 +15,9 @@ enum CallStrings: String {
     case reject
     case incomeAudioCalling
     case incomeVideoCalling
+    case errorAccessTitle
+    case errorAccessToCamera
+    case errorAccessToMicrophone
 }
 
 extension CallStrings: StringLocalizable {
