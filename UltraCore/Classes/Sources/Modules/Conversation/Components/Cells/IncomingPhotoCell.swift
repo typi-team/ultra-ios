@@ -68,7 +68,7 @@ class IncomingPhotoCell: MediaCell {
         super.setup(message: message)
         self.playView.isHidden = true
         self.mediaView.image = UIImage.init(data: message.photo.preview)
-        if let image = self.mediaRepository.image(from: message) {
+        if let image = self.mediaRepository.previewImage(from: message) {
             self.mediaView.image = image
         } else {
             self.dowloadImage(by: message)

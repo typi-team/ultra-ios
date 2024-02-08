@@ -159,7 +159,7 @@ class OutgoingVideoCell: OutgoingPhotoCell {
         self.mediaView.image = UIImage.init(data: message.video.thumbPreview)
         if self.mediaRepository.isUploading(from: message) {
             self.uploadingProgress(for: message)
-        } else if let image = self.mediaRepository.image(from: message) {
+        } else if let image = self.mediaRepository.previewImage(from: message) {
             self.playView.isHidden = !message.hasVideo
             self.mediaView.image = image
         } else {

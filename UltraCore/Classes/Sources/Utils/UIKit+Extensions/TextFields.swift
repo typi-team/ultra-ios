@@ -99,23 +99,3 @@ extension UITextField {
         }
     }
 }
-
-class MessageTextView: UITextView {
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-        self.setupView()
-    }
-    
-    override init(frame: CGRect, textContainer: NSTextContainer?) {
-        super.init(frame: frame, textContainer: textContainer)
-        self.setupView()
-    }
-    
-    func setupView() {
-        self.textColor = .gray900
-        self.tintColor = .green500
-        self.font = .defaultRegularSubHeadline
-    }
-    
-    
-}

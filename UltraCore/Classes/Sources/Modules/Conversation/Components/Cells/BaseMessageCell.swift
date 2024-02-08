@@ -33,9 +33,7 @@ class BaseMessageCell: BaseCell {
     lazy var constants: MediaMessageConstants = .init(maxWidth: 300, maxHeight: 200)
     lazy var bubbleWidth = UIScreen.main.bounds.width - kHeadlinePadding * 4
     
-    let textView: UILabel = .init({
-        $0.numberOfLines = 0
-    })
+    let textView: AttributedLabel = .init(frame: .zero)
     
     let deliveryDateLabel: UILabel = .init({
         $0.textAlignment = .right
@@ -60,7 +58,7 @@ class BaseMessageCell: BaseCell {
         super.additioanSetup()
         
         self.selectionStyle = .gray
-        
+        cellAction.cancelsTouchesInView = false
         self.contentView.addGestureRecognizer(cellAction)
         
         if #available(iOS 13.0, *) {
@@ -72,6 +70,7 @@ class BaseMessageCell: BaseCell {
         }
         
         let tap = UITapGestureRecognizer.init(target: self, action: #selector(self.handleTapPress(_:)))
+        tap.cancelsTouchesInView = false
         self.container.addGestureRecognizer(tap)
         
         self.selectedBackgroundView = UIView({
@@ -105,7 +104,7 @@ class BaseMessageCell: BaseCell {
     
     func setup(message: Message) {
         self.message = message
-        self.textView.text = message.text
+        self.textView.attributedText = NSAttributedString(string: message.text)
         self.deliveryDateLabel.text = message.meta.created.dateBy(format: .hourAndMinute)
         self.traitCollectionDidChange(UIScreen.main.traitCollection)
         if #available(iOS 13.0, *) {
@@ -115,6 +114,17 @@ class BaseMessageCell: BaseCell {
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
+        
+        func attributes(for font: UIFont?, textColor: UIColor?) -> [NSAttributedString.Key : Any] {
+            var attributes = [NSAttributedString.Key: Any]()
+            if let font = font {
+                attributes[.font] = font
+            }
+            if let textColor = textColor {
+                attributes[.foregroundColor] = textColor
+            }
+            return attributes
+        }
         if let message = message {
             if message.isIncome {
                 self.container.backgroundColor = UltraCoreStyle.incomeMessageCell?.backgroundColor.color
@@ -123,14 +133,27 @@ class BaseMessageCell: BaseCell {
                 
                 self.textView.font = UltraCoreStyle.incomeMessageCell?.textLabelConfig.font
                 self.textView.textColor = UltraCoreStyle.incomeMessageCell?.textLabelConfig.color
+                self.textView.attributedText = NSAttributedString(
+                    string: self.textView.text ?? "",
+                    attributes: attributes(
+                        for: UltraCoreStyle.incomeMessageCell?.textLabelConfig.font,
+                        textColor: UltraCoreStyle.incomeMessageCell?.textLabelConfig.color
+                    )
+                )
             } else {
                 self.container.backgroundColor = UltraCoreStyle.outcomeMessageCell?.backgroundColor.color
                 
                 self.deliveryDateLabel.font = UltraCoreStyle.outcomeMessageCell?.deliveryLabelConfig.font
                 self.deliveryDateLabel.textColor = UltraCoreStyle.outcomeMessageCell?.deliveryLabelConfig.color
-                
                 self.textView.font = UltraCoreStyle.outcomeMessageCell?.textLabelConfig.font
                 self.textView.textColor = UltraCoreStyle.outcomeMessageCell?.textLabelConfig.color
+                self.textView.attributedText = NSAttributedString(
+                    string: self.textView.text ?? "",
+                    attributes: attributes(
+                        for: UltraCoreStyle.outcomeMessageCell?.textLabelConfig.font,
+                        textColor: UltraCoreStyle.outcomeMessageCell?.textLabelConfig.color
+                    )
+                )
             }
             
             if (message.hasPhoto || message.hasVideo), let style = UltraCoreStyle.videoFotoMessageCell {

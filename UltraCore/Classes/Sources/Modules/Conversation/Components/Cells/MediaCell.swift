@@ -71,7 +71,7 @@ class MediaCell: BaseMessageCell {
             .compactMap({ $0 })
             .subscribe { [weak self] image in
                 guard let `self` = self else { return }
-                self.mediaView.image = image
+                self.mediaView.image = self.mediaRepository.previewImage(from: message)
                 self.playView.isHidden = !message.hasVideo
             }
             .disposed(by: disposeBag)
