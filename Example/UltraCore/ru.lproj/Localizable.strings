@@ -112,7 +112,7 @@
 // MARK: Base view
 "base.error" = "Ошибка";
 "base.close" = "Закрыть";
-"base.settings" = "Найтройки";
+"base.settings" = "Настройки";
 "base.freedomChatDoesNotHaveAccessToYourContacts" = "Freedom Chat не имеет доступа к вашим контактам";
 "base.goToSettingsAndSwitchContactsToOn" = "Зайдите в настройки и переведите Контакты в состояние ВКЛ";
 "base.inTheProcessOfRealizationAUniqueFunctionalityMaturesWhichWillAddMagicAndEfficiencyToOurProduct" = "В процессе воплощения созревает уникальный функционал, который добавит магии и эффективности в наш продукт";
