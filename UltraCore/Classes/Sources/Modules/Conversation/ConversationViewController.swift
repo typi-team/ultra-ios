@@ -408,7 +408,20 @@ private extension ConversationViewController {
             showSettingAlert(from: ConversationStrings.givePermissionToCamera.localized, with: BaseStrings.error.localized)
         case .restricted:
             showAlert(from: ConversationStrings.cameraPermissionRestricted.localized)
-        default:
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { isAuthorized in
+                guard isAuthorized else {
+                    return
+                }
+                let controller = UIImagePickerController()
+                controller.delegate = self
+                controller.sourceType = type
+                controller.videoQuality = .typeMedium
+                controller.mediaTypes = ["public.movie", "public.image"]
+                controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
+                self.present(controller, animated: true)
+            }
+        case .authorized:
             let controller = UIImagePickerController()
             controller.delegate = self
             controller.sourceType = type
@@ -416,6 +429,8 @@ private extension ConversationViewController {
             controller.mediaTypes = ["public.movie", "public.image"]
             controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
             self.present(controller, animated: true)
+        default:
+            break
         }
 
     }
