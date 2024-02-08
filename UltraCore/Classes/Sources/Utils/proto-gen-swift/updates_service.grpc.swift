@@ -50,6 +50,11 @@ internal protocol UpdatesServiceClientProtocol: GRPCClient {
     _ request: InitialStateRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<InitialStateRequest, InitialStateResponse>
+
+  func getUpdates(
+    _ request: GetUpdatesRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<GetUpdatesRequest, GetUpdatesResponse>
 }
 
 extension UpdatesServiceClientProtocol {
@@ -121,6 +126,24 @@ extension UpdatesServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeGetInitialStateInterceptors() ?? []
+    )
+  }
+
+  /// Get updates by state range, should be used by clients to close gaps
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to GetUpdates.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  internal func getUpdates(
+    _ request: GetUpdatesRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<GetUpdatesRequest, GetUpdatesResponse> {
+    return self.makeUnaryCall(
+      path: UpdatesServiceClientMetadata.Methods.getUpdates.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetUpdatesInterceptors() ?? []
     )
   }
 }
@@ -207,6 +230,11 @@ internal protocol UpdatesServiceAsyncClientProtocol: GRPCClient {
     _ request: InitialStateRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<InitialStateRequest, InitialStateResponse>
+
+  func makeGetUpdatesCall(
+    _ request: GetUpdatesRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<GetUpdatesRequest, GetUpdatesResponse>
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -254,6 +282,18 @@ extension UpdatesServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeGetInitialStateInterceptors() ?? []
     )
   }
+
+  internal func makeGetUpdatesCall(
+    _ request: GetUpdatesRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<GetUpdatesRequest, GetUpdatesResponse> {
+    return self.makeAsyncUnaryCall(
+      path: UpdatesServiceClientMetadata.Methods.getUpdates.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetUpdatesInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -293,6 +333,18 @@ extension UpdatesServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeGetInitialStateInterceptors() ?? []
     )
   }
+
+  internal func getUpdates(
+    _ request: GetUpdatesRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> GetUpdatesResponse {
+    return try await self.performAsyncUnaryCall(
+      path: UpdatesServiceClientMetadata.Methods.getUpdates.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetUpdatesInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -324,6 +376,9 @@ internal protocol UpdatesServiceClientInterceptorFactoryProtocol: GRPCSendable {
 
   /// - Returns: Interceptors to use when invoking 'getInitialState'.
   func makeGetInitialStateInterceptors() -> [ClientInterceptor<InitialStateRequest, InitialStateResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'getUpdates'.
+  func makeGetUpdatesInterceptors() -> [ClientInterceptor<GetUpdatesRequest, GetUpdatesResponse>]
 }
 
 internal enum UpdatesServiceClientMetadata {
@@ -334,6 +389,7 @@ internal enum UpdatesServiceClientMetadata {
       UpdatesServiceClientMetadata.Methods.listen,
       UpdatesServiceClientMetadata.Methods.ping,
       UpdatesServiceClientMetadata.Methods.getInitialState,
+      UpdatesServiceClientMetadata.Methods.getUpdates,
     ]
   )
 
@@ -353,6 +409,12 @@ internal enum UpdatesServiceClientMetadata {
     internal static let getInitialState = GRPCMethodDescriptor(
       name: "GetInitialState",
       path: "/UpdatesService/GetInitialState",
+      type: GRPCCallType.unary
+    )
+
+    internal static let getUpdates = GRPCMethodDescriptor(
+      name: "GetUpdates",
+      path: "/UpdatesService/GetUpdates",
       type: GRPCCallType.unary
     )
   }
@@ -384,6 +446,9 @@ internal protocol UpdatesServiceProvider: CallHandlerProvider {
   /// request from state which was returned by this method, it guarantees 
   /// that client will get only new updates
   func getInitialState(request: InitialStateRequest, context: StatusOnlyCallContext) -> EventLoopFuture<InitialStateResponse>
+
+  /// Get updates by state range, should be used by clients to close gaps
+  func getUpdates(request: GetUpdatesRequest, context: StatusOnlyCallContext) -> EventLoopFuture<GetUpdatesResponse>
 }
 
 extension UpdatesServiceProvider {
@@ -423,6 +488,15 @@ extension UpdatesServiceProvider {
         responseSerializer: ProtobufSerializer<InitialStateResponse>(),
         interceptors: self.interceptors?.makeGetInitialStateInterceptors() ?? [],
         userFunction: self.getInitialState(request:context:)
+      )
+
+    case "GetUpdates":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<GetUpdatesRequest>(),
+        responseSerializer: ProtobufSerializer<GetUpdatesResponse>(),
+        interceptors: self.interceptors?.makeGetUpdatesInterceptors() ?? [],
+        userFunction: self.getUpdates(request:context:)
       )
 
     default:
@@ -471,6 +545,12 @@ internal protocol UpdatesServiceAsyncProvider: CallHandlerProvider {
     request: InitialStateRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> InitialStateResponse
+
+  /// Get updates by state range, should be used by clients to close gaps
+  @Sendable func getUpdates(
+    request: GetUpdatesRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> GetUpdatesResponse
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -519,6 +599,15 @@ extension UpdatesServiceAsyncProvider {
         wrapping: self.getInitialState(request:context:)
       )
 
+    case "GetUpdates":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<GetUpdatesRequest>(),
+        responseSerializer: ProtobufSerializer<GetUpdatesResponse>(),
+        interceptors: self.interceptors?.makeGetUpdatesInterceptors() ?? [],
+        wrapping: self.getUpdates(request:context:)
+      )
+
     default:
       return nil
     }
@@ -540,6 +629,10 @@ internal protocol UpdatesServiceServerInterceptorFactoryProtocol {
   /// - Returns: Interceptors to use when handling 'getInitialState'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeGetInitialStateInterceptors() -> [ServerInterceptor<InitialStateRequest, InitialStateResponse>]
+
+  /// - Returns: Interceptors to use when handling 'getUpdates'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeGetUpdatesInterceptors() -> [ServerInterceptor<GetUpdatesRequest, GetUpdatesResponse>]
 }
 
 internal enum UpdatesServiceServerMetadata {
@@ -550,6 +643,7 @@ internal enum UpdatesServiceServerMetadata {
       UpdatesServiceServerMetadata.Methods.listen,
       UpdatesServiceServerMetadata.Methods.ping,
       UpdatesServiceServerMetadata.Methods.getInitialState,
+      UpdatesServiceServerMetadata.Methods.getUpdates,
     ]
   )
 
@@ -569,6 +663,12 @@ internal enum UpdatesServiceServerMetadata {
     internal static let getInitialState = GRPCMethodDescriptor(
       name: "GetInitialState",
       path: "/UpdatesService/GetInitialState",
+      type: GRPCCallType.unary
+    )
+
+    internal static let getUpdates = GRPCMethodDescriptor(
+      name: "GetUpdates",
+      path: "/UpdatesService/GetUpdates",
       type: GRPCCallType.unary
     )
   }
