@@ -71,8 +71,8 @@
 "conversation.unblock" = "Unblock";
 "conversation.deleteFromMe" = "Delete from me";
 "conversation.deleteForEveryone" = "Delete for everyone";
-"conversation.givePermissionToRecordVoice" = "Give permission to record voice";
-"conversation.givePermissionToCamera" = "Give permission to camera";
+"conversation.givePermissionToRecordVoice" = "The application does not have access to the microphone";
+"conversation.givePermissionToCamera" = "The application does not have access to the camera";
 "conversation.cameraPermissionRestricted" = "Camera access is restricted";
 "conversation.ifAMessageContainsThreatsInappropriateContentOrViolatesAnyPlatformOrCommunity" = "If a message contains threats, inappropriate content, or violates any platform or community rules, it can be reported and is subject to removal. Restoring such a message may be impossible";
 "conversation.yourComplaintWillBeReviewedByModeratorsThankYou" = "Moderators will review your complaint. Thank you!";

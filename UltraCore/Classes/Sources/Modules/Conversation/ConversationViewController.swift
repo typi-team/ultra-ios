@@ -393,9 +393,19 @@ private extension ConversationViewController {
     }
     
     func openMedia(type: UIImagePickerController.SourceType) {
+        if type == .savedPhotosAlbum {
+            let controller = UIImagePickerController()
+            controller.delegate = self
+            controller.sourceType = type
+            controller.videoQuality = .typeMedium
+            controller.mediaTypes = ["public.movie", "public.image"]
+            controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
+            self.present(controller, animated: true)
+            return
+        }
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .denied:
-            showSettingAlert(from: ConversationStrings.givePermissionToCamera.localized)
+            showSettingAlert(from: ConversationStrings.givePermissionToCamera.localized, with: BaseStrings.error.localized)
         case .restricted:
             showAlert(from: ConversationStrings.cameraPermissionRestricted.localized)
         default:
@@ -699,7 +709,7 @@ extension ConversationViewController: UIDocumentPickerDelegate {
 
 extension ConversationViewController: VoiceInputBarDelegate {
     func showVoiceError() {
-        showSettingAlert(from: ConversationStrings.givePermissionToRecordVoice.localized)
+        showSettingAlert(from: ConversationStrings.givePermissionToRecordVoice.localized, with: BaseStrings.error.localized)
     }
     
     func recordedVoice(url: URL, in duration: TimeInterval) {

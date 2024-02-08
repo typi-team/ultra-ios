@@ -65,10 +65,10 @@ extension UIViewController {
     
     func showSettingAlert(from message: String, with title: String? = nil) {
         let alert = UIAlertController.init(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction.init(title: BaseStrings.close.localized, style: .cancel))
         alert.addAction(UIAlertAction.init(title: BaseStrings.settings.localized, style: .default, handler: { _ in
             UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
         }))
-        alert.addAction(UIAlertAction.init(title: BaseStrings.close.localized, style: UIAlertAction.Style.destructive))
         self.present(alert, animated: true)
     }
     
