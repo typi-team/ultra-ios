@@ -198,12 +198,11 @@ private extension UpdateRepositoryImpl {
     
     func dissmissCall(in room: String) {
         DispatchQueue.main.async {
-            if var topController = UIApplication.shared.windows.filter({ $0.isKeyWindow }).first?.rootViewController {
-                while let presentedViewController = topController.presentedViewController {
-                    topController = presentedViewController
-                }
-                if topController is IncomingCallViewController {
-                    topController.dismiss(animated: true)
+            if let callViewController = UIApplication.topViewController() as? IncomingCallViewController {
+                if let presentingViewController = callViewController.presentingViewController {
+                    presentingViewController.dismiss(animated: true)
+                } else {
+                    callViewController.navigationController?.popViewController(animated: true)
                 }
             }
         }
@@ -215,11 +214,8 @@ private extension UpdateRepositoryImpl {
             .flatMap({ self.contactService.save(contact: $0) })
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { () in
-                if var topController = UIApplication.shared.windows.filter({ $0.isKeyWindow }).first?.rootViewController {
-                    while let presentedViewController = topController.presentedViewController {
-                        topController = presentedViewController
-                    }
-                    topController.presentWireframe(IncomingCallWireframe(call:.incoming(callRequest)))
+                if let topController = UIApplication.topViewController() {
+                    topController.presentWireframeWithNavigation(IncomingCallWireframe(call:.incoming(callRequest)))
                 }
             })
             .disposed(by: disposeBag)
@@ -365,5 +361,20 @@ extension MessagesDeleted {
         }
 
         return closedRanges
+    }
+}
+
+extension UIApplication {
+    class func topViewController(root: UIViewController? = UIApplication.shared.windows.filter({ $0.isKeyWindow }).first?.rootViewController) -> UIViewController? {
+        if let nav = root as? UINavigationController {
+            return topViewController(root: nav.visibleViewController)
+
+        } else if let tab = root as? UITabBarController, let selected = tab.selectedViewController {
+            return topViewController(root: selected)
+
+        } else if let presented = root?.presentedViewController {
+            return topViewController(root: presented)
+        }
+        return root
     }
 }

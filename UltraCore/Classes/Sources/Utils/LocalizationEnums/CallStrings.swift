@@ -11,6 +11,10 @@ enum CallStrings: String {
     case connecting
     case reconnecting
     case connected
+    case cancel
+    case reject
+    case incomeAudioCalling
+    case incomeVideoCalling
 }
 
 extension CallStrings: StringLocalizable {

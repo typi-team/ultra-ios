@@ -115,4 +115,8 @@
 
 "call.connecting" = "Connecting...";
 "call.disconnected" = "Disconnected";
-"call.reconnecting" = "Connecting...";
+"call.reconnecting" = "Reconnecting...";
+"call.cancel" = "Close connection";
+"call.reject" = "Reject connection";
+"call.incomeAudioCalling" = "Incoming audio call...";
+"call.incomeVideoCalling" = "Incoming audio call...";

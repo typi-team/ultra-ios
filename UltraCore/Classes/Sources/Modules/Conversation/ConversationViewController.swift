@@ -391,6 +391,12 @@ private extension ConversationViewController {
                 action: #selector(self.more(_:))
             ),
             .init(
+                image: .named("conversation_video_camera_icon"),
+                style: .plain,
+                target: self,
+                action: #selector(self.callWithVideo)
+            ),
+            .init(
                 image: .named("contact_phone_icon"),
                 style: .plain,
                 target: self,

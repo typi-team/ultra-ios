@@ -56,7 +56,7 @@ final class IncomingCallActionView: UIStackView {
         }
     }
 
-    fileprivate lazy var cameraButton: UIButton = .init {
+    lazy var cameraButton: UIButton = .init {
         $0.setImage(style.cameraOffImage, for: .normal)
         $0.setImage(style.cameraOnImage, for: .selected)
         $0.addAction { [weak self] in
@@ -105,27 +105,31 @@ final class IncomingCallActionView: UIStackView {
             addArrangedSubview(answerButton)
             addArrangedSubview(rejectButton)
         case .outcoming:
-            addArrangedSubview(mouthpieceButton)
-            addArrangedSubview(microButton)
-            addArrangedSubview(cameraButton)
-            addArrangedSubview(cancelButton)
+            if status.callInfo.video {
+                setAsActiveCamera()
+            } else {
+                setAsActiveAudio()
+            }
         }
     }
 
-    func setAsActive() {
+    func setAsActiveAudio() {
         arrangedSubviews.forEach({ $0.removeFromSuperview() })
         addArrangedSubview(mouthpieceButton)
         addArrangedSubview(microButton)
         addArrangedSubview(cameraButton)
         addArrangedSubview(cancelButton)
+        cameraButton.isSelected = false
     }
     
     func setAsActiveCamera() {
         arrangedSubviews.forEach({ $0.removeFromSuperview() })
-        addArrangedSubview(cameraButton)
-        addArrangedSubview(microButton)
         addArrangedSubview(switchCameraButton)
+        addArrangedSubview(microButton)
+        addArrangedSubview(cameraButton)
         addArrangedSubview(cancelButton)
+        cameraButton.isSelected = true
+        mouthpieceButton.isSelected = true
     }
 
     private func setup() {

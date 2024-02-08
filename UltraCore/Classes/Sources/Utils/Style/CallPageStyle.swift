@@ -13,6 +13,9 @@ public protocol CallPageStyle {
     var companionConfig: LabelConfig { get set }
     var durationConfig: LabelConfig { get set }
     
+    var companionVideoConfig: LabelConfig { get set }
+    var durationVideoConfig: LabelConfig { get set }
+    
     var mouthpieceOnImage: UIImage { get set }
     
     var mouthpieceOffImage: UIImage { get set }
