@@ -9,6 +9,7 @@
 //
 
 import UIKit
+import AVFoundation
 import RxCocoa
 import RxSwift
 import QuickLook
@@ -392,13 +393,21 @@ private extension ConversationViewController {
     }
     
     func openMedia(type: UIImagePickerController.SourceType) {
-        let controller = UIImagePickerController()
-        controller.delegate = self
-        controller.sourceType = type
-        controller.videoQuality = .typeMedium
-        controller.mediaTypes = ["public.movie", "public.image"]
-        controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
-        self.present(controller, animated: true)
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .denied:
+            showSettingAlert(from: ConversationStrings.givePermissionToCamera.localized)
+        case .restricted:
+            showAlert(from: ConversationStrings.cameraPermissionRestricted.localized)
+        default:
+            let controller = UIImagePickerController()
+            controller.delegate = self
+            controller.sourceType = type
+            controller.videoQuality = .typeMedium
+            controller.mediaTypes = ["public.movie", "public.image"]
+            controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
+            self.present(controller, animated: true)
+        }
+
     }
     
     func openDocument() {
@@ -435,12 +444,12 @@ extension ConversationViewController: (UIImagePickerControllerDelegate & UINavig
            let url = info[.mediaURL]  as? URL,
             let data = try? Data(contentsOf: url) {
             picker.dismiss(animated: true)
-            self.presenter?.upload(file: .init(url: url, data: data, mime: "video/mp4", width: 300, height: 200))
+            self.presenter?.upload(file: .init(url: url, data: data, mime: "video/mp4", width: 300, height: 200), isVoice: false)
         } else if let image = info[.originalImage] as? UIImage,
                   let downsampled = image.fixedOrientation().downsample(reductionAmount: 0.5),
                   let data = downsampled.pngData() {
             picker.dismiss(animated: true, completion: {
-                self.presenter?.upload(file: .init(url: nil, data: data, mime: "image/png", width: image.size.width, height: image.size.height))
+                self.presenter?.upload(file: .init(url: nil, data: data, mime: "image/png", width: image.size.width, height: image.size.height), isVoice: false)
             })
         }
     }
@@ -682,7 +691,7 @@ extension ConversationViewController: UIDocumentPickerDelegate {
                 return
             }
 
-            self.presenter?.upload(file: .init(url: selectedURL, data: data, mime: selectedURL.mimeType().containsAudio ? "audio/mp3" : selectedURL.mimeType(), width: 300, height: 300))
+            self.presenter?.upload(file: .init(url: selectedURL, data: data, mime: selectedURL.mimeType().containsAudio ? "audio/mp3" : selectedURL.mimeType(), width: 300, height: 300), isVoice: false)
         }
         
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) { }
@@ -696,7 +705,7 @@ extension ConversationViewController: VoiceInputBarDelegate {
     func recordedVoice(url: URL, in duration: TimeInterval) {
         guard duration > 2,
               let data = try? Data(contentsOf: url) else { return }
-        self.presenter?.upload(file: FileUpload(url: nil, data: data, mime: "audio/wav", width: 0, height: 0, duration: duration))
+        self.presenter?.upload(file: FileUpload(url: nil, data: data, mime: "audio/wav", width: 0, height: 0, duration: duration), isVoice: true)
     }
 }
 

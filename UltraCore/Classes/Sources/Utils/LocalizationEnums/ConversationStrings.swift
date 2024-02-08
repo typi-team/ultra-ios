@@ -45,6 +45,8 @@ enum ConversationStrings: String, StringLocalizable {
     
     case requestSent
     case givePermissionToRecordVoice
+    case givePermissionToCamera
+    case cameraPermissionRestricted
     case ifAMessageContainsThreatsInappropriateContentOrViolatesAnyPlatformOrCommunity
     case yourComplaintWillBeReviewedByModeratorsThankYou
     

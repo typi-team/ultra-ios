@@ -23,7 +23,13 @@ class MessageInputTextView: UITextView {
     var placeholderColor: UIColor = .gray500 {
         didSet { setNeedsDisplay() }
     }
-    
+
+    override var text: String! {
+        didSet {
+            updateOnTextChange()
+        }
+    }
+
     override init(frame: CGRect, textContainer: NSTextContainer?) {
         super.init(frame: frame, textContainer: textContainer)
         commonInit()
@@ -71,7 +77,34 @@ class MessageInputTextView: UITextView {
     private func updateScrollState() {
         isScrollEnabled = frame.height >= maxHeight
     }
-    
+
+    private func updateOnTextChange() {
+        let height = min(desiredHeight, maxHeight)
+
+        if heightConstraint == nil {
+            heightConstraint = NSLayoutConstraint(
+                item: self,
+                attribute: .height,
+                relatedBy: .equal,
+                toItem: nil,
+                attribute: .notAnAttribute,
+                multiplier: 1.0,
+                constant: height
+            )
+            addConstraint(heightConstraint!)
+            heightConstraint?.isActive = true
+        }
+
+        if height != heightConstraint?.constant {
+            heightConstraint?.constant = height
+            if let delegate = delegate as? MessageInputTextViewDelegate {
+                delegate.textViewDidChangeHeight(self, height: height)
+            }
+        }
+        updateScrollState()
+        setNeedsDisplay()
+    }
+
     override func draw(_ rect: CGRect) {
         super.draw(rect)
         
@@ -105,31 +138,8 @@ class MessageInputTextView: UITextView {
         guard notification.object is MessageInputTextView else {
             return
         }
-        
-        let height = min(desiredHeight, maxHeight)
 
-        if heightConstraint == nil {
-            heightConstraint = NSLayoutConstraint(
-                item: self,
-                attribute: .height,
-                relatedBy: .equal,
-                toItem: nil,
-                attribute: .notAnAttribute,
-                multiplier: 1.0,
-                constant: height
-            )
-            addConstraint(heightConstraint!)
-            heightConstraint?.isActive = true
-        }
-
-        if height != heightConstraint?.constant {
-            heightConstraint?.constant = height
-            if let delegate = delegate as? MessageInputTextViewDelegate {
-                delegate.textViewDidChangeHeight(self, height: height)
-            }
-        }
-        updateScrollState()
-        setNeedsDisplay()
+        updateOnTextChange()
     }
     
 }
