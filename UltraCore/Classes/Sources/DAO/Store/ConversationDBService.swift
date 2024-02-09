@@ -71,7 +71,22 @@ class ConversationDBService {
             return Disposables.create { notificationKey.invalidate() }
         }
     }
-    
+
+    func setUnread(for conversationID: String, count: Int) {
+        do {
+            let realm = Realm.myRealm()
+            try realm.write {
+                guard let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID) else {
+                    return
+                }
+                conversation.unreadMessageCount = count
+                realm.add(conversation, update: .all)
+            }
+        } catch {
+            PP.error("Couldn't set unread count for conversation - \(conversationID)")
+        }
+    }
+
     @discardableResult
     func incrementUnread(for conversationID: String, count: Int = 1) -> Bool {
         do {

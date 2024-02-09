@@ -144,7 +144,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
 private extension UpdateRepositoryImpl {
     func handleUnread(from chats: [Chat]) {
         for chat in chats {
-            self.conversationService.incrementUnread(for: chat.chatID, count: Int(chat.unread))
+            conversationService.setUnread(for: chat.chatID, count: Int(chat.unread))
         }
     }
     
