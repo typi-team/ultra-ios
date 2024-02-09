@@ -413,6 +413,7 @@ extension MediaRepositoryImpl {
             }
             .do(onSuccess: {[weak self] chunks in
                 message.video.fileID = chunks.first?.fileID ?? ""
+                message.video.thumbPreview = thumbnailData
                 try self?.mediaUtils.write(thumbnailData, file: message.video.previewVideoFileId, and: "png")
             })
             .do(onSuccess: { [weak self] chunks in
