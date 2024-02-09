@@ -39,6 +39,16 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
 
     fileprivate lazy var actionStackView = IncomingCallActionView(style: style, delegate: self)
     
+    fileprivate lazy var topView: UIView = .init {
+        let gradient = CAGradientLayer()
+        gradient.locations = [0, 1]
+        gradient.frame.size = CGSize(width: UIScreen.main.bounds.width, height: 100)
+        gradient.colors = [style.background.color.withAlphaComponent(1).cgColor,
+                           style.background.color.withAlphaComponent(0).cgColor]
+        $0.layer.addSublayer(gradient)
+        $0.isHidden = true
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -52,6 +62,7 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
         view.addSubview(infoView)
         view.addSubview(actionStackView)
         view.addSubview(localVideoView)
+        view.insertSubview(topView, aboveSubview: remoteVideoView)
     }
 
     override func setupConstraints() {
@@ -76,6 +87,10 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
             make.width.equalTo(90)
             make.height.equalTo(150)
         }
+        topView.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview()
+            make.height.equalTo(100)
+        }
     }
 
     override func setupInitialData() {
@@ -99,8 +114,10 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
             if isVideo {
                 guard let navigationController else { return }
                 make.centerY.equalTo(navigationController.navigationBar.snp.centerY)
+                topView.isHidden = false
             } else {
                 make.bottom.equalTo(view.snp.centerY).offset(-36)
+                topView.isHidden = true
             }
             make.leading.trailing.equalToSuperview()
         }

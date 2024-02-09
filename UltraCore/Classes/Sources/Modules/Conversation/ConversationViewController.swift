@@ -14,6 +14,7 @@ import RxSwift
 import QuickLook
 import ContactsUI
 import RxDataSources
+import AVFoundation
 
 final class ConversationViewController: BaseViewController<ConversationPresenterInterface> {
     // MARK: - Properties
@@ -485,11 +486,51 @@ extension ConversationViewController {
     }
     
     @objc func callWithVideo(_ sender: UIBarButtonItem) {
-        self.presenter?.callVideo()
+        checkVideoPermission { [weak self] in
+            self?.presenter?.callVideo()
+        }
     }
     
     @objc func callWithVoice(_ sender: UIBarButtonItem) {
-        self.presenter?.callVoice()
+        checkMicrophonePermission { [weak self] in
+            self?.presenter?.callVoice()
+        }
+    }
+    
+    private func checkMicrophonePermission(onCompletion: @escaping () -> Void) {
+        switch AVAudioSession.sharedInstance().recordPermission {
+        case .granted:
+            onCompletion()
+        case .denied:
+            showSettingAlert(from: CallStrings.errorAccessToMicrophone.localized, with: CallStrings.errorAccessTitle.localized)
+        case .undetermined:
+            AVAudioSession.sharedInstance().requestRecordPermission { granted in
+                DispatchQueue.main.async {
+                    if granted {
+                        onCompletion()
+                    }
+                }
+            }
+        default: break
+        }
+    }
+    
+    private func checkVideoPermission(onCompletion: @escaping () -> Void) {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            onCompletion()
+        case .denied, .restricted:
+            showSettingAlert(from: CallStrings.errorAccessToCamera.localized, with: CallStrings.errorAccessTitle.localized)
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { granted in
+                DispatchQueue.main.async {
+                    if granted {
+                        onCompletion()
+                    }
+                }
+            }
+        default: break
+        }
     }
     
     @objc func more(_ sender: UIBarButtonItem) {
