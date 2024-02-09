@@ -57,7 +57,6 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
     }
     
     func reject() {
-        
         self.callService.reject(RejectCallRequest.with({
             $0.room = self.callStatus.callInfo.room
             $0.callerUserID = self.callStatus.callInfo.sender
@@ -75,7 +74,7 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
     
     func cancel() {
         self.callService.cancel(CancelCallRequest.with({
-            $0.userID = self.userId
+            $0.userID = self.callStatus.callInfo.sender
             $0.room = self.callStatus.callInfo.room
         }), callOptions: .default()).response.whenComplete( {[weak self] result  in
             guard let `self` = self else { return }

@@ -30,6 +30,12 @@ final class IncomingCallInfoView: UIView {
         $0.textColor = style.durationConfig.color
     }
     
+    fileprivate lazy var stackView: UIStackView = .init {
+        $0.axis = .vertical
+        $0.spacing = 8
+        $0.alignment = .center
+    }
+    
     // MARK: - Init
     
     init(style: CallPageStyle) {
@@ -56,7 +62,15 @@ final class IncomingCallInfoView: UIView {
     }
     
     func hidePhoneNumber() {
-        phoneLabel.isHidden = true
+        phoneLabel.removeFromSuperview()
+    }
+    
+    func configureToVideoCall(isVideo: Bool) {
+        avatarView.isHidden = isVideo
+        phoneLabel.isHidden = isVideo
+        stackView.spacing = isVideo ? 4 : 8
+        companionLabel.font = isVideo ? style.companionVideoConfig.font : style.companionConfig.font
+        dutationLabel.font = isVideo ? style.durationVideoConfig.font : style.durationConfig.font
     }
     
     private func setup() {
@@ -66,34 +80,19 @@ final class IncomingCallInfoView: UIView {
     
     private func setupViews() {
         backgroundColor = .clear
-        addSubview(avatarView)
-        addSubview(companionLabel)
-        addSubview(dutationLabel)
-        addSubview(phoneLabel)
+        addSubview(stackView)
+        [avatarView, companionLabel, dutationLabel, phoneLabel].forEach { stackView.addArrangedSubview($0) }
     }
     
     private func makeConstraints() {
-        avatarView.snp.makeConstraints { make in
+        stackView.snp.makeConstraints { make in
             make.top.equalToSuperview()
-            make.bottom.equalTo(companionLabel.snp.top).offset(-kLowPadding)
-            make.centerX.equalToSuperview()
-            make.size.equalTo(80)
-        }
-        companionLabel.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.bottom.equalTo(dutationLabel.snp.top).offset(-kLowPadding)
             make.left.equalToSuperview().offset(kLowPadding)
             make.right.equalToSuperview().offset(-kLowPadding)
-        }
-        dutationLabel.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
-            make.bottom.equalTo(phoneLabel.snp.top).offset(-kLowPadding)
-            make.left.equalToSuperview().offset(kLowPadding)
-            make.right.equalToSuperview().offset(-kLowPadding)
-        }
-        phoneLabel.snp.makeConstraints { make in
-            make.centerX.equalToSuperview()
             make.bottom.equalToSuperview()
+        }
+        avatarView.snp.makeConstraints { make in
+            make.size.equalTo(80)
         }
     }
     

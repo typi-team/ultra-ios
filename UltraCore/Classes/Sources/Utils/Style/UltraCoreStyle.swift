@@ -115,6 +115,8 @@ private class CallPageStyleImpl: CallPageStyle {
     var background: TwiceColor = TwiceColorImpl(defaultColor: .from(hex: "#0F141B"), darkColor: .from(hex: "#0F141B"))
     var companionConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .white, font: .defaultRegularTitle2)
     var durationConfig: LabelConfig = LabelConfigImpl(darkColor: .gray400, defaultColor: .gray400, font: .defaultRegularBody)
+    var companionVideoConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .white, font: .defaultRegularHeadline)
+    var durationVideoConfig: LabelConfig = LabelConfigImpl(darkColor: .gray400, defaultColor: .gray400, font: .defaultRegularFootnote)
     var mouthpieceOnImage: UIImage = .fromAssets("calling.mouthpieceOn")!
     var mouthpieceOffImage: UIImage = .fromAssets("calling.mouthpieceOff")!
     var micOnImage: UIImage = .fromAssets("calling.micOn")!
@@ -124,6 +126,8 @@ private class CallPageStyleImpl: CallPageStyle {
     var answerImage: UIImage = .fromAssets("calling.answer")!
     var declineImage: UIImage = .fromAssets("calling.decline")!
     var closeImage: UIImage = .fromAssets("calling.close")!
+    var switchFrontCameraImage: UIImage = .fromAssets("calling.switchCameraPosition")!
+    var switchBackCameraImage: UIImage = .fromAssets("calling.switchCameraPosition")!
 }
 
 private class ConversationCellConfigImpl: ConversationCellConfig {

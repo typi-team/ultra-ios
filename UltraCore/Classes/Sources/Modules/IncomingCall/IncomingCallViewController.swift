@@ -10,14 +10,19 @@
 
 import UIKit
 import LiveKitClient
+import AVFAudio
+import AVFoundation
 
 final class IncomingCallViewController: BaseViewController<IncomingCallPresenterInterface> {
     
     fileprivate lazy var room = Room(delegate: self)
-    fileprivate lazy var timer: Timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true, block: {[weak self] timer in
-        self?.infoView.setDuration(text: timer.tolerance.description)
-    })
-
+    
+    fileprivate var displayLink: CADisplayLink?
+    
+    fileprivate var date: Date?
+    
+    fileprivate let audioQueue = DispatchQueue(label: "audio")
+    
     fileprivate lazy var localVideoView: VideoView = .init({
         $0.isHidden = true
         $0.cornerRadius = kLowPadding
@@ -33,7 +38,17 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
     fileprivate lazy var infoView = IncomingCallInfoView(style: style)
 
     fileprivate lazy var actionStackView = IncomingCallActionView(style: style, delegate: self)
-
+    
+    fileprivate lazy var topView: UIView = .init {
+        let gradient = CAGradientLayer()
+        gradient.locations = [0, 1]
+        gradient.frame.size = CGSize(width: UIScreen.main.bounds.width, height: 100)
+        gradient.colors = [style.background.color.withAlphaComponent(1).cgColor,
+                           style.background.color.withAlphaComponent(0).cgColor]
+        $0.layer.addSublayer(gradient)
+        $0.isHidden = true
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -47,6 +62,7 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
         view.addSubview(infoView)
         view.addSubview(actionStackView)
         view.addSubview(localVideoView)
+        view.insertSubview(topView, aboveSubview: remoteVideoView)
     }
 
     override func setupConstraints() {
@@ -71,6 +87,10 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
             make.width.equalTo(90)
             make.height.equalTo(150)
         }
+        topView.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview()
+            make.height.equalTo(100)
+        }
     }
 
     override func setupInitialData() {
@@ -80,13 +100,34 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
         guard let status = presenter?.getCallStatus() else { return }
         actionStackView.configure(status: status)
         switch status {
-        case let .incoming(request), let .outcoming(request):
-            room.localParticipant?.setCamera(enabled: request.video)
+        case .incoming:
+            infoView.setDuration(text: status.callInfo.video ? CallStrings.incomeVideoCalling.localized : CallStrings.incomeAudioCalling.localized)
+        case .outcoming:
+            infoView.setDuration(text: CallStrings.connecting.localized)
+        }
+        setSpeaker(status.callInfo.video)
+    }
+    
+    private func remakeInfoViewConstraints(isVideo: Bool) {
+        infoView.configureToVideoCall(isVideo: isVideo)
+        infoView.snp.remakeConstraints { make in
+            if isVideo {
+                guard let navigationController else { return }
+                make.centerY.equalTo(navigationController.navigationBar.snp.centerY)
+                topView.isHidden = false
+            } else {
+                make.bottom.equalTo(view.snp.centerY).offset(-36)
+                topView.isHidden = true
+            }
+            make.leading.trailing.equalToSuperview()
+        }
+        UIView.animate(withDuration: 0.2) {
+            self.view.layoutIfNeeded()
         }
     }
 
     deinit {
-        _ = self.room.disconnect()
+        endTimer()
     }
 }
 
@@ -94,33 +135,76 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
 
 extension IncomingCallViewController: IncomingCallActionViewDelegate {
     
+    func view(_ view: IncomingCallActionView, switchCameraButtonDidTap button: UIButton) {
+        let localVideoTrack = room.localParticipant?.firstCameraVideoTrack as? LocalVideoTrack
+        let cameraCapturer = localVideoTrack?.capturer as? CameraCapturer
+        let remoteParticipant = room.remoteParticipants.first?.value
+        let videoView: VideoView
+        if remoteParticipant?.isCameraEnabled() ?? false {
+            videoView = localVideoView
+        } else {
+            videoView = remoteVideoView
+        }
+        videoView.applyBlurEffect()
+        cameraCapturer?.switchCameraPosition()
+        button.isEnabled = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            videoView.removeBlurEffect()
+            button.isEnabled = true
+        }
+    }
+    
     func view(_ view: IncomingCallActionView, answerButtonDidTap button: UIButton) {
         guard let callStatus = presenter?.getCallStatus() else { return }
+        if callStatus.callInfo.video {
+            actionStackView.setAsActiveCamera()
+            setSpeaker(true)
+            remakeInfoViewConstraints(isVideo: true)
+        } else {
+            actionStackView.setAsActiveAudio()
+        }
         connectRoom(with: callStatus.callInfo)
     }
     
     func view(_ view: IncomingCallActionView, mouthpieceButtonDidTap button: UIButton) {
-//        _ = room.localParticipant?.isSpeaking = button.isSelected
+        setSpeaker(button.isSelected)
     }
     
     func view(_ view: IncomingCallActionView, microButtonDidTap button: UIButton) {
-        _ = room.localParticipant?.setMicrophone(enabled: !button.isSelected)
+        setMicrophoneIfPossible(enabled: button.isSelected)
     }
     
     func view(_ view: IncomingCallActionView, cameraButtonDidTap button: UIButton) {
         let cameraEnabled = button.isSelected
-        _ = room.localParticipant?.setCamera(enabled: cameraEnabled)
-        localVideoView.isHidden = !cameraEnabled
+        if cameraEnabled {
+            actionStackView.setAsActiveCamera()
+            setSpeaker(true)
+        } else {
+            actionStackView.setAsActiveAudio()
+        }
+        setVideoCallIfPossible(enabled: cameraEnabled)
     }
-    
+  
     func view(_ view: IncomingCallActionView, cancelButtonDidTap button: UIButton) {
-        infoView.setDuration(text: "Close connection")
+        endTimer()
+        infoView.setDuration(text: CallStrings.cancel.localized)
         presenter?.cancel()
     }
     
     func view(_ view: IncomingCallActionView, rejectButtonDidTap button: UIButton) {
-        infoView.setDuration(text: "Reject connection")
+        infoView.setDuration(text: CallStrings.reject.localized)
         presenter?.reject()
+    }
+    
+    private func setSpeaker(_ isEnabled: Bool) {
+        audioQueue.async {
+            let audioSession = AVAudioSession.sharedInstance()
+            try? audioSession.setCategory(
+                .playAndRecord,
+                mode: .voiceChat,
+                options: isEnabled ? [.defaultToSpeaker, .allowBluetooth, .allowBluetoothA2DP] : [.duckOthers, .allowBluetooth, .allowBluetoothA2DP])
+            try? audioSession.setActive(true)
+        }
     }
     
 }
@@ -128,98 +212,231 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
 // MARK: - IncomingCallViewInterface
 
 extension IncomingCallViewController: IncomingCallViewInterface {
+    
     func connectRoom(with callInfo: CallInformation) {
-        room.connect(callInfo.host, callInfo.accessToken).then { room in
-            room.localParticipant?.setCamera(enabled: callInfo.video)
-            // TO-DO: change to true
-            room.localParticipant?.setMicrophone(enabled: false)
+        room.connect(callInfo.host, callInfo.accessToken).then { [weak self] room in
+            guard let self, let status = presenter?.getCallStatus() else { return }
+            if case .incoming = status {
+                configureStartCall()
+            }
+            if callInfo.video && actionStackView.cameraButton.isSelected {
+                setVideoCallIfPossible(enabled: callInfo.video)
+            }
+            if actionStackView.microButton.isSelected {
+                setMicrophoneIfPossible(enabled: actionStackView.microButton.isSelected)
+            }
         }.catch { error in
             self.dismiss(animated: true)
         }
     }
 
     func disconnectRoom() {
-        self.room.disconnect().then({[weak self] () in
-            self?.navigationController?.popViewController(animated: true)
+        room.disconnect().then({[weak self] () in
+            self?.dismissPage()
         }).catch { [weak self] error  in
-            self?.navigationController?.popViewController(animated: true)
+            self?.dismissPage()
+        }
+    }
+    
+    private func dismissPage() {
+        if let presentingViewController {
+            presentingViewController.dismiss(animated: true)
+        } else {
+            navigationController?.popViewController(animated: true)
         }
     }
 
     func dispay(view contact: ContactDisplayable) {
         infoView.confige(view: contact)
     }
-}
-
-// MARK: - RoomDelegateObjC
-
-extension IncomingCallViewController: RoomDelegateObjC {
-    func room(_ room: Room, didUpdate connectionState: ConnectionStateObjC, oldValue oldConnectionState: ConnectionStateObjC) {
-        print("[ROOM]: old - \(oldConnectionState); new - \(connectionState)")
+    
+    private func configureStartCall() {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            if connectionState == .connected {
-                self.actionStackView.setAsActive()
-            }
-            self.infoView.setDuration(text: connectionState.desctiption)
-            self.infoView.hidePhoneNumber()
-            switch connectionState {
-            case .disconnected, .connecting, .reconnecting:
-                self.timer.invalidate()
-            case .connected:
-                self.timer.fire()
-            }
-        }
-    }
-
-    func room(_ room: Room, didUpdate metadata: String?) {
-        PP.debug(metadata ?? "as")
-    }
-
-    func room(_ room: Room, localParticipant: LocalParticipant, didPublish publication: LocalTrackPublication) {
-        guard let track = publication.track as? VideoTrack else {
-            return
-        }
-        DispatchQueue.main.async {
-            self.localVideoView.track = track
-        }
-    }
-
-    func room(_ room: Room, participant: RemoteParticipant, didSubscribe publication: RemoteTrackPublication, track: Track) {
-        guard let track = track as? VideoTrack else {
-            remoteVideoView.isHidden = true
-            return
-        }
-        DispatchQueue.main.async { [weak self] in
-            self?.remoteVideoView.isHidden = false
-            self?.remoteVideoView.track = track
+            infoView.hidePhoneNumber()
+            startTimer()
         }
     }
     
+}
+
+// MARK: - RoomDelegate
+
+extension IncomingCallViewController: RoomDelegate {
+    
+    func room(_ room: Room, didUpdate connectionState: ConnectionState, oldValue: ConnectionState) {
+        switch connectionState {
+        case .reconnecting, .connecting:
+            DispatchQueue.main.async { [weak self] in
+                self?.infoView.setDuration(text: connectionState.desctiption)
+            }
+        default:
+            break
+        }
+    }
+    
+    func room(_ room: Room, participantDidJoin participant: RemoteParticipant) {
+        configureStartCall()
+    }
+    
+    func room(_ room: Room, localParticipant: LocalParticipant, didPublish publication: LocalTrackPublication) {
+        guard publication.track is VideoTrack else { return }
+        configureParticipantTrack()
+    }
+ 
+    func room(_ room: Room, participant: RemoteParticipant, didSubscribe publication: RemoteTrackPublication, track: Track) {
+        guard track is VideoTrack else { return }
+        configureParticipantTrack()
+    }
+    
     func room(_ room: Room, participant: Participant, didUpdate publication: TrackPublication, muted: Bool) {
-        guard publication.track is VideoTrack else {
-            return
-        }
+        guard publication.track is VideoTrack else { return }
+        configureParticipantTrack()
+    }
+    
+    private func configureParticipantTrack() {
+        let remoteParticipant = room.remoteParticipants.first?.value
+        let localParticipant = room.localParticipant
+                
         DispatchQueue.main.async { [weak self] in
-            self?.remoteVideoView.isHidden = muted
+            guard let self else { return }
+            if remoteParticipant?.isCameraEnabled() ?? false && localParticipant?.isCameraEnabled() ?? false {
+                remoteVideoView.track = remoteParticipant?.videoTracks.first?.track as? VideoTrack
+                localVideoView.track = localParticipant?.videoTracks.first?.track as? VideoTrack
+                remoteVideoView.isHidden = false
+                localVideoView.isHidden = false
+                remakeInfoViewConstraints(isVideo: true)
+                actionStackView.setAsActiveCamera()
+            } else {
+                if localParticipant?.isCameraEnabled() ?? false {
+                    remoteVideoView.track = localParticipant?.videoTracks.first?.track as? VideoTrack
+                    remoteVideoView.isHidden = false
+                    localVideoView.isHidden = true
+                    remakeInfoViewConstraints(isVideo: true)
+                    actionStackView.setAsActiveCamera()
+                } else {
+                    remoteVideoView.isHidden = true
+                    localVideoView.isHidden = true
+                    remakeInfoViewConstraints(isVideo: false)
+                    actionStackView.setAsActiveAudio()
+                }
+            }
         }
-        print("[UPDATE] participant - \(participant), publication - \(publication), muted - \(muted)")
+    }
+        
+    private func setVideoCallIfPossible(enabled: Bool) {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            room.localParticipant?.setCamera(enabled: enabled)
+            remakeInfoViewConstraints(isVideo: enabled)
+        case .denied, .restricted:
+            showSettingAlert(from: CallStrings.errorAccessToCamera.localized, with: CallStrings.errorAccessTitle.localized)
+            deniedCameraPermission()
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { granted in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self else { return }
+                    if granted {
+                        room.localParticipant?.setCamera(enabled: enabled)
+                        remakeInfoViewConstraints(isVideo: enabled)
+                    } else {
+                        deniedCameraPermission()
+                    }
+                }
+            }
+        default: break
+        }
+    }
+    
+    private func deniedCameraPermission() {
+        actionStackView.cameraButton.isSelected = false
+        actionStackView.mouthpieceButton.isSelected = false
+        actionStackView.setAsActiveAudio()
+        remakeInfoViewConstraints(isVideo: false)
+        setSpeaker(false)
+    }
+    
+    private func setMicrophoneIfPossible(enabled: Bool) {
+        switch AVAudioSession.sharedInstance().recordPermission {
+        case .granted:
+            room.localParticipant?.setMicrophone(enabled: enabled)
+        case .denied:
+            showSettingAlert(from: CallStrings.errorAccessToMicrophone.localized, with: CallStrings.errorAccessTitle.localized)
+            actionStackView.microButton.isSelected = false
+        case .undetermined:
+            AVAudioSession.sharedInstance().requestRecordPermission { granted in
+                DispatchQueue.main.async { [weak self] in
+                    guard let self else { return }
+                    if granted {
+                        room.localParticipant?.setMicrophone(enabled: enabled)
+                    } else {
+                        actionStackView.microButton.isSelected = false
+                    }
+                }
+            }
+        default: break
+        }
+    }
+    
+    private func startTimer() {
+        guard displayLink == nil else { return }
+
+        displayLink = CADisplayLink(target: self, selector: #selector(displayRefreshed))
+        displayLink?.add(to: .main, forMode: .default)
+        date = Date()
     }
 
+    @objc
+    private func displayRefreshed(displayLink: CADisplayLink) {
+        guard let startDate = date, room.connectionState == .connected else { return }
+        let elepsadeTime = Int(Date().timeIntervalSince(startDate).rounded(.toNearestOrEven))
+        infoView.setDuration(text: timeFormatted(elepsadeTime))
+    }
+
+    func endTimer() {
+        displayLink?.invalidate()
+        displayLink = nil
+        date = nil
+    }
+    
+    private func timeFormatted(_ second: Int) -> String {
+        let seconds: Int = second % 60
+        let minutes: Int = (second / 60) % 60
+        return String(format: "%02d:%02d", minutes, seconds)
+    }
+    
 }
 
 //MARK: - Extensions
 
-private extension ConnectionStateObjC {
+private extension ConnectionState {
     var desctiption: String {
         switch self {
-        case .connected:return CallStrings.connected.localized
+        case .connected:
+            return CallStrings.connected.localized
         case .disconnected:
             return CallStrings.disconnected.localized
         case .connecting:
             return CallStrings.connecting.localized
         case .reconnecting:
             return CallStrings.reconnecting.localized
+        }
+    }
+}
+
+extension UIView {
+    func applyBlurEffect() {
+        let blurEffect = UIBlurEffect(style: .dark)
+        let blurEffectView = UIVisualEffectView(effect: blurEffect)
+        blurEffectView.frame = bounds
+        blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        addSubview(blurEffectView)
+    }
+    
+    func removeBlurEffect() {
+        let blurredEffectViews = self.subviews.filter{$0 is UIVisualEffectView}
+        blurredEffectViews.forEach{ blurView in
+            blurView.removeFromSuperview()
         }
     }
 }
