@@ -67,11 +67,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.contentInset = .zero
     }
     
-    fileprivate lazy var messageHeadline: SubHeadline = .init({
-        $0.textAlignment = .center
-        $0.isUserInteractionEnabled = false
-    })
-    
     private lazy var headline: ProfileNavigationView = .init({[weak self] view in
         guard let `self` = self else { return }
         view.callback = {[weak self] in
@@ -158,7 +153,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
 //        MARK: Must be hide
         self.setupNavigationMore()
         self.view.addSubview(tableView)
-        self.view.addSubview(messageHeadline)
         self.view.addSubview(messageInputBar)
         self.view.addSubview(navigationDivider)
         self.view.addSubview(editInputBar)
@@ -188,11 +182,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             make.bottom.equalTo(messageInputBar.snp.topMargin).offset(-8)
         }
         
-        self.messageHeadline.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(messageInputBar.snp.topMargin).offset(-kMediumPadding)
-        }
-        
         self.messageInputBar.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(view.snp.bottom)
@@ -207,7 +196,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
             .do(onNext: {[weak self] messages in
-                self?.messageHeadline.text = messages.isEmpty ? ConversationStrings.thereAreNoMessagesInThisChat.localized : ""
+                self?.tableView.backgroundView = messages.isEmpty ? UltraCoreSettings.delegate?.emptyConversationDetailView() : nil
             })
             .map({messages -> [SectionModel<String, Message>] in
                 if messages.isEmpty {return []}

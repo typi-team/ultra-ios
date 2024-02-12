@@ -19,6 +19,7 @@ public protocol UltraCoreFutureDelegate: AnyObject {
 
 public protocol UltraCoreSettingsDelegate: AnyObject {
     func emptyConversationView() -> UIView?
+    func emptyConversationDetailView() -> UIView?
     func info(from id: String) -> IContactInfo?
     func token(callback: @escaping (Result<String, Error>) -> Void)
     func serverConfig() -> ServerConfigurationProtocol?
