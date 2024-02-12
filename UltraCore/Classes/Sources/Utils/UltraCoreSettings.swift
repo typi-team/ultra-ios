@@ -90,6 +90,10 @@ public extension UltraCoreSettings {
             }
             .disposed(by: disposeBag)
     }
+    
+    static func stopSession() {
+        AppSettingsImpl.shared.updateRepository.stopSession()
+    }
 
     static func update(sid token: String, timeOut: TimeInterval = 0,
                        with callback: @escaping (Error?) -> Void) {
