@@ -17,6 +17,7 @@ protocol UpdateRepository: AnyObject {
     func retreiveContactStatuses()
     func readAll(in conversation: Conversation)
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> { get set }
+    func handleIncoming(callRequest: CallInformation)
 }
 
 class UpdateRepositoryImpl {
@@ -139,6 +140,19 @@ extension UpdateRepositoryImpl: UpdateRepository {
             self.setupChangesSubscription(with: UInt64(appStore.lastState))
         }
     }
+    
+    func handleIncoming(callRequest: CallInformation) {
+        self.contactByIDInteractor
+            .executeSingle(params: callRequest.sender)
+            .flatMap({ self.contactService.save(contact: $0) })
+            .observe(on: MainScheduler.instance)
+            .subscribe(onSuccess: { () in
+                if let topController = UIApplication.topViewController(), !(topController is IncomingCallViewController)  {
+                    topController.presentWireframeWithNavigation(IncomingCallWireframe(call:.incoming(callRequest)))
+                }
+            })
+            .disposed(by: disposeBag)
+    }
 }
 
 private extension UpdateRepositoryImpl {
@@ -207,20 +221,7 @@ private extension UpdateRepositoryImpl {
             }
         }
     }
-    
-    func handleIncoming(callRequest: CallRequest) {
-        self.contactByIDInteractor
-            .executeSingle(params: callRequest.sender)
-            .flatMap({ self.contactService.save(contact: $0) })
-            .observe(on: MainScheduler.instance)
-            .subscribe(onSuccess: { () in
-                if let topController = UIApplication.topViewController(), !(topController is IncomingCallViewController)  {
-                    topController.presentWireframeWithNavigation(IncomingCallWireframe(call:.incoming(callRequest)))
-                }
-            })
-            .disposed(by: disposeBag)
-    }
-    
+        
     func handle(of update: Update.OneOf_OfUpdate) {
         switch update {
         case let .message(message):

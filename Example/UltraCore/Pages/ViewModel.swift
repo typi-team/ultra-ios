@@ -54,13 +54,14 @@ class ViewModel {
                   "token": firebaseToken,
                   "device_id": UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString,
                   "platform": "IOS",
-                  "voip_push_token": ""
+                  "voip_push_token": UltraVoIPManager.shared.token ?? ""
               ]) else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonData
         request.setValue(sidToken, forHTTPHeaderField: "SID")
+        
         let task = URLSession.shared.dataTask(with: request) {(data, response, error) in }
         task.resume()
     }
@@ -109,11 +110,13 @@ extension ViewModel: UltraCoreSettingsDelegate {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonData
+                
         URLSession.shared.rx.data(request: request)
             .map {
                 try JSONDecoder().decode(UserResponse.self, from: $0)
             }
-            .do(onNext: { [weak self] _ in
+            .do(onNext: { [weak self] userResponse in
+                UserDefaults.standard.set(userResponse.sid, forKey: "K_SID")
                 self?.didRegisterForRemoteNotifications()
             })
             .subscribe { userResponse in
