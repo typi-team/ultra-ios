@@ -67,7 +67,9 @@ private extension ContactsBookInteractor {
         case .denied:
             completion(false, nil)
         case .notDetermined:
-            store.requestAccess(for: .contacts, completionHandler: completion)
+            store.requestAccess(for: .contacts) { access, _ in
+                completion(access, nil)
+            }
         case .restricted:
             completion(false, nil)
         @unknown default:
