@@ -74,7 +74,9 @@
 "conversation.unblock" = "Разблокировать";
 "conversation.deleteFromMe" = "Удалить у меня";
 "conversation.deleteForEveryone" = "Удалить для всех";
-"conversation.givePermissionToRecordVoice" = "Give permission to record voice";
+"conversation.givePermissionToRecordVoice" = "Приложение не имеет доступа к микрофону";
+"conversation.givePermissionToCamera" = "Приложение не имеет доступа к камере";
+"conversation.cameraPermissionRestricted" = "Camera access is restricted";
 "conversation.ifAMessageContainsThreatsInappropriateContentOrViolatesAnyPlatformOrCommunity" = "Если сообщение содержит угрозы, неподходящий контент или нарушает какие-либо правила платформы или сообщества, оно может быть обжаловано и подлежит удалению. Восстановление такого сообщения может быть невозможным";
 "conversation.yourComplaintWillBeReviewedByModeratorsThankYou" = "Вашу жалобу проверят модераторы. Спасибо!";
 "conversation.areYouSure" = "Вы уверены?";
@@ -110,7 +112,7 @@
 // MARK: Base view
 "base.error" = "Ошибка";
 "base.close" = "Закрыть";
-"base.settings" = "Найтройки";
+"base.settings" = "Настройки";
 "base.freedomChatDoesNotHaveAccessToYourContacts" = "Freedom Chat не имеет доступа к вашим контактам";
 "base.goToSettingsAndSwitchContactsToOn" = "Зайдите в настройки и переведите Контакты в состояние ВКЛ";
 "base.inTheProcessOfRealizationAUniqueFunctionalityMaturesWhichWillAddMagicAndEfficiencyToOurProduct" = "В процессе воплощения созревает уникальный функционал, который добавит магии и эффективности в наш продукт";

@@ -30,7 +30,7 @@ extension UIFont {
     }
 
     class var defaultRegularFootnote: UIFont {
-        return UIFont.systemFont(ofSize: 14.0, weight: .regular)
+        return UIFont.systemFont(ofSize: 13.0, weight: .regular)
     }
 
     class var defaultRegularCaption3: UIFont {

@@ -16,9 +16,15 @@ protocol MediaRepository {
     func mediaURL(from message: Message) -> URL?
     func isUploading(from message: Message) -> Bool
     func download(from message: Message) -> Single<Message>
+    func previewImage(from message: Message) -> UIImage?
     func image(from message: Message) -> UIImage?
     func videoPreview(from message: Message) -> UIImage?
-    func upload(file: FileUpload, in conversation: Conversation, onPreUploadingFile: (MessageSendRequest) -> Void) -> Single<MessageSendRequest>
+    func upload(
+        file: FileUpload,
+        in conversation: Conversation,
+        isVoice: Bool,
+        onPreUploadingFile: (MessageSendRequest) -> Void
+    ) -> Single<MessageSendRequest>
     func upload(message: Message) -> Single<MessageSendRequest>
 }
 
@@ -60,18 +66,27 @@ extension MediaRepositoryImpl: MediaRepository {
         return try! self.uploadingMedias.value().contains(where: { $0.fileID == message.fileID })
     }
 
-    func upload(file: FileUpload, in conversation: Conversation, onPreUploadingFile: (MessageSendRequest) -> Void) -> Single<MessageSendRequest> {
+    func upload(
+        file: FileUpload,
+        in conversation: Conversation,
+        isVoice: Bool,
+        onPreUploadingFile: (MessageSendRequest) -> Void
+    ) -> Single<MessageSendRequest> {
         if file.mime.containsImage {
             return self.uploadImage(by: file, in: conversation, onPreUploadingFile: onPreUploadingFile)
         } else if file.mime.containsVideo {
             return self.uploadVideo(by: file, in: conversation, onPreUploadingFile: onPreUploadingFile)
-        } else if file.mime.containsAudio{
+        } else if isVoice {
             return self.uploadVoice(by: file, in: conversation, onPreUploadingFile: onPreUploadingFile)
         }else {
             return self.uploadFile(by: file, in: conversation, onPreUploadingFile: onPreUploadingFile)
         }
     }
-    
+
+    func previewImage(from message: Message) -> UIImage? {
+        return self.mediaUtils.previewImage(from: message)
+    }
+
     func image(from message: Message) -> UIImage? {
         return self.mediaUtils.image(from: message)
     }
@@ -129,7 +144,7 @@ extension MediaRepositoryImpl: MediaRepository {
                                 observer(.success(message))
                             } else if message.hasPhoto {
                                 try self.mediaUtils.write(data, file: message.photo.originalFileId, and: message.photo.extensions)
-                                try self.mediaUtils.write(data, file: message.photo.previewFileId, and: message.photo.extensions)
+                                try self.mediaUtils.compressedWrite(data, file: message.photo.previewFileId, and: message.photo.extensions)
                                 
                                 params.fromChunkNumber = params.toChunkNumber
                                 var images = try? self.downloadingImages.value()
@@ -398,6 +413,7 @@ extension MediaRepositoryImpl {
             }
             .do(onSuccess: {[weak self] chunks in
                 message.video.fileID = chunks.first?.fileID ?? ""
+                message.video.thumbPreview = thumbnailData
                 try self?.mediaUtils.write(thumbnailData, file: message.video.previewVideoFileId, and: "png")
             })
             .do(onSuccess: { [weak self] chunks in
