@@ -52,6 +52,9 @@ class AdditioanalController: BaseViewController<String> {
             make.right.equalToSuperview().offset(-kMediumPadding)
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin).offset(-kLowPadding)
         }
+        headlineLabel.snp.makeConstraints { make in
+            make.height.greaterThanOrEqualTo(20)
+        }
     }
     
     func _buildPaymentDescription() {
