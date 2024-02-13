@@ -1,4 +1,5 @@
 import UIKit
+import CallKit
 import AVFAudio
 import LiveKitClient
 
@@ -72,11 +73,13 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
         endTimer()
         infoView.setDuration(text: CallStrings.cancel.localized)
         presenter?.cancel()
+        UltraVoIPManager.shared.endCall()
     }
     
     func rejectCall() {
         infoView.setDuration(text: CallStrings.reject.localized)
         presenter?.reject()
+        UltraVoIPManager.shared.endCall()
     }
     
 }

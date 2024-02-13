@@ -16,14 +16,6 @@ protocol CallInformation {
     var accessToken: String { get set }
     var host: String { get set }
     var video: Bool { get set }
-    var uuid: UUID { get set }
-}
-
-extension CallInformation {
-    var uuid: UUID {
-        get { UUID() }
-        set {}
-    }
 }
 
 extension CallRequest: CallInformation {}

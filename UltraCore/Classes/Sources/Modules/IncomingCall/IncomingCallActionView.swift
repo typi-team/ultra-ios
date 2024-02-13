@@ -101,10 +101,16 @@ final class IncomingCallActionView: UIStackView {
     
     func configure(status: CallStatus) {
         arrangedSubviews.forEach({ $0.removeFromSuperview() })
-        if status.callInfo.video {
-            setAsActiveCamera()
-        } else {
-            setAsActiveAudio()
+        switch status {
+        case .incoming:
+            addArrangedSubview(answerButton)
+            addArrangedSubview(rejectButton)
+        case .outcoming:
+            if status.callInfo.video {
+                setAsActiveCamera()
+            } else {
+                setAsActiveAudio()
+            }
         }
     }
 

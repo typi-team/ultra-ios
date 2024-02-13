@@ -224,6 +224,7 @@ private extension UpdateRepositoryImpl {
                 }
             }
         }
+        UltraVoIPManager.shared.endCall()
     }
         
     func handle(of update: Update.OneOf_OfUpdate) {

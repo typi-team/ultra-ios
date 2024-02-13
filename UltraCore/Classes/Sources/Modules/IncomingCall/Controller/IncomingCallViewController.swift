@@ -24,6 +24,10 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
     var date: Date?
     
     let audioQueue = DispatchQueue(label: "audio")
+        
+    lazy var style: CallPageStyle = UltraCoreStyle.callingConfig
+    
+    // MARK: - Views
     
     lazy var localVideoView: VideoView = .init({
         $0.isHidden = true
@@ -34,8 +38,6 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
         $0.isHidden = true
         $0.cornerRadius = kLowPadding
     })
-
-    lazy var style: CallPageStyle = UltraCoreStyle.callingConfig
 
     lazy var infoView = IncomingCallInfoView(style: style)
 
@@ -105,7 +107,12 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
         presenter?.viewDidLoad()
         guard let status = presenter?.getCallStatus() else { return }
         actionStackView.configure(status: status)
-        infoView.setDuration(text: CallStrings.connecting.localized)
+        switch status {
+        case .incoming:
+            infoView.setDuration(text: status.callInfo.video ? CallStrings.incomeVideoCalling.localized : CallStrings.incomeAudioCalling.localized)
+        case .outcoming:
+            infoView.setDuration(text: CallStrings.connecting.localized)
+        }
         setSpeaker(status.callInfo.video)
     }
     

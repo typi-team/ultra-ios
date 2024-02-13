@@ -9,7 +9,9 @@ public class UltraVoIPManager: NSObject {
         
     private var deviceToken: String?
     
-    private var callInformation: CallInformation?
+    private var callInformation: Caller?
+    
+    private let callController = CXCallController()
         
     public static let shared = UltraVoIPManager()
         
@@ -51,8 +53,9 @@ extension UltraVoIPManager: PKPushRegistryDelegate {
     
     public func pushRegistry(_ registry: PKPushRegistry, didReceiveIncomingPushWith payload: PKPushPayload, for type: PKPushType, completion: @escaping () -> Void) {
         var caller = try? Caller(dictionary: payload.dictionaryPayload)
-        let callConfigObject = CXProviderConfiguration(localizedName: "Test")
+        let callConfigObject = CXProviderConfiguration(localizedName: "Ultra")
         let callReport = CXCallUpdate()
+        callReport.hasVideo = caller?.video ?? false
         if let sender = caller?.sender,
             let contact = AppSettingsImpl.shared.contactDBService.contact(id: sender) {
             callReport.remoteHandle = CXHandle(type: .generic, value: contact.displaName)
@@ -64,12 +67,14 @@ extension UltraVoIPManager: PKPushRegistryDelegate {
             callProvider.setDelegate(self, queue: nil)
             caller?.uuid = uuid
             callInformation = caller
+            presentIncomingCall()
         }
     }
     
-    private func presentIncomingCall(callRequest: CallInformation) {
+    private func presentIncomingCall() {
+        guard let callInformation else { return }
         if let topController = UIApplication.topViewController(), !(topController is IncomingCallViewController) {
-            topController.presentWireframeWithNavigation(IncomingCallWireframe(call: .incoming(callRequest)))
+            topController.presentWireframeWithNavigation(IncomingCallWireframe(call: .incoming(callInformation)))
         }
     }
     
@@ -82,9 +87,7 @@ extension UltraVoIPManager: CXProviderDelegate {
     }
     
     public func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
-        if let callInformation {
-            presentIncomingCall(callRequest: callInformation)
-        }
+        currentCallingController?.answerToCall()
         action.fulfill()
     }
     
@@ -117,6 +120,13 @@ extension UltraVoIPManager: CXProviderDelegate {
             return incomingCall
         }
         return nil
+    }
+    
+    func endCall() {
+        guard let uuid = callInformation?.uuid else { return }
+        let endCallAction = CXEndCallAction(call: uuid)
+        let transaction = CXTransaction(action: endCallAction)
+        callController.request(transaction) { error in }
     }
     
 }

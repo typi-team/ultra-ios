@@ -89,13 +89,12 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
     }
     
     func viewDidLoad() {
-        view.connectRoom(with: callStatus.callInfo)
-//        if case .outcoming = callStatus {
-//            self.view.connectRoom(with: callStatus.callInfo)
-//        }
-//        if let contact = self.contactService.contact(id: self.callStatus.callInfo.sender) {
-//            self.view.dispay(view: contact)
-//        } else {
+        if case .outcoming = callStatus {
+            view.connectRoom(with: callStatus.callInfo)
+        }
+        if let contact = contactService.contact(id: callStatus.callInfo.sender) {
+            self.view.dispay(view: contact)
+        } else {
 //            self.contactInteractor
 //                .executeSingle(params: self.callStatus.callInfo.sender)
 //                .flatMap({ self.contactService.save(contact: DBContact(from: $0, chatId: )).map({ $0 }) })
@@ -106,6 +105,6 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
 //                    self.view.dispay(view: contact)
 //                })
 //                .disposed(by: disposeBag)
-//        }
+        }
     }
 }
