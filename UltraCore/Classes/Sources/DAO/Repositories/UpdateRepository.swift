@@ -8,6 +8,7 @@
 import Foundation
 import RxSwift
 import GRPC
+import CallKit
 
 protocol UpdateRepository: AnyObject {
     
@@ -17,7 +18,6 @@ protocol UpdateRepository: AnyObject {
     func retreiveContactStatuses()
     func readAll(in conversation: Conversation)
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> { get set }
-    func handleIncoming(callRequest: CallInformation)
 }
 
 class UpdateRepositoryImpl {
@@ -147,9 +147,13 @@ extension UpdateRepositoryImpl: UpdateRepository {
             .flatMap({ self.contactService.save(contact: $0) })
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { () in
-                if let topController = UIApplication.topViewController(), !(topController is IncomingCallViewController)  {
-                    topController.presentWireframeWithNavigation(IncomingCallWireframe(call:.incoming(callRequest)))
-                }
+//                if let topController = UIApplication.topViewController() {
+//                    if let incomingController = topController as? IncomingCallViewController {
+//                        provider?.setDelegate(incomingController, queue: nil)
+//                    } else {
+//                        topController.presentWireframeWithNavigation(IncomingCallWireframe(call: .incoming(callRequest), provider: provider))
+//                    }
+//                }
             })
             .disposed(by: disposeBag)
     }
