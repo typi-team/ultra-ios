@@ -95,14 +95,18 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
     
     
     func navigateToContacts() {
-        self.wireframe.navigateToContacts(contactsCallback: { contacts in },
-                                          openConverationCallback: { [weak self] userID in
-                                              guard let `self` = self else { return }
-                                              self.createChatBy(contact: userID)
-                                          })
+        self.wireframe.navigateToContacts(
+            contactsCallback: { contacts in },
+            openConverationCallback: { [weak self] userID in
+                guard let `self` = self else { return }
+                self.wireframe.dissmiss {
+                    self.createChatBy(contact: userID)
+                }
+            })
     }
     
     func createChatBy(contact: IContact) {
+        // TO-DO: Show loader when executing conversation
         self.contactToConversationInteractor
             .executeSingle(params: contact)
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
