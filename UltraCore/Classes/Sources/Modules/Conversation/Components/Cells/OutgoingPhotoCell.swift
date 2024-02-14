@@ -78,7 +78,7 @@ class OutgoingPhotoCell: MediaCell {
     override func setup(message: Message) {
         super.setup(message: message)
         self.statusView.image = statusImage(for: message)
-        self.mediaView.image = UIImage.init(data: message.photo.preview)
+        self.mediaView.image = message.previewImage
         self.playView.isHidden = true
         if self.mediaRepository.isUploading(from: message) {
             self.uploadingProgress(for: message)
@@ -111,9 +111,7 @@ class OutgoingPhotoCell: MediaCell {
 
 extension OutgoingPhotoCell {
     func uploadingProgress(for message: Message) {
-        self.mediaView.image = self.mediaRepository.image(from: message) ??
-            UIImage(data: message.photo.preview) ??
-            UIImage(data: message.video.thumbPreview)
+        self.mediaView.image = self.mediaRepository.image(from: message) ?? message.previewImage
         self.spinnerBackground.isHidden = false
         self.mediaRepository
             .uploadingMedias
@@ -156,14 +154,13 @@ class OutgoingVideoCell: OutgoingPhotoCell {
     override func setup(message: Message) {
         super.setup(message: message)
         self.statusView.image = statusImage(for: message)
-        self.mediaView.image = UIImage.init(data: message.video.thumbPreview)
         if self.mediaRepository.isUploading(from: message) {
             self.uploadingProgress(for: message)
         } else if let image = self.mediaRepository.previewImage(from: message) {
             self.playView.isHidden = !message.hasVideo
             self.mediaView.image = image
         } else {
-            if message.photo.preview.isEmpty {
+            if message.previewImage == nil {
                 mediaView.image = mediaRepository.videoPreview(from: message)
                 return
             }

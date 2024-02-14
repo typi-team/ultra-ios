@@ -67,7 +67,7 @@ class IncomingPhotoCell: MediaCell {
     override func setup(message: Message) {
         super.setup(message: message)
         self.playView.isHidden = true
-        self.mediaView.image = UIImage.init(data: message.photo.preview)
+        self.mediaView.image = message.previewImage
         if let image = self.mediaRepository.previewImage(from: message) {
             self.mediaView.image = image
         } else {
@@ -93,12 +93,8 @@ class IncomingPhotoCell: MediaCell {
 class IncomingVideoCell: IncomingPhotoCell {
     override func setup(message: Message) {
         super.setup(message: message)
-        self.mediaView.image = UIImage.init(data: message.video.thumbPreview)
         if let image = self.mediaRepository.image(from: message) {
-            self.mediaView.image = image
             self.playView.isHidden = !message.hasVideo
-        } else {
-            self.dowloadImage(by: message)
         }
     }
 }

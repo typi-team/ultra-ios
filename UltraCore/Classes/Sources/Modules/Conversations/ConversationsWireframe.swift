@@ -57,7 +57,7 @@ extension ConversationsWireframe: ConversationsWireframeInterface {
     func navigateToContacts(contactsCallback: @escaping ContactsCallback, openConverationCallback: @escaping UserIDCallback) {
         if let contactsViewController = self.delegate?.contactsViewController(contactsCallback: contactsCallback,
                                                                               openConverationCallback: openConverationCallback) {
-            self.navigationController?.pushViewController(contactsViewController, animated: true)
+            self.navigationController?.present(contactsViewController, animated: true)
         } else {
             self.navigationController?.presentWireframeWithNavigation(ContactsBookWireframe(contactsCallback: contactsCallback, openConversationCallback: openConverationCallback))
         }

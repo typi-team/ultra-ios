@@ -44,7 +44,7 @@ class MediaCell: BaseMessageCell {
     }
 
     func dowloadImage(by message: Message) {
-        self.mediaView.image = UIImage(data: message.photo.preview)
+        self.mediaView.image = message.previewImage
         self.spinnerBackground.isHidden = false
         self.mediaRepository
             .downloadingImages
@@ -103,5 +103,18 @@ class MediaCell: BaseMessageCell {
         spinner.translatesAutoresizingMaskIntoConstraints = false
         spinner.startAnimating()
         return spinner
+    }
+}
+
+
+extension Message {
+    var previewImage: UIImage? {
+        if !self.photo.preview.isEmpty{
+            return UIImage(data: photo.preview)
+        } else if !self.video.thumbPreview.isEmpty {
+            return UIImage(data: video.thumbPreview)
+        } else {
+            return nil
+        }
     }
 }

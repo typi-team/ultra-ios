@@ -67,11 +67,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.contentInset = .zero
     }
     
-    fileprivate lazy var messageHeadline: SubHeadline = .init({
-        $0.textAlignment = .center
-        $0.isUserInteractionEnabled = false
-    })
-    
     private lazy var headline: ProfileNavigationView = .init({[weak self] view in
         guard let `self` = self else { return }
         view.callback = {[weak self] in
@@ -91,6 +86,11 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         inputBar.delegate = self
     })
     
+    private lazy var backgroundImageView: UIImageView = .init { imageView in
+        imageView.contentMode = .scaleAspectFill
+        imageView.image = UltraCoreStyle.conversationBackgroundImage?.image
+    }
+
    private lazy var dataSource = RxTableViewSectionedReloadDataSource<SectionModel<String, Message>>(
         configureCell: { [weak self] _, tableView, indexPath,
             message in
@@ -158,7 +158,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
 //        MARK: Must be hide
         self.setupNavigationMore()
         self.view.addSubview(tableView)
-        self.view.addSubview(messageHeadline)
         self.view.addSubview(messageInputBar)
         self.view.addSubview(navigationDivider)
         self.view.addSubview(editInputBar)
@@ -169,10 +168,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     }
     override func setupStyle() {
         super.setupStyle()
-        self.tableView.backgroundView = UIImageView({
-            $0.contentMode = .scaleAspectFill
-            $0.image = UltraCoreStyle.conversationBackgroundImage?.image
-        })
+        self.tableView.backgroundView = backgroundImageView
     }
     override func setupConstraints() {
         super.setupConstraints()
@@ -186,11 +182,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             make.leading.trailing.equalToSuperview()
             make.top.equalTo(navigationDivider.snp.bottom)
             make.bottom.equalTo(messageInputBar.snp.topMargin).offset(-8)
-        }
-        
-        self.messageHeadline.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(messageInputBar.snp.topMargin).offset(-kMediumPadding)
         }
         
         self.messageInputBar.snp.makeConstraints { make in
@@ -207,7 +198,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
             .do(onNext: {[weak self] messages in
-                self?.messageHeadline.text = messages.isEmpty ? ConversationStrings.thereAreNoMessagesInThisChat.localized : ""
+                self?.tableView.backgroundView = messages.isEmpty ? UltraCoreSettings.delegate?.emptyConversationDetailView() : self?.backgroundImageView
             })
             .map({messages -> [SectionModel<String, Message>] in
                 if messages.isEmpty {return []}
