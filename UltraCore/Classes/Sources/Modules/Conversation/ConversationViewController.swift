@@ -85,6 +85,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     private lazy var voiceInputBar: VoiceInputBar = .init({ [weak self] inputBar in
         inputBar.delegate = self
     })
+    private var messages: [Message] = []
     
     private lazy var backgroundImageView: UIImageView = .init { imageView in
         imageView.contentMode = .scaleAspectFill
@@ -198,6 +199,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
             .do(onNext: {[weak self] messages in
+                self?.messages = messages
                 self?.tableView.backgroundView = messages.isEmpty ? UltraCoreSettings.delegate?.emptyConversationDetailView() : self?.backgroundImageView
             })
             .map({messages -> [SectionModel<String, Message>] in
@@ -243,30 +245,66 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     }
     
     override func changedKeyboard(
-        height: CGFloat,
+        frame: CGRect,
         animationDuration: Double,
         animationOptions: UIView.AnimationOptions
     ) {
-        if 
-            let indexPath = self.tableView.indexPathsForVisibleRows?.last,
-            tableView.contentSize.height > tableView.frame.height 
-        {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) { [weak self] in
-                guard let self = self else { return }
-                let cellRect = self.tableView.rectForRow(at: indexPath)
-                UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
-                    self.tableView.contentOffset = CGPoint(x: 0, y: cellRect.maxY - self.tableView.frame.height)
-                }
+//        let insets = UIEdgeInsets(
+//            top: 0,
+//            left: 0,
+//            bottom: self.messageInputBar.frame.height + height - view.safeAreaInsets.bottom,
+//            right: 0
+//        )
+//        self.tableView.contentInset = insets
+//        self.tableView.scrollIndicatorInsets = insets
+//        if
+//            let indexPath = self.tableView.indexPathsForVisibleRows?.last,
+//            tableView.contentSize.height > tableView.frame.height 
+//        {
+//            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) { [weak self] in
+//                guard let self = self else { return }
+//                let cellRect = self.tableView.rectForRow(at: indexPath)
+//                UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
+//                    self.tableView.contentOffset = CGPoint(x: 0, y: cellRect.maxY - self.tableView.frame.height)
+//                }
+//            }
+//        }
+        
+        let height = UIScreen.main.bounds.height - frame.origin.y
+        
+        if messages.isEmpty && height > 0 {
+            messageInputBar.snp.updateConstraints { make in
+                make.bottom.equalTo(view.snp.bottom)
+                    .offset(-(height - view.safeAreaInsets.bottom))
             }
+            UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
+                self.view.layoutIfNeeded()
+            }
+        } else if
+            let lastCell = tableView.visibleCells.last,
+            lastCell.frame.maxY <= (view.frame.size.height - height),
+            height > 0
+        {
+            messageInputBar.snp.updateConstraints { make in
+                make.bottom.equalTo(view.snp.bottom)
+                    .offset(-(height - view.safeAreaInsets.bottom + messageInputBar.frame.height))
+            }
+            view.frame.origin.y = messageInputBar.frame.size.height
+            UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
+                self.view.layoutIfNeeded()
+            }
+        } else if height > 0 {
+            view.frame.origin.y = UIScreen.main.bounds.height - view.frame.height - frame.height
+            messageInputBar.snp.updateConstraints { make in
+                make.bottom.equalTo(view.snp.bottom).offset(-view.safeAreaInsets.bottom)
+            }
+        } else {
+            messageInputBar.snp.updateConstraints { make in
+                make.bottom.equalTo(view.snp.bottom).offset(0)
+            }
+            view.frame.origin.y = 0.0
         }
         
-        UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
-            self.messageInputBar.snp.updateConstraints { make in
-                make.bottom.equalTo(self.view.snp.bottom)
-                    .offset(height > 0 ? -(height - 36) : 0)
-            }
-            self.view.layoutIfNeeded()
-        }
     }
     
     override func viewWillDisappear(_ animated: Bool) {
