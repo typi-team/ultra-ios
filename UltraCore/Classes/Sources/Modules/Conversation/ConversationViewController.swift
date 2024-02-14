@@ -179,15 +179,28 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         }
         
         self.tableView.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview()
-            make.top.equalTo(navigationDivider.snp.bottom)
-            make.bottom.equalTo(messageInputBar.snp.topMargin).offset(-8)
+            make.edges.equalToSuperview()
+//            make.leading.trailing.equalToSuperview()
+//            make.top.equalTo(navigationDivider.snp.bottom)
+//            make.bottom.equalTo(messageInputBar.snp.topMargin).offset(-8)
         }
         
         self.messageInputBar.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(view.snp.bottom)
         }
+        
+        messageInputBar
+            .rx
+            .observe(\.bounds)
+            .map { $0.height }
+            .distinctUntilChanged()
+            .subscribe { [weak self] height in
+                let insets = UIEdgeInsets(top: 0, left: 0, bottom: height - (self?.view.safeAreaInsets.bottom ?? 0), right: 0)
+                self?.tableView.contentInset = insets
+                self?.tableView.scrollIndicatorInsets = insets
+            }
+            .disposed(by: disposeBag)
     }
     
     override func setupInitialData() {
