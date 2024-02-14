@@ -215,6 +215,18 @@ class MessageInputBar: UIView {
 
 extension MessageInputBar: MessageInputTextViewDelegate {
     
+//    func textViewDidBeginEditing(_ textView: UITextView) {
+//        self.containerStack.snp.updateConstraints { make in
+//            make.bottom.equalToSuperview().offset(-(kMediumPadding - 4))
+//        }
+//    }
+//    
+//    func textViewDidEndEditing(_ textView: UITextView) {
+//        self.containerStack.snp.updateConstraints { make in
+//            make.bottom.equalToSuperview().offset(-(kMediumPadding - 4 + bottomInset))
+//        }
+//    }
+    
     func textViewDidChange(_ textView: UITextView) {
 
         if let text = textView.text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -237,24 +249,6 @@ extension MessageInputBar: MessageInputTextViewDelegate {
         }
     }
     
-}
-
-extension UITextView: NSTextStorageDelegate {
-    
-    func heightOfInsertedText() ->CGFloat {
-        guard let text = text else { return 0.0 }
-        let maxSize = CGSize(width: frame.width, height: CGFloat.greatestFiniteMagnitude)
-        let options: NSStringDrawingOptions = [.usesLineFragmentOrigin, .usesFontLeading]
-
-        let attributes: [NSAttributedString.Key: Any] = [NSAttributedString.Key.font: font as Any]
-
-        let boundingRect = (text as NSString).boundingRect(with: maxSize,
-                                                           options: options,
-                                                           attributes: attributes,
-                                                           context: nil)
-
-        return ceil(boundingRect.height)
-    }
 }
 
 extension MessageInputBar {

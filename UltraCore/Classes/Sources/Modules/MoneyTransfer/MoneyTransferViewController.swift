@@ -109,12 +109,12 @@ final class MoneyTransferViewController: BaseViewController<MoneyTransferPresent
     }
     
     override func changedKeyboard(
-        height: CGFloat,
+        frame: CGRect,
         animationDuration: Double,
         animationOptions: UIView.AnimationOptions
     ) {
         UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
-            self.view.frame.origin.y = UIScreen.main.bounds.height - self.view.frame.height - height
+            self.view.frame.origin.y = UIScreen.main.bounds.height - self.view.frame.height - frame.height
         }
     }
 }
