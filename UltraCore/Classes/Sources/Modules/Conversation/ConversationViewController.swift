@@ -86,6 +86,11 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         inputBar.delegate = self
     })
     
+    private lazy var backgroundImageView: UIImageView = .init { imageView in
+        imageView.contentMode = .scaleAspectFill
+        imageView.image = UltraCoreStyle.conversationBackgroundImage?.image
+    }
+
    private lazy var dataSource = RxTableViewSectionedReloadDataSource<SectionModel<String, Message>>(
         configureCell: { [weak self] _, tableView, indexPath,
             message in
@@ -163,10 +168,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     }
     override func setupStyle() {
         super.setupStyle()
-        self.tableView.backgroundView = UIImageView({
-            $0.contentMode = .scaleAspectFill
-            $0.image = UltraCoreStyle.conversationBackgroundImage?.image
-        })
+        self.tableView.backgroundView = backgroundImageView
     }
     override func setupConstraints() {
         super.setupConstraints()
@@ -196,7 +198,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
             .do(onNext: {[weak self] messages in
-                self?.tableView.backgroundView = messages.isEmpty ? UltraCoreSettings.delegate?.emptyConversationDetailView() : nil
+                self?.tableView.backgroundView = messages.isEmpty ? UltraCoreSettings.delegate?.emptyConversationDetailView() : self?.backgroundImageView
             })
             .map({messages -> [SectionModel<String, Message>] in
                 if messages.isEmpty {return []}
