@@ -126,6 +126,10 @@ extension ViewModel: UltraCoreSettingsDelegate {
             }
             .disposed(by: disposeBag)
     }
+    
+    func tokenUpdated() {
+        didRegisterForRemoteNotifications()
+    }
 
     func emptyConversationView() -> UIView? {
         return nil

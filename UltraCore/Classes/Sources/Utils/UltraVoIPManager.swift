@@ -12,6 +12,8 @@ public class UltraVoIPManager: NSObject {
     private var callInformation: Caller?
     
     private let callController = CXCallController()
+    
+    private var provider: CXProvider?
         
     public static let shared = UltraVoIPManager()
         
@@ -65,6 +67,7 @@ extension UltraVoIPManager: PKPushRegistryDelegate {
             let callProvider = CXProvider(configuration: callConfigObject)
             callProvider.reportNewIncomingCall(with: uuid, update: callReport, completion: { error in })
             callProvider.setDelegate(self, queue: nil)
+            provider = callProvider
             caller?.uuid = uuid
             callInformation = caller
             presentIncomingCall()
@@ -127,6 +130,13 @@ extension UltraVoIPManager: CXProviderDelegate {
         let endCallAction = CXEndCallAction(call: uuid)
         let transaction = CXTransaction(action: endCallAction)
         callController.request(transaction) { error in }
+    }
+    
+    func startCall() {
+        guard let uuid = callInformation?.uuid else { return }
+        let answerCallAction = CXAnswerCallAction(call: uuid)
+        let transaction = CXTransaction(action: answerCallAction)
+        callController.request(transaction, completion: { error in })
     }
     
 }

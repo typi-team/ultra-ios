@@ -58,7 +58,7 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
     }
     
     func answerToCall() {
-        guard let callStatus = presenter?.getCallStatus() else { return }
+        guard let callStatus = presenter?.getCallStatus(), room.connectionState == .disconnected() else { return }
         if callStatus.callInfo.video {
             actionStackView.setAsActiveCamera()
             setSpeaker(true)
@@ -67,6 +67,7 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
             actionStackView.setAsActiveAudio()
         }
         connectRoom(with: callStatus.callInfo)
+        UltraVoIPManager.shared.startCall()
     }
     
     func cancelCall() {

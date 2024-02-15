@@ -26,6 +26,11 @@ public protocol UltraCoreSettingsDelegate: AnyObject {
     func moneyViewController(callback: @escaping MoneyCallback) -> UIViewController?
     func contactsViewController(contactsCallback: @escaping ContactsCallback,
                                 openConverationCallback: @escaping UserIDCallback) -> UIViewController?
+    func tokenUpdated()
+}
+
+extension UltraCoreSettingsDelegate {
+    func tokenUpdated() {}
 }
 
 private let disposeBag = DisposeBag()
@@ -116,6 +121,7 @@ public extension UltraCoreSettings {
                     shared.updateRepository.setupSubscription()
                     shared.updateRepository.startPingPong()
                     shared.updateRepository.retreiveContactStatuses()
+                    delegate?.tokenUpdated()
                     if shared.appStore.lastState == 0 {
                         DispatchQueue.main.asyncAfter(deadline: .now() + timeOut, execute: {
                             callback(nil)
