@@ -182,7 +182,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.tableView.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.top.equalTo(navigationDivider.snp.bottom)
-            make.bottom.equalTo(messageInputBar.snp.topMargin).offset(-8)
+            make.bottom.equalTo(view.snp.bottom)
         }
         
         self.messageInputBar.snp.makeConstraints { make in
@@ -230,18 +230,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .disposed(by: disposeBag)
         
         self.presenter?.viewDidLoad()
-
-//        Observable<Int>
-//            .timer(.milliseconds(200), period: .milliseconds(200), scheduler: MainScheduler.asyncInstance)
-//            .subscribe(onNext: { [weak self] _ in
-//                guard let `self` = self else { return }
-//                self.presenter?.send(message: UUID().uuidString +
-//                    UUID().uuidString +
-//                    UUID().uuidString +
-//                    UUID().uuidString +
-//                    UUID().uuidString)
-//            })
-//            .disposed(by: disposeBag)
+        subscribeToInputBoundsChange()
     }
     
     override func changedKeyboard(
@@ -249,60 +238,35 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         animationDuration: Double,
         animationOptions: UIView.AnimationOptions
     ) {
-//        let insets = UIEdgeInsets(
-//            top: 0,
-//            left: 0,
-//            bottom: self.messageInputBar.frame.height + height - view.safeAreaInsets.bottom,
-//            right: 0
-//        )
-//        self.tableView.contentInset = insets
-//        self.tableView.scrollIndicatorInsets = insets
-//        if
-//            let indexPath = self.tableView.indexPathsForVisibleRows?.last,
-//            tableView.contentSize.height > tableView.frame.height 
-//        {
-//            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) { [weak self] in
-//                guard let self = self else { return }
-//                let cellRect = self.tableView.rectForRow(at: indexPath)
-//                UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
-//                    self.tableView.contentOffset = CGPoint(x: 0, y: cellRect.maxY - self.tableView.frame.height)
-//                }
-//            }
-//        }
+        var contentOffset = tableView.contentOffset
         
-        let height = UIScreen.main.bounds.height - frame.origin.y
+        let keyBoardHeight = UIScreen.main.bounds.height - frame.origin.y
+        let bottomInset = keyBoardHeight > 0 ? keyBoardHeight - view.safeAreaInsets.bottom : 0
+        let insets = UIEdgeInsets(top: 0, left: 0, bottom: bottomInset, right: 0)
+        self.tableView.contentInset = insets
+        self.tableView.scrollIndicatorInsets = insets
         
-        if messages.isEmpty && height > 0 {
-            messageInputBar.snp.updateConstraints { make in
-                make.bottom.equalTo(view.snp.bottom)
-                    .offset(-(height - view.safeAreaInsets.bottom))
+        
+        if tableView.contentSize.height > tableView.frame.height {
+            if keyBoardHeight > 0 {
+                contentOffset.y += (keyBoardHeight - self.view.safeAreaInsets.bottom)
+            } else {
+                contentOffset.y -= (frame.height - self.view.safeAreaInsets.bottom)
             }
             UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
-                self.view.layoutIfNeeded()
+                self.tableView.contentOffset = contentOffset
             }
-        } else if
-            let lastCell = tableView.visibleCells.last,
-            lastCell.frame.maxY <= (view.frame.size.height - height),
-            height > 0
-        {
-            messageInputBar.snp.updateConstraints { make in
+        }
+        
+        messageInputBar.snp.updateConstraints { make in
+            if keyBoardHeight == 0 {
                 make.bottom.equalTo(view.snp.bottom)
-                    .offset(-(height - view.safeAreaInsets.bottom + messageInputBar.frame.height))
+            } else {
+                make.bottom.equalTo(view.snp.bottom).offset(-(keyBoardHeight - view.safeAreaInsets.bottom))
             }
-            view.frame.origin.y = messageInputBar.frame.size.height
-            UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
-                self.view.layoutIfNeeded()
-            }
-        } else if height > 0 {
-            view.frame.origin.y = UIScreen.main.bounds.height - view.frame.height - frame.height
-            messageInputBar.snp.updateConstraints { make in
-                make.bottom.equalTo(view.snp.bottom).offset(-view.safeAreaInsets.bottom)
-            }
-        } else {
-            messageInputBar.snp.updateConstraints { make in
-                make.bottom.equalTo(view.snp.bottom).offset(0)
-            }
-            view.frame.origin.y = 0.0
+        }
+        UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
+            self.view.layoutIfNeeded()
         }
         
     }
@@ -323,6 +287,22 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         super.traitCollectionDidChange(previousTraitCollection)
         self.navigationDivider.backgroundColor = UltraCoreStyle.divederColor?.color
     }
+    
+    private func subscribeToInputBoundsChange() {
+        messageInputBar
+            .rx
+            .observe(\.bounds)
+            .map(\.height)
+            .subscribe(onNext: { [weak self] height in
+                guard let self = self else { return }
+                let bottomInset = height
+                self.tableView.snp.updateConstraints({ make in
+                    make.bottom.equalTo(self.view.snp.bottom).offset(-bottomInset)
+                })
+            })
+            .disposed(by: disposeBag)
+    }
+    
 }
 
     // MARK: - UITextViewDelegate
