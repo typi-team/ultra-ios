@@ -215,18 +215,6 @@ class MessageInputBar: UIView {
 
 extension MessageInputBar: MessageInputTextViewDelegate {
     
-//    func textViewDidBeginEditing(_ textView: UITextView) {
-//        self.containerStack.snp.updateConstraints { make in
-//            make.bottom.equalToSuperview().offset(-(kMediumPadding - 4))
-//        }
-//    }
-//    
-//    func textViewDidEndEditing(_ textView: UITextView) {
-//        self.containerStack.snp.updateConstraints { make in
-//            make.bottom.equalToSuperview().offset(-(kMediumPadding - 4 + bottomInset))
-//        }
-//    }
-    
     func textViewDidChange(_ textView: UITextView) {
 
         if let text = textView.text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
