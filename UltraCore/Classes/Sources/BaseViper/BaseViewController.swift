@@ -88,14 +88,14 @@ extension UIViewController {
         }
         
         self.changedKeyboard(
-            height: keyboardFrame.height,
+            frame: keyboardFrame,
             animationDuration: durationValue,
             animationOptions: UIView.AnimationOptions(rawValue: curveValue << 16)
         )
     }
     
     @objc func changedKeyboard(
-        height: CGFloat,
+        frame: CGRect,
         animationDuration: Double,
         animationOptions: UIView.AnimationOptions
     ) {
@@ -105,6 +105,7 @@ extension UIViewController {
     @objc func keyboardWillHide(notification: NSNotification) {
         guard
             let userInfo = notification.userInfo,
+            let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
             let durationValue = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double,
             let curveValue = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt
         else {
@@ -112,7 +113,7 @@ extension UIViewController {
         }
         
         self.changedKeyboard(
-            height: 0,
+            frame: keyboardFrame,
             animationDuration: durationValue,
             animationOptions: UIView.AnimationOptions(rawValue: curveValue << 16)
         )
