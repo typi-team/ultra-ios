@@ -163,8 +163,9 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
         animationDuration: Double,
         animationOptions: UIView.AnimationOptions
     ) {
-        self.scrollView.contentInset = .init(top: 0, left: 0, bottom: frame.height, right: 0)
-        self.scrollView.scrollIndicatorInsets = .init(top: 0, left: 0, bottom: frame.height, right: 0)
+        let keyboardHeight = UIScreen.main.bounds.height - frame.origin.y
+        self.scrollView.contentInset = .init(top: 0, left: 0, bottom: keyboardHeight, right: 0)
+        self.scrollView.scrollIndicatorInsets = .init(top: 0, left: 0, bottom: keyboardHeight, right: 0)
         UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
             self.view.layoutIfNeeded()
         }

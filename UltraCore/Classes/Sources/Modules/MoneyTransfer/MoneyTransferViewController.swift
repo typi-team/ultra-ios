@@ -113,8 +113,9 @@ final class MoneyTransferViewController: BaseViewController<MoneyTransferPresent
         animationDuration: Double,
         animationOptions: UIView.AnimationOptions
     ) {
+        let keyboardHeight = UIScreen.main.bounds.height - frame.origin.y
         UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
-            self.view.frame.origin.y = UIScreen.main.bounds.height - self.view.frame.height - frame.height
+            self.view.frame.origin.y = keyboardHeight > 0 ? UIScreen.main.bounds.height - self.view.frame.height - keyboardHeight : 0
         }
     }
 }
