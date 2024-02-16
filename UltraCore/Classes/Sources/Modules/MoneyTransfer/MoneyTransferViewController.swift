@@ -28,7 +28,8 @@ final class MoneyTransferViewController: BaseViewController<MoneyTransferPresent
     })
     
     fileprivate lazy var continButton: ElevatedButton = .init({
-        $0.setTitle(ConversationStrings.continue.localized, for: .normal)
+        $0.setTitle(ConversationStrings.send.localized, for: .normal)
+        $0.backgroundColor = UltraCoreAppearance.buttonTint
         $0.addAction {[weak self] in
             self?.view.endEditing(true)
             guard let `self` = self,
