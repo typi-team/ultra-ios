@@ -239,24 +239,6 @@ extension MessageInputBar: MessageInputTextViewDelegate {
     
 }
 
-extension UITextView: NSTextStorageDelegate {
-    
-    func heightOfInsertedText() ->CGFloat {
-        guard let text = text else { return 0.0 }
-        let maxSize = CGSize(width: frame.width, height: CGFloat.greatestFiniteMagnitude)
-        let options: NSStringDrawingOptions = [.usesLineFragmentOrigin, .usesFontLeading]
-
-        let attributes: [NSAttributedString.Key: Any] = [NSAttributedString.Key.font: font as Any]
-
-        let boundingRect = (text as NSString).boundingRect(with: maxSize,
-                                                           options: options,
-                                                           attributes: attributes,
-                                                           context: nil)
-
-        return ceil(boundingRect.height)
-    }
-}
-
 extension MessageInputBar {
     func block(_ isBlocked: Bool) {
         self.blockView.snp.makeConstraints { make in

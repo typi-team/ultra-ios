@@ -45,45 +45,53 @@ func getTimeText(start: Date, end: Date) -> String {
     let components = calendar.dateComponents([.day, .hour, .minute], from: start, to: end)
 
     // Извлеките компоненты времени
+    let months = components.month ?? 0
     let days = components.day ?? 0
     let hours = components.hour ?? 0
     let minutes = components.minute ?? 0
 
+    PP.debug("[Last seen] - \(months) months, \(days) days, \(hours) hours, \(minutes) ago")
+    
     // Определите текст в зависимости от разницы времени
-    if days > 1 {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "dd/MM/yy"
-        let dateString = formatter.string(from: start)
-        return "\(ContactsStrings.was.localized) \(dateString)"
+    if months > 12 {
+        return ContactsStrings.wasLongTimeAgo.localized
+    } else if months > 0 {
+        return pluralize(
+            value: months,
+            forms: [ContactsStrings.wasMonths1, ContactsStrings.wasMonths2, ContactsStrings.wasMonths5].map(\.localized)
+        )
+    } else if days > 1 {
+        return pluralize(
+            value: days,
+            forms: [ContactsStrings.wasDays1, ContactsStrings.wasDays2, ContactsStrings.wasDays5].map(\.localized)
+        )
     } else if days == 1 {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return "\(ContactsStrings.was.localized) \(ContactsStrings.yesterday.localized) \(formatter.string(from: start))"
+        return ContactsStrings.wasYesterday.localized
     } else if hours > 0 {
-        let hourString = pluralize(value: hours, singularForm: ContactsStrings.hourSingularForm.localized,
-                                   pluralForm: ContactsStrings.hourPluralForm.localized,
-                                   pluralForm2: ContactsStrings.hourPluralForm2.localized)
-        return "\(ContactsStrings.was.localized) \(hourString) \(ContactsStrings.backward.localized)"
+        return pluralize(
+            value: hours,
+            forms: [ContactsStrings.wasHours1, ContactsStrings.wasHours2, ContactsStrings.wasHours5].map(\.localized)
+        )
     } else if minutes > 0 {
-        let minuteString = pluralize(value: minutes, singularForm: ContactsStrings.minuteSingularForm.localized,
-                                     pluralForm: ContactsStrings.minutePluralForm.localized,
-                                     pluralForm2: ContactsStrings.minutePluralForm2.localized)
-        return "\(ContactsStrings.was.localized) \(minuteString) \(ContactsStrings.backward.localized)"
+        return pluralize(
+            value: minutes,
+            forms: [ContactsStrings.wasMinutes1, ContactsStrings.wasMinutes2, ContactsStrings.wasMinutes5].map(\.localized)
+        )
     } else {
-        return "\(ContactsStrings.was.localized) \(ContactsStrings.justNow.localized)"
+        return ContactsStrings.wasJustNow.localized
     }
 }
 
 // Функция для склонения слова в зависимости от числа
-func pluralize(value: Int, singularForm: String, pluralForm: String, pluralForm2: String) -> String {
+func pluralize(value: Int, forms: [String]) -> String {
     let mod10 = value % 10
     let mod100 = value % 100
 
     if mod10 == 1 && mod100 != 11 {
-        return "\(value) \(singularForm)"
+        return String(format: forms[0], value)
     } else if mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20) {
-        return "\(value) \(pluralForm)"
+        return String(format: forms[1], value)
     } else {
-        return "\(value) \(pluralForm2)"
+        return String(format: forms[2], value)
     }
 }

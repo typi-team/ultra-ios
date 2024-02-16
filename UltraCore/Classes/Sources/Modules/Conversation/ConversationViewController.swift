@@ -85,7 +85,13 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     private lazy var voiceInputBar: VoiceInputBar = .init({ [weak self] inputBar in
         inputBar.delegate = self
     })
+    private var messages: [Message] = []
     
+    private lazy var backgroundImageView: UIImageView = .init { imageView in
+        imageView.contentMode = .scaleAspectFill
+        imageView.image = UltraCoreStyle.conversationBackgroundImage?.image
+    }
+
    private lazy var dataSource = RxTableViewSectionedReloadDataSource<SectionModel<String, Message>>(
         configureCell: { [weak self] _, tableView, indexPath,
             message in
@@ -163,10 +169,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     }
     override func setupStyle() {
         super.setupStyle()
-        self.tableView.backgroundView = UIImageView({
-            $0.contentMode = .scaleAspectFill
-            $0.image = UltraCoreStyle.conversationBackgroundImage?.image
-        })
+        self.tableView.backgroundView = backgroundImageView
     }
     override func setupConstraints() {
         super.setupConstraints()
@@ -179,7 +182,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.tableView.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.top.equalTo(navigationDivider.snp.bottom)
-            make.bottom.equalTo(messageInputBar.snp.topMargin).offset(-8)
+            make.bottom.equalTo(view.snp.bottom)
         }
         
         self.messageInputBar.snp.makeConstraints { make in
@@ -196,7 +199,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
             .do(onNext: {[weak self] messages in
-                self?.tableView.backgroundView = messages.isEmpty ? UltraCoreSettings.delegate?.emptyConversationDetailView() : nil
+                self?.messages = messages
+                self?.tableView.backgroundView = messages.isEmpty ? UltraCoreSettings.delegate?.emptyConversationDetailView() : self?.backgroundImageView
             })
             .map({messages -> [SectionModel<String, Message>] in
                 if messages.isEmpty {return []}
@@ -226,45 +230,45 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .disposed(by: disposeBag)
         
         self.presenter?.viewDidLoad()
-
-//        Observable<Int>
-//            .timer(.milliseconds(200), period: .milliseconds(200), scheduler: MainScheduler.asyncInstance)
-//            .subscribe(onNext: { [weak self] _ in
-//                guard let `self` = self else { return }
-//                self.presenter?.send(message: UUID().uuidString +
-//                    UUID().uuidString +
-//                    UUID().uuidString +
-//                    UUID().uuidString +
-//                    UUID().uuidString)
-//            })
-//            .disposed(by: disposeBag)
+        subscribeToInputBoundsChange()
     }
     
     override func changedKeyboard(
-        height: CGFloat,
+        frame: CGRect,
         animationDuration: Double,
         animationOptions: UIView.AnimationOptions
     ) {
-        if 
-            let indexPath = self.tableView.indexPathsForVisibleRows?.last,
-            tableView.contentSize.height > tableView.frame.height 
-        {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) { [weak self] in
-                guard let self = self else { return }
-                let cellRect = self.tableView.rectForRow(at: indexPath)
-                UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
-                    self.tableView.contentOffset = CGPoint(x: 0, y: cellRect.maxY - self.tableView.frame.height)
-                }
+        var contentOffset = tableView.contentOffset
+        
+        let keyBoardHeight = UIScreen.main.bounds.height - frame.origin.y
+        let bottomInset = keyBoardHeight > 0 ? keyBoardHeight - view.safeAreaInsets.bottom : 0
+        let insets = UIEdgeInsets(top: 0, left: 0, bottom: bottomInset, right: 0)
+        self.tableView.contentInset = insets
+        self.tableView.scrollIndicatorInsets = insets
+        
+        
+        if tableView.contentSize.height > tableView.frame.height {
+            if keyBoardHeight > 0 {
+                contentOffset.y += (keyBoardHeight - self.view.safeAreaInsets.bottom)
+            } else {
+                contentOffset.y -= (frame.height - self.view.safeAreaInsets.bottom)
+            }
+            UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
+                self.tableView.contentOffset = contentOffset
             }
         }
         
-        UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
-            self.messageInputBar.snp.updateConstraints { make in
-                make.bottom.equalTo(self.view.snp.bottom)
-                    .offset(height > 0 ? -(height - 36) : 0)
+        messageInputBar.snp.updateConstraints { make in
+            if keyBoardHeight == 0 {
+                make.bottom.equalTo(view.snp.bottom)
+            } else {
+                make.bottom.equalTo(view.snp.bottom).offset(-(keyBoardHeight - view.safeAreaInsets.bottom))
             }
+        }
+        UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
             self.view.layoutIfNeeded()
         }
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -283,6 +287,22 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         super.traitCollectionDidChange(previousTraitCollection)
         self.navigationDivider.backgroundColor = UltraCoreStyle.divederColor?.color
     }
+    
+    private func subscribeToInputBoundsChange() {
+        messageInputBar
+            .rx
+            .observe(\.bounds)
+            .map(\.height)
+            .subscribe(onNext: { [weak self] height in
+                guard let self = self else { return }
+                let bottomInset = height
+                self.tableView.snp.updateConstraints({ make in
+                    make.bottom.equalTo(self.view.snp.bottom).offset(-bottomInset)
+                })
+            })
+            .disposed(by: disposeBag)
+    }
+    
 }
 
     // MARK: - UITextViewDelegate
