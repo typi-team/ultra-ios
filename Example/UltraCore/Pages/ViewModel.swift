@@ -113,7 +113,8 @@ extension ViewModel: UltraCoreSettingsDelegate {
             .map {
                 try JSONDecoder().decode(UserResponse.self, from: $0)
             }
-            .do(onNext: { [weak self] _ in
+            .do(onNext: { [weak self] userResponse in
+                UserDefaults.standard.set(userResponse.sid, forKey: "K_SID")
                 self?.didRegisterForRemoteNotifications()
             })
             .subscribe { userResponse in
