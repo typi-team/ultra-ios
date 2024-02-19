@@ -28,7 +28,7 @@ class AdditioanalController: BaseViewController<String> {
             self.handle(action: .money_tranfer)
         }
         
-        $0.setImage(.named("conversation_money_logo_icon"), for: .normal)
+        $0.setImage(.named("conversation_money_icon"), for: .normal)
     })
 
     fileprivate lazy var stackView: UIStackView = .init {
