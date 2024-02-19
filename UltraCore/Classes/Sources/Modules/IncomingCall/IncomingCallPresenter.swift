@@ -90,6 +90,7 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
     
     func viewDidLoad() {
         if case .outcoming = callStatus {
+            UltraVoIPManager.shared.startOutgoingCall(callInfo: callStatus.callInfo)
             view.connectRoom(with: callStatus.callInfo)
         }
         if let contact = contactService.contact(id: callStatus.callInfo.sender) {
