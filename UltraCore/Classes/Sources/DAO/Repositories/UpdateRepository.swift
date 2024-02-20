@@ -217,13 +217,10 @@ private extension UpdateRepositoryImpl {
     func dissmissCall(in room: String) {
         DispatchQueue.main.async {
             if let callViewController = UIApplication.topViewController() as? IncomingCallViewController {
-                if let presentingViewController = callViewController.presentingViewController {
-                    presentingViewController.dismiss(animated: true)
-                } else {
-                    callViewController.navigationController?.popViewController(animated: true)
-                }
+                callViewController.disconnectRoom()
             }
         }
+        PP.debug("[CALL] dismiss call for room - \(room)")
         UltraVoIPManager.shared.endCall()
     }
         

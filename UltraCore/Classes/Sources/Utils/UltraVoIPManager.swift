@@ -94,11 +94,13 @@ extension UltraVoIPManager: PKPushRegistryDelegate {
 extension UltraVoIPManager: CXProviderDelegate {
     
     public func providerDidReset(_ provider: CXProvider) {
-        print("Did reset")
+        print("[CALL] Did reset")
     }
     
     public func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
+        PP.debug("[CALL] CXAnswerCallAction CXProviderDelegate")
         guard let callInfoMeta else { return }
+        PP.debug("[CALL] CXAnswerCallAction CXProviderDelegate for uuid - \(callInfoMeta.uuid)")
         if let topController = UIApplication.topViewController(), !(topController is IncomingCallViewController) {
             topController.presentWireframeWithNavigation(
                 IncomingCallWireframe(call: .incoming(callInfoMeta.callInfo)),
@@ -110,9 +112,11 @@ extension UltraVoIPManager: CXProviderDelegate {
     }
     
     public func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
+        PP.debug("[CALL] CXEndCallAction CXProviderDelegate")
         guard let callInfoMeta else {
             return
         }
+        PP.debug("[CALL] CXEndCallAction CXProviderDelegate for uuid - \(callInfoMeta.uuid)")
         callService.reject(
             RejectCallRequest.with({
                 $0.room = callInfoMeta.callInfo.room
@@ -128,19 +132,23 @@ extension UltraVoIPManager: CXProviderDelegate {
     }
     
     public func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
+        PP.debug("[CALL] set speaker true")
         currentCallingController?.setSpeaker(true)
     }
     
     public func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
+        PP.debug("[CALL] set speaker false")
         currentCallingController?.setSpeaker(false)
     }
     
     public func provider(_ provider: CXProvider, perform action: CXSetMutedCallAction) {
+        PP.debug("[CALL] CXSetMutedCallAction")
         currentCallingController?.setMicrophoneIfPossible(enabled: !action.isMuted)
         action.fulfill()
     }
     
     public func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
+        PP.debug("[CALL] CXStartCallAction")
         action.fulfill()
     }
     
@@ -157,27 +165,42 @@ extension UltraVoIPManager: CXProviderDelegate {
         self.callInfoMeta = (callInfo, uuid)
         if let contact = AppSettingsImpl.shared.contactDBService.contact(id: callInfo.sender) {
             let handle = CXHandle(type: .generic, value: contact.displaName)
+            PP.debug("[CALL] Starting outgoing call - \(uuid)")
             let startCallAction = CXStartCallAction(call: uuid, handle: handle)
             let transaction = CXTransaction(action: startCallAction)
             callController.request(transaction) { error in
-                
+                if let error = error {
+                    PP.debug("[CALL] Starting outgoing call error - \(error)")
+                }
             }
         }
-        
     }
     
     func endCall() {
+        PP.debug("[CALL] CXEndCallAction")
         guard let uuid = callInfoMeta?.uuid else { return }
+        PP.debug("[CALL] CXEndCallAction for uuid - \(uuid)")
         let endCallAction = CXEndCallAction(call: uuid)
         let transaction = CXTransaction(action: endCallAction)
-        callController.request(transaction) { error in }
+        callController.request(transaction) { error in
+            if let error = error {
+                PP.debug("[CALL] CXEndCallAction error - \(error)")
+            }
+        }
+        callInfoMeta = nil
     }
     
     func startCall() {
+        PP.debug("[CALL] CXAnswerCallAction")
         guard let uuid = callInfoMeta?.uuid else { return }
+        PP.debug("[CALL] CXAnswerCallAction for uuid - \(uuid)")
         let answerCallAction = CXAnswerCallAction(call: uuid)
         let transaction = CXTransaction(action: answerCallAction)
-        callController.request(transaction, completion: { error in })
+        callController.request(transaction, completion: { error in
+            if let error = error {
+                PP.debug("[CALL] CXAnswerCallAction error - \(error)")
+            }
+        })
     }
     
 }

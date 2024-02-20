@@ -67,18 +67,20 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
             actionStackView.setAsActiveAudio()
         }
         connectRoom(with: callStatus.callInfo)
-        UltraVoIPManager.shared.startCall()
+//        UltraVoIPManager.shared.startCall()
     }
     
     func cancelCall() {
         endTimer()
         infoView.setDuration(text: CallStrings.cancel.localized)
+        PP.debug("[CALL] cancell call")
         presenter?.cancel()
         UltraVoIPManager.shared.endCall()
     }
     
     func rejectCall() {
         infoView.setDuration(text: CallStrings.reject.localized)
+        PP.debug("[CALL] reject call")
         presenter?.reject()
         UltraVoIPManager.shared.endCall()
     }

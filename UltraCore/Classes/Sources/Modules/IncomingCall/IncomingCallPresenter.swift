@@ -68,6 +68,7 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
                 PP.info(response.textFormatString())
             case .failure(let error):
                 PP.error(error.localizedDescription)
+                self.view.disconnectRoom()
             }
         })
     }

@@ -6,6 +6,7 @@ import AVFoundation
 extension IncomingCallViewController: RoomDelegate {
     
     func room(_ room: Room, didUpdate connectionState: ConnectionState, oldValue: ConnectionState) {
+        PP.debug("[CALL] connection state - \(connectionState.desctiption) for room - \(room.sid)")
         switch connectionState {
         case .reconnecting, .connecting:
             DispatchQueue.main.async { [weak self] in
