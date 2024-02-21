@@ -10,6 +10,7 @@
 		045F103F2FCB9C1746E5ACE4 /* Pods_UltraCore_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4ADA6C9075E806DAFE80D0CF /* Pods_UltraCore_Example.framework */; };
 		055E13088F8EBFCBCD3E47FE /* Pods_UltraCore_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE70C0BB60C8FDF72600E6E5 /* Pods_UltraCore_Tests.framework */; };
 		52F77E612B761BF2009EA144 /* CallKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52F77E602B761BF1009EA144 /* CallKit.framework */; };
+		28CE0ADA2B6CFD1800FAF14A /* FileCellConfigImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28CE0AD92B6CFD1800FAF14A /* FileCellConfigImpl.swift */; };
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
 		607FACD81AFB9204008FA782 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD71AFB9204008FA782 /* ViewController.swift */; };
 		607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 607FACD91AFB9204008FA782 /* Main.storyboard */; };
@@ -50,6 +51,7 @@
 		4ADA6C9075E806DAFE80D0CF /* Pods_UltraCore_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_UltraCore_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		52F77E602B761BF1009EA144 /* CallKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CallKit.framework; path = System/Library/Frameworks/CallKit.framework; sourceTree = SDKROOT; };
 		5729A9A0392AD0C759FF8788 /* Pods-UltraCore_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UltraCore_Tests.debug.xcconfig"; path = "Target Support Files/Pods-UltraCore_Tests/Pods-UltraCore_Tests.debug.xcconfig"; sourceTree = "<group>"; };
+		28CE0AD92B6CFD1800FAF14A /* FileCellConfigImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileCellConfigImpl.swift; sourceTree = "<group>"; };
 		58D00E470F24D981951D3C3D /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		607FACD01AFB9204008FA782 /* UltraCore_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UltraCore_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD41AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -219,6 +221,7 @@
 				75F115152B21AD8600AA9260 /* IncomeMessageCellConfigImpl.swift */,
 				75F115172B21ADA600AA9260 /* OutcomeMessageCellConfigImpl.swift */,
 				75F115192B21AE5C00AA9260 /* MessageInputBarConfigImpl.swift */,
+				28CE0AD92B6CFD1800FAF14A /* FileCellConfigImpl.swift */,
 				75F1151B2B21AFEE00AA9260 /* VoiceInputBarConfigImpl.swift */,
 			);
 			name = StyleSettings;
@@ -541,6 +544,7 @@
 				75F1150C2B21A33200AA9260 /* MessageCellConfigImpl.swift in Sources */,
 				75F115062B21A0C900AA9260 /* ContactImpl.swift in Sources */,
 				75F115042B21A06B00AA9260 /* ServerConfigImpl.swift in Sources */,
+				28CE0ADA2B6CFD1800FAF14A /* FileCellConfigImpl.swift in Sources */,
 				75F1151C2B21AFEE00AA9260 /* VoiceInputBarConfigImpl.swift in Sources */,
 				75F115082B21A2FC00AA9260 /* TwiceColorImpl.swift in Sources */,
 				607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */,

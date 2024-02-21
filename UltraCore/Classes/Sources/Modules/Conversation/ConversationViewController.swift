@@ -9,6 +9,7 @@
 //
 
 import UIKit
+import AVFoundation
 import RxCocoa
 import RxSwift
 import QuickLook
@@ -67,11 +68,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.contentInset = .zero
     }
     
-    fileprivate lazy var messageHeadline: SubHeadline = .init({
-        $0.textAlignment = .center
-        $0.isUserInteractionEnabled = false
-    })
-    
     private lazy var headline: ProfileNavigationView = .init({[weak self] view in
         guard let `self` = self else { return }
         view.callback = {[weak self] in
@@ -90,7 +86,13 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     private lazy var voiceInputBar: VoiceInputBar = .init({ [weak self] inputBar in
         inputBar.delegate = self
     })
+    private var messages: [Message] = []
     
+    private lazy var backgroundImageView: UIImageView = .init { imageView in
+        imageView.contentMode = .scaleAspectFill
+        imageView.image = UltraCoreStyle.conversationBackgroundImage?.image
+    }
+
    private lazy var dataSource = RxTableViewSectionedReloadDataSource<SectionModel<String, Message>>(
         configureCell: { [weak self] _, tableView, indexPath,
             message in
@@ -117,7 +119,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             cell.cellActionCallback = {[weak self] () in
                 if let self = self,
                     self.messageInputBar.isRecording {return}
-                self?.messageInputBar.dismiss()
                 self?.view.endEditing(true)
             }
             cell.actionCallback = {[weak self] message in
@@ -159,7 +160,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
 //        MARK: Must be hide
         self.setupNavigationMore()
         self.view.addSubview(tableView)
-        self.view.addSubview(messageHeadline)
         self.view.addSubview(messageInputBar)
         self.view.addSubview(navigationDivider)
         self.view.addSubview(editInputBar)
@@ -170,10 +170,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     }
     override func setupStyle() {
         super.setupStyle()
-        self.tableView.backgroundView = UIImageView({
-            $0.contentMode = .scaleAspectFill
-            $0.image = UltraCoreStyle.conversationBackgroundImage?.image
-        })
+        self.tableView.backgroundView = backgroundImageView
     }
     override func setupConstraints() {
         super.setupConstraints()
@@ -186,17 +183,12 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.tableView.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.top.equalTo(navigationDivider.snp.bottom)
-            make.bottom.equalTo(messageInputBar.snp.topMargin).offset(-10)
-        }
-        
-        self.messageHeadline.snp.makeConstraints { make in
-            make.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(messageInputBar.snp.topMargin).offset(-kMediumPadding)
+            make.bottom.equalTo(view.snp.bottom)
         }
         
         self.messageInputBar.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
-            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin)
+            make.bottom.equalTo(view.snp.bottom)
         }
     }
     
@@ -208,7 +200,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
             .do(onNext: {[weak self] messages in
-                self?.messageHeadline.text = messages.isEmpty ? ConversationStrings.thereAreNoMessagesInThisChat.localized : ""
+                self?.messages = messages
+                self?.tableView.backgroundView = messages.isEmpty ? UltraCoreSettings.delegate?.emptyConversationDetailView() : self?.backgroundImageView
             })
             .map({messages -> [SectionModel<String, Message>] in
                 if messages.isEmpty {return []}
@@ -238,45 +231,45 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .disposed(by: disposeBag)
         
         self.presenter?.viewDidLoad()
-
-//        Observable<Int>
-//            .timer(.milliseconds(200), period: .milliseconds(200), scheduler: MainScheduler.asyncInstance)
-//            .subscribe(onNext: { [weak self] _ in
-//                guard let `self` = self else { return }
-//                self.presenter?.send(message: UUID().uuidString +
-//                    UUID().uuidString +
-//                    UUID().uuidString +
-//                    UUID().uuidString +
-//                    UUID().uuidString)
-//            })
-//            .disposed(by: disposeBag)
+        subscribeToInputBoundsChange()
     }
     
     override func changedKeyboard(
-        height: CGFloat,
+        frame: CGRect,
         animationDuration: Double,
         animationOptions: UIView.AnimationOptions
     ) {
-        if 
-            let indexPath = self.tableView.indexPathsForVisibleRows?.last,
-            tableView.contentSize.height > tableView.frame.height 
-        {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) { [weak self] in
-                guard let self = self else { return }
-                let cellRect = self.tableView.rectForRow(at: indexPath)
-                UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
-                    self.tableView.contentOffset = CGPoint(x: 0, y: cellRect.maxY - self.tableView.frame.height)
-                }
+        var contentOffset = tableView.contentOffset
+        
+        let keyBoardHeight = UIScreen.main.bounds.height - frame.origin.y
+        let bottomInset = keyBoardHeight > 0 ? keyBoardHeight - view.safeAreaInsets.bottom : 0
+        let insets = UIEdgeInsets(top: 0, left: 0, bottom: bottomInset, right: 0)
+        self.tableView.contentInset = insets
+        self.tableView.scrollIndicatorInsets = insets
+        
+        
+        if tableView.contentSize.height > tableView.frame.height {
+            if keyBoardHeight > 0 {
+                contentOffset.y += (keyBoardHeight - self.view.safeAreaInsets.bottom)
+            } else {
+                contentOffset.y -= (frame.height - self.view.safeAreaInsets.bottom)
+            }
+            UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
+                self.tableView.contentOffset = contentOffset
             }
         }
         
-        UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
-            self.messageInputBar.snp.updateConstraints { make in
-                make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottomMargin)
-                    .offset(height > 0 ? -(height - 36) : 0)
+        messageInputBar.snp.updateConstraints { make in
+            if keyBoardHeight == 0 {
+                make.bottom.equalTo(view.snp.bottom)
+            } else {
+                make.bottom.equalTo(view.snp.bottom).offset(-(keyBoardHeight - view.safeAreaInsets.bottom))
             }
+        }
+        UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
             self.view.layoutIfNeeded()
         }
+        
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -295,6 +288,22 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         super.traitCollectionDidChange(previousTraitCollection)
         self.navigationDivider.backgroundColor = UltraCoreStyle.divederColor?.color
     }
+    
+    private func subscribeToInputBoundsChange() {
+        messageInputBar
+            .rx
+            .observe(\.bounds)
+            .map(\.height)
+            .subscribe(onNext: { [weak self] height in
+                guard let self = self else { return }
+                let bottomInset = height
+                self.tableView.snp.updateConstraints({ make in
+                    make.bottom.equalTo(self.view.snp.bottom).offset(-bottomInset)
+                })
+            })
+            .disposed(by: disposeBag)
+    }
+    
 }
 
     // MARK: - UITextViewDelegate
@@ -412,13 +421,48 @@ private extension ConversationViewController {
     }
     
     func openMedia(type: UIImagePickerController.SourceType) {
-        let controller = UIImagePickerController()
-        controller.delegate = self
-        controller.sourceType = type
-        controller.videoQuality = .typeMedium
-        controller.mediaTypes = ["public.movie", "public.image"]
-        controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
-        self.present(controller, animated: true)
+        if type == .savedPhotosAlbum {
+            let controller = UIImagePickerController()
+            controller.delegate = self
+            controller.sourceType = type
+            controller.videoQuality = .typeMedium
+            controller.mediaTypes = ["public.movie", "public.image"]
+            controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
+            self.present(controller, animated: true)
+            return
+        }
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .denied:
+            showSettingAlert(from: ConversationStrings.givePermissionToCamera.localized, with: BaseStrings.error.localized)
+        case .restricted:
+            showAlert(from: ConversationStrings.cameraPermissionRestricted.localized)
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { isAuthorized in
+                guard isAuthorized else {
+                    return
+                }
+                DispatchQueue.main.async {
+                    let controller = UIImagePickerController()
+                    controller.delegate = self
+                    controller.sourceType = type
+                    controller.videoQuality = .typeMedium
+                    controller.mediaTypes = ["public.movie", "public.image"]
+                    controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
+                    self.present(controller, animated: true)
+                }
+            }
+        case .authorized:
+            let controller = UIImagePickerController()
+            controller.delegate = self
+            controller.sourceType = type
+            controller.videoQuality = .typeMedium
+            controller.mediaTypes = ["public.movie", "public.image"]
+            controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
+            self.present(controller, animated: true)
+        default:
+            break
+        }
+
     }
     
     func openDocument() {
@@ -455,12 +499,12 @@ extension ConversationViewController: (UIImagePickerControllerDelegate & UINavig
            let url = info[.mediaURL]  as? URL,
             let data = try? Data(contentsOf: url) {
             picker.dismiss(animated: true)
-            self.presenter?.upload(file: .init(url: url, data: data, mime: "video/mp4", width: 300, height: 200))
+            self.presenter?.upload(file: .init(url: url, data: data, mime: "video/mp4", width: 300, height: 200), isVoice: false)
         } else if let image = info[.originalImage] as? UIImage,
                   let downsampled = image.fixedOrientation().downsample(reductionAmount: 0.5),
                   let data = downsampled.pngData() {
             picker.dismiss(animated: true, completion: {
-                self.presenter?.upload(file: .init(url: nil, data: data, mime: "image/png", width: image.size.width, height: image.size.height))
+                self.presenter?.upload(file: .init(url: nil, data: data, mime: "image/png", width: image.size.width, height: image.size.height), isVoice: false)
             })
         }
     }
@@ -742,7 +786,7 @@ extension ConversationViewController: UIDocumentPickerDelegate {
                 return
             }
 
-            self.presenter?.upload(file: .init(url: selectedURL, data: data, mime: selectedURL.mimeType().containsAudio ? "audio/mp3" : selectedURL.mimeType(), width: 300, height: 300))
+            self.presenter?.upload(file: .init(url: selectedURL, data: data, mime: selectedURL.mimeType().containsAudio ? "audio/mp3" : selectedURL.mimeType(), width: 300, height: 300), isVoice: false)
         }
         
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) { }
@@ -750,13 +794,13 @@ extension ConversationViewController: UIDocumentPickerDelegate {
 
 extension ConversationViewController: VoiceInputBarDelegate {
     func showVoiceError() {
-        showSettingAlert(from: ConversationStrings.givePermissionToRecordVoice.localized)
+        showSettingAlert(from: ConversationStrings.givePermissionToRecordVoice.localized, with: BaseStrings.error.localized)
     }
     
     func recordedVoice(url: URL, in duration: TimeInterval) {
         guard duration > 2,
               let data = try? Data(contentsOf: url) else { return }
-        self.presenter?.upload(file: FileUpload(url: nil, data: data, mime: "audio/wav", width: 0, height: 0, duration: duration))
+        self.presenter?.upload(file: FileUpload(url: nil, data: data, mime: "audio/wav", width: 0, height: 0, duration: duration), isVoice: true)
     }
 }
 

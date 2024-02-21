@@ -19,6 +19,7 @@ public protocol UltraCoreFutureDelegate: AnyObject {
 
 public protocol UltraCoreSettingsDelegate: AnyObject {
     func emptyConversationView() -> UIView?
+    func emptyConversationDetailView() -> UIView?
     func info(from id: String) -> IContactInfo?
     func token(callback: @escaping (Result<String, Error>) -> Void)
     func serverConfig() -> ServerConfigurationProtocol?
@@ -94,6 +95,10 @@ public extension UltraCoreSettings {
                 Self.update(sid: token, with: callback)
             }
             .disposed(by: disposeBag)
+    }
+    
+    static func stopSession() {
+        AppSettingsImpl.shared.updateRepository.stopSession()
     }
 
     static func update(sid token: String, timeOut: TimeInterval = 0,
