@@ -8,9 +8,9 @@ import LiveKitClient
 extension IncomingCallViewController: IncomingCallActionViewDelegate {
     
     func view(_ view: IncomingCallActionView, switchCameraButtonDidTap button: UIButton) {
-        let localVideoTrack = room.localParticipant?.firstCameraVideoTrack as? LocalVideoTrack
+        let localVideoTrack = presenter?.getLocalParticipant()?.firstCameraVideoTrack as? LocalVideoTrack
         let cameraCapturer = localVideoTrack?.capturer as? CameraCapturer
-        let remoteParticipant = room.remoteParticipants.first?.value
+        let remoteParticipant = presenter?.getRemoteParticipant()
         let videoView: VideoView
         if remoteParticipant?.isCameraEnabled() ?? false {
             videoView = localVideoView
@@ -66,7 +66,7 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
         } else {
             actionStackView.setAsActiveAudio()
         }
-        connectRoom(with: callStatus.callInfo)
+        presenter?.answerCall()
 //        UltraVoIPManager.shared.startCall()
     }
     

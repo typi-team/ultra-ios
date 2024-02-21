@@ -12,7 +12,7 @@ extension IncomingCallViewController {
 
     @objc
     private func displayRefreshed(displayLink: CADisplayLink) {
-        guard let startDate = date, room.connectionState == .connected else { return }
+        guard let startDate = date, (presenter?.getIsConnected() ?? false) else { return }
         let elepsadeTime = Int(Date().timeIntervalSince(startDate).rounded(.toNearestOrEven))
         infoView.setDuration(text: timeFormatted(elepsadeTime))
     }

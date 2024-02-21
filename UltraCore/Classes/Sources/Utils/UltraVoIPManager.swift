@@ -85,7 +85,7 @@ extension UltraVoIPManager: PKPushRegistryDelegate {
     private func presentIncomingCall() {
         guard let callInfoMeta else { return }
         if let topController = UIApplication.topViewController(), !(topController is IncomingCallViewController) {
-            topController.presentWireframeWithNavigation(IncomingCallWireframe(call: .incoming(callInfoMeta.callInfo)))
+            topController.presentWireframe(IncomingCallWireframe(call: .incoming(callInfoMeta.callInfo)))
         }
     }
     
@@ -160,7 +160,7 @@ extension UltraVoIPManager: CXProviderDelegate {
         return nil
     }
     
-    func startOutgoingCall(callInfo: CallInformation) {
+    func startOutgoingCall(callInfo: CallInformation, completion: @escaping  (() -> Void)) {
         let uuid = UUID()
         self.callInfoMeta = (callInfo, uuid)
         if let contact = AppSettingsImpl.shared.contactDBService.contact(id: callInfo.sender) {
@@ -171,9 +171,18 @@ extension UltraVoIPManager: CXProviderDelegate {
             callController.request(transaction) { error in
                 if let error = error {
                     PP.debug("[CALL] Starting outgoing call error - \(error)")
+                } else {
+                    completion()
                 }
             }
         }
+    }
+    
+    func reportOutgoingCall() {
+        guard let callInfoMeta = callInfoMeta else {
+            return
+        }
+        provider.reportOutgoingCall(with: callInfoMeta.uuid, connectedAt: nil)
     }
     
     func endCall() {

@@ -17,8 +17,6 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
     
     // MARK: - Properties
     
-    lazy var room = Room(delegate: self)
-    
     var displayLink: CADisplayLink?
     
     var date: Date?
@@ -42,6 +40,12 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
     lazy var infoView = IncomingCallInfoView(style: style)
 
     lazy var actionStackView = IncomingCallActionView(style: style, delegate: self)
+    
+    private lazy var backButton: UIButton = .init { button in
+        button.setImage(UIImage.named("icon_back_button"), for: .normal)
+        button.tintColor = .yellow
+        button.addTarget(self, action: #selector(didTapBack), for: .touchUpInside)
+    }
     
     fileprivate lazy var topView: UIView = .init {
         let gradient = CAGradientLayer()
@@ -70,6 +74,7 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
         view.addSubview(infoView)
         view.addSubview(actionStackView)
         view.addSubview(localVideoView)
+        view.addSubview(backButton)
         view.insertSubview(topView, aboveSubview: remoteVideoView)
     }
 
@@ -98,6 +103,10 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
         topView.snp.makeConstraints { make in
             make.top.leading.trailing.equalToSuperview()
             make.height.equalTo(100)
+        }
+        backButton.snp.makeConstraints { make in
+            make.left.equalTo(16)
+            make.top.equalTo(60)
         }
     }
 
@@ -147,12 +156,8 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
         }
     }
     
-    func configureStartCall() {
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            infoView.hidePhoneNumber()
-            startTimer()
-        }
+    @objc private func didTapBack() {
+        dismiss(animated: true)
     }
 
     deinit {

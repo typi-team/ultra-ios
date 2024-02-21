@@ -10,8 +10,7 @@
 
 import Foundation
 import RxSwift
-
-
+import LiveKitClient
 
 final class IncomingCallPresenter {
 
@@ -45,12 +44,29 @@ final class IncomingCallPresenter {
         self.contactService = contactService
         self.callStatus = callInformation
         self.contactInteractor = contactInteractor
+        RoomManager.shared.addRoomDelegate(self)
+    }
+    
+    deinit {
+        RoomManager.shared.removeRoomDelegate(self)
     }
 }
 
 // MARK: - Extensions -
 
 extension IncomingCallPresenter: IncomingCallPresenterInterface {
+    
+    func getLocalParticipant() -> LocalParticipant? {
+        RoomManager.shared.room.localParticipant
+    }
+    
+    func getRemoteParticipant() -> RemoteParticipant? {
+        RoomManager.shared.room.remoteParticipants.first?.value
+    }
+    
+    func getIsConnected() -> Bool {
+        RoomManager.shared.room.connectionState == .connected
+    }
     
     func getCallStatus() -> CallStatus {
         callStatus
@@ -62,13 +78,12 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
             $0.callerUserID = self.callStatus.callInfo.sender
         }), callOptions: .default()).response.whenComplete( { [weak self] result  in
             guard let `self` = self else { return }
-            self.view.disconnectRoom()
+            self.wireframe.dissmiss { }
             switch result {
             case .success(let response):
                 PP.info(response.textFormatString())
             case .failure(let error):
                 PP.error(error.localizedDescription)
-                self.view.disconnectRoom()
             }
         })
     }
@@ -81,18 +96,25 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
             guard let `self` = self else { return }
             switch result {
             case .success:
-                self.view.disconnectRoom()
+                self.wireframe.dissmiss { }
             case .failure(let error):
                 PP.error(error.localizedDescription)
-                self.view.disconnectRoom()
             }
         })
     }
     
+    func answerCall() {
+        RoomManager.shared.connectRoom(with: callStatus.callInfo)
+    }
+    
     func viewDidLoad() {
         if case .outcoming = callStatus {
-            UltraVoIPManager.shared.startOutgoingCall(callInfo: callStatus.callInfo)
-            view.connectRoom(with: callStatus.callInfo)
+            UltraVoIPManager.shared.startOutgoingCall(callInfo: callStatus.callInfo, completion: { [weak self] in
+                guard let self = self else {
+                    return
+                }
+                RoomManager.shared.connectRoom(with: self.callStatus.callInfo)
+            })
         }
         if let contact = contactService.contact(id: callStatus.callInfo.sender) {
             self.view.dispay(view: contact)
@@ -108,5 +130,71 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
 //                })
 //                .disposed(by: disposeBag)
         }
+    }
+    
+    func setMicrophone(enabled: Bool) {
+        RoomManager.shared.room.localParticipant?.setCamera(enabled: enabled)
+    }
+    
+    func setCamera(enabled: Bool) {
+        RoomManager.shared.room.localParticipant?.setMicrophone(enabled: enabled)
+    }
+    
+}
+
+extension IncomingCallPresenter: RoomDelegate {
+    
+    func room(_ room: Room, didUpdate connectionState: ConnectionState, oldValue: ConnectionState) {
+        PP.debug("[CALL] connection state - \(connectionState.desctiption) for room - \(room.sid ?? "")")
+        switch connectionState {
+        case .reconnecting, .connecting:
+            DispatchQueue.main.async { [weak self] in
+                self?.view.showConnectionStatus(connectionState.desctiption)
+            }
+        default:
+            break
+        }
+    }
+    
+    func room(_ room: Room, participantDidJoin participant: RemoteParticipant) {
+        PP.debug("[CALL] participant - \(participant.name) did join for room - \(room.sid ?? "")")
+        view.updateForStartCall()
+    }
+    
+    func room(_ room: Room, localParticipant: LocalParticipant, didPublish publication: LocalTrackPublication) {
+        guard publication.track is VideoTrack else { return }
+        updateParticipantTrack(for: room)
+    }
+ 
+    func room(_ room: Room, participant: RemoteParticipant, didSubscribe publication: RemoteTrackPublication, track: Track) {
+        guard track is VideoTrack else { return }
+        updateParticipantTrack(for: room)
+    }
+    
+    func room(_ room: Room, participant: Participant, didUpdate publication: TrackPublication, muted: Bool) {
+        guard publication.track is VideoTrack else { return }
+        updateParticipantTrack(for: room)
+    }
+    
+    private func updateParticipantTrack(for room: Room) {
+        let remote = room.remoteParticipants.first?.value
+        let local = room.localParticipant
+        view.updateParticipantTrack(remote: remote, local: local)
+    }
+
+}
+
+extension IncomingCallPresenter: RoomManagerDelegate {
+    func didConnectToRoom() {
+        UltraVoIPManager.shared.reportOutgoingCall()
+        view.showConnectedRoom(with: callStatus)
+    }
+    
+    func didFailToConnectToRoom() {
+        wireframe.dissmiss { }
+    }
+    
+    func didDisconnectFromRoom() {
+        wireframe.dissmiss { }
     }
 }
