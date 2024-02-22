@@ -28,7 +28,9 @@ final class MoneyTransferViewController: BaseViewController<MoneyTransferPresent
     })
     
     fileprivate lazy var continButton: ElevatedButton = .init({
-        $0.setTitle(ConversationStrings.continue.localized, for: .normal)
+
+        $0.setTitle(ConversationStrings.send.localized, for: .normal)
+        $0.backgroundColor = UltraCoreAppearance.buttonTint
         $0.addAction {[weak self] in
             self?.view.endEditing(true)
             guard let `self` = self,
@@ -115,7 +117,7 @@ final class MoneyTransferViewController: BaseViewController<MoneyTransferPresent
     ) {
         let keyboardHeight = UIScreen.main.bounds.height - frame.origin.y
         UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
-            self.view.frame.origin.y = keyboardHeight > 0 ? UIScreen.main.bounds.height - self.view.frame.height - keyboardHeight : 0
+            self.view.frame.origin.y = keyboardHeight >= 0 ? UIScreen.main.bounds.height - self.view.frame.height - keyboardHeight : 0
         }
     }
 }
