@@ -49,8 +49,6 @@ public extension UltraCoreSettings {
         let contactsDBService = AppSettingsImpl.shared.contactDBService
         let contactByUserIdInteractor = ContactByUserIdInteractor(delegate: nil, contactsService: AppSettingsImpl.shared.contactsService)
 
-        let disposeBag = DisposeBag()
-
         Observable.from(contacts)
             .flatMap { contactByUserIdInteractor.executeSingle(params: $0.identifier).retry(2) }
             .flatMap({ contactsDBService.save(contact: $0) })
