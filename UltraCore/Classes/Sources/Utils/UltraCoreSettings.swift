@@ -193,8 +193,24 @@ public extension UltraCoreSettings {
             callback(nil)
         })
     }
+    
+    static func lastSeenOfContacts(callback: @escaping (([[ContactInfo: Any]]) -> Void)) {
+        _ = AppSettingsImpl.shared
+            .contactDBService
+            .contacts()
+            .subscribe { contacts in
+                callback(contacts
+                    .map({ [ContactInfo.name: $0.displaName,
+                            ContactInfo.atLastSeen: $0.status.lastSeen,
+                            ContactInfo.isOnline: $0.status.isOnline] }))
+            }
+    }
 
     static func logout() {
         AppSettingsImpl.shared.logout()
     }
+}
+
+public enum ContactInfo {
+    case name, isOnline, atLastSeen
 }
