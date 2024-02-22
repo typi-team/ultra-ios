@@ -58,7 +58,7 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
     }
     
     func answerToCall() {
-        guard let callStatus = presenter?.getCallStatus(), room.connectionState == .disconnected() else { return }
+        guard let callStatus = presenter?.getCallStatus(), !(presenter?.getIsConnected() ?? false) else { return }
         if callStatus.callInfo.video {
             actionStackView.setAsActiveCamera()
             setSpeaker(true)
@@ -67,7 +67,6 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
             actionStackView.setAsActiveAudio()
         }
         presenter?.answerCall()
-//        UltraVoIPManager.shared.startCall()
     }
     
     func cancelCall() {
@@ -75,14 +74,12 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
         infoView.setDuration(text: CallStrings.cancel.localized)
         PP.debug("[CALL] cancell call")
         presenter?.cancel()
-        UltraVoIPManager.shared.endCall()
     }
     
     func rejectCall() {
         infoView.setDuration(text: CallStrings.reject.localized)
         PP.debug("[CALL] reject call")
         presenter?.reject()
-        UltraVoIPManager.shared.endCall()
     }
     
 }

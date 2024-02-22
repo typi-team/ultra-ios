@@ -9,7 +9,11 @@ public class UltraVoIPManager: NSObject {
         
     private var deviceToken: String?
     
-    private var callInfoMeta: (callInfo: CallInformation, uuid: UUID)?
+    private var callInfoMeta: CallMetadata? {
+        didSet {
+            PP.debug("[CALL] Setting callinfometa - \(callInfoMeta?.callInfo.room)")
+        }
+    }
     
     private let callController = CXCallController()
     
@@ -18,6 +22,8 @@ public class UltraVoIPManager: NSObject {
     private let callService: CallServiceClientProtocol
         
     public static let shared = UltraVoIPManager(callService: AppSettingsImpl.shared.callService)
+    
+    private var wasAnswered: Bool = false
         
     public var token: String? {
         deviceToken
@@ -28,6 +34,8 @@ public class UltraVoIPManager: NSObject {
     init(callService: CallServiceClientProtocol) {
         self.callService = callService
         let callConfigObject = CXProviderConfiguration(localizedName: "Ultra")
+        callConfigObject.supportsVideo = true
+        callConfigObject.maximumCallsPerCallGroup = 1
         self.provider = CXProvider(configuration: callConfigObject)
         super.init()
         self.provider.setDelegate(self, queue: nil)
@@ -64,6 +72,7 @@ extension UltraVoIPManager: PKPushRegistryDelegate {
     public func pushRegistry(_ registry: PKPushRegistry, didReceiveIncomingPushWith payload: PKPushPayload, for type: PKPushType, completion: @escaping () -> Void) {
         do {
             let caller = try Caller(dictionary: payload.dictionaryPayload)
+            PP.debug("[CALL] Got VOIP Push - \(caller.room), video - \(caller.video)")
             let callReport = CXCallUpdate()
             callReport.hasVideo = caller.video
             if let contact = AppSettingsImpl.shared.contactDBService.contact(id: caller.sender) {
@@ -74,11 +83,12 @@ extension UltraVoIPManager: PKPushRegistryDelegate {
                 provider.reportNewIncomingCall(with: uuid, update: callReport, completion: { error in
                     completion()
                 })
-                callInfoMeta = (caller, uuid)
+                callInfoMeta = CallMetadata(callInfo: caller, uuid: uuid, isOutgoing: false)
             }
         }
         catch {
             PP.error("Error on receiving VOIP push - \(error.localizedDescription)")
+            completion()
         }
     }
     
@@ -99,15 +109,34 @@ extension UltraVoIPManager: CXProviderDelegate {
     
     public func provider(_ provider: CXProvider, perform action: CXAnswerCallAction) {
         PP.debug("[CALL] CXAnswerCallAction CXProviderDelegate")
-        guard let callInfoMeta else { return }
+        guard let callInfoMeta, action.callUUID == callInfoMeta.uuid else {
+            action.fail()
+            return
+        }
+        wasAnswered = true
         PP.debug("[CALL] CXAnswerCallAction CXProviderDelegate for uuid - \(callInfoMeta.uuid)")
         if let topController = UIApplication.topViewController(), !(topController is IncomingCallViewController) {
             topController.presentWireframeWithNavigation(
                 IncomingCallWireframe(call: .incoming(callInfoMeta.callInfo)),
-                animated: true) { [weak self] in
-                    self?.currentCallingController?.answerToCall()
+                animated: true) {
+                    RoomManager.shared.connectRoom(with: callInfoMeta.callInfo) { error in
+                        if let error = error {
+                            PP.debug("Error on connecting room - \(callInfoMeta.callInfo.room) \(error)")
+                            action.fail()
+                        } else {
+                            action.fulfill()
+                        }
+                    }
+                }
+        } else {
+            RoomManager.shared.connectRoom(with: callInfoMeta.callInfo) { error in
+                if let error = error {
+                    PP.debug("Error on connecting room - \(callInfoMeta.callInfo.room) \(error)")
+                    action.fail()
+                } else {
                     action.fulfill()
                 }
+            }
         }
     }
     
@@ -117,17 +146,20 @@ extension UltraVoIPManager: CXProviderDelegate {
             return
         }
         PP.debug("[CALL] CXEndCallAction CXProviderDelegate for uuid - \(callInfoMeta.uuid)")
-        callService.reject(
-            RejectCallRequest.with({
-                $0.room = callInfoMeta.callInfo.room
-                $0.callerUserID = callInfoMeta.callInfo.sender
-            }),
-            callOptions: .default()
-        )
-        .response
-        .whenComplete { [weak self] result in
-            self?.callInfoMeta = nil
-            action.fulfill()
+//        guard !callInfoMeta.isOutgoing else {
+//            RoomManager.shared.disconnectRoom()
+//            action.fulfill()
+//            return
+//        }
+        rejectOrCancelCall(callInfo: callInfoMeta.callInfo) { [weak self] error in
+            if let error = error {
+                PP.debug("[CALL] CXEndCallAction for uuid - \(callInfoMeta.uuid) error - \(error)")
+                action.fail()
+            } else {
+                PP.debug("[CALL] CXEndCallAction for uuid - \(callInfoMeta.uuid) fulfilled")
+                action.fulfill()
+                self?.callInfoMeta = nil
+            }
         }
     }
     
@@ -149,7 +181,21 @@ extension UltraVoIPManager: CXProviderDelegate {
     
     public func provider(_ provider: CXProvider, perform action: CXStartCallAction) {
         PP.debug("[CALL] CXStartCallAction")
-        action.fulfill()
+        guard let callInfoMeta, callInfoMeta.uuid == action.callUUID else {
+            PP.debug("[CALL] CXStartCallAction failed")
+            action.fail()
+            return
+        }
+        wasAnswered = false
+        provider.reportOutgoingCall(with: action.callUUID, startedConnectingAt: nil)
+        RoomManager.shared.connectRoom(with: callInfoMeta.callInfo) { [weak self] error in
+            if let error = error {
+                action.fail()
+            } else {
+                self?.provider.reportOutgoingCall(with: action.callUUID, connectedAt: nil)
+                action.fulfill()
+            }
+        }
     }
     
     private var currentCallingController: IncomingCallViewController? {
@@ -160,22 +206,23 @@ extension UltraVoIPManager: CXProviderDelegate {
         return nil
     }
     
-    func startOutgoingCall(callInfo: CallInformation, completion: @escaping  (() -> Void)) {
+    func startOutgoingCall(callInfo: CallInformation) {
         let uuid = UUID()
-        self.callInfoMeta = (callInfo, uuid)
-        if let contact = AppSettingsImpl.shared.contactDBService.contact(id: callInfo.sender) {
-            let handle = CXHandle(type: .generic, value: contact.displaName)
-            PP.debug("[CALL] Starting outgoing call - \(uuid)")
-            let startCallAction = CXStartCallAction(call: uuid, handle: handle)
-            let transaction = CXTransaction(action: startCallAction)
-            callController.request(transaction) { error in
-                if let error = error {
-                    PP.debug("[CALL] Starting outgoing call error - \(error)")
-                } else {
-                    completion()
-                }
+        self.callInfoMeta = CallMetadata(callInfo: callInfo, uuid: uuid, isOutgoing: true)
+        let handleValue = AppSettingsImpl.shared.contactDBService.contact(id: callInfo.sender)?.displaName ?? "Unknown"
+        let handle = CXHandle(type: .generic, value: handleValue)
+        PP.debug("[CALL] Starting outgoing call - \(callInfo.room)")
+        let startCallAction = CXStartCallAction(call: uuid, handle: handle)
+        startCallAction.isVideo = callInfo.video
+        let transaction = CXTransaction(action: startCallAction)
+        callController.request(transaction) { error in
+            if let error = error {
+                PP.debug("[CALL] Starting outgoing call error - \(error)")
+            } else {
+                PP.debug("[CALL] Request transaction for starting outgoing call is successful")
             }
         }
+        
     }
     
     func reportOutgoingCall() {
@@ -194,12 +241,30 @@ extension UltraVoIPManager: CXProviderDelegate {
         callController.request(transaction) { error in
             if let error = error {
                 PP.debug("[CALL] CXEndCallAction error - \(error)")
+            } else {
+                PP.debug("[CALL] Request transaction for ending call is successful")
             }
         }
-        callInfoMeta = nil
     }
     
-    func startCall() {
+    func serverEndCall() {
+        PP.debug("[CALL] server CXEndCallAction")
+        guard let uuid = callInfoMeta?.uuid else { return }
+        PP.debug("[CALL] server CXEndCallAction for uuid - \(uuid)")
+        let endCallAction = CXEndCallAction(call: uuid)
+        let transaction = CXTransaction(action: endCallAction)
+        callController.request(transaction) { [weak self] error in
+            self?.callInfoMeta = nil
+            RoomManager.shared.disconnectRoom()
+            if let error = error {
+                PP.debug("[CALL] server CXEndCallAction error - \(error)")
+            } else {
+                PP.debug("[CALL] server Request transaction for ending call is successful")
+            }
+        }
+    }
+    
+    func answerCall() {
         PP.debug("[CALL] CXAnswerCallAction")
         guard let uuid = callInfoMeta?.uuid else { return }
         PP.debug("[CALL] CXAnswerCallAction for uuid - \(uuid)")
@@ -210,6 +275,54 @@ extension UltraVoIPManager: CXProviderDelegate {
                 PP.debug("[CALL] CXAnswerCallAction error - \(error)")
             }
         })
+    }
+    
+    private func rejectOrCancelCall(callInfo: CallInformation, completion: @escaping((Error?) -> Void)) {
+        if wasAnswered || callInfoMeta?.isOutgoing == .some(true) {
+            cancelCall(callInfo: callInfo, completion: completion)
+        } else {
+            rejectCall(callInfo: callInfo, completion: completion)
+        }
+    }
+    
+    private func cancelCall(callInfo: CallInformation, completion: @escaping((Error?) -> Void)) {
+        PP.debug("[CALL] - Cancell call - \(callInfo.room)")
+        callService.cancel(
+            CancelCallRequest.with({
+                $0.userID = callInfo.sender
+                $0.room = callInfo.room
+            }), callOptions: .default()
+        )
+        .response
+        .whenComplete { result in
+            switch result {
+            case .success:
+                RoomManager.shared.disconnectRoom()
+                completion(nil)
+            case .failure(let error):
+                completion(error)
+            }
+        }
+    }
+    
+    private func rejectCall(callInfo: CallInformation, completion: @escaping((Error?) -> Void)) {
+        PP.debug("[CALL] - Reject call - \(callInfo.room)")
+        callService.reject(
+            RejectCallRequest.with({
+                $0.room = callInfo.room
+                $0.callerUserID = callInfo.sender
+            }),
+            callOptions: .default()
+        )
+        .response
+        .whenComplete { result in
+            switch result {
+            case .success:
+                completion(nil)
+            case .failure(let error):
+                completion(error)
+            }
+        }
     }
     
 }
@@ -225,6 +338,12 @@ extension UltraVoIPManager {
         init(dictionary: [AnyHashable: Any]) throws {
             self = try JSONDecoder().decode(Caller.self, from: JSONSerialization.data(withJSONObject: dictionary))
         }
+    }
+    
+    struct CallMetadata {
+        let callInfo: CallInformation
+        let uuid: UUID
+        let isOutgoing: Bool
     }
     
 }

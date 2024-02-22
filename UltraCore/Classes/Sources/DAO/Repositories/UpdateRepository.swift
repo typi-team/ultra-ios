@@ -196,10 +196,12 @@ private extension UpdateRepositoryImpl {
         case let .mediaUploading(pres):
             PP.debug(pres.textFormatString())
         case let .callReject(reject):
+            PP.debug("[CALL] - Server Call reject - \(reject.room)")
             self.dissmissCall(in: reject.room)
         case let .callRequest(callRequest):
             self.handleIncoming(callRequest: callRequest)
         case let .callCancel(callrequest):
+            PP.debug("[CALL] - Server Call cancel - \(callrequest.room)")
             self.dissmissCall(in: callrequest.room)
         case let .block(blockMessage):
             self.contactService
@@ -216,12 +218,9 @@ private extension UpdateRepositoryImpl {
     
     func dissmissCall(in room: String) {
         DispatchQueue.main.async {
-            if let callViewController = UIApplication.topViewController() as? IncomingCallViewController {
-                callViewController.disconnectRoom()
-            }
+            UltraVoIPManager.shared.serverEndCall()
+//            RoomManager.shared.disconnectRoom(for: room)
         }
-        PP.debug("[CALL] dismiss call for room - \(room)")
-        UltraVoIPManager.shared.endCall()
     }
         
     func handle(of update: Update.OneOf_OfUpdate) {
