@@ -44,6 +44,29 @@ public extension UltraCoreSettings {
     static func update(contacts: [IContactInfo]) throws {
         try ContactDBService.update(contacts: contacts)
     }
+    
+    static func updateOrCreate(contacts: [IContactInfo]) throws {
+        let contactsDBService = AppSettingsImpl.shared.contactDBService
+        let contactByUserIdInteractor = ContactByUserIdInteractor(delegate: nil, contactsService: AppSettingsImpl.shared.contactsService)
+
+        let disposeBag = DisposeBag()
+
+        Observable.from(contacts)
+            .flatMap { contactByUserIdInteractor.executeSingle(params: $0.identifier).retry(2) }
+            .flatMap({ contactsDBService.save(contact: $0) })
+            .subscribe(
+                onNext: {
+                    PP.info("Контакты успешно сохранены")
+                },
+                onError: { error in
+                    PP.error("Ошибка при сохранении контакта: \(error)")
+                },
+                onCompleted: {
+                    PP.info("Все контакты были обработаны и сохранены")
+                }
+            )
+            .disposed(by: disposeBag)
+    }
 
     static func printAllLocalizableStrings() {
         print("================= Localizable =======================")
