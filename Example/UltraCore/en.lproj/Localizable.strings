@@ -15,12 +15,30 @@
 "conversations.deleteFromMe" = "Delete from me";
 "conversations.areYouSure" = "Are you sure?";
 "conversations.pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible" = "Please note that message data will be permanently deleted and recovery will not be possible";
+
 // MARK: Contacts page
 "contacts.newChat" = "New chat";
-"contacts.was" = "was";
-"contacts.justNow" = "just now";
-"contacts.backward" = "back";
-"contacts.yesterday" = "yesterday";
+
+"contacts.was.months.1" = "was %d month ago";
+"contacts.was.months.2" = "was %d months ago";
+"contacts.was.months.5" = "was %d months ago";
+
+"contacts.was.days.1" = "was %d day ago";
+"contacts.was.days.2" = "was %d days ago";
+"contacts.was.days.5" = "was %d days ago";
+
+"contacts.was.hours.1" = "was %d hour ago";
+"contacts.was.hours.2" = "was %d hours ago";
+"contacts.was.hours.5" = "was %d hours ago";
+
+"contacts.was.minutes.1" = "was %d hour ago";
+"contacts.was.minutes.2" = "was %d minutes ago";
+"contacts.was.minutes.5" = "was %d minutes ago";
+
+"contacts.was.justNow" = "was just now";
+"contacts.was.yesterday" = "was yesterday";
+"contacts.was.longTimeAgo" = "was long time ago";
+
 "contacts.yourContactListIsEmpty" = "Your contact list is empty";
 "contacts.unfortunately" = "Unfortunately, you do not have contacts who use this application.";
 "contacts.noAccessToContacts" = "No access to contacts";
@@ -71,7 +89,9 @@
 "conversation.unblock" = "Unblock";
 "conversation.deleteFromMe" = "Delete from me";
 "conversation.deleteForEveryone" = "Delete for everyone";
-"conversation.givePermissionToRecordVoice" = "Give permission to record voice";
+"conversation.givePermissionToRecordVoice" = "The application does not have access to the microphone";
+"conversation.givePermissionToCamera" = "The application does not have access to the camera";
+"conversation.cameraPermissionRestricted" = "Camera access is restricted";
 "conversation.ifAMessageContainsThreatsInappropriateContentOrViolatesAnyPlatformOrCommunity" = "If a message contains threats, inappropriate content, or violates any platform or community rules, it can be reported and is subject to removal. Restoring such a message may be impossible";
 "conversation.yourComplaintWillBeReviewedByModeratorsThankYou" = "Moderators will review your complaint. Thank you!";
 

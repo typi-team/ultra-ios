@@ -157,8 +157,18 @@ final class SignUpViewController: BaseViewController<SignUpPresenterInterface> {
     override func textFieldDidChange(_ sender: UITextField) {
         self.handleButtonEnabling()
     }
-    override func changed(keyboard height: CGFloat) {
-        self.scrollView.contentInset = .init(top: 0, left: 0, bottom: height, right: 0)
+    
+    override func changedKeyboard(
+        frame: CGRect,
+        animationDuration: Double,
+        animationOptions: UIView.AnimationOptions
+    ) {
+        let keyboardHeight = UIScreen.main.bounds.height - frame.origin.y
+        self.scrollView.contentInset = .init(top: 0, left: 0, bottom: keyboardHeight, right: 0)
+        self.scrollView.scrollIndicatorInsets = .init(top: 0, left: 0, bottom: keyboardHeight, right: 0)
+        UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
+            self.view.layoutIfNeeded()
+        }
     }
     
     override func setupInitialData() {

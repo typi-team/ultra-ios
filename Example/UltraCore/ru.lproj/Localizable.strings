@@ -19,10 +19,27 @@
 
 // MARK: Contacts page
 "contacts.newChat" = "Новый чат";
-"contacts.was" = "был(а)";
-"contacts.justNow" = "только что";
-"contacts.backward" = "назад";
-"contacts.yesterday" = "вчера";
+
+"contacts.was.months.1" = "был(а) %d месяц назад";
+"contacts.was.months.2" = "был(а) %d месяца назад";
+"contacts.was.months.5" = "был(а) %d месяцев назад";
+
+"contacts.was.days.1" = "был(а) %d день назад";
+"contacts.was.days.2" = "был(а) %d дня назад";
+"contacts.was.days.5" = "был(а) %d дней назад";
+
+"contacts.was.hours.1" = "был(а) %d час назад";
+"contacts.was.hours.2" = "был(а) %d часа назад";
+"contacts.was.hours.5" = "был(а) %d часов назад";
+
+"contacts.was.minutes.1" = "был(а) %d минуту назад";
+"contacts.was.minutes.2" = "был(а) %d минуты назад";
+"contacts.was.minutes.5" = "был(а) %d минут назад";
+
+"contacts.was.justNow" = "был(а) только что";
+"contacts.was.yesterday" = "был(а) вчера";
+"contacts.was.longTimeAgo" = "был(а) очень давно";
+
 "contacts.yourContactListIsEmpty" = "Ваш список контактов пуст";
 "contacts.unfortunately" = "К сожалению у вас нет контактов которые используют данное приложение.";
 "contacts.noAccessToContacts" = "Нет доступа к контактам";
@@ -74,7 +91,9 @@
 "conversation.unblock" = "Разблокировать";
 "conversation.deleteFromMe" = "Удалить у меня";
 "conversation.deleteForEveryone" = "Удалить для всех";
-"conversation.givePermissionToRecordVoice" = "Give permission to record voice";
+"conversation.givePermissionToRecordVoice" = "Приложение не имеет доступа к микрофону";
+"conversation.givePermissionToCamera" = "Приложение не имеет доступа к камере";
+"conversation.cameraPermissionRestricted" = "Camera access is restricted";
 "conversation.ifAMessageContainsThreatsInappropriateContentOrViolatesAnyPlatformOrCommunity" = "Если сообщение содержит угрозы, неподходящий контент или нарушает какие-либо правила платформы или сообщества, оно может быть обжаловано и подлежит удалению. Восстановление такого сообщения может быть невозможным";
 "conversation.yourComplaintWillBeReviewedByModeratorsThankYou" = "Вашу жалобу проверят модераторы. Спасибо!";
 "conversation.areYouSure" = "Вы уверены?";
@@ -110,7 +129,7 @@
 // MARK: Base view
 "base.error" = "Ошибка";
 "base.close" = "Закрыть";
-"base.settings" = "Найтройки";
+"base.settings" = "Настройки";
 "base.freedomChatDoesNotHaveAccessToYourContacts" = "Freedom Chat не имеет доступа к вашим контактам";
 "base.goToSettingsAndSwitchContactsToOn" = "Зайдите в настройки и переведите Контакты в состояние ВКЛ";
 "base.inTheProcessOfRealizationAUniqueFunctionalityMaturesWhichWillAddMagicAndEfficiencyToOurProduct" = "В процессе воплощения созревает уникальный функционал, который добавит магии и эффективности в наш продукт";

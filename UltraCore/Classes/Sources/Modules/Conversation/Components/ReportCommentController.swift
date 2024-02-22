@@ -123,6 +123,7 @@ class ReportCommentController: BaseViewController<String> {
         super.setupStyle()
         
         self.image.image = style?.headlineImage.image
+        self.view.backgroundColor = style?.backgroundColor.color
         
         self.saveButton.backgroundColor = style?.reportButtonConfig.backgroundColor.color
         self.saveButton.setTitleColor(style?.reportButtonConfig.titleConfig.color, for: .normal)
@@ -141,10 +142,15 @@ class ReportCommentController: BaseViewController<String> {
         self.headlineLabel.textColor = style?.headlineConfig.color
     }
     
-    override func changed(keyboard height: CGFloat) {
-        UIView.animate(withDuration: 0.3, animations: {
-            self.view.frame.origin.y = UIScreen.main.bounds.height - self.view.frame.height - height
-        })
+    override func changedKeyboard(
+        frame: CGRect,
+        animationDuration: Double,
+        animationOptions: UIView.AnimationOptions
+    ) {
+        let keyboardHeight = UIScreen.main.bounds.height - frame.origin.y
+        UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
+            self.view.frame.origin.y = keyboardHeight > 0 ? UIScreen.main.bounds.height - self.view.frame.height - keyboardHeight : 0
+        }
     }
 }
 

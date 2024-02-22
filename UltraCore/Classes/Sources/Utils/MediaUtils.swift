@@ -22,7 +22,12 @@ class MediaUtils {
         }
         return nil
     }
-    
+
+    func previewImage(from message: Message) -> UIImage? {
+        guard let data = try? readFileWithName(fileName: message.hasPhoto ? message.photo.previewFileIdWithExtensions : message.video.previewVideoFileIdWithExtension) else { return nil }
+        return UIImage(data: data)
+    }
+
     func image(from message: Message) -> UIImage? {
         guard let data = try? readFileWithName(fileName: message.hasPhoto ? message.photo.originalFileIdWithExtension : message.video.previewVideoFileIdWithExtension) else { return nil }
         return UIImage(data: data)
@@ -60,7 +65,17 @@ class MediaUtils {
         try data.write(to: fileURL, options: .atomic)
         return fileURL
     }
-    
+
+    @discardableResult
+    func compressedWrite(_ data: Data, file path: String, and extension: String) throws -> URL {
+        let fileURL = createDocumentsDirectory(file: path, and: `extension`)
+        guard let compressedData = compressImageData(from: data) else {
+            throw NSError(domain: "Couldn't compress image", code: 100)
+        }
+        try compressedData.write(to: fileURL, options: .atomic)
+        return fileURL
+    }
+
     func delete(url: URL) {
         if FileManager.default.fileExists(atPath: url.absoluteString) {
             do {
@@ -123,9 +138,50 @@ class MediaUtils {
             return nil
         }
     }
+
+    func compressImageData(from data: Data) -> Data? {
+        guard let img = UIImage(data: data) else {
+            return nil
+        }
+        var actualHeight: CGFloat = img.size.height
+        var actualWidth: CGFloat = img.size.width
+        let maxHeight: CGFloat = 200.0 * UIScreen.main.scale
+        let maxWidth: CGFloat = 300.0 * UIScreen.main.scale
+        var imgRatio: CGFloat = actualWidth / actualHeight
+        let maxRatio: CGFloat = maxWidth / maxHeight
+        var compressionQuality: CGFloat = 1.0
+
+        if actualHeight > maxHeight || actualWidth > maxWidth {
+            if imgRatio < maxRatio {
+                //adjust width according to maxHeight
+                imgRatio = maxHeight / actualHeight
+                actualWidth = imgRatio * actualWidth
+                actualHeight = maxHeight
+            } else if imgRatio > maxRatio {
+                //adjust height according to maxWidth
+                imgRatio = maxWidth / actualWidth
+                actualHeight = imgRatio * actualHeight
+                actualWidth = maxWidth
+            } else {
+                actualHeight = maxHeight
+                actualWidth = maxWidth
+                compressionQuality = 1
+            }
+        }
+        let rect = CGRect(x: 0.0, y: 0.0, width: actualWidth, height: actualHeight)
+        UIGraphicsBeginImageContext(rect.size)
+        img.draw(in: rect)
+        guard let img = UIGraphicsGetImageFromCurrentImageContext() else {
+            return nil
+        }
+        UIGraphicsEndImageContext()
+        guard let imageData = img.jpegData(compressionQuality: compressionQuality) else {
+            return nil
+        }
+        return imageData
+    }
 }
 
-typealias MimeType = String
 
 extension URL {
     func mimeType() -> MimeType {
@@ -255,9 +311,19 @@ extension Message {
             return photo.fileSize
         } else if hasVideo {
             return video.fileSize
+        } else if hasFile {
+            return file.fileSize
+        } else if hasAudio {
+            return audio.fileSize
+        } else if hasVoice {
+            return voice.fileSize
         } else {
             return 0
         }
+    }
+    
+    var hasAttachment: Bool {
+        hasFile || hasPhoto || hasVideo || hasVoice || hasAudio
     }
 }
 

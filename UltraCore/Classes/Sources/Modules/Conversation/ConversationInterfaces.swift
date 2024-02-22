@@ -25,23 +25,13 @@ protocol ConversationViewInterface: ViewInterface {
     func blocked(is blocked: Bool)
 }
 
-struct FileUpload {
-    let url: URL?
-    let data: Data
-    let mime: MimeType
-    let width: CGFloat
-    let height: CGFloat
-    
-    var duration: TimeInterval = 0.0
-}
-
 protocol ConversationPresenterInterface: PresenterInterface {
     func block()
     func viewDidLoad()
     func isBlock() -> Bool
     func navigateToContact()
     func typing(is active: Bool)
-    func upload(file: FileUpload)
+    func upload(file: FileUpload, isVoice: Bool)
     func send(message text: String)
     func send(location: LocationMessage)
     func send(contact: ContactMessage)
