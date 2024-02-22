@@ -201,9 +201,9 @@ public extension UltraCoreSettings {
             .subscribe { contacts in
                 callback(contacts
                     .map({ [ContactInfo.id: $0.userID,
-                            ContactInfo.name: $0.displaName,
+                            ContactInfo.isOnline: $0.status.isOnline,
                             ContactInfo.atLastSeen: $0.status.lastSeen,
-                            ContactInfo.isOnline: $0.status.isOnline] }))
+                            ContactInfo.displayableDate: $0.status.displayText] }))
             }
     }
 
@@ -213,5 +213,5 @@ public extension UltraCoreSettings {
 }
 
 public enum ContactInfo {
-    case name, isOnline, atLastSeen, id
+    case isOnline, atLastSeen, id, displayableDate
 }
