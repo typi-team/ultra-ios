@@ -200,7 +200,7 @@ public extension UltraCoreSettings {
             .contacts()
             .subscribe { contacts in
                 callback(contacts
-                    .map({ [ContactInfo.id: $0.userID,
+                    .map({ [ContactInfo.id: $0.phone,
                             ContactInfo.isOnline: $0.status.isOnline,
                             ContactInfo.atLastSeen: $0.status.lastSeen,
                             ContactInfo.displayableDate: $0.status.displayText] }))
