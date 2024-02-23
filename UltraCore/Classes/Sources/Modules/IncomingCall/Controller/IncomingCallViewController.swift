@@ -133,8 +133,7 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
         infoView.configureToVideoCall(isVideo: isVideo)
         infoView.snp.remakeConstraints { make in
             if isVideo {
-                guard let navigationController else { return }
-                make.centerY.equalTo(navigationController.navigationBar.snp.centerY)
+                make.centerY.equalTo(backButton.snp.centerY)
                 topView.isHidden = false
             } else {
                 make.bottom.equalTo(view.snp.centerY).offset(-36)
