@@ -30,14 +30,9 @@ open class AppSettingsImpl: AppSettings  {
     lazy var podAsset = PodAsset.bundle(forPod: "UltraCore")
     lazy var version: String = podAsset?.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.2"
     
-    lazy var keepalive = ClientConnectionKeepalive(interval: .seconds(15), timeout: .seconds(10))
+    lazy var keepalive = ClientConnectionKeepalive()
     
-    lazy var connectionBackoff = ConnectionBackoff(initialBackoff: 1.0,
-                                                   maximumBackoff: 10.0,
-                                                   multiplier: 1.6,
-                                                   jitter: 0.2,
-                                                   minimumConnectionTimeout: 20.0,
-                                                   retries: .unlimited)
+    lazy var connectionBackoff = ConnectionBackoff()
 
     lazy var channel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
                                                                             port: serverConfig.portOfServer),
@@ -119,7 +114,7 @@ open class AppSettingsImpl: AppSettings  {
     private func setupChannelConfiguration(configuration: inout GRPCChannelPool.Configuration) {
         configuration.keepalive = keepalive
         configuration.connectionBackoff = connectionBackoff
-        configuration.idleTimeout = .zero
+        configuration.idleTimeout = TimeAmount.seconds(1)
     }
 }
 
