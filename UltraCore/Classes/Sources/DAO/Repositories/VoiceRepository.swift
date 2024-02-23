@@ -19,12 +19,6 @@ class VoiceItem: CustomStringConvertible {
         self.currentTime = currentTime
         self.isPlaying = isPlaying
     }
-    
-    var valueForSlider: Float {
-        let duration = voiceMessage.duration.timeInterval
-        let value = (currentTime / duration)
-        return Float(value)
-    }
 
     var description: String {
         return "[VoiceItem]: \(voiceMessage.fileID) \(currentTime) / \(voiceMessage.duration) isPlaying: \(isPlaying)"

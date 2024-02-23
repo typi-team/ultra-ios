@@ -167,7 +167,7 @@ class IncomeVoiceCell: MediaCell {
     }
     
     fileprivate func setupView(_ voice: VoiceItem, slider animated: Bool = true) {
-        let duration = voice.voiceMessage.duration.timeInterval
+        let duration = voice.voiceMessage.duration.timeInterval.rounded()
         let value = (voice.currentTime / duration)
         let remainder = (duration - voice.currentTime)
         PP.warning(remainder.description)
