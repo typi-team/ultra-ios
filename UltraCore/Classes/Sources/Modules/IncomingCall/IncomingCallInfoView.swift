@@ -96,4 +96,11 @@ final class IncomingCallInfoView: UIView {
         }
     }
     
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        companionLabel.textColor = style.companionConfig.color
+        dutationLabel.textColor = style.durationConfig.color
+        phoneLabel.textColor = style.durationConfig.color
+    }
+    
 }

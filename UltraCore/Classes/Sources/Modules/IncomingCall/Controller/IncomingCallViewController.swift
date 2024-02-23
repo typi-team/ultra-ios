@@ -127,6 +127,11 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
         }
     }
     
+    override func setupStyle() {
+        super.setupStyle()
+        view.backgroundColor = style.background.color
+    }
+    
     // MARK: - Methods
     
     func remakeInfoViewConstraints(isVideo: Bool) {
