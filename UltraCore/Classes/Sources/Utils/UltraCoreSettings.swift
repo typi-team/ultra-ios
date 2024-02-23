@@ -44,6 +44,27 @@ public extension UltraCoreSettings {
     static func update(contacts: [IContactInfo]) throws {
         try ContactDBService.update(contacts: contacts)
     }
+    
+    static func updateOrCreate(contacts: [IContactInfo]) throws {
+        let contactsDBService = AppSettingsImpl.shared.contactDBService
+        let contactByUserIdInteractor = ContactByUserIdInteractor(delegate: nil, contactsService: AppSettingsImpl.shared.contactsService)
+
+        Observable.from(contacts)
+            .flatMap { contactByUserIdInteractor.executeSingle(params: $0.identifier).retry(2) }
+            .flatMap({ contactsDBService.save(contact: $0) })
+            .subscribe(
+                onNext: {
+                    PP.info("Контакты успешно сохранены")
+                },
+                onError: { error in
+                    PP.error("Ошибка при сохранении контакта: \(error)")
+                },
+                onCompleted: {
+                    PP.info("Все контакты были обработаны и сохранены")
+                }
+            )
+            .disposed(by: disposeBag)
+    }
 
     static func printAllLocalizableStrings() {
         print("================= Localizable =======================")
@@ -193,8 +214,25 @@ public extension UltraCoreSettings {
             callback(nil)
         })
     }
+    
+    static func lastSeenOfContacts(callback: @escaping (([[ContactInfo: Any]]) -> Void)) {
+        _ = AppSettingsImpl.shared
+            .contactDBService
+            .contacts()
+            .subscribe { contacts in
+                callback(contacts
+                    .map({ [ContactInfo.id: $0.phone,
+                            ContactInfo.isOnline: $0.status.isOnline,
+                            ContactInfo.atLastSeen: $0.status.lastSeen,
+                            ContactInfo.displayableDate: $0.status.displayText] }))
+            }
+    }
 
     static func logout() {
         AppSettingsImpl.shared.logout()
     }
+}
+
+public enum ContactInfo {
+    case isOnline, atLastSeen, id, displayableDate
 }
