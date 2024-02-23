@@ -14,7 +14,11 @@ class IncomeFileCell : BaseMessageCell {
     
     let mediaRepository: MediaRepository = AppSettingsImpl.shared.mediaRepository
     
-    fileprivate let moneyCaptionlabel: RegularFootnote = .init({ $0.text = MessageStrings.fileWithoutSmile.localized })
+    fileprivate let fileLabel: RegularFootnote = .init({
+        $0.text = MessageStrings.fileWithoutSmile.localized
+        $0.textColor = UltraCoreStyle.fileCellConfig.fileTextConfig.color
+        $0.font = UltraCoreStyle.fileCellConfig.fileTextConfig.font
+    })
     fileprivate let fileIconView: UIImageView = .init({
         $0.image = UIImage.named("contact_file_icon")
         $0.contentMode = .center
@@ -23,7 +27,7 @@ class IncomeFileCell : BaseMessageCell {
         let spinner = NVActivityIndicatorView(
             frame: CGRect(origin: .zero, size: .init(width: 20, height: 20)),
             type: .circleStrokeSpin,
-            color: .black,
+            color: UltraCoreStyle.fileCellConfig.loaderTintColor.color,
             padding: 0
         )
         spinner.startAnimating()
@@ -44,7 +48,7 @@ class IncomeFileCell : BaseMessageCell {
         self.container.addSubview(fileIconView)
         self.container.addSubview(spinner)
         self.container.addSubview(textView)
-        self.container.addSubview(moneyCaptionlabel)
+        self.container.addSubview(fileLabel)
     }
 
     override func setupConstraints() {
@@ -69,7 +73,7 @@ class IncomeFileCell : BaseMessageCell {
             make.right.equalToSuperview().offset(-kMediumPadding)
         }
         
-        self.moneyCaptionlabel.snp.makeConstraints { make in
+        self.fileLabel.snp.makeConstraints { make in
             make.bottom.equalTo(fileIconView.snp.bottom)
             make.top.equalTo(textView.snp.bottom).offset(1)
             make.left.equalTo(fileIconView.snp.right).offset(kMediumPadding)
@@ -81,7 +85,8 @@ class IncomeFileCell : BaseMessageCell {
         }
 
         self.deliveryDateLabel.snp.makeConstraints { make in
-            make.centerY.equalTo(moneyCaptionlabel.snp.centerY)
+            make.centerY.equalTo(fileLabel.snp.centerY)
+            make.left.greaterThanOrEqualTo(fileLabel.snp.right).offset(kMediumPadding)
             make.right.equalToSuperview().offset(-kMediumPadding)
         }
     }

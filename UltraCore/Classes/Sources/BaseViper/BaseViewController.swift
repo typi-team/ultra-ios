@@ -65,10 +65,10 @@ extension UIViewController {
     
     func showSettingAlert(from message: String, with title: String? = nil) {
         let alert = UIAlertController.init(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction.init(title: BaseStrings.close.localized, style: .cancel))
         alert.addAction(UIAlertAction.init(title: BaseStrings.settings.localized, style: .default, handler: { _ in
             UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
         }))
-        alert.addAction(UIAlertAction.init(title: BaseStrings.close.localized, style: UIAlertAction.Style.destructive))
         self.present(alert, animated: true)
     }
     
@@ -88,14 +88,14 @@ extension UIViewController {
         }
         
         self.changedKeyboard(
-            height: keyboardFrame.height,
+            frame: keyboardFrame,
             animationDuration: durationValue,
             animationOptions: UIView.AnimationOptions(rawValue: curveValue << 16)
         )
     }
     
     @objc func changedKeyboard(
-        height: CGFloat,
+        frame: CGRect,
         animationDuration: Double,
         animationOptions: UIView.AnimationOptions
     ) {
@@ -105,6 +105,7 @@ extension UIViewController {
     @objc func keyboardWillHide(notification: NSNotification) {
         guard
             let userInfo = notification.userInfo,
+            let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
             let durationValue = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double,
             let curveValue = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt
         else {
@@ -112,7 +113,7 @@ extension UIViewController {
         }
         
         self.changedKeyboard(
-            height: 0,
+            frame: keyboardFrame,
             animationDuration: durationValue,
             animationOptions: UIView.AnimationOptions(rawValue: curveValue << 16)
         )

@@ -135,6 +135,10 @@ extension ViewModel: UltraCoreSettingsDelegate {
         return nil
     }
     
+    func emptyConversationDetailView() -> UIView? {
+        return nil
+    }
+    
     func info(from id: String) -> UltraCore.IContactInfo? {
         return nil
     }

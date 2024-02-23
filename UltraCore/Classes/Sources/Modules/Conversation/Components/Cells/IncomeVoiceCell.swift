@@ -196,7 +196,7 @@ class IncomeVoiceCell: MediaCell {
         let spinner = NVActivityIndicatorView(
             frame: CGRect(origin: .zero, size: .init(width: 30, height: 30)),
             type: .circleStrokeSpin,
-            color: .black,
+            color: UltraCoreStyle.fileCellConfig.loaderTintColor.color,
             padding: 0
         )
         spinner.translatesAutoresizingMaskIntoConstraints = false

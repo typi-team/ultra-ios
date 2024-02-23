@@ -23,7 +23,7 @@ class MediaCell: BaseMessageCell {
     }
 
     let spinnerBackground: UIView = .init {
-        $0.backgroundColor = UIColor.white.withAlphaComponent(0.8)
+        $0.backgroundColor = UltraCoreStyle.fileCellConfig.loaderBackgroundColor.color
         $0.isHidden = true
         $0.cornerRadius = 24
     }
@@ -44,7 +44,7 @@ class MediaCell: BaseMessageCell {
     }
 
     func dowloadImage(by message: Message) {
-        self.mediaView.image = UIImage(data: message.photo.preview)
+        self.mediaView.image = message.previewImage
         self.spinnerBackground.isHidden = false
         self.mediaRepository
             .downloadingImages
@@ -71,7 +71,7 @@ class MediaCell: BaseMessageCell {
             .compactMap({ $0 })
             .subscribe { [weak self] image in
                 guard let `self` = self else { return }
-                self.mediaView.image = image
+                self.mediaView.image = self.mediaRepository.previewImage(from: message)
                 self.playView.isHidden = !message.hasVideo
             }
             .disposed(by: disposeBag)
@@ -97,11 +97,24 @@ class MediaCell: BaseMessageCell {
         let spinner = NVActivityIndicatorView(
             frame: CGRect(origin: .zero, size: .init(width: 36, height: 36)),
             type: .circleStrokeSpin,
-            color: UIColor.black,
+            color: UltraCoreStyle.fileCellConfig.loaderTintColor.color,
             padding: 0
         )
         spinner.translatesAutoresizingMaskIntoConstraints = false
         spinner.startAnimating()
         return spinner
+    }
+}
+
+
+extension Message {
+    var previewImage: UIImage? {
+        if !self.photo.preview.isEmpty{
+            return UIImage(data: photo.preview)
+        } else if !self.video.thumbPreview.isEmpty {
+            return UIImage(data: video.thumbPreview)
+        } else {
+            return nil
+        }
     }
 }

@@ -400,10 +400,13 @@ extension ConversationPresenter: ConversationPresenterInterface {
         return mediaRepository.mediaURL(from: message)
     }
     
-    func upload(file: FileUpload) {
+    func upload(file: FileUpload, isVoice: Bool) {
         mediaRepository
-            .upload(file: file, in: conversation,
-                    onPreUploadingFile: { [weak self] request in
+            .upload(
+                file: file,
+                in: conversation,
+                isVoice: isVoice,
+                onPreUploadingFile: { [weak self] request in
                 guard let self else { return }
                 self.conversationRepository
                     .createIfNotExist(from: request.message)
@@ -412,7 +415,8 @@ extension ConversationPresenter: ConversationPresenterInterface {
                     .observe(on: MainScheduler.instance)
                     .subscribe()
                     .disposed(by: disposeBag)
-            })
+                }
+            )
             .flatMap({ [weak self] request in
                 guard let self else { throw NSError.selfIsNill }
                 return messageSenderInteractor.executeSingle(params: request)
