@@ -44,6 +44,7 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
             actionStackView.setAsActiveCamera()
             setSpeaker(true)
         } else {
+            setSpeaker(false)
             actionStackView.setAsActiveAudio()
         }
         setVideoCallIfPossible(enabled: cameraEnabled)
@@ -61,7 +62,6 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
         guard let callStatus = presenter?.getCallStatus(), !(presenter?.getIsConnected() ?? false) else { return }
         if callStatus.callInfo.video {
             actionStackView.setAsActiveCamera()
-            setSpeaker(true)
             remakeInfoViewConstraints(isVideo: true)
         } else {
             actionStackView.setAsActiveAudio()

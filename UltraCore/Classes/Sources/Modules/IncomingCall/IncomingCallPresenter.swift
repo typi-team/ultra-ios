@@ -76,39 +76,10 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
     
     func reject() {
         UltraVoIPManager.shared.endCall()
-//        self.callService.reject(RejectCallRequest.with({
-//            $0.room = self.callStatus.callInfo.room
-//            $0.callerUserID = self.callStatus.callInfo.sender
-//        }), callOptions: .default()).response.whenComplete( { [weak self] result  in
-//            guard let `self` = self else { return }
-//            DispatchQueue.main.async {
-//                self.wireframe.dissmiss { }
-//            }
-//            switch result {
-//            case .success(let response):
-//                PP.info(response.textFormatString())
-//            case .failure(let error):
-//                PP.error(error.localizedDescription)
-//            }
-//        })
     }
     
     func cancel() {
         UltraVoIPManager.shared.endCall()
-//        self.callService.cancel(CancelCallRequest.with({
-//            $0.userID = self.callStatus.callInfo.sender
-//            $0.room = self.callStatus.callInfo.room
-//        }), callOptions: .default()).response.whenComplete( {[weak self] result  in
-//            guard let `self` = self else { return }
-//            switch result {
-//            case .success:
-//                DispatchQueue.main.async {
-//                    self.wireframe.dissmiss { }
-//                }
-//            case .failure(let error):
-//                PP.error(error.localizedDescription)
-//            }
-//        })
     }
     
     func answerCall() {
@@ -118,12 +89,6 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
     func viewDidLoad() {
         if case .outcoming = callStatus {
             UltraVoIPManager.shared.startOutgoingCall(callInfo: callStatus.callInfo)
-//            UltraVoIPManager.shared.startOutgoingCall(callInfo: callStatus.callInfo, completion: { [weak self] in
-//                guard let self = self else {
-//                    return
-//                }
-//                RoomManager.shared.connectRoom(with: self.callStatus.callInfo)
-//            })
         }
         if let contact = contactService.contact(id: callStatus.callInfo.sender) {
             self.view.dispay(view: contact)
@@ -142,11 +107,13 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
     }
     
     func setMicrophone(enabled: Bool) {
-        RoomManager.shared.room.localParticipant?.setCamera(enabled: enabled)
+        PP.debug("[CALL] Set microphone enabled - \(enabled)")
+        RoomManager.shared.room.localParticipant?.setMicrophone(enabled: enabled)
     }
     
     func setCamera(enabled: Bool) {
-        RoomManager.shared.room.localParticipant?.setMicrophone(enabled: enabled)
+        PP.debug("[CALL] Set camera enabled - \(enabled)")
+        RoomManager.shared.room.localParticipant?.setCamera(enabled: enabled)
     }
     
 }
@@ -195,15 +162,21 @@ extension IncomingCallPresenter: RoomDelegate {
 
 extension IncomingCallPresenter: RoomManagerDelegate {
     func didConnectToRoom() {
-//        UltraVoIPManager.shared.reportOutgoingCall()
-        view.showConnectedRoom(with: callStatus)
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.view.showConnectedRoom(with: self.callStatus)
+        }
     }
     
     func didFailToConnectToRoom() {
-        wireframe.dissmiss { }
+        DispatchQueue.main.async { [weak self] in
+            self?.wireframe.dissmiss { }
+        }
     }
     
     func didDisconnectFromRoom() {
-        wireframe.dissmiss { }
+        DispatchQueue.main.async { [weak self] in
+            self?.wireframe.dissmiss { }
+        }
     }
 }

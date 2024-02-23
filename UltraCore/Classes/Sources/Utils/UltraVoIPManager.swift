@@ -114,6 +114,8 @@ extension UltraVoIPManager: CXProviderDelegate {
             return
         }
         wasAnswered = true
+        configureAudioSession()
+        action.fulfill()
         PP.debug("[CALL] CXAnswerCallAction CXProviderDelegate for uuid - \(callInfoMeta.uuid)")
         if let topController = UIApplication.topViewController(), !(topController is IncomingCallViewController) {
             topController.presentWireframeWithNavigation(
@@ -122,9 +124,6 @@ extension UltraVoIPManager: CXProviderDelegate {
                     RoomManager.shared.connectRoom(with: callInfoMeta.callInfo) { error in
                         if let error = error {
                             PP.debug("Error on connecting room - \(callInfoMeta.callInfo.room) \(error)")
-                            action.fail()
-                        } else {
-                            action.fulfill()
                         }
                     }
                 }
@@ -132,9 +131,6 @@ extension UltraVoIPManager: CXProviderDelegate {
             RoomManager.shared.connectRoom(with: callInfoMeta.callInfo) { error in
                 if let error = error {
                     PP.debug("Error on connecting room - \(callInfoMeta.callInfo.room) \(error)")
-                    action.fail()
-                } else {
-                    action.fulfill()
                 }
             }
         }
@@ -143,6 +139,7 @@ extension UltraVoIPManager: CXProviderDelegate {
     public func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
         PP.debug("[CALL] CXEndCallAction CXProviderDelegate")
         guard let callInfoMeta else {
+            action.fail()
             return
         }
         PP.debug("[CALL] CXEndCallAction CXProviderDelegate for uuid - \(callInfoMeta.uuid)")
@@ -151,25 +148,26 @@ extension UltraVoIPManager: CXProviderDelegate {
 //            action.fulfill()
 //            return
 //        }
+        action.fulfill()
         rejectOrCancelCall(callInfo: callInfoMeta.callInfo) { [weak self] error in
+            self?.callInfoMeta = nil
             if let error = error {
                 PP.debug("[CALL] CXEndCallAction for uuid - \(callInfoMeta.uuid) error - \(error)")
-                action.fail()
             } else {
                 PP.debug("[CALL] CXEndCallAction for uuid - \(callInfoMeta.uuid) fulfilled")
-                action.fulfill()
-                self?.callInfoMeta = nil
             }
         }
     }
     
     public func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
         PP.debug("[CALL] set speaker true")
+        PP.debug("[CALL] AVAudioSession outputs - \(AVAudioSession.sharedInstance().currentRoute.outputs)")
         currentCallingController?.setSpeaker(true)
     }
     
     public func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
         PP.debug("[CALL] set speaker false")
+        PP.debug("[CALL] AVAudioSession outputs - \(AVAudioSession.sharedInstance().currentRoute.outputs)")
         currentCallingController?.setSpeaker(false)
     }
     
@@ -188,12 +186,13 @@ extension UltraVoIPManager: CXProviderDelegate {
         }
         wasAnswered = false
         provider.reportOutgoingCall(with: action.callUUID, startedConnectingAt: nil)
+        configureAudioSession()
+        action.fulfill()
         RoomManager.shared.connectRoom(with: callInfoMeta.callInfo) { [weak self] error in
             if let error = error {
-                action.fail()
+                PP.debug("[CALL] server CXStartCallAction error - \(error)")
             } else {
                 self?.provider.reportOutgoingCall(with: action.callUUID, connectedAt: nil)
-                action.fulfill()
             }
         }
     }
@@ -322,6 +321,23 @@ extension UltraVoIPManager: CXProviderDelegate {
             case .failure(let error):
                 completion(error)
             }
+        }
+    }
+    
+    private func configureAudioSession() {
+        guard let callInfoMeta else {
+            return
+        }
+        PP.debug("[CALL] Configure audio session isVideo - \(callInfoMeta.callInfo.video)")
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(
+                .playAndRecord,
+                mode: .voiceChat,
+                options: callInfoMeta.callInfo.video ? [.defaultToSpeaker, .allowBluetooth, .allowBluetoothA2DP] : [.duckOthers, .allowBluetooth, .allowBluetoothA2DP]
+            )
+        } catch {
+            PP.debug("[CALL] Error on configuring audio session - \(error)")
         }
     }
     

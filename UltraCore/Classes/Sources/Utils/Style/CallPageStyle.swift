@@ -9,6 +9,7 @@ import Foundation
 
 public protocol CallPageStyle {
     var background: TwiceColor { get set }
+    var backButtonTint: TwiceColor { get set }
     
     var companionConfig: LabelConfig { get set }
     var durationConfig: LabelConfig { get set }

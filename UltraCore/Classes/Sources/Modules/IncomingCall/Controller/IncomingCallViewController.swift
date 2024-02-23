@@ -41,11 +41,14 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
 
     lazy var actionStackView = IncomingCallActionView(style: style, delegate: self)
     
-    private lazy var backButton: UIButton = .init { button in
-        button.setImage(UIImage.named("icon_back_button"), for: .normal)
-        button.tintColor = .yellow
+    private lazy var backButton: UIButton = {
+        let button = UIButton(type: .custom)
+        button.setImage(UIImage.named("icon_back_button")?.withRenderingMode(.alwaysTemplate), for: .normal)
+        button.tintColor = style.backButtonTint.color
+        button.imageView?.tintColor = style.backButtonTint.color
         button.addTarget(self, action: #selector(didTapBack), for: .touchUpInside)
-    }
+        return button
+    }()
     
     fileprivate lazy var topView: UIView = .init {
         let gradient = CAGradientLayer()
@@ -122,7 +125,6 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
         case .outcoming:
             infoView.setDuration(text: CallStrings.connecting.localized)
         }
-        setSpeaker(status.callInfo.video)
     }
     
     // MARK: - Methods
@@ -146,6 +148,7 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
     }
     
     func setSpeaker(_ isEnabled: Bool) {
+        PP.debug("[CALL] Set speaker enabled - \(isEnabled)")
         audioQueue.async {
             let audioSession = AVAudioSession.sharedInstance()
             try? audioSession.setCategory(
