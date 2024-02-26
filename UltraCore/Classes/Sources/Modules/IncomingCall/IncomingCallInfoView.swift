@@ -12,19 +12,19 @@ final class IncomingCallInfoView: UIView {
         $0.backgroundColor = .white
     }
 
-    fileprivate lazy var companionLabel: HeadlineBody = .init {
+    fileprivate lazy var companionLabel: BaseLabel = .init {
         $0.textAlignment = .center
         $0.font = style.companionConfig.font
         $0.textColor = style.companionConfig.color
     }
 
-    fileprivate lazy var dutationLabel: RegularBody = .init {
+    fileprivate lazy var dutationLabel: BaseLabel = .init {
         $0.textAlignment = .center
         $0.font = style.durationConfig.font
         $0.textColor = style.durationConfig.color
     }
     
-    fileprivate lazy var phoneLabel: RegularBody = .init {
+    fileprivate lazy var phoneLabel: BaseLabel = .init {
         $0.textAlignment = .center
         $0.font = style.durationConfig.font
         $0.textColor = style.durationConfig.color

@@ -49,8 +49,10 @@ final class IncomingCallPresenter {
     }
     
     deinit {
-        RoomManager.shared.roomManagerDelegate = nil
-        RoomManager.shared.removeRoomDelegate(self)
+        DispatchQueue.main.async {
+            RoomManager.shared.roomManagerDelegate = nil
+            RoomManager.shared.removeRoomDelegate(self)
+        }
     }
 }
 
