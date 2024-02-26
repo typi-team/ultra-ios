@@ -142,9 +142,8 @@ class IncomeVoiceCell: MediaCell {
     @objc private func seekTo(_ sender: UISlider) {
         guard let message = self.message else { return }
         self.isInSeekMessage = nil
-        let value = TimeInterval(sender.value) * message.voice.duration.timeInterval;
+        let value = TimeInterval(sender.value) * message.voice.duration.timeInterval
         self.voiceRepository.play(message: message, atTime: value)
-
     }
     
     @objc private func beginSeek(_ sender: UISlider) {
@@ -167,11 +166,11 @@ class IncomeVoiceCell: MediaCell {
     }
     
     fileprivate func setupView(_ voice: VoiceItem, slider animated: Bool = true) {
-        let duration = voice.voiceMessage.duration.timeInterval.rounded()
+        let duration = voice.voiceMessage.duration.timeInterval.rounded(.down)
         let value = (voice.currentTime / duration)
-        let remainder = (duration - voice.currentTime)
+        let remainder = voice.currentTime
         PP.warning(remainder.description)
-        self.durationLabel.text = remainder < 0.3 ? duration.formatSeconds : remainder.formatSeconds
+        self.durationLabel.text = remainder.formatSeconds
         self.slider.setValue(Float(value), animated: animated)
         self.controllerView.setImage(!voice.isPlaying ? self.playImage : self.pauseImage, for: .normal)
     }
