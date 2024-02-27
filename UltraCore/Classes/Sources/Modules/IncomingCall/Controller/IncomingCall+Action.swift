@@ -49,7 +49,7 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
         }
         setVideoCallIfPossible(enabled: cameraEnabled)
     }
-  
+    
     func view(_ view: IncomingCallActionView, cancelButtonDidTap button: UIButton) {
         cancelCall()
     }
@@ -70,7 +70,6 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
     }
     
     func cancelCall() {
-        endTimer()
         infoView.setDuration(text: CallStrings.cancel.localized)
         PP.debug("[CALL] cancell call")
         presenter?.cancel()

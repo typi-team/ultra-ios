@@ -164,10 +164,9 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
     }
     
     @objc private func didTapBack() {
-        dismiss(animated: true)
+        dismiss(animated: true) {
+            UltraVoIPManager.shared.showCallTopView()
+        }
     }
 
-    deinit {
-        endTimer()
-    }
 }

@@ -58,7 +58,7 @@ extension IncomingCallViewController: IncomingCallViewInterface {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             infoView.hidePhoneNumber()
-            startTimer()
+            subscribeToTimer()
         }
     }
     

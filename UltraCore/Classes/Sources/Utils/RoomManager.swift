@@ -7,6 +7,7 @@
 
 import Foundation
 import LiveKitClient
+import RxSwift
 
 protocol RoomManagerDelegate: AnyObject {
     func didConnectToRoom()
@@ -16,10 +17,16 @@ protocol RoomManagerDelegate: AnyObject {
 
 final class RoomManager {
     
+    private var callInfo: CallInformation?
+    private var timerSubscription: Disposable?
+    private var timerTextSubject: PublishSubject<String> = .init()
+    
     lazy var room = Room()
     weak var roomManagerDelegate: RoomManagerDelegate?
     static let shared = RoomManager()
-    private var callInfo: CallInformation?
+    var timerTextObservable: Observable<String> {
+        timerTextSubject.asObservable()
+    }
     
     func addRoomDelegate(_ delegate: RoomDelegate) {
         room.add(delegate: delegate)
@@ -35,18 +42,19 @@ final class RoomManager {
             self?.roomManagerDelegate?.didConnectToRoom()
             completion(nil)
         }.catch { [weak self] error in
-            PP.error("Error on connecting room - \(error.localizedDescription)")
+            PP.error("[CALL] Error on connecting room - \(error.localizedDescription)")
             self?.roomManagerDelegate?.didFailToConnectToRoom()
             completion(error)
         }
     }
     
     func disconnectRoom() {
+        stopCallTimer()
         room.disconnect().then { [weak self] _ in
             self?.callInfo = nil
             self?.roomManagerDelegate?.didDisconnectFromRoom()
         }.catch { error in
-            PP.error("Error on disconnecting room - \(error.localizedDescription)")
+            PP.error("[CALL] Error on disconnecting room - \(error.localizedDescription)")
         }
     }
     
@@ -55,13 +63,28 @@ final class RoomManager {
         guard callInfo?.room == room else {
             return
         }
+        stopCallTimer()
         self.room.disconnect().then { [weak self] _ in
             self?.callInfo = nil
             self?.roomManagerDelegate?.didDisconnectFromRoom()
-//            UltraVoIPManager.shared.endCall()
         }.catch { error in
-            PP.error("Error on disconnecting room - \(error.localizedDescription)")
+            PP.error("[CALL] Error on disconnecting room - \(error.localizedDescription)")
         }
+    }
+    
+    func startCallTimer() {
+        let timer = Observable<Int>.timer(.seconds(0), period: .seconds(1), scheduler: MainScheduler.instance)
+        timerSubscription = timer.subscribe { [weak self] seconds in
+            let minutes: Int = (seconds / 60)
+            let seconds: Int = seconds % 60
+            let formatted = String(format: "%02d:%02d", minutes, seconds)
+            self?.timerTextSubject.onNext(formatted)
+        }
+    }
+    
+    func stopCallTimer() {
+        timerSubscription?.dispose()
+        timerTextSubject.onNext("")
     }
     
 }

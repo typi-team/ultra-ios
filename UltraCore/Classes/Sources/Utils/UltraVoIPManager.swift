@@ -2,6 +2,7 @@ import Foundation
 import AVFAudio
 import CallKit
 import PushKit
+import UIKit
 
 public class UltraVoIPManager: NSObject {
     
@@ -118,7 +119,7 @@ extension UltraVoIPManager: CXProviderDelegate {
         action.fulfill()
         PP.debug("[CALL] CXAnswerCallAction CXProviderDelegate for uuid - \(callInfoMeta.uuid)")
         if let topController = UIApplication.topViewController(), !(topController is IncomingCallViewController) {
-            topController.presentWireframeWithNavigation(
+            topController.presentWireframe(
                 IncomingCallWireframe(call: .incoming(callInfoMeta.callInfo)),
                 animated: true) {
                     RoomManager.shared.connectRoom(with: callInfoMeta.callInfo) { error in
@@ -255,6 +256,9 @@ extension UltraVoIPManager: CXProviderDelegate {
         callController.request(transaction) { [weak self] error in
             self?.callInfoMeta = nil
             RoomManager.shared.disconnectRoom()
+            DispatchQueue.main.async {
+                IncomingCallTopView.hide { }
+            }
             if let error = error {
                 PP.debug("[CALL] server CXEndCallAction error - \(error)")
             } else {
@@ -297,6 +301,9 @@ extension UltraVoIPManager: CXProviderDelegate {
             switch result {
             case .success:
                 RoomManager.shared.disconnectRoom()
+                DispatchQueue.main.async {
+                    IncomingCallTopView.hide { }
+                }
                 completion(nil)
             case .failure(let error):
                 completion(error)
@@ -338,6 +345,74 @@ extension UltraVoIPManager: CXProviderDelegate {
             )
         } catch {
             PP.debug("[CALL] Error on configuring audio session - \(error)")
+        }
+    }
+    
+    func showCallTopView() {
+        DispatchQueue.main.async {
+            IncomingCallTopView.show { [unowned self] in
+                guard let callInfoMeta = self.callInfoMeta else {
+                    return
+                }
+                
+                let callStatus: CallStatus = callInfoMeta.isOutgoing ? .outcoming(callInfoMeta.callInfo) : .incoming(callInfoMeta.callInfo)
+                IncomingCallTopView.hide {
+                    if let topController = UIApplication.topViewController(), !(topController is IncomingCallViewController) {
+                        topController.presentWireframe(IncomingCallWireframe(call: callStatus))
+                    }
+                }
+            }
+        }
+//        let height: CGFloat = topInsets()
+//        let frame = CGRect(origin: .zero, size: .init(width: UIScreen.main.bounds.size.width, height: height))
+//        let callWindow = UIWindow(frame: frame)
+//        if let windowLevel = UIApplication.shared.keyWindow?.windowLevel {
+//            callWindow.windowLevel = windowLevel + 1
+//        } else {
+//            callWindow.windowLevel = UIWindow.Level(0)
+//        }
+//        callWindow.isHidden = false
+//        let view = UIView(frame: frame)
+//        view.backgroundColor = .green500
+//        view.clipsToBounds = true
+//        let label = UILabel(frame: .init(x: 0, y: height - 24, width: frame.width, height: 24))
+//        label.textAlignment = .center
+//        label.font = .systemFont(ofSize: 15)
+//        label.textColor = .white
+//        label.text = "Touch to return to the call"
+//        view.addSubview(label)
+//        let button = UIButton(frame: frame)
+//        button.addTarget(self, action: #selector(didTapCall), for: .touchUpInside)
+//        view.addSubview(button)
+//        callWindow.addSubview(view)
+//        callWindow.transform = CGAffineTransform(translationX: 0, y: -height)
+//        UIView.animate(withDuration: 0.3) {
+//            callWindow.transform = CGAffineTransformIdentity
+//            if let keyWindow = UIApplication.shared.keyWindow {
+//                keyWindow.frame = CGRect(origin: .init(x: 0, y: height - 40), size: .init(width: keyWindow.bounds.size.width, height: keyWindow.bounds.size.height - height + 40))
+//            }
+//        }
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+//            UIView.animate(withDuration: 0.3) {
+//                callWindow.transform = CGAffineTransform(translationX: 0, y: -height)
+//                if let keyWindow = UIApplication.shared.keyWindow {
+//                    keyWindow.frame = UIScreen.main.bounds
+//                }
+//            } completion: { _ in
+//                callWindow.isHidden = true
+//            }
+//        }
+    }
+    
+    @objc func didTapCall() {
+        guard let callInfoMeta else {
+            return
+        }
+        
+        let callStatus: CallStatus = callInfoMeta.isOutgoing ? .outcoming(callInfoMeta.callInfo) : .incoming(callInfoMeta.callInfo)
+        
+        if let topController = UIApplication.topViewController(), !(topController is IncomingCallViewController) {
+            topController.presentWireframeWithNavigation(IncomingCallWireframe(call: callStatus), animated: true)
         }
     }
     

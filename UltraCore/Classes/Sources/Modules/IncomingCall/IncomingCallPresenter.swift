@@ -87,9 +87,6 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
     }
     
     func viewDidLoad() {
-        if case .outcoming = callStatus {
-            UltraVoIPManager.shared.startOutgoingCall(callInfo: callStatus.callInfo)
-        }
         if let contact = contactService.contact(id: callStatus.callInfo.sender) {
             self.view.dispay(view: contact)
         } else {
@@ -103,6 +100,13 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
 //                    self.view.dispay(view: contact)
 //                })
 //                .disposed(by: disposeBag)
+        }
+        guard RoomManager.shared.room.connectionState != .connected else {
+            self.view.updateForStartCall()
+            return
+        }
+        if case .outcoming = callStatus {
+            UltraVoIPManager.shared.startOutgoingCall(callInfo: callStatus.callInfo)
         }
     }
     
@@ -134,6 +138,9 @@ extension IncomingCallPresenter: RoomDelegate {
     
     func room(_ room: Room, participantDidJoin participant: RemoteParticipant) {
         PP.debug("[CALL] participant - \(participant.name) did join for room - \(room.sid ?? "")")
+        if case .outcoming = callStatus {
+            RoomManager.shared.startCallTimer()
+        }
         view.updateForStartCall()
     }
     
@@ -164,6 +171,9 @@ extension IncomingCallPresenter: RoomManagerDelegate {
     func didConnectToRoom() {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
+            if case .incoming = callStatus {
+                RoomManager.shared.startCallTimer()
+            }
             self.view.showConnectedRoom(with: self.callStatus)
         }
     }
