@@ -4,6 +4,8 @@ import AVFoundation
 class MakeSoundInteractor: UseCase<MakeSoundInteractor.Sound, Void> {
     
     private var player: AVAudioPlayer?
+    
+    fileprivate let voiceRepository = AppSettingsImpl.shared.voiceRepository
 
     override func executeSingle(params: Sound) -> Single<Void> {
         Single<Void>.create { [weak self ] observer -> Disposable in
@@ -17,6 +19,8 @@ class MakeSoundInteractor: UseCase<MakeSoundInteractor.Sound, Void> {
     }
     
     private func make(sound: Sound) {
+        guard !voiceRepository.isPlaying else { return }
+
         let bundle = Bundle(for: AppSettingsImpl.self)
         if let resourceURL = bundle.url(forResource: "UltraCore", withExtension: "bundle"),
            let resourceBundle = Bundle(url: resourceURL),

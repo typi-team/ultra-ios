@@ -37,6 +37,10 @@ class VoiceRepository: NSObject {
     
     var currentVoice: BehaviorSubject<VoiceItem?> = .init(value: nil)
 
+    var isPlaying: Bool {
+        audioPlayer?.isPlaying ?? false
+    }
+    
     func stop() {
         self.audioPlayer?.stop()
         self.audioPlayer = nil
