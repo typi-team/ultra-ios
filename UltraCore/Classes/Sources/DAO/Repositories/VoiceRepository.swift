@@ -69,7 +69,7 @@ class VoiceRepository: NSObject {
         guard let soundURL = self.mediaUtils.mediaURL(from: message) else { return }
         do {
             self.stop()
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
+            try AVAudioSession.sharedInstance().setCategory(.ambient, mode: .default, options: [.mixWithOthers])
             try AVAudioSession.sharedInstance().setActive(true)
             let audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
             audioPlayer.prepareToPlay()
