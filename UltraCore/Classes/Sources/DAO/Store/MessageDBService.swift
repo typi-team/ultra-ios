@@ -137,6 +137,18 @@ class MessageDBService {
         }
     }
     
+    func message(id: String) -> Single<Message> {
+        return Single.create { completable in
+            let realm = Realm.myRealm()
+            if let message = realm.objects(DBMessage.self).map({ $0.toProto() }).first(where: { $0.id == id }) {
+                completable(.success(message))
+            } else {
+                completable(.failure(NSError.objectsIsNill))
+            }
+            return Disposables.create()
+        }
+    }
+    
 //    MARK: Сохранение сообщения в базу данных
     func save(message: Message) -> Single<Void> {
         PP.debug("[Message] [DB message save]: \(message)")

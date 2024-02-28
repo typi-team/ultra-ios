@@ -421,6 +421,26 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 guard let self else { throw NSError.selfIsNill }
                 return messageSenderInteractor.executeSingle(params: request)
             })
+            .flatMap({ [weak self] (response: MessageSendResponse) in
+                guard let self else { throw NSError.selfIsNill }
+                return Single.create { completable in
+                    self.messageRepository.message(id: response.messageID)
+                        .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+                        .subscribe(onSuccess: { message in
+                            let data = (message, response)
+                            completable(.success(data))
+                        })
+                        .disposed(by: self.disposeBag)
+                    return Disposables.create()
+                }
+            })
+            .flatMap({ [weak self] (dbMessage, messageResponse) in
+                guard let self else { throw NSError.selfIsNill }
+                var message = dbMessage
+                message.meta.created = messageResponse.meta.created
+                message.seqNumber = messageResponse.seqNumber
+                return messageRepository.update(message: message)
+            })
             .flatMap { [weak self] _ in
                 guard let self else { throw NSError.selfIsNill }
                 return messageSentSoundInteractor.executeSingle(params: .messageSent)

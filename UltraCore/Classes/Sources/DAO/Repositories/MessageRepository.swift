@@ -14,6 +14,7 @@ protocol MessageRepository: AnyObject {
     func update(message: Message) -> Single<Bool>
     func messages(chatID: String) -> Observable<[Message]>
     func messages() -> Observable<[Message]>
+    func message(id: String) -> Single<Message>
 //    func readAllMessages(in chatID: String, to seq: Int)
 }
 
@@ -42,5 +43,9 @@ extension MessageRespositoryImpl : MessageRepository  {
     
     func messages() -> Observable<[Message]> {
         return self.messageService.messages()
+    }
+    
+    func message(id: String) -> Single<Message> {
+        messageService.message(id: id)
     }
 }
