@@ -6,6 +6,7 @@ extension IncomingCallViewController {
     func subscribeToTimer() {
         RoomManager.shared
             .timerTextObservable
+            .startWith(RoomManager.shared.currentTimerValue)
             .subscribe { [weak self] text in
                 DispatchQueue.main.async {
                     self?.infoView.setDuration(text: text)

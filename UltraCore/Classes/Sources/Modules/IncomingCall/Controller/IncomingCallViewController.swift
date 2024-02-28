@@ -116,7 +116,6 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
     override func setupInitialData() {
         super.setupInitialData()
 
-        presenter?.viewDidLoad()
         guard let status = presenter?.getCallStatus() else { return }
         actionStackView.configure(status: status)
         switch status {
@@ -125,6 +124,7 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
         case .outcoming:
             infoView.setDuration(text: CallStrings.connecting.localized)
         }
+        presenter?.viewDidLoad()
     }
     
     override func setupStyle() {

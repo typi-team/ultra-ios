@@ -19,13 +19,17 @@ final class RoomManager {
     
     private var callInfo: CallInformation?
     private var timerSubscription: Disposable?
-    private var timerTextSubject: PublishSubject<String> = .init()
+    private var timerTextSubject: BehaviorSubject<String> = BehaviorSubject(value: "")
     
     lazy var room = Room()
     weak var roomManagerDelegate: RoomManagerDelegate?
     static let shared = RoomManager()
     var timerTextObservable: Observable<String> {
-        timerTextSubject.asObservable()
+        timerTextSubject.asObservable().share()
+    }
+    
+    var currentTimerValue: String {
+        return (try? timerTextSubject.value()) ?? ""
     }
     
     func addRoomDelegate(_ delegate: RoomDelegate) {
