@@ -137,6 +137,17 @@ class MessageDBService {
         }
     }
     
+    func message(id: String) -> Message? {
+        let realm = Realm.myRealm()
+        guard let message = realm.objects(DBMessage.self)
+            .map({ $0.toProto() })
+            .first(where: { $0.id == id }) else {
+            return nil
+        }
+        
+        return message
+    }
+    
 //    MARK: Сохранение сообщения в базу данных
     func save(message: Message) -> Single<Void> {
         PP.debug("[Message] [DB message save]: \(message)")

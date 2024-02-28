@@ -252,13 +252,11 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 message.seqNumber = response.seqNumber
                 return messageRepository.update(message: message)
             })
-            .flatMap { [weak self] _ in
-                guard let self else { throw NSError.selfIsNill }
-                return messageSentSoundInteractor.executeSingle(params: .messageSent)
-            }
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
-            .subscribe()
+            .subscribe(onSuccess: { [weak self] _ in
+                self?.playSentMessageSound()
+            })
             .disposed(by: disposeBag)
     }
     
@@ -299,13 +297,11 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 message.seqNumber = response.seqNumber
                 return messageRepository.update(message: message)
             })
-            .flatMap { [weak self] _ in
-                guard let self else { throw NSError.selfIsNill }
-                return messageSentSoundInteractor.executeSingle(params: .messageSent)
-            }
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
-            .subscribe()
+            .subscribe(onSuccess: { [weak self] _ in
+                self?.playSentMessageSound()
+            })
             .disposed(by: disposeBag)
     }
     
@@ -366,13 +362,11 @@ extension ConversationPresenter: ConversationPresenterInterface {
                     message.seqNumber = response.seqNumber
                     return messageRepository.update(message: message)
                 })
-                .flatMap { [weak self] _ in
-                    guard let self else { throw NSError.selfIsNill }
-                    return messageSentSoundInteractor.executeSingle(params: .messageSent)
-                }
                 .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
                 .observe(on: MainScheduler.instance)
-                .subscribe()
+                .subscribe(onSuccess: { [weak self] _ in
+                    self?.playSentMessageSound()
+                })
                 .disposed(by: disposeBag)
         })
     }
@@ -421,15 +415,38 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 guard let self else { throw NSError.selfIsNill }
                 return messageSenderInteractor.executeSingle(params: request)
             })
-            .flatMap { [weak self] _ in
-                guard let self else { throw NSError.selfIsNill }
-                return messageSentSoundInteractor.executeSingle(params: .messageSent)
-            }
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
-            .subscribe(onSuccess: { _ in PP.debug(file.mime) },
+            .subscribe(onSuccess: { [weak self] response in
+                guard let self, var message = messageRepository.message(id: response.messageID) else {
+                    return
+                }
+
+                message.meta.created = response.meta.created
+                message.seqNumber = response.seqNumber
+                update(message: message)
+                playSentMessageSound()
+            },
                        onFailure: { error in PP.debug(error.localizedDescription)
             })
+            .disposed(by: disposeBag)
+    }
+    
+    private func playSentMessageSound() {
+        messageSentSoundInteractor
+            .executeSingle(params: .messageSent)
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe()
+            .disposed(by: disposeBag)
+    }
+    
+    private func update(message: Message) {
+        messageRepository
+            .update(message: message)
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+            .observe(on: MainScheduler.instance)
+            .subscribe()
             .disposed(by: disposeBag)
     }
     
@@ -520,17 +537,15 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 message.seqNumber = response.seqNumber
                 return messageRepository.update(message: message)
             })
-            .flatMap { [weak self] _ in
-                guard let self else { throw NSError.selfIsNill }
-                return self.messageSentSoundInteractor.executeSingle(params: .messageSent)
-            }
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .flatMap({ [weak self] _ in
                 guard let `self` = self else { throw NSError.selfIsNill }
                 return self.makeVibrationInteractor.executeSingle(params: .light)
             })
-            .subscribe()
+            .subscribe(onSuccess: { [weak self] _ in
+                self?.playSentMessageSound()
+            })
             .disposed(by: disposeBag)
     }
 
