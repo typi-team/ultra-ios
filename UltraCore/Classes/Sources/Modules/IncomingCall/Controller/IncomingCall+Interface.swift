@@ -23,6 +23,18 @@ extension IncomingCallViewController: IncomingCallViewInterface {
         }
     }
     
+    func setCameraEnabled(_ enabled: Bool) {
+        if enabled {
+            actionStackView.setAsActiveCamera()
+        } else {
+            actionStackView.setAsActiveAudio()
+        }
+    }
+    
+    func setMicEnabled(_ enabled: Bool) {
+        actionStackView.microButton.isSelected = enabled
+    }
+    
     func dispay(view contact: ContactDisplayable) {
         infoView.confige(view: contact)
     }

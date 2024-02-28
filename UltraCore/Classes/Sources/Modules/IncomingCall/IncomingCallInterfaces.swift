@@ -52,6 +52,8 @@ protocol IncomingCallViewInterface: ViewInterface {
     func updateParticipantTrack(remote: RemoteParticipant?, local: LocalParticipant?)
     func updateForStartCall()
     func showConnectionStatus(_ status: String)
+    func setCameraEnabled(_ enabled: Bool)
+    func setMicEnabled(_ enabled: Bool)
 }
 
 

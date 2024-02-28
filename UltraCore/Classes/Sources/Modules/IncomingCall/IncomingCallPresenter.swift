@@ -103,6 +103,9 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
         }
         guard RoomManager.shared.room.connectionState != .connected else {
             self.view.updateForStartCall()
+            self.view.setMicEnabled(RoomManager.shared.room.localParticipant?.isMicrophoneEnabled() ?? false)
+            self.view.setCameraEnabled(RoomManager.shared.room.localParticipant?.isCameraEnabled() ?? false)
+            self.updateParticipantTrack(for: RoomManager.shared.room)
             return
         }
         if case .outcoming = callStatus {
