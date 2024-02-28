@@ -84,6 +84,17 @@ private extension ViewController {
     }
     
     @objc func logout(_ sender: Any) {
-        UltraCoreSettings.logout()
+        DispatchQueue.global().async {
+            
+                
+            UltraCoreSettings.logout()
+            
+            if let bundleID = Bundle.main.bundleIdentifier {
+                UserDefaults.standard.removePersistentDomain(forName: bundleID)
+            }
+            DispatchQueue.main.async {
+                (UIApplication.shared.delegate as? AppDelegate)?.window?.rootViewController = ViewController()
+            }
+        }
     }
 }

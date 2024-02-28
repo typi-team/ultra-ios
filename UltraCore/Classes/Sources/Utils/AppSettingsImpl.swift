@@ -104,11 +104,16 @@ open class AppSettingsImpl: AppSettings  {
                                                                                                                  contactsService: contactsService)
     
     func logout() {
-        let realm = Realm.myRealm()
-        try? realm.write({
-            realm.deleteAll()
-        })
-        self.appStore.deleteAll()
+        do {
+            let realm = Realm.myRealm()
+            try realm.write({
+                realm.deleteAll()
+            })
+            self.appStore.deleteAll()
+            self.updateRepository.stopSession()
+        } catch {
+            PP.error(error.localeError)
+        }
     }
     
     private func setupChannelConfiguration(configuration: inout GRPCChannelPool.Configuration) {
