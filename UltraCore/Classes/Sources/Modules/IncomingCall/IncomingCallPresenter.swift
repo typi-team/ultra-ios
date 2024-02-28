@@ -28,6 +28,7 @@ final class IncomingCallPresenter {
     
     private let wireframe: IncomingCallWireframeInterface
     fileprivate let callStatus: CallStatus
+    private var isDismissing: Bool = false
     // MARK: - Lifecycle -
 
     init(userId: String,
@@ -47,11 +48,7 @@ final class IncomingCallPresenter {
         RoomManager.shared.roomManagerDelegate = self
         RoomManager.shared.addRoomDelegate(self)
     }
-    
-    deinit {
-        RoomManager.shared.roomManagerDelegate = nil
-        RoomManager.shared.removeRoomDelegate(self)
-    }
+
 }
 
 // MARK: - Extensions -
@@ -113,6 +110,23 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
         }
     }
     
+    func didTapBack() {
+        guard !isDismissing else {
+            return
+        }
+        isDismissing = true
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else {
+                return
+            }
+            RoomManager.shared.roomManagerDelegate = nil
+            RoomManager.shared.removeRoomDelegate(self)
+            self.wireframe.dissmiss {
+                UltraVoIPManager.shared.showCallTopView()
+            }
+        }
+    }
+    
     func setMicrophone(enabled: Bool) {
         PP.debug("[CALL] Set microphone enabled - \(enabled)")
         RoomManager.shared.room.localParticipant?.setMicrophone(enabled: enabled)
@@ -167,6 +181,21 @@ extension IncomingCallPresenter: RoomDelegate {
         let local = room.localParticipant
         view.updateParticipantTrack(remote: remote, local: local)
     }
+    
+    private func dismiss() {
+        guard !isDismissing else {
+            return
+        }
+        isDismissing = true
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else {
+                return
+            }
+            RoomManager.shared.roomManagerDelegate = nil
+            RoomManager.shared.removeRoomDelegate(self)
+            self.wireframe.dissmiss { }
+        }
+    }
 
 }
 
@@ -182,14 +211,10 @@ extension IncomingCallPresenter: RoomManagerDelegate {
     }
     
     func didFailToConnectToRoom() {
-        DispatchQueue.main.async { [weak self] in
-            self?.wireframe.dissmiss { }
-        }
+        dismiss()
     }
     
     func didDisconnectFromRoom() {
-        DispatchQueue.main.async { [weak self] in
-            self?.wireframe.dissmiss { }
-        }
+        dismiss()
     }
 }

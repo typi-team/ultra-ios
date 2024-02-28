@@ -54,6 +54,7 @@ final class RoomManager {
     
     func disconnectRoom() {
         stopCallTimer()
+        PP.debug("[CALL] Disconnecting room with state - \(room.connectionState.desctiption)")
         room.disconnect().then { [weak self] _ in
             self?.callInfo = nil
             self?.roomManagerDelegate?.didDisconnectFromRoom()

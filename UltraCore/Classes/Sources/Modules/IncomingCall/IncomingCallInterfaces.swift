@@ -60,6 +60,7 @@ protocol IncomingCallViewInterface: ViewInterface {
 
 protocol IncomingCallPresenterInterface: PresenterInterface {
     func viewDidLoad()
+    func didTapBack()
     func answerCall()
     func getLocalParticipant() -> LocalParticipant?
     func getRemoteParticipant() -> RemoteParticipant?
