@@ -137,6 +137,10 @@ extension VoiceInputBar: AudioRecordUtilsDelegate {
         self.removeFromSuperview()
         self.delegate?.recordedVoice(url: url, in: duration)
     }
+    
+    func cancelRecord() {
+        cancelRecording()
+    }
 }
 
 private extension VoiceInputBar {
