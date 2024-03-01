@@ -55,7 +55,15 @@ extension Realm {
             .urls(for: .documentDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("UltraCore.realm")
 
-        let config = Realm.Configuration(fileURL: realmURL)
+        var config = Realm.Configuration(fileURL: realmURL)
+        config.objectTypes = [
+            DBContact.self, DBConversation.self, DBMessage.self, DBMessageState.self,
+            DBReceiver.self, DBSender.self, DBMessageMeta.self, DBAudioMessage.self,
+            DBAudioMessage.self, DBVoiceMessage.self, DBPhotoMessage.self,
+            DBVideoMessage.self, DBPhotoMessage.self, DBVideoMessage.self,
+            DBMoneyMessage.self, DBFileMessage.self, DBContactMessage.self, DBLocationMessage.self,
+            DBPhoto.self
+        ]
 
         do {
             let realm = try Realm(configuration: config)
