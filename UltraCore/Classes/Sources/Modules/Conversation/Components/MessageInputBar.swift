@@ -275,7 +275,8 @@ extension MessageInputBar: AudioRecordUtilsDelegate {
     }
     
     func requestRecordPermissionIsFalse() {
-        self.delegate?.showVoiceError()
+        delegate?.showVoiceError()
+        onCancel()
     }
     
     func recordingVoice(average power: Float) {
@@ -284,6 +285,10 @@ extension MessageInputBar: AudioRecordUtilsDelegate {
     
     func recodedDuration(time interal: TimeInterval) {
         
+    }
+    
+    func cancelRecord() {
+        onCancel()
     }
 }
 
