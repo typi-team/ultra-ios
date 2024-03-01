@@ -30,7 +30,7 @@ extension IncomingCallViewController: IncomingCallViewInterface {
         actionStackView.microButton.isSelected = enabled
     }
     
-    func setSpeakerEnabled(_ enabled: Bool) {
+    func setSpeakerButtonEnabled(_ enabled: Bool) {
         actionStackView.mouthpieceButton.isSelected = enabled
     }
     

@@ -45,6 +45,7 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
             setSpeaker(true)
         } else {
             setSpeaker(false)
+            setSpeakerButtonEnabled(false)
             actionStackView.setAsActiveAudio()
         }
         setVideoCallIfPossible(enabled: cameraEnabled)
