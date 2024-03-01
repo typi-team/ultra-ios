@@ -34,9 +34,15 @@ public class UltraVoIPManager: NSObject {
     
     init(callService: CallServiceClientProtocol) {
         self.callService = callService
-        let callConfigObject = CXProviderConfiguration(localizedName: "Ultra")
+        let callConfigObject = CXProviderConfiguration(localizedName: NSLocalizedString("app.name", comment: ""))
         callConfigObject.supportsVideo = true
         callConfigObject.maximumCallsPerCallGroup = 1
+        callConfigObject.supportedHandleTypes = [.generic]
+        if let icon = UltraCoreSettings.delegate?.callImage() {
+            callConfigObject.iconTemplateImageData = icon.pngData()
+        } else if let icon = UIImage.named("tradernet_call_icon") {
+            callConfigObject.iconTemplateImageData = icon.pngData()
+        }
         self.provider = CXProvider(configuration: callConfigObject)
         super.init()
         self.provider.setDelegate(self, queue: nil)
@@ -160,18 +166,6 @@ extension UltraVoIPManager: CXProviderDelegate {
         }
     }
     
-    public func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
-        PP.debug("[CALL] set speaker true")
-        PP.debug("[CALL] AVAudioSession outputs - \(AVAudioSession.sharedInstance().currentRoute.outputs)")
-        currentCallingController?.setSpeaker(true)
-    }
-    
-    public func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
-        PP.debug("[CALL] set speaker false")
-        PP.debug("[CALL] AVAudioSession outputs - \(AVAudioSession.sharedInstance().currentRoute.outputs)")
-        currentCallingController?.setSpeaker(false)
-    }
-    
     public func provider(_ provider: CXProvider, perform action: CXSetMutedCallAction) {
         PP.debug("[CALL] CXSetMutedCallAction")
         currentCallingController?.setMicrophoneIfPossible(enabled: !action.isMuted)
@@ -186,8 +180,8 @@ extension UltraVoIPManager: CXProviderDelegate {
             return
         }
         wasAnswered = false
-        provider.reportOutgoingCall(with: action.callUUID, startedConnectingAt: nil)
         configureAudioSession()
+        provider.reportOutgoingCall(with: action.callUUID, startedConnectingAt: nil)
         action.fulfill()
         RoomManager.shared.connectRoom(with: callInfoMeta.callInfo) { [weak self] error in
             if let error = error {
@@ -341,8 +335,14 @@ extension UltraVoIPManager: CXProviderDelegate {
             try session.setCategory(
                 .playAndRecord,
                 mode: .voiceChat,
-                options: callInfoMeta.callInfo.video ? [.defaultToSpeaker, .allowBluetooth, .allowBluetoothA2DP] : [.duckOthers, .allowBluetooth, .allowBluetoothA2DP]
+                options: [
+                    .allowBluetooth, .allowBluetoothA2DP, .duckOthers
+                ]
             )
+            try session.setPreferredIOBufferDuration(0.005)
+            try session.setPreferredSampleRate(44100)
+            try session.overrideOutputAudioPort(.none)
+            try session.setActive(true)
         } catch {
             PP.debug("[CALL] Error on configuring audio session - \(error)")
         }
@@ -383,10 +383,20 @@ extension UltraVoIPManager {
     
     struct Caller: Codable, CallInformation {
         var sender: String
-        var accessToken: String
+        var access_token: String
         var room: String
         var host: String
         var video: Bool
+        
+        var accessToken: String {
+            get {
+                access_token
+            }
+            set {
+                access_token = newValue
+            }
+        }
+        
         init(dictionary: [AnyHashable: Any]) throws {
             self = try JSONDecoder().decode(Caller.self, from: JSONSerialization.data(withJSONObject: dictionary))
         }

@@ -153,14 +153,7 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
     
     func setSpeaker(_ isEnabled: Bool) {
         PP.debug("[CALL] Set speaker enabled - \(isEnabled)")
-        audioQueue.async {
-            let audioSession = AVAudioSession.sharedInstance()
-            try? audioSession.setCategory(
-                .playAndRecord,
-                mode: .voiceChat,
-                options: isEnabled ? [.defaultToSpeaker, .allowBluetooth, .allowBluetoothA2DP] : [.duckOthers, .allowBluetooth, .allowBluetoothA2DP])
-            try? audioSession.setActive(true)
-        }
+        AudioManager.shared.preferSpeakerOutput = isEnabled
     }
     
     @objc private func didTapBack() {

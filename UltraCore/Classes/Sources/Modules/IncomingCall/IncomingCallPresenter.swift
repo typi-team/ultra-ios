@@ -102,9 +102,11 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
             self.view.updateForStartCall()
             self.view.setMicEnabled(RoomManager.shared.room.localParticipant?.isMicrophoneEnabled() ?? false)
             self.view.setCameraEnabled(RoomManager.shared.room.localParticipant?.isCameraEnabled() ?? false)
+            self.view.setSpeakerEnabled(AudioManager.shared.preferSpeakerOutput)
             self.updateParticipantTrack(for: RoomManager.shared.room)
             return
         }
+        AudioManager.shared.preferSpeakerOutput = false
         if case .outcoming = callStatus {
             UltraVoIPManager.shared.startOutgoingCall(callInfo: callStatus.callInfo)
         }

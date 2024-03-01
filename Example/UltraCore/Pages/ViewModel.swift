@@ -166,5 +166,9 @@ extension ViewModel: UltraCoreSettingsDelegate {
     func availableToLocation() -> Bool {
         return true
     }
+    
+    func callImage() -> UIImage? {
+        return UIImage(named: "tradernet_call_icon")
+    }
 
 }
