@@ -16,11 +16,6 @@ extension IncomingCallViewController: IncomingCallViewInterface {
         if actionStackView.microButton.isSelected {
             setMicrophoneIfPossible(enabled: actionStackView.microButton.isSelected)
         }
-        if !callStatus.callInfo.video {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
-                self?.setSpeaker(false)
-            }
-        }
     }
     
     func setCameraEnabled(_ enabled: Bool) {
@@ -33,6 +28,10 @@ extension IncomingCallViewController: IncomingCallViewInterface {
     
     func setMicEnabled(_ enabled: Bool) {
         actionStackView.microButton.isSelected = enabled
+    }
+    
+    func setSpeakerButtonEnabled(_ enabled: Bool) {
+        actionStackView.mouthpieceButton.isSelected = enabled
     }
     
     func dispay(view contact: ContactDisplayable) {

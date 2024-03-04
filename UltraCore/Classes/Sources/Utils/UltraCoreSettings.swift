@@ -27,6 +27,7 @@ public protocol UltraCoreSettingsDelegate: AnyObject {
     func moneyViewController(callback: @escaping MoneyCallback) -> UIViewController?
     func contactsViewController(contactsCallback: @escaping ContactsCallback,
                                 openConverationCallback: @escaping UserIDCallback) -> UIViewController?
+    func callImage() -> UIImage?
     func tokenUpdated()
 }
 

@@ -54,6 +54,7 @@ protocol IncomingCallViewInterface: ViewInterface {
     func showConnectionStatus(_ status: String)
     func setCameraEnabled(_ enabled: Bool)
     func setMicEnabled(_ enabled: Bool)
+    func setSpeakerButtonEnabled(_ enabled: Bool)
 }
 
 

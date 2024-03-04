@@ -3,14 +3,14 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 53;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		045F103F2FCB9C1746E5ACE4 /* Pods_UltraCore_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4ADA6C9075E806DAFE80D0CF /* Pods_UltraCore_Example.framework */; };
 		055E13088F8EBFCBCD3E47FE /* Pods_UltraCore_Tests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EE70C0BB60C8FDF72600E6E5 /* Pods_UltraCore_Tests.framework */; };
-		52F77E612B761BF2009EA144 /* CallKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52F77E602B761BF1009EA144 /* CallKit.framework */; };
 		28CE0ADA2B6CFD1800FAF14A /* FileCellConfigImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28CE0AD92B6CFD1800FAF14A /* FileCellConfigImpl.swift */; };
+		52F77E612B761BF2009EA144 /* CallKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52F77E602B761BF1009EA144 /* CallKit.framework */; };
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
 		607FACD81AFB9204008FA782 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD71AFB9204008FA782 /* ViewController.swift */; };
 		607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 607FACD91AFB9204008FA782 /* Main.storyboard */; };
@@ -47,13 +47,13 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		28CE0AD92B6CFD1800FAF14A /* FileCellConfigImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileCellConfigImpl.swift; sourceTree = "<group>"; };
 		40E7099FAA0779C648153CEA /* Pods-UltraCore_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UltraCore_Tests.release.xcconfig"; path = "Target Support Files/Pods-UltraCore_Tests/Pods-UltraCore_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		4ADA6C9075E806DAFE80D0CF /* Pods_UltraCore_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_UltraCore_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		52F77E602B761BF1009EA144 /* CallKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CallKit.framework; path = System/Library/Frameworks/CallKit.framework; sourceTree = SDKROOT; };
 		5729A9A0392AD0C759FF8788 /* Pods-UltraCore_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UltraCore_Tests.debug.xcconfig"; path = "Target Support Files/Pods-UltraCore_Tests/Pods-UltraCore_Tests.debug.xcconfig"; sourceTree = "<group>"; };
-		28CE0AD92B6CFD1800FAF14A /* FileCellConfigImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileCellConfigImpl.swift; sourceTree = "<group>"; };
 		58D00E470F24D981951D3C3D /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
-		607FACD01AFB9204008FA782 /* UltraCore_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UltraCore_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		607FACD01AFB9204008FA782 /* Tradernet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Tradernet.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD41AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		607FACD51AFB9204008FA782 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		607FACD71AFB9204008FA782 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -140,7 +140,7 @@
 		607FACD11AFB9204008FA782 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				607FACD01AFB9204008FA782 /* UltraCore_Example.app */,
+				607FACD01AFB9204008FA782 /* Tradernet.app */,
 				607FACE51AFB9204008FA782 /* UltraCore_Tests.xctest */,
 			);
 			name = Products;
@@ -274,7 +274,7 @@
 			);
 			name = UltraCore_Example;
 			productName = UltraCore;
-			productReference = 607FACD01AFB9204008FA782 /* UltraCore_Example.app */;
+			productReference = 607FACD01AFB9204008FA782 /* Tradernet.app */;
 			productType = "com.apple.product-type.application";
 		};
 		607FACE41AFB9204008FA782 /* UltraCore_Tests */ = {
@@ -718,7 +718,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = UltraCore_Example.entitlements;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = D5Z46ZJV75;
 				INFOPLIST_FILE = UltraCore/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -730,7 +730,7 @@
 				"MARKETING_VERSION[sdk=iphoneos*]" = 1.0;
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = org.cocoapods.UltraCoreExample;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Tradernet;
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 5.0;
 			};
@@ -742,7 +742,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = UltraCore_Example.entitlements;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_TEAM = D5Z46ZJV75;
 				INFOPLIST_FILE = UltraCore/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
@@ -753,7 +753,7 @@
 				MARKETING_VERSION = 1.0;
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = org.cocoapods.UltraCoreExample;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = Tradernet;
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 5.0;
 			};

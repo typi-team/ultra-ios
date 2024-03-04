@@ -6,6 +6,8 @@
   Copyright © 2023 CocoaPods. All rights reserved.
 */
 
+"app.name" = "Tradernet";
+
 // MARK: Conversations page
 "conversations.chats" = "Чаты";
 "conversations.emptyMessages" = "Начните общаться с вашими контактами прямо сейчас";
