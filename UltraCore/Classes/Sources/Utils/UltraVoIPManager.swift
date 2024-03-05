@@ -383,20 +383,10 @@ extension UltraVoIPManager {
     
     struct Caller: Codable, CallInformation {
         var sender: String
-        var access_token: String
+        var accessToken: String
         var room: String
         var host: String
         var video: Bool
-        
-        var accessToken: String {
-            get {
-                access_token
-            }
-            set {
-                access_token = newValue
-            }
-        }
-        
         init(dictionary: [AnyHashable: Any]) throws {
             self = try JSONDecoder().decode(Caller.self, from: JSONSerialization.data(withJSONObject: dictionary))
         }
