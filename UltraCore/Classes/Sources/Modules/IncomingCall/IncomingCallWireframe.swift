@@ -25,7 +25,6 @@ final class IncomingCallWireframe: BaseWireframe<IncomingCallViewController> {
                                                    callInformation: status,
                                                    view: moduleViewController,
                                                    contactService: appSettings.contactDBService,
-                                                   callService: appSettings.callService,
                                                    wireframe: self,
                                                    contactInteractor: .init(delegate: UltraCoreSettings.delegate, contactsService: appSettings.contactsService))
         moduleViewController.presenter = presenter

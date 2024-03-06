@@ -16,8 +16,6 @@ final class IncomingCallPresenter {
 
     // MARK: - Private properties -
     
-    fileprivate let callService: CallServiceClientProtocol
-    
     fileprivate lazy var disposeBag: DisposeBag = .init()
 
     private unowned let view: IncomingCallViewInterface
@@ -35,13 +33,11 @@ final class IncomingCallPresenter {
          callInformation: CallStatus,
          view: IncomingCallViewInterface,
          contactService: ContactDBService,
-         callService: CallServiceClientProtocol,
          wireframe: IncomingCallWireframeInterface,
          contactInteractor: ContactByUserIdInteractor) {
         self.view = view
         self.userId = userId
         self.wireframe = wireframe
-        self.callService = callService
         self.contactService = contactService
         self.callStatus = callInformation
         self.contactInteractor = contactInteractor

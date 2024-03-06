@@ -2,6 +2,7 @@ import Foundation
 import AVFAudio
 import CallKit
 import PushKit
+import RxSwift
 import UIKit
 
 public class UltraVoIPManager: NSObject {
@@ -20,9 +21,11 @@ public class UltraVoIPManager: NSObject {
     
     private var provider: CXProvider
     
-    private let callService: CallServiceClientProtocol
+    private lazy var callRejectInteractor: GRPCErrorUseCase<CallerRequestParams, Void> = RejectCallInteractor(callService: AppSettingsImpl.shared.callService)
+    private lazy var callCancelInteractor: GRPCErrorUseCase<CallerRequestParams, Void> = CancelCallInteractor(callService: AppSettingsImpl.shared.callService)
+    private let disposeBag = DisposeBag()
         
-    public static let shared = UltraVoIPManager(callService: AppSettingsImpl.shared.callService)
+    public static let shared = UltraVoIPManager()
     
     private var wasAnswered: Bool = false
         
@@ -32,8 +35,7 @@ public class UltraVoIPManager: NSObject {
     
     // MARK: - Init
     
-    init(callService: CallServiceClientProtocol) {
-        self.callService = callService
+    override init() {
         let callConfigObject = CXProviderConfiguration(localizedName: NSLocalizedString("app.name", comment: ""))
         callConfigObject.supportsVideo = true
         callConfigObject.maximumCallsPerCallGroup = 1
@@ -86,6 +88,7 @@ extension UltraVoIPManager: PKPushRegistryDelegate {
                 callReport.remoteHandle = CXHandle(type: .generic, value: contact.displaName)
             }
             if callInfoMeta == nil {
+                UltraCoreSettings.updateSession { _ in }
                 let uuid = UUID()
                 provider.reportNewIncomingCall(with: uuid, update: callReport, completion: { error in
                     completion()
@@ -157,10 +160,15 @@ extension UltraVoIPManager: CXProviderDelegate {
 //        }
         action.fulfill()
         rejectOrCancelCall(callInfo: callInfoMeta.callInfo) { [weak self] error in
-            self?.callInfoMeta = nil
+            DispatchQueue.main.async {
+                if UIApplication.shared.applicationState != .active {
+                    UltraCoreSettings.stopSession()
+                }
+            }
             if let error = error {
                 PP.debug("[CALL] CXEndCallAction for uuid - \(callInfoMeta.uuid) error - \(error)")
             } else {
+                self?.callInfoMeta = nil
                 PP.debug("[CALL] CXEndCallAction for uuid - \(callInfoMeta.uuid) fulfilled")
             }
         }
@@ -252,6 +260,9 @@ extension UltraVoIPManager: CXProviderDelegate {
             RoomManager.shared.disconnectRoom()
             DispatchQueue.main.async {
                 IncomingCallTopView.hide { }
+                if UIApplication.shared.applicationState != .active {
+                    UltraCoreSettings.stopSession()
+                }
             }
             if let error = error {
                 PP.debug("[CALL] server CXEndCallAction error - \(error)")
@@ -284,45 +295,33 @@ extension UltraVoIPManager: CXProviderDelegate {
     
     private func cancelCall(callInfo: CallInformation, completion: @escaping((Error?) -> Void)) {
         PP.debug("[CALL] - Cancell call - \(callInfo.room)")
-        callService.cancel(
-            CancelCallRequest.with({
-                $0.userID = callInfo.sender
-                $0.room = callInfo.room
-            }), callOptions: .default()
-        )
-        .response
-        .whenComplete { result in
-            switch result {
-            case .success:
+        callCancelInteractor
+            .executeSingle(params: .init(userID: callInfo.sender, room: callInfo.room))
+            .subscribe { _ in
                 RoomManager.shared.disconnectRoom()
                 DispatchQueue.main.async {
                     IncomingCallTopView.hide { }
                 }
                 completion(nil)
-            case .failure(let error):
+            } onFailure: { error in
                 completion(error)
             }
-        }
+            .disposed(by: disposeBag)
     }
     
     private func rejectCall(callInfo: CallInformation, completion: @escaping((Error?) -> Void)) {
         PP.debug("[CALL] - Reject call - \(callInfo.room)")
-        callService.reject(
-            RejectCallRequest.with({
-                $0.room = callInfo.room
-                $0.callerUserID = callInfo.sender
-            }),
-            callOptions: .default()
-        )
-        .response
-        .whenComplete { result in
-            switch result {
-            case .success:
+        callRejectInteractor
+            .executeSingle(params: .init(userID: callInfo.sender, room: callInfo.room))
+            .subscribe { _ in
+                DispatchQueue.main.async {
+                    IncomingCallTopView.hide { }
+                }
                 completion(nil)
-            case .failure(let error):
+            } onFailure: { error in
                 completion(error)
             }
-        }
+            .disposed(by: disposeBag)
     }
     
     private func configureAudioSession() {

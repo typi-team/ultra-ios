@@ -32,6 +32,10 @@ final class RoomManager {
         return (try? timerTextSubject.value()) ?? ""
     }
     
+    var timerIsRunning: Bool {
+        return timerSubscription != nil
+    }
+    
     func addRoomDelegate(_ delegate: RoomDelegate) {
         room.add(delegate: delegate)
     }
@@ -89,6 +93,7 @@ final class RoomManager {
     
     func stopCallTimer() {
         timerSubscription?.dispose()
+        timerSubscription = nil
         timerTextSubject.onNext("")
     }
     
