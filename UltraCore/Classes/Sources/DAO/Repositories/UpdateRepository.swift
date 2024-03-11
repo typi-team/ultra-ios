@@ -8,6 +8,7 @@
 import Foundation
 import RxSwift
 import GRPC
+import CallKit
 
 protocol UpdateRepository: AnyObject {
     
@@ -139,6 +140,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
             self.setupChangesSubscription(with: UInt64(appStore.lastState))
         }
     }
+    
 }
 
 private extension UpdateRepositoryImpl {
@@ -178,10 +180,10 @@ private extension UpdateRepositoryImpl {
         case let .mediaUploading(pres):
             PP.debug(pres.textFormatString())
         case let .callReject(reject):
+            PP.debug("[CALL] - Server Call reject - \(reject.room)")
             self.dissmissCall(in: reject.room)
-        case let .callRequest(callRequest):
-            self.handleIncoming(callRequest: callRequest)
         case let .callCancel(callrequest):
+            PP.debug("[CALL] - Server Call cancel - \(callrequest.room)")
             self.dissmissCall(in: callrequest.room)
         case let .block(blockMessage):
             self.contactService
@@ -198,33 +200,10 @@ private extension UpdateRepositoryImpl {
     
     func dissmissCall(in room: String) {
         DispatchQueue.main.async {
-            if var topController = UIApplication.shared.windows.filter({ $0.isKeyWindow }).first?.rootViewController {
-                while let presentedViewController = topController.presentedViewController {
-                    topController = presentedViewController
-                }
-                if topController is IncomingCallViewController {
-                    topController.dismiss(animated: true)
-                }
-            }
+            UltraVoIPManager.shared.serverEndCall()
         }
     }
-    
-    func handleIncoming(callRequest: CallRequest) {
-        self.contactByIDInteractor
-            .executeSingle(params: callRequest.sender)
-            .flatMap({ self.contactService.save(contact: $0) })
-            .observe(on: MainScheduler.instance)
-            .subscribe(onSuccess: { () in
-                if var topController = UIApplication.shared.windows.filter({ $0.isKeyWindow }).first?.rootViewController {
-                    while let presentedViewController = topController.presentedViewController {
-                        topController = presentedViewController
-                    }
-                    topController.presentWireframe(IncomingCallWireframe(call:.incoming(callRequest)))
-                }
-            })
-            .disposed(by: disposeBag)
-    }
-    
+        
     func handle(of update: Update.OneOf_OfUpdate) {
         switch update {
         case let .message(message):
@@ -365,5 +344,20 @@ extension MessagesDeleted {
         }
 
         return closedRanges
+    }
+}
+
+extension UIApplication {
+    class func topViewController(root: UIViewController? = UIApplication.shared.windows.filter({ $0.isKeyWindow }).first?.rootViewController) -> UIViewController? {
+        if let nav = root as? UINavigationController {
+            return topViewController(root: nav.visibleViewController)
+
+        } else if let tab = root as? UITabBarController, let selected = tab.selectedViewController {
+            return topViewController(root: selected)
+
+        } else if let presented = root?.presentedViewController {
+            return topViewController(root: presented)
+        }
+        return root
     }
 }

@@ -27,6 +27,12 @@ public protocol UltraCoreSettingsDelegate: AnyObject {
     func moneyViewController(callback: @escaping MoneyCallback) -> UIViewController?
     func contactsViewController(contactsCallback: @escaping ContactsCallback,
                                 openConverationCallback: @escaping UserIDCallback) -> UIViewController?
+    func callImage() -> UIImage?
+    func tokenUpdated()
+}
+
+extension UltraCoreSettingsDelegate {
+    func tokenUpdated() {}
 }
 
 private let disposeBag = DisposeBag()
@@ -142,6 +148,7 @@ public extension UltraCoreSettings {
                     shared.updateRepository.setupSubscription()
                     shared.updateRepository.startPingPong()
                     shared.updateRepository.retreiveContactStatuses()
+                    delegate?.tokenUpdated()
                     if shared.appStore.lastState == 0 {
                         DispatchQueue.main.asyncAfter(deadline: .now() + timeOut, execute: {
                             callback(nil)
@@ -153,17 +160,20 @@ public extension UltraCoreSettings {
             }
     }
 
-    static func update(firebase token: String) {
+    static func update(firebase token: String, voipToken: String?) {
         if AppSettingsImpl.shared.appStore.token == nil {
             PP.error("Don't call it without token")
             return
         }
-
+        
         AppSettingsImpl.shared.deviceService.updateDevice(.with({
             $0.device = .ios
             $0.token = token
             $0.appVersion = AppSettingsImpl.shared.version
             $0.deviceID = UIDevice.current.identifierForVendor?.uuidString ?? "Ну указано"
+            if let voipToken {
+                $0.voipPushToken = voipToken
+            }
         }), callOptions: .default())
         .response
         .whenComplete({ result in

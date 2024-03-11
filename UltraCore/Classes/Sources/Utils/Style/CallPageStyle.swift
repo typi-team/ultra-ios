@@ -9,9 +9,13 @@ import Foundation
 
 public protocol CallPageStyle {
     var background: TwiceColor { get set }
+    var backButtonTint: TwiceColor { get set }
     
     var companionConfig: LabelConfig { get set }
     var durationConfig: LabelConfig { get set }
+    
+    var companionVideoConfig: LabelConfig { get set }
+    var durationVideoConfig: LabelConfig { get set }
     
     var mouthpieceOnImage: UIImage { get set }
     
@@ -25,4 +29,7 @@ public protocol CallPageStyle {
     
     var answerImage: UIImage { get set }
     var declineImage: UIImage { get set }
+    
+    var switchFrontCameraImage: UIImage { get set }
+    var switchBackCameraImage: UIImage { get set }
 }

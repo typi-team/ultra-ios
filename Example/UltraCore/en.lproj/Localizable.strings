@@ -6,6 +6,8 @@
   Copyright © 2023 CocoaPods. All rights reserved.
 */
 
+"app.name" = "Tradernet";
+
 // MARK: Conversations page
 "conversations.chats" = "Chats";
 "conversations.start" = "Start";
@@ -132,3 +134,15 @@
 "base.inTheProcessOfRealizationAUniqueFunctionalityMaturesWhichWillAddMagicAndEfficiencyToOurProduct" = "In the process of realization, a unique functionality matures, which will add magic and efficiency to our product.";
 
 "conversation.requestSent" = "Request sent";
+
+"call.connecting" = "Connecting...";
+"call.disconnected" = "Disconnected";
+"call.reconnecting" = "Reconnecting...";
+"call.cancel" = "Close connection";
+"call.reject" = "Reject connection";
+"call.incomeAudioCalling" = "Incoming audio call...";
+"call.incomeVideoCalling" = "Incoming video call...";
+"call.errorAccessTitle" = "Error";
+"call.errorAccessToCamera" = "The application does not have access to the camera";
+"call.errorAccessToMicrophone" = "The application does not have access to the microphone";
+
