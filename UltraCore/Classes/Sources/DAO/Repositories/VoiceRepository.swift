@@ -19,12 +19,6 @@ class VoiceItem: CustomStringConvertible {
         self.currentTime = currentTime
         self.isPlaying = isPlaying
     }
-    
-    var valueForSlider: Float {
-        let duration = voiceMessage.duration.timeInterval
-        let value = (currentTime / duration)
-        return Float(value)
-    }
 
     var description: String {
         return "[VoiceItem]: \(voiceMessage.fileID) \(currentTime) / \(voiceMessage.duration) isPlaying: \(isPlaying)"
@@ -58,6 +52,7 @@ class VoiceRepository: NSObject {
         } else {
             self.audioPlayer?.play()
             self.timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(updateTime), userInfo: nil, repeats: true)
+            runTimerOnRunLoop()
         }
         let currentItem = try? currentVoice.value()
         currentItem?.isPlaying = audioPlayer?.isPlaying ?? false
@@ -79,6 +74,7 @@ class VoiceRepository: NSObject {
             audioPlayer.play()
             
             self.timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(updateTime), userInfo: nil, repeats: true)
+            runTimerOnRunLoop()
             self.audioPlayer = audioPlayer
             self.currentVoice.on(
                 .next(.init(voiceMessage: message.voice, currentTime: atTime, isPlaying: audioPlayer.isPlaying))
@@ -87,6 +83,12 @@ class VoiceRepository: NSObject {
             self.stop()
             PP.error(error.localizedDescription)
         }
+    }
+    
+    private func runTimerOnRunLoop() {
+        guard let timer else { return }
+        
+        RunLoop.main.add(timer, forMode: .common)
     }
 }
 

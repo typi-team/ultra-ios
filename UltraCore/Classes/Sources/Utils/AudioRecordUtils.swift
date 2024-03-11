@@ -13,6 +13,7 @@ protocol AudioRecordUtilsDelegate: AnyObject {
     func requestRecordPermissionIsFalse()
     func recordingVoice(average power: Float)
     func recodedDuration(time interal: TimeInterval)
+    func cancelRecord()
 }
 
 class AudioRecordUtils: NSObject {
@@ -25,21 +26,29 @@ class AudioRecordUtils: NSObject {
     private var audioRecorder: AVAudioRecorder?
     
     func requestRecordPermission() {
-        AVAudioSession.sharedInstance().requestRecordPermission { [weak self] granted in
-            guard let `self` = self else { return }
-            if granted {
-                do {
-                    if try self.setupAudioRecorder() {
-                        self.startRecording()
-                    }
-                } catch {
-                    print(error.localizedDescription)
-                }
-            } else {
-                DispatchQueue.main.async {
-                    self.delegate?.requestRecordPermissionIsFalse()
-                }
+        switch AVAudioSession.sharedInstance().recordPermission {
+        case .granted:
+            startRecordingAudio()
+        case .denied:
+            delegate?.requestRecordPermissionIsFalse()
+        case .undetermined:
+            delegate?.cancelRecord()
+            AVAudioSession.sharedInstance().requestRecordPermission { [weak self] granted in
+                guard let self, granted else { return }
+                
+                startRecordingAudio()
             }
+        @unknown default: break
+        }
+    }
+    
+    private func startRecordingAudio() {
+        do {
+            if try setupAudioRecorder() {
+                startRecording()
+            }
+        } catch {
+            print(error.localizedDescription)
         }
     }
     

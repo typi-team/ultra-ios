@@ -253,7 +253,7 @@ extension VideoMessage {
 }
 
 extension VoiceMessage {
-    var extensions:String { mimeType.components(separatedBy: "/").last ?? ""}
+    var extensions:String { "wav" }
     var originalVoiceFileId: String { "original_voice\(fileID)" }
     var originalFileIdWithExtension: String { "\(originalVoiceFileId).\(extensions)" }
 }
