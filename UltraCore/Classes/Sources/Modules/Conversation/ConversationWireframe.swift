@@ -70,7 +70,7 @@ extension ConversationWireframe: ConversationWireframeInterface {
     func navigateToCall(response: CreateCallResponse, isVideo: Bool) {
         guard let reciever = self.conversation.peer?.userID else { return }
         let info = CallOutging(video: isVideo, host: response.host, room: response.room, sender: reciever, accessToken: response.accessToken)
-        self.navigationController?.pushWireframe(IncomingCallWireframe(call: .outcoming(info)), animated: true, removeFromStack: nil)
+        self.navigationController?.presentWireframe(IncomingCallWireframe(call: .outcoming(info)), animated: true, completion: nil)
     }
     
     func navigateTo(contact: ContactDisplayable) {

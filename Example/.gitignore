@@ -3,10 +3,10 @@
 */build/*
 DerivedData/
 */.xccheckout
-*.xcuserdata/
-*.xcworkspace/
-!*.xcworkspace/xcshareddata/
-!*.xcworkspace/xcuserdata/
+Example/*.xcuserdata/
+Example/*.xcworkspace/
+Example/!*.xcworkspace/xcshareddata/
+Example/!*.xcworkspace/xcuserdata/
 *.pbxuser
 *.mode1v3
 *.mode2v3
@@ -31,5 +31,5 @@ project.xcworkspace/
 
 # CocoaPods
 Example/Pods/
-Podfile.lock
+Example/Podfile.lock
 ../.idea/

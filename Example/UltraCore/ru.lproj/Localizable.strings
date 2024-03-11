@@ -6,6 +6,8 @@
   Copyright © 2023 CocoaPods. All rights reserved.
 */
 
+"app.name" = "Tradernet";
+
 // MARK: Conversations page
 "conversations.chats" = "Чаты";
 "conversations.emptyMessages" = "Начните общаться с вашими контактами прямо сейчас";
@@ -135,3 +137,15 @@
 "base.inTheProcessOfRealizationAUniqueFunctionalityMaturesWhichWillAddMagicAndEfficiencyToOurProduct" = "В процессе воплощения созревает уникальный функционал, который добавит магии и эффективности в наш продукт";
 
 "conversation.requestSent" = "Request sent";
+
+// MARK: - Call
+"call.connecting" = "Соединение...";
+"call.disconnected" = "Отключен";
+"call.reconnecting" = "Повторное соединение...";
+"call.cancel" = "Закрыть соединение";
+"call.reject" = "Отклонить соединение";
+"call.incomeAudioCalling" = "Входящий аудио звонок...";
+"call.incomeVideoCalling" = "Входящий видео звонок...";
+"call.errorAccessTitle" = "Ошибка";
+"call.errorAccessToCamera" = "Приложение не имеет доступа к камере";
+"call.errorAccessToMicrophone" = "Приложение не имеет доступа к микрофону";
