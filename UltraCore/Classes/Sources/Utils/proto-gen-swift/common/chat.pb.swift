@@ -36,6 +36,20 @@ struct ChatMember {
   init() {}
 }
 
+struct ChatSettings {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Indicator that user from p2p chat can be accepted
+  /// as contact. Can be "true" only for p2p chats
+  var addContact: Bool = false
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 struct Chat {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -51,9 +65,22 @@ struct Chat {
 
   var members: [ChatMember] = []
 
+  var messageSeqNumber: UInt64 = 0
+
+  var settings: ChatSettings {
+    get {return _settings ?? ChatSettings()}
+    set {_settings = newValue}
+  }
+  /// Returns true if `settings` has been explicitly set.
+  var hasSettings: Bool {return self._settings != nil}
+  /// Clears the value of `settings`. Subsequent reads from it will return its default value.
+  mutating func clearSettings() {self._settings = nil}
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
+
+  fileprivate var _settings: ChatSettings? = nil
 }
 
 struct PeerUser {
@@ -134,6 +161,7 @@ struct Peer {
 
 #if swift(>=5.5) && canImport(_Concurrency)
 extension ChatMember: @unchecked Sendable {}
+extension ChatSettings: @unchecked Sendable {}
 extension Chat: @unchecked Sendable {}
 extension PeerUser: @unchecked Sendable {}
 extension PeerChat: @unchecked Sendable {}
@@ -187,6 +215,38 @@ extension ChatMember: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
   }
 }
 
+extension ChatSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "ChatSettings"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "addContact"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularBoolField(value: &self.addContact) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.addContact != false {
+      try visitor.visitSingularBoolField(value: self.addContact, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: ChatSettings, rhs: ChatSettings) -> Bool {
+    if lhs.addContact != rhs.addContact {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension Chat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "Chat"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -195,6 +255,8 @@ extension Chat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     3: .same(proto: "title"),
     4: .same(proto: "unread"),
     5: .same(proto: "members"),
+    6: .same(proto: "messageSeqNumber"),
+    7: .same(proto: "settings"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -208,12 +270,18 @@ extension Chat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
       case 3: try { try decoder.decodeSingularStringField(value: &self.title) }()
       case 4: try { try decoder.decodeSingularInt64Field(value: &self.unread) }()
       case 5: try { try decoder.decodeRepeatedMessageField(value: &self.members) }()
+      case 6: try { try decoder.decodeSingularUInt64Field(value: &self.messageSeqNumber) }()
+      case 7: try { try decoder.decodeSingularMessageField(value: &self._settings) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.chatType != .peerToPeer {
       try visitor.visitSingularEnumField(value: self.chatType, fieldNumber: 1)
     }
@@ -229,6 +297,12 @@ extension Chat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     if !self.members.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.members, fieldNumber: 5)
     }
+    if self.messageSeqNumber != 0 {
+      try visitor.visitSingularUInt64Field(value: self.messageSeqNumber, fieldNumber: 6)
+    }
+    try { if let v = self._settings {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -238,6 +312,8 @@ extension Chat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     if lhs.title != rhs.title {return false}
     if lhs.unread != rhs.unread {return false}
     if lhs.members != rhs.members {return false}
+    if lhs.messageSeqNumber != rhs.messageSeqNumber {return false}
+    if lhs._settings != rhs._settings {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

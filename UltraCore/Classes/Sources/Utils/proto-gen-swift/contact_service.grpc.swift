@@ -50,6 +50,11 @@ internal protocol ContactServiceClientProtocol: GRPCClient {
     _ request: GetStatusesRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<GetStatusesRequest, GetStatusesResponse>
+
+  func acceptContact(
+    _ request: AcceptContactRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<AcceptContactRequest, AcceptContactResponse>
 }
 
 extension ContactServiceClientProtocol {
@@ -126,6 +131,24 @@ extension ContactServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeGetStatusesInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to AcceptContact
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to AcceptContact.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  internal func acceptContact(
+    _ request: AcceptContactRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<AcceptContactRequest, AcceptContactResponse> {
+    return self.makeUnaryCall(
+      path: ContactServiceClientMetadata.Methods.acceptContact.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeAcceptContactInterceptors() ?? []
     )
   }
 }
@@ -214,6 +237,11 @@ internal protocol ContactServiceAsyncClientProtocol: GRPCClient {
     _ request: GetStatusesRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<GetStatusesRequest, GetStatusesResponse>
+
+  func makeAcceptContactCall(
+    _ request: AcceptContactRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<AcceptContactRequest, AcceptContactResponse>
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -273,6 +301,18 @@ extension ContactServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeGetStatusesInterceptors() ?? []
     )
   }
+
+  internal func makeAcceptContactCall(
+    _ request: AcceptContactRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<AcceptContactRequest, AcceptContactResponse> {
+    return self.makeAsyncUnaryCall(
+      path: ContactServiceClientMetadata.Methods.acceptContact.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeAcceptContactInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -324,6 +364,18 @@ extension ContactServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeGetStatusesInterceptors() ?? []
     )
   }
+
+  internal func acceptContact(
+    _ request: AcceptContactRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> AcceptContactResponse {
+    return try await self.performAsyncUnaryCall(
+      path: ContactServiceClientMetadata.Methods.acceptContact.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeAcceptContactInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -358,6 +410,9 @@ internal protocol ContactServiceClientInterceptorFactoryProtocol: GRPCSendable {
 
   /// - Returns: Interceptors to use when invoking 'getStatuses'.
   func makeGetStatusesInterceptors() -> [ClientInterceptor<GetStatusesRequest, GetStatusesResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'acceptContact'.
+  func makeAcceptContactInterceptors() -> [ClientInterceptor<AcceptContactRequest, AcceptContactResponse>]
 }
 
 internal enum ContactServiceClientMetadata {
@@ -369,6 +424,7 @@ internal enum ContactServiceClientMetadata {
       ContactServiceClientMetadata.Methods.getContacts,
       ContactServiceClientMetadata.Methods.getContactByUserId,
       ContactServiceClientMetadata.Methods.getStatuses,
+      ContactServiceClientMetadata.Methods.acceptContact,
     ]
   )
 
@@ -396,6 +452,12 @@ internal enum ContactServiceClientMetadata {
       path: "/ContactService/GetStatuses",
       type: GRPCCallType.unary
     )
+
+    internal static let acceptContact = GRPCMethodDescriptor(
+      name: "AcceptContact",
+      path: "/ContactService/AcceptContact",
+      type: GRPCCallType.unary
+    )
   }
 }
 
@@ -410,6 +472,8 @@ internal protocol ContactServiceProvider: CallHandlerProvider {
   func getContactByUserId(request: ContactByUserIdRequest, context: StatusOnlyCallContext) -> EventLoopFuture<ContactByUserIdResponse>
 
   func getStatuses(request: GetStatusesRequest, context: StatusOnlyCallContext) -> EventLoopFuture<GetStatusesResponse>
+
+  func acceptContact(request: AcceptContactRequest, context: StatusOnlyCallContext) -> EventLoopFuture<AcceptContactResponse>
 }
 
 extension ContactServiceProvider {
@@ -460,6 +524,15 @@ extension ContactServiceProvider {
         userFunction: self.getStatuses(request:context:)
       )
 
+    case "AcceptContact":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<AcceptContactRequest>(),
+        responseSerializer: ProtobufSerializer<AcceptContactResponse>(),
+        interceptors: self.interceptors?.makeAcceptContactInterceptors() ?? [],
+        userFunction: self.acceptContact(request:context:)
+      )
+
     default:
       return nil
     }
@@ -493,6 +566,11 @@ internal protocol ContactServiceAsyncProvider: CallHandlerProvider {
     request: GetStatusesRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> GetStatusesResponse
+
+  @Sendable func acceptContact(
+    request: AcceptContactRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> AcceptContactResponse
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -550,6 +628,15 @@ extension ContactServiceAsyncProvider {
         wrapping: self.getStatuses(request:context:)
       )
 
+    case "AcceptContact":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<AcceptContactRequest>(),
+        responseSerializer: ProtobufSerializer<AcceptContactResponse>(),
+        interceptors: self.interceptors?.makeAcceptContactInterceptors() ?? [],
+        wrapping: self.acceptContact(request:context:)
+      )
+
     default:
       return nil
     }
@@ -575,6 +662,10 @@ internal protocol ContactServiceServerInterceptorFactoryProtocol {
   /// - Returns: Interceptors to use when handling 'getStatuses'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeGetStatusesInterceptors() -> [ServerInterceptor<GetStatusesRequest, GetStatusesResponse>]
+
+  /// - Returns: Interceptors to use when handling 'acceptContact'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeAcceptContactInterceptors() -> [ServerInterceptor<AcceptContactRequest, AcceptContactResponse>]
 }
 
 internal enum ContactServiceServerMetadata {
@@ -586,6 +677,7 @@ internal enum ContactServiceServerMetadata {
       ContactServiceServerMetadata.Methods.getContacts,
       ContactServiceServerMetadata.Methods.getContactByUserId,
       ContactServiceServerMetadata.Methods.getStatuses,
+      ContactServiceServerMetadata.Methods.acceptContact,
     ]
   )
 
@@ -611,6 +703,12 @@ internal enum ContactServiceServerMetadata {
     internal static let getStatuses = GRPCMethodDescriptor(
       name: "GetStatuses",
       path: "/ContactService/GetStatuses",
+      type: GRPCCallType.unary
+    )
+
+    internal static let acceptContact = GRPCMethodDescriptor(
+      name: "AcceptContact",
+      path: "/ContactService/AcceptContact",
       type: GRPCCallType.unary
     )
   }

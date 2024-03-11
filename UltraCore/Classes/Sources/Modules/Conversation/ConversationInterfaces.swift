@@ -15,6 +15,7 @@ protocol ConversationWireframeInterface: WireframeInterface {
     func navigateTo(contact: ContactDisplayable)
     func openMoneyController(callback: @escaping MoneyCallback)
     func navigateToCall(response: CreateCallResponse, isVideo: Bool)
+    func closeChat()
 }
 
 protocol ConversationViewInterface: ViewInterface {
@@ -23,6 +24,8 @@ protocol ConversationViewInterface: ViewInterface {
     func display(is typing: UserTypingWithDate)
     func reported()
     func blocked(is blocked: Bool)
+    func showDisclaimer(show: Bool, delegate: DisclaimerViewDelegate)
+    func showOnReceiveDisclaimer(delegate: DisclaimerViewDelegate, contact: ContactDisplayable?)
 }
 
 protocol ConversationPresenterInterface: PresenterInterface {

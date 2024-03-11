@@ -56,6 +56,11 @@ internal protocol MessageServiceClientProtocol: GRPCClient {
     callOptions: CallOptions?
   ) -> UnaryCall<MessagesDeleteRequest, MessagesDeleteResponse>
 
+  func edit(
+    _ request: MessagesEditRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<MessagesEditRequest, MessagesEditResponse>
+
   func complain(
     _ request: ComplainRequest,
     callOptions: CallOptions?
@@ -174,6 +179,24 @@ extension MessageServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeDeleteInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to Edit
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to Edit.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  internal func edit(
+    _ request: MessagesEditRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<MessagesEditRequest, MessagesEditResponse> {
+    return self.makeUnaryCall(
+      path: MessageServiceClientMetadata.Methods.edit.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeEditInterceptors() ?? []
     )
   }
 
@@ -359,6 +382,11 @@ internal protocol MessageServiceAsyncClientProtocol: GRPCClient {
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<MessagesDeleteRequest, MessagesDeleteResponse>
 
+  func makeEditCall(
+    _ request: MessagesEditRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<MessagesEditRequest, MessagesEditResponse>
+
   func makeComplainCall(
     _ request: ComplainRequest,
     callOptions: CallOptions?
@@ -452,6 +480,18 @@ extension MessageServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeDeleteInterceptors() ?? []
+    )
+  }
+
+  internal func makeEditCall(
+    _ request: MessagesEditRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<MessagesEditRequest, MessagesEditResponse> {
+    return self.makeAsyncUnaryCall(
+      path: MessageServiceClientMetadata.Methods.edit.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeEditInterceptors() ?? []
     )
   }
 
@@ -578,6 +618,18 @@ extension MessageServiceAsyncClientProtocol {
     )
   }
 
+  internal func edit(
+    _ request: MessagesEditRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> MessagesEditResponse {
+    return try await self.performAsyncUnaryCall(
+      path: MessageServiceClientMetadata.Methods.edit.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeEditInterceptors() ?? []
+    )
+  }
+
   internal func complain(
     _ request: ComplainRequest,
     callOptions: CallOptions? = nil
@@ -675,6 +727,9 @@ internal protocol MessageServiceClientInterceptorFactoryProtocol: GRPCSendable {
   /// - Returns: Interceptors to use when invoking 'delete'.
   func makeDeleteInterceptors() -> [ClientInterceptor<MessagesDeleteRequest, MessagesDeleteResponse>]
 
+  /// - Returns: Interceptors to use when invoking 'edit'.
+  func makeEditInterceptors() -> [ClientInterceptor<MessagesEditRequest, MessagesEditResponse>]
+
   /// - Returns: Interceptors to use when invoking 'complain'.
   func makeComplainInterceptors() -> [ClientInterceptor<ComplainRequest, ComplainResponse>]
 
@@ -701,6 +756,7 @@ internal enum MessageServiceClientMetadata {
       MessageServiceClientMetadata.Methods.delivered,
       MessageServiceClientMetadata.Methods.read,
       MessageServiceClientMetadata.Methods.delete,
+      MessageServiceClientMetadata.Methods.edit,
       MessageServiceClientMetadata.Methods.complain,
       MessageServiceClientMetadata.Methods.sendTyping,
       MessageServiceClientMetadata.Methods.sendAudioRecording,
@@ -737,6 +793,12 @@ internal enum MessageServiceClientMetadata {
     internal static let delete = GRPCMethodDescriptor(
       name: "Delete",
       path: "/MessageService/Delete",
+      type: GRPCCallType.unary
+    )
+
+    internal static let edit = GRPCMethodDescriptor(
+      name: "Edit",
+      path: "/MessageService/Edit",
       type: GRPCCallType.unary
     )
 
@@ -787,6 +849,8 @@ internal protocol MessageServiceProvider: CallHandlerProvider {
   func read(request: MessagesReadRequest, context: StatusOnlyCallContext) -> EventLoopFuture<MessagesReadResponse>
 
   func delete(request: MessagesDeleteRequest, context: StatusOnlyCallContext) -> EventLoopFuture<MessagesDeleteResponse>
+
+  func edit(request: MessagesEditRequest, context: StatusOnlyCallContext) -> EventLoopFuture<MessagesEditResponse>
 
   func complain(request: ComplainRequest, context: StatusOnlyCallContext) -> EventLoopFuture<ComplainResponse>
 
@@ -857,6 +921,15 @@ extension MessageServiceProvider {
         responseSerializer: ProtobufSerializer<MessagesDeleteResponse>(),
         interceptors: self.interceptors?.makeDeleteInterceptors() ?? [],
         userFunction: self.delete(request:context:)
+      )
+
+    case "Edit":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<MessagesEditRequest>(),
+        responseSerializer: ProtobufSerializer<MessagesEditResponse>(),
+        interceptors: self.interceptors?.makeEditInterceptors() ?? [],
+        userFunction: self.edit(request:context:)
       )
 
     case "Complain":
@@ -944,6 +1017,11 @@ internal protocol MessageServiceAsyncProvider: CallHandlerProvider {
     request: MessagesDeleteRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> MessagesDeleteResponse
+
+  @Sendable func edit(
+    request: MessagesEditRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> MessagesEditResponse
 
   @Sendable func complain(
     request: ComplainRequest,
@@ -1038,6 +1116,15 @@ extension MessageServiceAsyncProvider {
         wrapping: self.delete(request:context:)
       )
 
+    case "Edit":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<MessagesEditRequest>(),
+        responseSerializer: ProtobufSerializer<MessagesEditResponse>(),
+        interceptors: self.interceptors?.makeEditInterceptors() ?? [],
+        wrapping: self.edit(request:context:)
+      )
+
     case "Complain":
       return GRPCAsyncServerHandler(
         context: context,
@@ -1113,6 +1200,10 @@ internal protocol MessageServiceServerInterceptorFactoryProtocol {
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeDeleteInterceptors() -> [ServerInterceptor<MessagesDeleteRequest, MessagesDeleteResponse>]
 
+  /// - Returns: Interceptors to use when handling 'edit'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeEditInterceptors() -> [ServerInterceptor<MessagesEditRequest, MessagesEditResponse>]
+
   /// - Returns: Interceptors to use when handling 'complain'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeComplainInterceptors() -> [ServerInterceptor<ComplainRequest, ComplainResponse>]
@@ -1144,6 +1235,7 @@ internal enum MessageServiceServerMetadata {
       MessageServiceServerMetadata.Methods.delivered,
       MessageServiceServerMetadata.Methods.read,
       MessageServiceServerMetadata.Methods.delete,
+      MessageServiceServerMetadata.Methods.edit,
       MessageServiceServerMetadata.Methods.complain,
       MessageServiceServerMetadata.Methods.sendTyping,
       MessageServiceServerMetadata.Methods.sendAudioRecording,
@@ -1180,6 +1272,12 @@ internal enum MessageServiceServerMetadata {
     internal static let delete = GRPCMethodDescriptor(
       name: "Delete",
       path: "/MessageService/Delete",
+      type: GRPCCallType.unary
+    )
+
+    internal static let edit = GRPCMethodDescriptor(
+      name: "Edit",
+      path: "/MessageService/Edit",
       type: GRPCCallType.unary
     )
 

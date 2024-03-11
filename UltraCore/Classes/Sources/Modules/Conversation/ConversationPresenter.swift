@@ -42,6 +42,7 @@ final class ConversationPresenter {
     private let makeVibrationInteractor: UseCase<UIImpactFeedbackGenerator.FeedbackStyle, Void>
     private let messageSenderInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendResponse>
     private let messageSentSoundInteractor: UseCase<MakeSoundInteractor.Sound, Void>
+    private let acceptContactInteractor: GRPCErrorUseCase<String, Void>
     
     // MARK: - Public properties -
 
@@ -66,27 +67,30 @@ final class ConversationPresenter {
 
     // MARK: - Lifecycle -
 
-    init(userID: String,
-         appStore: AppSettingsStore,
-         conversation: Conversation,
-         view: ConversationViewInterface,
-         mediaRepository: MediaRepository,
-         callService: CallServiceClientProtocol,
-         updateRepository: UpdateRepository,
-         messageRepository: MessageRepository,
-         contactRepository: ContactsRepository,
-         wireframe: ConversationWireframeInterface,
-         conversationRepository: ConversationRepository,
-         deleteMessageInteractor: GRPCErrorUseCase<([Message], Bool), Void>,
-         blockContactInteractor: GRPCErrorUseCase<BlockParam, Void>,
-         messagesInteractor: GRPCErrorUseCase<GetChatMessagesRequest, [Message]>,
-         sendTypingInteractor: GRPCErrorUseCase<String, SendTypingResponse>,
-         readMessageInteractor: GRPCErrorUseCase<Message, MessagesReadResponse>,
-         sendMoneyInteractor: UseCase<TransferPayload, TransferResponse>,
-
-         makeVibrationInteractor: UseCase<UIImpactFeedbackGenerator.FeedbackStyle, Void>,
-         messageSenderInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendResponse>,
-         messageSentSoundInteractor: UseCase<MakeSoundInteractor.Sound, Void>) {
+    init(
+        userID: String,
+        appStore: AppSettingsStore,
+        conversation: Conversation,
+        view: ConversationViewInterface,
+        mediaRepository: MediaRepository,
+        callService: CallServiceClientProtocol,
+        updateRepository: UpdateRepository,
+        messageRepository: MessageRepository,
+        contactRepository: ContactsRepository,
+        wireframe: ConversationWireframeInterface,
+        conversationRepository: ConversationRepository,
+        deleteMessageInteractor: GRPCErrorUseCase<([Message], Bool), Void>,
+        blockContactInteractor: GRPCErrorUseCase<BlockParam, Void>,
+        messagesInteractor: GRPCErrorUseCase<GetChatMessagesRequest, [Message]>,
+        sendTypingInteractor: GRPCErrorUseCase<String, SendTypingResponse>,
+        readMessageInteractor: GRPCErrorUseCase<Message, MessagesReadResponse>,
+        sendMoneyInteractor: UseCase<TransferPayload, TransferResponse>,
+        
+        makeVibrationInteractor: UseCase<UIImpactFeedbackGenerator.FeedbackStyle, Void>,
+        messageSenderInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendResponse>,
+        messageSentSoundInteractor: UseCase<MakeSoundInteractor.Sound, Void>,
+        acceptContactInteractor: GRPCErrorUseCase<String, Void>
+    ) {
 
         self.view = view
         self.userID = userID
@@ -108,6 +112,7 @@ final class ConversationPresenter {
         self.messageSenderInteractor = messageSenderInteractor
         self.makeVibrationInteractor = makeVibrationInteractor
         self.messageSentSoundInteractor = messageSentSoundInteractor
+        self.acceptContactInteractor = acceptContactInteractor
     }
 }
 
@@ -463,7 +468,12 @@ extension ConversationPresenter: ConversationPresenterInterface {
     func viewDidLoad() {
         subscribeToVisibility()
         view?.setup(conversation: conversation)
-        
+        if conversation.addContact && conversation.seqNumber > 0 {
+            view?.showOnReceiveDisclaimer(delegate: self, contact: conversation.peer)
+        } else if conversation.addContact {
+            view?.showDisclaimer(show: true, delegate: self)
+        }
+
         updateRepository.typingUsers
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
@@ -549,4 +559,26 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .disposed(by: disposeBag)
     }
 
+}
+
+extension ConversationPresenter: DisclaimerViewDelegate {
+    func disclaimerDidTapAgree() {
+        guard let userID = self.conversation.peer?.userID else {
+            return
+        }
+        acceptContactInteractor
+            .executeSingle(params: userID)
+            .observe(on: MainScheduler.instance)
+            .subscribe { [weak self] _ in
+                guard let self = self else { return }
+                self.view?.showDisclaimer(show: false, delegate: self)
+            } onFailure: { [weak self] error in
+                self?.view?.show(error: error.localizedDescription)
+            }
+            .disposed(by: disposeBag)
+    }
+    
+    func disclaimerDidTapClose() {
+        wireframe.closeChat()
+    }
 }

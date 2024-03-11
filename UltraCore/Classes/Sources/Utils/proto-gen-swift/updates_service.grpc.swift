@@ -66,8 +66,6 @@ extension UpdatesServiceClientProtocol {
   /// and session will be tracked by this listener. Listening session
   /// has 180 seconds expiration time, is at that time period client
   /// will not call Ping then session will be aborted
-  /// 
-  /// Main reason: test
   ///
   /// - Parameters:
   ///   - request: Request to send to Listen.
@@ -432,8 +430,6 @@ internal protocol UpdatesServiceProvider: CallHandlerProvider {
   /// and session will be tracked by this listener. Listening session
   /// has 180 seconds expiration time, is at that time period client
   /// will not call Ping then session will be aborted
-  /// 
-  /// Main reason: test
   func listen(request: ListenRequest, context: StreamingResponseCallContext<Updates>) -> EventLoopFuture<GRPCStatus>
 
   /// Empty message to extend user session. Client must
@@ -521,8 +517,6 @@ internal protocol UpdatesServiceAsyncProvider: CallHandlerProvider {
   /// and session will be tracked by this listener. Listening session
   /// has 180 seconds expiration time, is at that time period client
   /// will not call Ping then session will be aborted
-  /// 
-  /// Main reason: test
   @Sendable func listen(
     request: ListenRequest,
     responseStream: GRPCAsyncResponseStreamWriter<Updates>,

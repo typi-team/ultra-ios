@@ -47,7 +47,12 @@ extension AuthServiceClientProtocol {
     return "AuthService"
   }
 
-  /// Unary call to GetUserId
+  /// Returns user id by "phone", if user is not found
+  /// then user will be created. Purpose of this endpoint
+  /// is to have simplified user creation for tests and development
+  /// Important: enabled only in "DEV" mode, this method allows
+  /// to get information about any user and very dangerous to
+  /// enable it in production
   ///
   /// - Parameters:
   ///   - request: Request to send to GetUserId.
@@ -65,7 +70,9 @@ extension AuthServiceClientProtocol {
     )
   }
 
-  /// Unary call to IssueJwt
+  /// Creates jwt token for user, in "DEV" mode
+  /// method generates jwt without any verification,
+  /// in the "PRODUCTION" mode "session_id" is required
   ///
   /// - Parameters:
   ///   - request: Request to send to IssueJwt.
@@ -279,8 +286,17 @@ internal enum AuthServiceClientMetadata {
 internal protocol AuthServiceProvider: CallHandlerProvider {
   var interceptors: AuthServiceServerInterceptorFactoryProtocol? { get }
 
+  /// Returns user id by "phone", if user is not found
+  /// then user will be created. Purpose of this endpoint
+  /// is to have simplified user creation for tests and development
+  /// Important: enabled only in "DEV" mode, this method allows
+  /// to get information about any user and very dangerous to
+  /// enable it in production
   func getUserId(request: GetUserIdRequest, context: StatusOnlyCallContext) -> EventLoopFuture<GetUserIdResponse>
 
+  /// Creates jwt token for user, in "DEV" mode
+  /// method generates jwt without any verification,
+  /// in the "PRODUCTION" mode "session_id" is required
   func issueJwt(request: IssueJwtRequest, context: StatusOnlyCallContext) -> EventLoopFuture<IssueJwtResponse>
 }
 
@@ -328,11 +344,20 @@ internal protocol AuthServiceAsyncProvider: CallHandlerProvider {
   static var serviceDescriptor: GRPCServiceDescriptor { get }
   var interceptors: AuthServiceServerInterceptorFactoryProtocol? { get }
 
+  /// Returns user id by "phone", if user is not found
+  /// then user will be created. Purpose of this endpoint
+  /// is to have simplified user creation for tests and development
+  /// Important: enabled only in "DEV" mode, this method allows
+  /// to get information about any user and very dangerous to
+  /// enable it in production
   @Sendable func getUserId(
     request: GetUserIdRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> GetUserIdResponse
 
+  /// Creates jwt token for user, in "DEV" mode
+  /// method generates jwt without any verification,
+  /// in the "PRODUCTION" mode "session_id" is required
   @Sendable func issueJwt(
     request: IssueJwtRequest,
     context: GRPCAsyncServerCallContext
