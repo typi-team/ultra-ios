@@ -141,22 +141,6 @@ extension UpdateRepositoryImpl: UpdateRepository {
         }
     }
     
-    func handleIncoming(callRequest: CallInformation) {
-        self.contactByIDInteractor
-            .executeSingle(params: callRequest.sender)
-            .flatMap({ self.contactService.save(contact: $0) })
-            .observe(on: MainScheduler.instance)
-            .subscribe(onSuccess: { () in
-//                if let topController = UIApplication.topViewController() {
-//                    if let incomingController = topController as? IncomingCallViewController {
-//                        provider?.setDelegate(incomingController, queue: nil)
-//                    } else {
-//                        topController.presentWireframeWithNavigation(IncomingCallWireframe(call: .incoming(callRequest), provider: provider))
-//                    }
-//                }
-            })
-            .disposed(by: disposeBag)
-    }
 }
 
 private extension UpdateRepositoryImpl {
@@ -198,8 +182,6 @@ private extension UpdateRepositoryImpl {
         case let .callReject(reject):
             PP.debug("[CALL] - Server Call reject - \(reject.room)")
             self.dissmissCall(in: reject.room)
-        case let .callRequest(callRequest):
-            self.handleIncoming(callRequest: callRequest)
         case let .callCancel(callrequest):
             PP.debug("[CALL] - Server Call cancel - \(callrequest.room)")
             self.dissmissCall(in: callrequest.room)
@@ -219,7 +201,6 @@ private extension UpdateRepositoryImpl {
     func dissmissCall(in room: String) {
         DispatchQueue.main.async {
             UltraVoIPManager.shared.serverEndCall()
-//            RoomManager.shared.disconnectRoom(for: room)
         }
     }
         
