@@ -569,6 +569,13 @@ extension ConversationPresenter: DisclaimerViewDelegate {
         acceptContactInteractor
             .executeSingle(params: userID)
             .observe(on: MainScheduler.instance)
+            .do(onSuccess: { [weak self] _ in
+                guard let self = self else { return }
+                self.conversationRepository
+                    .update(addContact: false, for: self.conversation.idintification)
+                    .subscribe()
+                    .disposed(by: self.disposeBag)
+            })
             .subscribe { [weak self] _ in
                 guard let self = self else { return }
                 self.view?.showDisclaimer(show: false, delegate: self)

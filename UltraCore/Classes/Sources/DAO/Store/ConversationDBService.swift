@@ -10,7 +10,12 @@ import RealmSwift
 
 class ConversationDBService {
     
+    enum ConversationError: Error {
+        case notFound
+    }
+    
     fileprivate let appStore: AppSettingsStore
+    fileprivate lazy var chatService: ChatServiceClientProtocol = AppSettingsImpl.shared.conversationService
     
     fileprivate var userID: String  {
         return self.appStore.userID()
@@ -18,34 +23,60 @@ class ConversationDBService {
     
     init(appStore: AppSettingsStore) {
         self.appStore = appStore
+        self.chatService = chatService
     }
     
     func createIfNotExist(from message: Message) -> Single<Void> {
         return Single.create {[weak self] observer -> Disposable in
             guard let `self` = self else { return Disposables.create() }
-            do {
-                let realm = Realm.myRealm()
-                try realm.write({
-                    let peerID = message.peerId(user: self.userID)
-                    let contact = realm.object(ofType: DBContact.self, forPrimaryKey: peerID )
-                    let existConversation = realm.object(ofType: DBConversation.self, forPrimaryKey: message.receiver.chatID)
-                    if let conversation = existConversation {
+            let realm = Realm.myRealm()
+            let peerID = message.peerId(user: self.userID)
+            let contact = realm.object(ofType: DBContact.self, forPrimaryKey: peerID )
+            let existConversation = realm.object(ofType: DBConversation.self, forPrimaryKey: message.receiver.chatID)
+            if let conversation = existConversation {
+                do {
+                    try realm.write {
                         conversation.contact = contact
                         conversation.lastSeen = message.meta.created
                         conversation.message = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm, user: self.userID)
                         realm.create(DBConversation.self, value: conversation, update: .all)
-                    } else {
-                        let conversation = realm.create(DBConversation.self,
-                                                        value: DBConversation(message: message, user: self.userID))
-                        conversation.contact = contact
-                        realm.add(conversation)
                     }
-                    
-                })
-                observer(.success(()))
-                
-            } catch let exception {
-                observer(.failure(exception))
+                    observer(.success(()))
+                } catch {
+                    observer(.failure(error))
+                }
+            } else {
+                let request = GetChatSettingsRequest.with {
+                    $0.id = message.receiver.chatID
+                }
+                self.chatService
+                    .getSettings(request, callOptions: .default())
+                    .response
+                    .whenComplete { result in
+                        switch result {
+                        case .success(let response):
+                            do {
+                                let localRealm = Realm.myRealm()
+                                try localRealm.write {
+                                    let conversation = localRealm.create(
+                                        DBConversation.self,
+                                        value: DBConversation(
+                                            message: message,
+                                            user: self.userID,
+                                            addContact: response.settings.addContact
+                                        )
+                                    )
+                                    conversation.contact = contact
+                                    localRealm.add(conversation)
+                                }
+                                observer(.success(()))
+                            } catch {
+                                observer(.failure(error))
+                            }
+                        case .failure(let error):
+                            observer(.failure(error))
+                        }
+                    }
             }
             return Disposables.create()
         }
@@ -111,6 +142,26 @@ class ConversationDBService {
             } else {
                 return Single.just(nil)
             }
+        }
+    }
+    
+    func update(addContact: Bool, id: String) -> Single<Void> {
+        return Single.create { single in
+            let realm = Realm.myRealm()
+            guard let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: id) else {
+                single(.failure(ConversationError.notFound))
+                return Disposables.create()
+            }
+            do {
+                try realm.write {
+                    conversation.addContact = addContact
+                    realm.add(conversation, update: .all)
+                }
+                single(.success(()))
+            } catch {
+                single(.failure(error))
+            }
+            return Disposables.create()
         }
     }
     

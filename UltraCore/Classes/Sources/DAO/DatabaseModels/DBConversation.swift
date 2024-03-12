@@ -38,13 +38,14 @@ class DBConversation: Object {
         self.seqNumber = Int(conversation.seqNumber)
     }
     
-    convenience init(message: Message, realm: Realm = .myRealm(), user id: String?) {
+    convenience init(message: Message, realm: Realm = .myRealm(), user id: String?, addContact: Bool) {
         self.init()
         
         self.lastSeen = message.meta.created
         self.message = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm, user: id)
         self.idintification = message.receiver.chatID
         self.contact = realm.object(ofType: DBContact.self, forPrimaryKey: message.sender.userID == id ? message.receiver.userID : message.sender.userID)
+        self.addContact = addContact
         self.seqNumber = Int(message.seqNumber)
         
     }
