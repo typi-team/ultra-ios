@@ -57,6 +57,8 @@ class ConversationDBService {
                         case .success(let response):
                             do {
                                 let localRealm = Realm.myRealm()
+                                let peerID = message.peerId(user: self.userID)
+                                let contact = localRealm.object(ofType: DBContact.self, forPrimaryKey: peerID)
                                 try localRealm.write {
                                     let conversation = localRealm.create(
                                         DBConversation.self,
