@@ -63,7 +63,7 @@ final class DisclaimerView: UIView {
         label.text = ConversationStrings.disclaimer.localized
         return label
     }()
-    private let disclaimerLogo = UIImageView(image: UIImage.fromAssets("conversation_warning"))
+    private let disclaimerLogo = UIImageView(image: UltraCoreStyle.disclaimerStyle.warningImage.image)
     private lazy var disclaimerStack: UIStackView = {
         let stack = UIStackView(arrangedSubviews: [disclaimerLogo, disclaimerLabel])
         stack.spacing = 16

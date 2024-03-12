@@ -9,6 +9,7 @@ import Foundation
 
 public protocol DisclaimerStyleConfig {
     var backgroundColor: TwiceColor { get set }
+    var warningImage: TwiceImage { get set }
     var warningTextConfig: LabelConfig { get set }
     var closeButtonBackgroundColor: TwiceColor { get set }
     var closeButtontTextConfig: LabelConfig { get set }
