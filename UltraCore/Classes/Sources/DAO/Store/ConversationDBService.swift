@@ -125,6 +125,22 @@ class ConversationDBService {
         }
     }
     
+    func setUnread(for conversationID: String, count: Int) {
+        PP.debug("Trying to set unread for conversationID - \(conversationID)")
+        do {
+            let realm = Realm.myRealm()
+            try realm.write {
+                if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID) {
+                    PP.debug("Set unread for conversationID - \(conversationID)")
+                    conversation.unreadMessageCount = count
+                    realm.add(conversation, update: .all)
+                }
+            }
+        } catch {
+            PP.debug("Error on setting unread - \(error)")
+        }
+    }
+    
     @discardableResult
     func realAllMessage(for conversationID: String) -> Bool {
         do {

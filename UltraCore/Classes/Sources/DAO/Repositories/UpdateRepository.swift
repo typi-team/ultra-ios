@@ -146,7 +146,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
 private extension UpdateRepositoryImpl {
     func handleUnread(from chats: [Chat]) {
         for chat in chats {
-            self.conversationService.incrementUnread(for: chat.chatID, count: Int(chat.unread))
+            conversationService.setUnread(for: chat.chatID, count: Int(chat.unread))
         }
     }
     
@@ -170,13 +170,34 @@ private extension UpdateRepositoryImpl {
     }
     
     func handle(of presence: Update.OneOf_OfPresence) {
+        PP.debug("[PRESENCE] - \(presence)")
         switch presence {
         case let .typing(typing):
             self.handle(user: typing)
         case let .audioRecording(pres):
             PP.debug(pres.textFormatString())
         case let .userStatus(status):
-            _ = self.contactService.update(contact: status).subscribe()
+            if contactService.contact(id: status.userID) != nil {
+                contactService.update(contact: status)
+                    .subscribe()
+                    .disposed(by: disposeBag)
+            } else {
+                contactByIDInteractor.executeSingle(params: status.userID)
+                    .flatMap { [weak self] contact in
+                        guard let self = self else {
+                            throw NSError.selfIsNill
+                        }
+                        return self.contactService.save(contact: contact)
+                    }
+                    .flatMap { [weak self] _ in
+                        guard let self = self else {
+                            throw NSError.selfIsNill
+                        }
+                        return self.contactService.update(contact: status)
+                    }
+                    .subscribe()
+                    .disposed(by: disposeBag)
+            }
         case let .mediaUploading(pres):
             PP.debug(pres.textFormatString())
         case let .callReject(reject):
@@ -207,6 +228,7 @@ private extension UpdateRepositoryImpl {
     }
         
     func handle(of update: Update.OneOf_OfUpdate) {
+        PP.debug("[UPDATE] - \(update)")
         switch update {
         case let .message(message):
             self.update(message: message, completion: { })
@@ -242,7 +264,7 @@ extension UpdateRepositoryImpl {
         let contactID = message.peerId(user: self.appStore.userID())
         let contact = self.contactService.contact(id: contactID)
         if contact == nil {
-            _ = self.contactByIDInteractor
+            self.contactByIDInteractor
                 .executeSingle(params: contactID)
                 .flatMap({ self.contactService.save(contact: $0) })
                 .flatMap({ _ in self.conversationService.createIfNotExist(from: message) })
@@ -250,20 +272,23 @@ extension UpdateRepositoryImpl {
                 .subscribe(onDisposed: {
                     completion()
                 })
+                .disposed(by: disposeBag)
 
         } else {
             self.conversationService
                 .createIfNotExist(from: message)
                 .flatMap({ self.messageService.update(message: message) })
-                .subscribe()
-                .dispose()
+                .subscribe(onDisposed: {
+                    completion()
+                })
+                .disposed(by: disposeBag)
         }
         
         if message.state.delivered == false && message.isIncome {
             self.deliveredMessageInteractor
                 .executeSingle(params: message)
                 .subscribe()
-                .dispose()
+                .disposed(by: disposeBag)
         }
     }
     
