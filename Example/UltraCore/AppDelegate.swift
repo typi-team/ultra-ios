@@ -20,6 +20,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         FirebaseApp.configure()
         setDefaultStyleSettings()
         self.setupNotificationSettings(application: application)
+        UltraVoIPManager.shared.application(application, didFinishLaunchingWithOptions: launchOptions)
         return true
     }
 }
@@ -43,7 +44,7 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         guard let token = Messaging.messaging().fcmToken else { return }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: {
-            UltraCoreSettings.update(firebase: token)
+            UltraCoreSettings.update(firebase: token, voipToken: UltraVoIPManager.shared.token)
             ViewModel().didRegisterForRemoteNotifications()
         })
     }

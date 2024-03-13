@@ -8,6 +8,7 @@
 import Foundation
 import RxSwift
 import GRPC
+import CallKit
 
 protocol UpdateRepository: AnyObject {
     
@@ -139,12 +140,13 @@ extension UpdateRepositoryImpl: UpdateRepository {
             self.setupChangesSubscription(with: UInt64(appStore.lastState))
         }
     }
+    
 }
 
 private extension UpdateRepositoryImpl {
     func handleUnread(from chats: [Chat]) {
         for chat in chats {
-            self.conversationService.incrementUnread(for: chat.chatID, count: Int(chat.unread))
+            conversationService.setUnread(for: chat.chatID, count: Int(chat.unread))
         }
     }
     
@@ -168,20 +170,41 @@ private extension UpdateRepositoryImpl {
     }
     
     func handle(of presence: Update.OneOf_OfPresence) {
+        PP.debug("[PRESENCE] - \(presence)")
         switch presence {
         case let .typing(typing):
             self.handle(user: typing)
         case let .audioRecording(pres):
             PP.debug(pres.textFormatString())
         case let .userStatus(status):
-            _ = self.contactService.update(contact: status).subscribe()
+            if contactService.contact(id: status.userID) != nil {
+                contactService.update(contact: status)
+                    .subscribe()
+                    .disposed(by: disposeBag)
+            } else {
+                contactByIDInteractor.executeSingle(params: status.userID)
+                    .flatMap { [weak self] contact in
+                        guard let self = self else {
+                            throw NSError.selfIsNill
+                        }
+                        return self.contactService.save(contact: contact)
+                    }
+                    .flatMap { [weak self] _ in
+                        guard let self = self else {
+                            throw NSError.selfIsNill
+                        }
+                        return self.contactService.update(contact: status)
+                    }
+                    .subscribe()
+                    .disposed(by: disposeBag)
+            }
         case let .mediaUploading(pres):
             PP.debug(pres.textFormatString())
         case let .callReject(reject):
+            PP.debug("[CALL] - Server Call reject - \(reject.room)")
             self.dissmissCall(in: reject.room)
-        case let .callRequest(callRequest):
-            self.handleIncoming(callRequest: callRequest)
         case let .callCancel(callrequest):
+            PP.debug("[CALL] - Server Call cancel - \(callrequest.room)")
             self.dissmissCall(in: callrequest.room)
         case let .block(blockMessage):
             self.contactService
@@ -193,43 +216,22 @@ private extension UpdateRepositoryImpl {
                 .block(user: blockMessage.user, blocked: false)
                 .subscribe()
                 .disposed(by: disposeBag)
+        case .callRequest:
+            break
         }
     }
     
     func dissmissCall(in room: String) {
         DispatchQueue.main.async {
-            if var topController = UIApplication.shared.windows.filter({ $0.isKeyWindow }).first?.rootViewController {
-                while let presentedViewController = topController.presentedViewController {
-                    topController = presentedViewController
-                }
-                if topController is IncomingCallViewController {
-                    topController.dismiss(animated: true)
-                }
-            }
+            UltraVoIPManager.shared.serverEndCall()
         }
     }
-    
-    func handleIncoming(callRequest: CallRequest) {
-        self.contactByIDInteractor
-            .executeSingle(params: callRequest.sender)
-            .flatMap({ self.contactService.save(contact: $0) })
-            .observe(on: MainScheduler.instance)
-            .subscribe(onSuccess: { () in
-                if var topController = UIApplication.shared.windows.filter({ $0.isKeyWindow }).first?.rootViewController {
-                    while let presentedViewController = topController.presentedViewController {
-                        topController = presentedViewController
-                    }
-                    topController.presentWireframe(IncomingCallWireframe(call:.incoming(callRequest)))
-                }
-            })
-            .disposed(by: disposeBag)
-    }
-    
+        
     func handle(of update: Update.OneOf_OfUpdate) {
+        PP.debug("[UPDATE] - \(update)")
         switch update {
         case let .message(message):
             self.update(message: message, completion: { })
-            self.handleNewMessageOnRead(message: message)
         case let .contact(contact):
             self.update(contact: ContactDisplayableImpl(contact: contact))
         case let .messagesDelivered(message):
@@ -253,6 +255,7 @@ private extension UpdateRepositoryImpl {
 extension UpdateRepositoryImpl {
     
     func handleNewMessageOnRead(message: Message) {
+        PP.debug("Handle new message on read")
         guard message.sender.userID != self.appStore.userID() else { return }
         self.conversationService.incrementUnread(for: message.receiver.chatID)
     }
@@ -261,7 +264,7 @@ extension UpdateRepositoryImpl {
         let contactID = message.peerId(user: self.appStore.userID())
         let contact = self.contactService.contact(id: contactID)
         if contact == nil {
-            _ = self.contactByIDInteractor
+            self.contactByIDInteractor
                 .executeSingle(params: contactID)
                 .flatMap({ self.contactService.save(contact: $0) })
                 .flatMap({ _ in self.conversationService.createIfNotExist(from: message) })
@@ -269,20 +272,23 @@ extension UpdateRepositoryImpl {
                 .subscribe(onDisposed: {
                     completion()
                 })
+                .disposed(by: disposeBag)
 
         } else {
             self.conversationService
                 .createIfNotExist(from: message)
                 .flatMap({ self.messageService.update(message: message) })
-                .subscribe()
-                .dispose()
+                .subscribe(onDisposed: {
+                    completion()
+                })
+                .disposed(by: disposeBag)
         }
         
         if message.state.delivered == false && message.isIncome {
             self.deliveredMessageInteractor
                 .executeSingle(params: message)
                 .subscribe()
-                .dispose()
+                .disposed(by: disposeBag)
         }
     }
     
@@ -365,5 +371,20 @@ extension MessagesDeleted {
         }
 
         return closedRanges
+    }
+}
+
+extension UIApplication {
+    class func topViewController(root: UIViewController? = UIApplication.shared.windows.filter({ $0.isKeyWindow }).first?.rootViewController) -> UIViewController? {
+        if let nav = root as? UINavigationController {
+            return topViewController(root: nav.visibleViewController)
+
+        } else if let tab = root as? UITabBarController, let selected = tab.selectedViewController {
+            return topViewController(root: selected)
+
+        } else if let presented = root?.presentedViewController {
+            return topViewController(root: presented)
+        }
+        return root
     }
 }

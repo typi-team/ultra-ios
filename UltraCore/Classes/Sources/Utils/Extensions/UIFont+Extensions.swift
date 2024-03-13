@@ -8,7 +8,15 @@
 import Foundation
 
 extension UIFont {
+    
+    class var title3: UIFont {
+        return UIFont.systemFont(ofSize: 20, weight: .medium)
+    }
 
+    class var defaultRegularTitle2: UIFont {
+        return UIFont.systemFont(ofSize: 28.0, weight: .regular)
+    }
+    
     class var defaultRegularHeadline: UIFont {
         return UIFont.systemFont(ofSize: 18.0, weight: .regular)
     }

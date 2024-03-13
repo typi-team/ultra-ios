@@ -50,6 +50,10 @@ enum ConversationStrings: String, StringLocalizable {
     case ifAMessageContainsThreatsInappropriateContentOrViolatesAnyPlatformOrCommunity
     case yourComplaintWillBeReviewedByModeratorsThankYou
     
+    case disclaimer
+    case disclaimerAgree
+    case disclaimerClose
+    
     var prefixOfTemplate: String { "conversation" }
     var localizableValue: String { rawValue }
 }

@@ -18,13 +18,13 @@ final class IncomingCallWireframe: BaseWireframe<IncomingCallViewController> {
 
     init(call status: CallStatus) {
         let moduleViewController = IncomingCallViewController()
+        moduleViewController.modalPresentationStyle = .fullScreen
         super.init(viewController: moduleViewController)
 
         let presenter = IncomingCallPresenter.init(userId: appSettings.appStore.userID(),
                                                    callInformation: status,
                                                    view: moduleViewController,
                                                    contactService: appSettings.contactDBService,
-                                                   callService: appSettings.callService,
                                                    wireframe: self,
                                                    contactInteractor: .init(delegate: UltraCoreSettings.delegate, contactsService: appSettings.contactsService))
         moduleViewController.presenter = presenter

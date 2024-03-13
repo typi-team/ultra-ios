@@ -79,6 +79,7 @@ public class UltraCoreStyle {
     public static var reportViewStyle: ReportViewStyle = ReportViewStyleImpl()
     public static var messageCellStyle: MessageCellStyle = ReportViewStyleImpl()
     public static var fileCellConfig: FileCellConfig = FileCellConfigImpl()
+    public static var disclaimerStyle: DisclaimerStyleConfig = DisclaimerStyleConfigImpl()
 }
 
 private class MessageInputBarConfigImpl: MessageInputBarConfig {
@@ -113,31 +114,23 @@ private class VoiceInputBarConfigImpl: VoiceInputBarConfig {
 }
 
 private class CallPageStyleImpl: CallPageStyle {
-    
-//    var background: TwiceColor = TwiceColorImpl(defaultColor: .from(hex: "#0F141B"), darkColor: .from(hex: "#0F141B"))
-    var background: TwiceColor = TwiceColorImpl(defaultColor: .black, darkColor: .black)
-    
-    var companionConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .white, font: .defaultRegularHeadline)
-    
+    var background: TwiceColor = TwiceColorImpl(defaultColor: .from(hex: "#0F141B"), darkColor: .from(hex: "#0F141B"))
+    var backButtonTint: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .green500)
+    var companionConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .white, font: .defaultRegularTitle2)
     var durationConfig: LabelConfig = LabelConfigImpl(darkColor: .gray400, defaultColor: .gray400, font: .defaultRegularBody)
-    
-    var mouthpieceOnImage: UIImage = .named("calling.mouthpieceOn")!
-    
-    var mouthpieceOffImage: UIImage = .named("calling.mouthpieceOff")!
-    
-    var micOnImage: UIImage = .named("calling.micOn")!
-    
-    var micOffImage: UIImage = .named("calling.micOff")!
-    
-    var cameraOnImage: UIImage = .named("calling.cameraOn")!
-    
-    var cameraOffImage: UIImage = .named("calling.cameraOff")!
-    
-    var answerImage: UIImage = .named("calling.answer")!
-    
-    var declineImage: UIImage = .named("calling.decline")!
-    
-    var closeImage: UIImage = .named("calling.close")!
+    var companionVideoConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .white, font: .defaultRegularHeadline)
+    var durationVideoConfig: LabelConfig = LabelConfigImpl(darkColor: .gray400, defaultColor: .gray400, font: .defaultRegularFootnote)
+    var mouthpieceOnImage: UIImage = .fromAssets("calling.mouthpieceOn")!
+    var mouthpieceOffImage: UIImage = .fromAssets("calling.mouthpieceOff")!
+    var micOnImage: UIImage = .fromAssets("calling.micOn")!
+    var micOffImage: UIImage = .fromAssets("calling.micOff")!
+    var cameraOnImage: UIImage = .fromAssets("calling.cameraOn")!
+    var cameraOffImage: UIImage = .fromAssets("calling.cameraOff")!
+    var answerImage: UIImage = .fromAssets("calling.answer")!
+    var declineImage: UIImage = .fromAssets("calling.decline")!
+    var closeImage: UIImage = .fromAssets("calling.close")!
+    var switchFrontCameraImage: UIImage = .fromAssets("calling.switchCameraPosition")!
+    var switchBackCameraImage: UIImage = .fromAssets("calling.switchCameraPosition")!
 }
 
 private class ConversationCellConfigImpl: ConversationCellConfig {
@@ -175,4 +168,16 @@ private class FileCellConfigImpl: FileCellConfig {
         defaultColor: UltraCoreStyle.regularFootnoteConfig.color,
         font: UltraCoreStyle.regularFootnoteConfig.font
     )
+}
+
+private class DisclaimerStyleConfigImpl: DisclaimerStyleConfig {
+    var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .bgSurfaceMuted, darkColor: .bgSurfaceMuted)
+    var warningImage: TwiceImage = TwiceImageImpl(dark: UIImage(named: "conversation_warning")!, default: UIImage(named: "conversation_warning")!)
+    var warningTextConfig: LabelConfig = LabelConfigImpl(darkColor: .textSecondary, defaultColor: .textSecondary, font: .defaultRegularFootnote)
+    var closeButtonBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white, darkColor: .white)
+    var closeButtontTextConfig: LabelConfig = LabelConfigImpl(darkColor: .baseBlue, defaultColor: .baseBlue, font: .defaultRegularCallout)
+    var agreeButtonBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .uiBlueMuted, darkColor: .uiBlueMuted)
+    var agreeButtonTextConfig: LabelConfig = LabelConfigImpl(darkColor: .baseBlue, defaultColor: .baseBlue, font: .defaultRegularCallout)
+    var contactTextConfig: LabelConfig = LabelConfigImpl(darkColor: .textPrimary, defaultColor: .textPrimary, font: .title3)
+    var contactDescriptionConfig: LabelConfig = LabelConfigImpl(darkColor: .textPrimary, defaultColor: .textPrimary, font: .defaultRegularFootnote)
 }

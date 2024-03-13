@@ -15,6 +15,7 @@ import RxSwift
 import QuickLook
 import ContactsUI
 import RxDataSources
+import AVFoundation
 
 final class ConversationViewController: BaseViewController<ConversationPresenterInterface> {
     // MARK: - Properties
@@ -170,6 +171,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     override func setupStyle() {
         super.setupStyle()
         self.tableView.backgroundView = backgroundImageView
+        view.backgroundColor = .white
     }
     override func setupConstraints() {
         super.setupConstraints()
@@ -385,6 +387,16 @@ extension ConversationViewController: ConversationViewInterface {
     func setup(conversation: Conversation) {
         self.headline.setup(conversation: conversation)
     }
+    
+    func showDisclaimer(show: Bool, delegate: DisclaimerViewDelegate) {
+        show ? DisclaimerView.show(on: view, delegate: delegate) : DisclaimerView.hide(from: view)
+        messageInputBar.isHidden = show
+    }
+    
+    func showOnReceiveDisclaimer(delegate: DisclaimerViewDelegate, contact: ContactDisplayable?) {
+        OnReceiveDisclaimerView.show(on: view, contact: contact, delegate: delegate)
+        messageInputBar.isHidden = true
+    }
 }
 
 
@@ -392,9 +404,27 @@ private extension ConversationViewController {
     
     func setupNavigationMore() {
         let mustBeHide = UltraCoreSettings.futureDelegate?.availableToBlock(conversation: self) ?? false
-        
-        self.navigationItem.rightBarButtonItem = mustBeHide ? .init(image: .named("conversation.dots"),
-                                                                    style: .plain, target: self, action: #selector(self.more(_:))) : nil
+        let items: [UIBarButtonItem] = [
+            .init(
+                image: .named("conversation.dots"),
+                style: .plain,
+                target: self,
+                action: #selector(self.more(_:))
+            ),
+            .init(
+                image: .named("conversation_video_camera_icon"),
+                style: .plain,
+                target: self,
+                action: #selector(self.callWithVideo)
+            ),
+            .init(
+                image: .named("contact_phone_icon"),
+                style: .plain,
+                target: self,
+                action: #selector(self.callWithVoice)
+            )
+        ]
+        self.navigationItem.rightBarButtonItems = mustBeHide ? items : nil
     }
     
     func openMoneyTransfer() {
@@ -511,11 +541,51 @@ extension ConversationViewController {
     }
     
     @objc func callWithVideo(_ sender: UIBarButtonItem) {
-        self.presenter?.callVideo()
+        checkVideoPermission { [weak self] in
+            self?.presenter?.callVideo()
+        }
     }
     
     @objc func callWithVoice(_ sender: UIBarButtonItem) {
-        self.presenter?.callVoice()
+        checkMicrophonePermission { [weak self] in
+            self?.presenter?.callVoice()
+        }
+    }
+    
+    private func checkMicrophonePermission(onCompletion: @escaping () -> Void) {
+        switch AVAudioSession.sharedInstance().recordPermission {
+        case .granted:
+            onCompletion()
+        case .denied:
+            showSettingAlert(from: CallStrings.errorAccessToMicrophone.localized, with: CallStrings.errorAccessTitle.localized)
+        case .undetermined:
+            AVAudioSession.sharedInstance().requestRecordPermission { granted in
+                DispatchQueue.main.async {
+                    if granted {
+                        onCompletion()
+                    }
+                }
+            }
+        default: break
+        }
+    }
+    
+    private func checkVideoPermission(onCompletion: @escaping () -> Void) {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            onCompletion()
+        case .denied, .restricted:
+            showSettingAlert(from: CallStrings.errorAccessToCamera.localized, with: CallStrings.errorAccessTitle.localized)
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { granted in
+                DispatchQueue.main.async {
+                    if granted {
+                        onCompletion()
+                    }
+                }
+            }
+        default: break
+        }
     }
     
     @objc func more(_ sender: UIBarButtonItem) {

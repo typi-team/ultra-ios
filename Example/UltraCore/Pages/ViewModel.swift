@@ -54,13 +54,14 @@ class ViewModel {
                   "token": firebaseToken,
                   "device_id": UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString,
                   "platform": "IOS",
-                  "voip_push_token": ""
+                  "voip_push_token": UltraVoIPManager.shared.token ?? ""
               ]) else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonData
         request.setValue(sidToken, forHTTPHeaderField: "SID")
+        
         let task = URLSession.shared.dataTask(with: request) {(data, response, error) in }
         task.resume()
     }
@@ -109,6 +110,7 @@ extension ViewModel: UltraCoreSettingsDelegate {
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonData
+                
         URLSession.shared.rx.data(request: request)
             .map {
                 try JSONDecoder().decode(UserResponse.self, from: $0)
@@ -123,6 +125,10 @@ extension ViewModel: UltraCoreSettingsDelegate {
                 callback(.failure(error))
             }
             .disposed(by: disposeBag)
+    }
+    
+    func tokenUpdated() {
+        didRegisterForRemoteNotifications()
     }
 
     func emptyConversationView() -> UIView? {
@@ -159,6 +165,14 @@ extension ViewModel: UltraCoreSettingsDelegate {
     
     func availableToLocation() -> Bool {
         return true
+    }
+    
+    func callImage() -> UIImage? {
+        return UIImage(named: "tradernet_call_icon")
+    }
+    
+    func disclaimerDescriptionFor(contact: String) -> String {
+        return NSLocalizedString("conversation.disclaimerDescription", comment: "")
     }
 
 }
