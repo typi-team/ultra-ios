@@ -195,7 +195,7 @@ private extension UpdateRepositoryImpl {
                 .block(user: blockMessage.user, blocked: false)
                 .subscribe()
                 .disposed(by: disposeBag)
-        case .callRequest(_):
+        case .callRequest:
             break
         }
     }
