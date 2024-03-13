@@ -40,25 +40,29 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
         let messageSentSoundInteractor = MakeSoundInteractor()
         
         let blockContactInteractor = BlockContactInteractor(userService: appSettings.userService, contactDBService: appSettings.contactDBService)
-        let presenter = ConversationPresenter(userID: appSettings.appStore.userID(),
-                                              appStore: appSettings.appStore,
-                                              conversation: conversation,
-                                              view: moduleViewController,
-                                              mediaRepository: appSettings.mediaRepository, callService: appSettings.callService,
-                                              updateRepository: appSettings.updateRepository,
-                                              messageRepository: appSettings.messageRespository,
-                                              contactRepository: appSettings.contactRepository,
-                                              wireframe: self,
-                                              conversationRepository: appSettings.conversationRespository,
-                                              deleteMessageInteractor: deleteInteractor,
-                                              blockContactInteractor: blockContactInteractor,
-                                              messagesInteractor: archiveMessages,
-                                              sendTypingInteractor: sendTypingInteractor,
-                                              readMessageInteractor: readMessageInteractor,
-                                              sendMoneyInteractor: SendMoneyInteractor(),
-                                              makeVibrationInteractor: makeVibrationInteractor,
-                                              messageSenderInteractor: messageSenderInteractor,
-                                              messageSentSoundInteractor: messageSentSoundInteractor)
+        let acceptContactInteractor = AcceptContactInteractor(contactService: appSettings.contactsService)
+        let presenter = ConversationPresenter(
+            userID: appSettings.appStore.userID(),
+            appStore: appSettings.appStore,
+            conversation: conversation,
+            view: moduleViewController,
+            mediaRepository: appSettings.mediaRepository, callService: appSettings.callService,
+            updateRepository: appSettings.updateRepository,
+            messageRepository: appSettings.messageRespository,
+            contactRepository: appSettings.contactRepository,
+            wireframe: self,
+            conversationRepository: appSettings.conversationRespository,
+            deleteMessageInteractor: deleteInteractor,
+            blockContactInteractor: blockContactInteractor,
+            messagesInteractor: archiveMessages,
+            sendTypingInteractor: sendTypingInteractor,
+            readMessageInteractor: readMessageInteractor,
+            sendMoneyInteractor: SendMoneyInteractor(),
+            makeVibrationInteractor: makeVibrationInteractor,
+            messageSenderInteractor: messageSenderInteractor,
+            messageSentSoundInteractor: messageSentSoundInteractor,
+            acceptContactInteractor: acceptContactInteractor
+        )
         moduleViewController.presenter = presenter
     }
 
@@ -90,5 +94,9 @@ extension ConversationWireframe: ConversationWireframeInterface {
             let wireframe = MoneyTransferWireframe(conversation: self.conversation, moneyCallback: callback)
             self.viewController.present(wireframe.viewController, animated: true)
         }
+    }
+    
+    func closeChat() {
+        navigationController?.popViewController(animated: true)
     }
 }

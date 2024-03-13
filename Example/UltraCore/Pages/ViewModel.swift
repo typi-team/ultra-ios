@@ -170,5 +170,9 @@ extension ViewModel: UltraCoreSettingsDelegate {
     func callImage() -> UIImage? {
         return UIImage(named: "tradernet_call_icon")
     }
+    
+    func disclaimerDescriptionFor(contact: String) -> String {
+        return NSLocalizedString("conversation.disclaimerDescription", comment: "")
+    }
 
 }

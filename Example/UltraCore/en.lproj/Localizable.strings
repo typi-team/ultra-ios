@@ -99,6 +99,9 @@
 
 "conversation.areYouSure" = "Are you sure?";
 "conversation.pleaseNoteThatMessageDataWillBePermanentlyDeletedAndRecoveryWillNotBePossible" = "Please note that message data will be permanently deleted and recovery will not be possible";
+
+"conversation.disclaimer" = "By sending a message to another client you will reveal your first and last name";
+
 // MARK: Messages page
 "message.audio" = "🔉 Audio";
 "message.voice" = "🎤 Voice";
@@ -146,3 +149,6 @@
 "call.errorAccessToCamera" = "The application does not have access to the camera";
 "call.errorAccessToMicrophone" = "The application does not have access to the microphone";
 
+"conversation.disclaimerAgree" = "Agree";
+"conversation.disclaimerClose" = "Close";
+"conversation.disclaimerDescription" = "The company's client wrote to you";
