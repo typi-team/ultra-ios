@@ -63,7 +63,7 @@ class UpdateRepositoryImpl {
 extension UpdateRepositoryImpl: UpdateRepository {
     
     func readAll(in conversation: Conversation) {
-        self.conversationService.realAllMessage(for: conversation.idintification)
+        self.conversationService.readAllMessage(for: conversation.idintification)
     }
     
     func stopSession() {
