@@ -210,7 +210,6 @@ private extension UpdateRepositoryImpl {
         switch update {
         case let .message(message):
             self.update(message: message, completion: { })
-            self.handleNewMessageOnRead(message: message)
         case let .contact(contact):
             self.update(contact: ContactDisplayableImpl(contact: contact))
         case let .messagesDelivered(message):
@@ -234,6 +233,7 @@ private extension UpdateRepositoryImpl {
 extension UpdateRepositoryImpl {
     
     func handleNewMessageOnRead(message: Message) {
+        PP.debug("Handle new message on read")
         guard message.sender.userID != self.appStore.userID() else { return }
         self.conversationService.incrementUnread(for: message.receiver.chatID)
     }

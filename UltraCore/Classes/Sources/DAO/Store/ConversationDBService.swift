@@ -27,7 +27,7 @@ class ConversationDBService {
     }
     
     func createIfNotExist(from message: Message) -> Single<Void> {
-        return Single.create {[weak self] observer -> Disposable in
+        return Single.create { [weak self] observer -> Disposable in
             guard let `self` = self else { return Disposables.create() }
             let realm = Realm.myRealm()
             let peerID = message.peerId(user: self.userID)
@@ -39,6 +39,7 @@ class ConversationDBService {
                         conversation.contact = contact
                         conversation.lastSeen = message.meta.created
                         conversation.message = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm, user: self.userID)
+                        conversation.unreadMessageCount += 1
                         realm.create(DBConversation.self, value: conversation, update: .all)
                     }
                     observer(.success(()))
@@ -69,6 +70,7 @@ class ConversationDBService {
                                         )
                                     )
                                     conversation.contact = contact
+                                    conversation.unreadMessageCount += 1
                                     localRealm.add(conversation)
                                 }
                                 observer(.success(()))
@@ -107,10 +109,12 @@ class ConversationDBService {
     
     @discardableResult
     func incrementUnread(for conversationID: String, count: Int = 1) -> Bool {
+        PP.debug("Trying to increment unread for conversationID - \(conversationID)")
         do {
             let realm = Realm.myRealm()
             try realm.write {
                 if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID) {
+                    PP.debug("Incremented unread for conversationID - \(conversationID)")
                     conversation.unreadMessageCount += count
                     realm.add(conversation, update: .all)
                 }
