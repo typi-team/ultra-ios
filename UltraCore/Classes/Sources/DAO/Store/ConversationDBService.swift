@@ -39,7 +39,9 @@ class ConversationDBService {
                         conversation.contact = contact
                         conversation.lastSeen = message.meta.created
                         conversation.message = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm, user: self.userID)
-                        conversation.unreadMessageCount += 1
+                        if message.sender.userID != self.appStore.userID() {
+                            conversation.unreadMessageCount += 1
+                        }
                         realm.create(DBConversation.self, value: conversation, update: .all)
                     }
                     observer(.success(()))
@@ -70,7 +72,9 @@ class ConversationDBService {
                                         )
                                     )
                                     conversation.contact = contact
-                                    conversation.unreadMessageCount += 1
+                                    if message.sender.userID != self.appStore.userID() {
+                                        conversation.unreadMessageCount += 1
+                                    }
                                     localRealm.add(conversation)
                                 }
                                 observer(.success(()))
