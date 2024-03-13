@@ -370,6 +370,14 @@ struct Update {
     set {_uniqueStorage()._ofUpdate = .coinTransferStatus(newValue)}
   }
 
+  var chat: Chat {
+    get {
+      if case .chat(let v)? = _storage._ofUpdate {return v}
+      return Chat()
+    }
+    set {_uniqueStorage()._ofUpdate = .chat(newValue)}
+  }
+
   var ofPresence: OneOf_OfPresence? {
     get {return _storage._ofPresence}
     set {_uniqueStorage()._ofPresence = newValue}
@@ -459,6 +467,7 @@ struct Update {
     case moneyTransferStatus(MoneyTransferStatus)
     case stockTransferStatus(StockTransferStatus)
     case coinTransferStatus(CoinTransferStatus)
+    case chat(Chat)
 
   #if !swift(>=4.1)
     static func ==(lhs: Update.OneOf_OfUpdate, rhs: Update.OneOf_OfUpdate) -> Bool {
@@ -500,6 +509,10 @@ struct Update {
       }()
       case (.coinTransferStatus, .coinTransferStatus): return {
         guard case .coinTransferStatus(let l) = lhs, case .coinTransferStatus(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.chat, .chat): return {
+        guard case .chat(let l) = lhs, case .chat(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -1285,6 +1298,7 @@ extension Update: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
     14: .same(proto: "moneyTransferStatus"),
     18: .same(proto: "stockTransferStatus"),
     19: .same(proto: "coinTransferStatus"),
+    22: .same(proto: "chat"),
     8: .same(proto: "typing"),
     9: .same(proto: "audioRecording"),
     10: .standard(proto: "user_status"),
@@ -1562,6 +1576,19 @@ extension Update: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
             _storage._ofPresence = .unblock(v)
           }
         }()
+        case 22: try {
+          var v: Chat?
+          var hadOneofValue = false
+          if let current = _storage._ofUpdate {
+            hadOneofValue = true
+            if case .chat(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._ofUpdate = .chat(v)
+          }
+        }()
         default: break
         }
       }
@@ -1665,6 +1692,9 @@ extension Update: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
       }()
       default: break
       }
+      try { if case .chat(let v)? = _storage._ofUpdate {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 22)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
