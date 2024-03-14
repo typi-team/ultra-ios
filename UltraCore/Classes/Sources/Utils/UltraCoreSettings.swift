@@ -154,9 +154,11 @@ public extension UltraCoreSettings {
                     if shared.appStore.lastState == 0 {
                         DispatchQueue.main.asyncAfter(deadline: .now() + timeOut, execute: {
                             callback(nil)
+                            UnreadMessagesService.updateUnreadMessagesCount()
                         })
                     } else {
                         callback(nil)
+                        UnreadMessagesService.updateUnreadMessagesCount()
                     }
                 }
             }

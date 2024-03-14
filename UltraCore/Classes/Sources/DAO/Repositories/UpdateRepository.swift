@@ -232,7 +232,9 @@ private extension UpdateRepositoryImpl {
         PP.debug("[UPDATE] - \(update)")
         switch update {
         case let .message(message):
+            let senderID = appStore.userID()
             self.update(message: message, completion: {
+                guard message.sender.userID != senderID else { return }
                 UnreadMessagesService.updateUnreadMessagesCount()
             })
         case let .contact(contact):
