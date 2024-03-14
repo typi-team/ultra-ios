@@ -24,6 +24,7 @@ class ConversationDBService {
     init(appStore: AppSettingsStore) {
         self.appStore = appStore
         self.chatService = chatService
+        UnreadMessagesService.updateUnreadMessagesCount()
     }
     
     func createIfNotExist(from message: Message) -> Single<Void> {
@@ -146,7 +147,7 @@ class ConversationDBService {
     }
     
     @discardableResult
-    func realAllMessage(for conversationID: String) -> Bool {
+    func readAllMessage(for conversationID: String) -> Bool {
         do {
             let realm = Realm.myRealm()
             try realm.write {
@@ -155,11 +156,13 @@ class ConversationDBService {
                     realm.add(conversation, update: .all)
                 }
             }
+            UnreadMessagesService.updateUnreadMessagesCount()
             return true
         } catch {
             return false
         }
     }
+
     func conversation(by id: String) -> Single<Conversation?> {
         return Single.deferred {
             let realm = Realm.myRealm()

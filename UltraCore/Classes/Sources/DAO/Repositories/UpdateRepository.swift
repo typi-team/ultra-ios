@@ -63,7 +63,7 @@ class UpdateRepositoryImpl {
 extension UpdateRepositoryImpl: UpdateRepository {
     
     func readAll(in conversation: Conversation) {
-        self.conversationService.realAllMessage(for: conversation.idintification)
+        self.conversationService.readAllMessage(for: conversation.idintification)
     }
     
     func stopSession() {
@@ -148,6 +148,7 @@ private extension UpdateRepositoryImpl {
         for chat in chats {
             conversationService.setUnread(for: chat.chatID, count: Int(chat.unread))
         }
+        UnreadMessagesService.updateUnreadMessagesCount()
     }
     
     func setupChangesSubscription(with state: UInt64) {
@@ -231,7 +232,11 @@ private extension UpdateRepositoryImpl {
         PP.debug("[UPDATE] - \(update)")
         switch update {
         case let .message(message):
-            self.update(message: message, completion: { })
+            let senderID = appStore.userID()
+            self.update(message: message, completion: {
+                guard message.sender.userID != senderID else { return }
+                UnreadMessagesService.updateUnreadMessagesCount()
+            })
         case let .contact(contact):
             self.update(contact: ContactDisplayableImpl(contact: contact))
         case let .messagesDelivered(message):
