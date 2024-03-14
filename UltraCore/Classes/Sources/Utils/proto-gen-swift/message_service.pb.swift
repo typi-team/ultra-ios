@@ -239,6 +239,57 @@ struct MessagesDeleteResponse {
   init() {}
 }
 
+struct MessagesEditRequest {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var messageID: String = String()
+
+  var text: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct MessagesEditResponse {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var messageID: String = String()
+
+  var state: UInt64 = 0
+
+  var chat: Chat {
+    get {return _chat ?? Chat()}
+    set {_chat = newValue}
+  }
+  /// Returns true if `chat` has been explicitly set.
+  var hasChat: Bool {return self._chat != nil}
+  /// Clears the value of `chat`. Subsequent reads from it will return its default value.
+  mutating func clearChat() {self._chat = nil}
+
+  var meta: MessageMeta {
+    get {return _meta ?? MessageMeta()}
+    set {_meta = newValue}
+  }
+  /// Returns true if `meta` has been explicitly set.
+  var hasMeta: Bool {return self._meta != nil}
+  /// Clears the value of `meta`. Subsequent reads from it will return its default value.
+  mutating func clearMeta() {self._meta = nil}
+
+  var seqNumber: UInt64 = 0
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _chat: Chat? = nil
+  fileprivate var _meta: MessageMeta? = nil
+}
+
 struct ComplainRequest {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -348,6 +399,8 @@ extension MessagesReadRequest: @unchecked Sendable {}
 extension MessagesReadResponse: @unchecked Sendable {}
 extension MessagesDeleteRequest: @unchecked Sendable {}
 extension MessagesDeleteResponse: @unchecked Sendable {}
+extension MessagesEditRequest: @unchecked Sendable {}
+extension MessagesEditResponse: @unchecked Sendable {}
 extension ComplainRequest: @unchecked Sendable {}
 extension ComplainResponse: @unchecked Sendable {}
 extension SendTypingRequest: @unchecked Sendable {}
@@ -810,6 +863,104 @@ extension MessagesDeleteResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageI
   }
 
   static func ==(lhs: MessagesDeleteResponse, rhs: MessagesDeleteResponse) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension MessagesEditRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "MessagesEditRequest"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "message_id"),
+    2: .same(proto: "text"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.messageID) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.text) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.messageID.isEmpty {
+      try visitor.visitSingularStringField(value: self.messageID, fieldNumber: 1)
+    }
+    if !self.text.isEmpty {
+      try visitor.visitSingularStringField(value: self.text, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: MessagesEditRequest, rhs: MessagesEditRequest) -> Bool {
+    if lhs.messageID != rhs.messageID {return false}
+    if lhs.text != rhs.text {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension MessagesEditResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "MessagesEditResponse"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "message_id"),
+    2: .same(proto: "state"),
+    3: .same(proto: "chat"),
+    4: .same(proto: "meta"),
+    5: .standard(proto: "seq_number"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.messageID) }()
+      case 2: try { try decoder.decodeSingularUInt64Field(value: &self.state) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._chat) }()
+      case 4: try { try decoder.decodeSingularMessageField(value: &self._meta) }()
+      case 5: try { try decoder.decodeSingularUInt64Field(value: &self.seqNumber) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    if !self.messageID.isEmpty {
+      try visitor.visitSingularStringField(value: self.messageID, fieldNumber: 1)
+    }
+    if self.state != 0 {
+      try visitor.visitSingularUInt64Field(value: self.state, fieldNumber: 2)
+    }
+    try { if let v = self._chat {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
+    try { if let v = self._meta {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 4)
+    } }()
+    if self.seqNumber != 0 {
+      try visitor.visitSingularUInt64Field(value: self.seqNumber, fieldNumber: 5)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: MessagesEditResponse, rhs: MessagesEditResponse) -> Bool {
+    if lhs.messageID != rhs.messageID {return false}
+    if lhs.state != rhs.state {return false}
+    if lhs._chat != rhs._chat {return false}
+    if lhs._meta != rhs._meta {return false}
+    if lhs.seqNumber != rhs.seqNumber {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

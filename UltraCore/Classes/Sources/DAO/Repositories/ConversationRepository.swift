@@ -11,6 +11,7 @@ import RealmSwift
 protocol ConversationRepository {
     func createIfNotExist(from message: Message) -> Single<Void>
     func conversations() -> Observable<[Conversation]>
+    func update(addContact: Bool, for conversationID: String) -> Single<Void>
 }
 
 class ConversationRepositoryImpl {
@@ -33,5 +34,9 @@ extension ConversationRepositoryImpl: ConversationRepository {
     
     func conversations() -> Observable<[Conversation]> {
         return self.conversationService.conversations()
+    }
+    
+    func update(addContact: Bool, for conversationID: String) -> Single<Void> {
+        conversationService.update(addContact: addContact, id: conversationID)
     }
 }

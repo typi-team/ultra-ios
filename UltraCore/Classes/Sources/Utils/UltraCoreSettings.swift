@@ -28,6 +28,7 @@ public protocol UltraCoreSettingsDelegate: AnyObject {
     func contactsViewController(contactsCallback: @escaping ContactsCallback,
                                 openConverationCallback: @escaping UserIDCallback) -> UIViewController?
     func callImage() -> UIImage?
+    func disclaimerDescriptionFor(contact: String) -> String
     func tokenUpdated()
     func unreadMessagesUpdated(count: Int)
 }
