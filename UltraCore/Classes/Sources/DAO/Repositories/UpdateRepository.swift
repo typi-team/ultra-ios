@@ -148,6 +148,7 @@ private extension UpdateRepositoryImpl {
         for chat in chats {
             conversationService.setUnread(for: chat.chatID, count: Int(chat.unread))
         }
+        UnreadMessagesService.updateUnreadMessagesCount()
     }
     
     func setupChangesSubscription(with state: UInt64) {
@@ -231,7 +232,9 @@ private extension UpdateRepositoryImpl {
         PP.debug("[UPDATE] - \(update)")
         switch update {
         case let .message(message):
-            self.update(message: message, completion: { })
+            self.update(message: message, completion: {
+                UnreadMessagesService.updateUnreadMessagesCount()
+            })
         case let .contact(contact):
             self.update(contact: ContactDisplayableImpl(contact: contact))
         case let .messagesDelivered(message):
@@ -247,6 +250,8 @@ private extension UpdateRepositoryImpl {
         case .stockTransferStatus(let data):
             PP.debug(data.textFormatString())
         case .coinTransferStatus(let data):
+            PP.debug(data.textFormatString())
+        case let .chat(data):
             PP.debug(data.textFormatString())
         }
     }

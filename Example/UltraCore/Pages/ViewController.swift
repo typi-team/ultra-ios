@@ -32,13 +32,11 @@ class ViewController: UITabBarController {
         })
         
         viewModel.onUnreadMessagesUpdated = { [weak self] count in
-            DispatchQueue.main.async {
-                let chatTabbar = self?.tabBar.items?.first(where: { $0.title == NSLocalizedString("conversations.chats", comment: "") })
-                if count <= 0 {
-                    chatTabbar?.badgeValue = nil
-                } else {
-                    chatTabbar?.badgeValue = String(count)
-                }
+            let chatTabbar = self?.tabBar.items?.first(where: { $0.title == NSLocalizedString("conversations.chats", comment: "") })
+            if count <= 0 {
+                chatTabbar?.badgeValue = nil
+            } else {
+                chatTabbar?.badgeValue = String(count)
             }
         }
         

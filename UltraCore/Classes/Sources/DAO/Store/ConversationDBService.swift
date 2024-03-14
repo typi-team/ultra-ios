@@ -122,7 +122,6 @@ class ConversationDBService {
                     PP.debug("Incremented unread for conversationID - \(conversationID)")
                     conversation.unreadMessageCount += count
                     realm.add(conversation, update: .all)
-                    UnreadMessagesService.updateUnreadMessagesCount()
                 }
             }
             return true
