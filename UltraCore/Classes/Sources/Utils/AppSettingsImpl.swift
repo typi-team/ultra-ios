@@ -103,6 +103,10 @@ open class AppSettingsImpl: AppSettings  {
                                                                                                                  messageService: messageService,
                                                                                                                  contactsService: contactsService)
     
+    init() {
+        PP.initialize()
+    }
+    
     func logout() {
         let realm = Realm.myRealm()
         try? realm.write({

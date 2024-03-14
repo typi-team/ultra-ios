@@ -5,6 +5,7 @@
 //  Created by Slam on 4/14/23.
 //
 
+import CocoaLumberjack
 import Foundation
 import GRPC
 
@@ -18,44 +19,41 @@ enum LogLevel: Int {
 
 class PP {
     static var logLevel: LogLevel = .verbose
+    
+    static func initialize() {
+        let fileLogger = DDFileLogger()
+        fileLogger.rollingFrequency = 60 * 60 * 24 // 24hrs
+        fileLogger.logFileManager.maximumNumberOfLogFiles = 5
+        DDLog.add(DDOSLogger.sharedInstance)
+        DDLog.add(fileLogger)
+        dynamicLogLevel = .verbose
+    }
 
     static func verbose(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
-        if PP.logLevel.rawValue <= LogLevel.verbose.rawValue {
-            log("[VERBOSE 😎] \(message)", file: file, function: function, line: line)
-        }
+        DDLogVerbose(message)
     }
 
     static func debug(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
-        if PP.logLevel.rawValue <= LogLevel.debug.rawValue {
-            log("[DEBUG 🤓] \(message)", file: file, function: function, line: line)
-        }
+        DDLogDebug(message)
     }
 
     static func info(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
-        if PP.logLevel.rawValue <= LogLevel.info.rawValue {
-            log("[INFO 🥹] \(message)", file: file, function: function, line: line)
-        }
+        DDLogInfo(message)
     }
 
     static func warning(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
-        if PP.logLevel.rawValue <= LogLevel.warning.rawValue {
-            log("[WARNING 😤] \(message)", file: file, function: function, line: line)
-        }
+        DDLogWarn(message)
     }
 
     static func error(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
-        if PP.logLevel.rawValue <= LogLevel.error.rawValue {
-            log("[ERROR 🤬] \(message)", file: file, function: function, line: line)
-        }
+        DDLogError(message)
     }
     
     static func grpc(_ error: Error, file: String = #file, function: String = #function, line: Int = #line) {
-        if PP.logLevel.rawValue <= LogLevel.error.rawValue {
-            if let grpcError = error as? GRPCStatus {
-                PP.error("\(grpcError.message ?? "Not defined message") : \(grpcError.code)")
-            } else {
-                PP.error(error.localizedDescription)
-            }
+        if let grpcError = error as? GRPCStatus {
+            DDLogError("\(grpcError.message ?? "Not defined message") : \(grpcError.code)")
+        } else {
+            DDLogError(error.localizedDescription)
         }
     }
 

@@ -51,5 +51,6 @@ Pod::Spec.new do |s|
    s.dependency 'RxDataSources'
    s.dependency 'NVActivityIndicatorView'
    s.dependency 'LiveKitClient'
+   s.dependency 'CocoaLumberjack/Swift'
    
 end
