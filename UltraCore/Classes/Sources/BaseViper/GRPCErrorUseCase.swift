@@ -21,6 +21,7 @@ class GRPCErrorUseCase<P, R> {
                     return self.handleGRPC(error: error)
                         .flatMap({ self.job(params: params) })
                 } else {
+                    PP.error("GRPC job error - \(error.localeError)")
                     return Single.error(error)
                 }
             })
@@ -35,6 +36,6 @@ class GRPCErrorUseCase<P, R> {
     }
 
     deinit {
-        PP.info("Deinit \(String.init(describing: self))")
+        PP.debug("Deinit \(String.init(describing: self))")
     }
 }

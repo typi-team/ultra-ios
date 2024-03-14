@@ -118,7 +118,7 @@ open class AppSettingsImpl: AppSettings  {
     private func setupChannelConfiguration(configuration: inout GRPCChannelPool.Configuration) {
         configuration.keepalive = keepalive
         configuration.connectionBackoff = connectionBackoff
-        configuration.idleTimeout = TimeAmount.seconds(1)
+        configuration.idleTimeout = TimeAmount.seconds(30)
     }
 }
 

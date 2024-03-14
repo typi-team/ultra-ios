@@ -36,6 +36,7 @@ class CreateFileInteractor: GRPCErrorUseCase<(data: Data, extens: String), [File
                         PP.debug("[Message]: Created file with fileID \(response.fileID)")
                         observer(.success(self.splitDataIntoChunks(data: params.data, file: response)))
                     case let .failure(error):
+                        PP.error("[Message] failed to create a file")
                         observer(.failure(error))
                     }
                 }
