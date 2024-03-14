@@ -17,7 +17,7 @@ enum LogLevel: Int {
     case error = 4
 }
 
-class PP {
+public class PP {
     static var logLevel: LogLevel = .verbose
     
     static func initialize() {
@@ -55,6 +55,44 @@ class PP {
         } else {
             DDLogError(error.localizedDescription)
         }
+    }
+    
+    public static func getLogFile(completion: @escaping ((URL) -> Void)) {
+        guard let fileLogger = DDLog.allLoggers.compactMap({ $0 as? DDFileLogger }).first else {
+            return
+        }
+        let logFileURLs = fileLogger.logFileManager.sortedLogFilePaths.map(URL.init(fileURLWithPath:))
+        let temporaryDirectory = FileManager.default.temporaryDirectory
+        // Create a temporary directory
+        let logsDir = temporaryDirectory.appendingPathComponent("LogFiles")
+        if !FileManager.default.fileExists(atPath: logsDir.path) {
+            try? FileManager.default.createDirectory(atPath: logsDir.path, withIntermediateDirectories: true)
+        }
+        
+        // Copy items to one folder
+        logFileURLs.forEach { item in
+            let pathExtension = item.lastPathComponent
+            let itemURL = logsDir.appendingPathComponent(pathExtension)
+            if FileManager.default.fileExists(atPath: itemURL.path) {
+                try? FileManager.default.removeItem(at: itemURL)
+            }
+            try? FileManager.default.copyItem(at: item, to: itemURL)
+        }
+        
+        let fileCoordinator = NSFileCoordinator()
+        var error: NSError?
+        
+        // Archive files into zip
+        fileCoordinator.coordinate(readingItemAt: logsDir, options: [.forUploading], error: &error) { archiveURL in
+            let archivePath = temporaryDirectory.appendingPathComponent("logs.zip")
+            
+            if FileManager.default.fileExists(atPath: archivePath.path) {
+                try? FileManager.default.removeItem(at: archivePath)
+            }
+            try? FileManager.default.moveItem(at: archiveURL, to: archivePath)
+            completion(archivePath)
+        }
+
     }
 
     private static func log(_ message: String, file: String, function: String, line: Int) {
