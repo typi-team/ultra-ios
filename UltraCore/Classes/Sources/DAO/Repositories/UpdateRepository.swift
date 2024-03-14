@@ -251,8 +251,8 @@ private extension UpdateRepositoryImpl {
             PP.debug(data.textFormatString())
         case .coinTransferStatus(let data):
             PP.debug(data.textFormatString())
-        case let .chat(data):
-            PP.debug(data.textFormatString())
+        case .chat:
+            break
         }
     }
 }
