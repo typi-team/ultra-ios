@@ -171,6 +171,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     override func setupStyle() {
         super.setupStyle()
         self.tableView.backgroundView = backgroundImageView
+        view.backgroundColor = .white
     }
     override func setupConstraints() {
         super.setupConstraints()
@@ -385,6 +386,16 @@ extension ConversationViewController: ConversationViewInterface {
     
     func setup(conversation: Conversation) {
         self.headline.setup(conversation: conversation)
+    }
+    
+    func showDisclaimer(show: Bool, delegate: DisclaimerViewDelegate) {
+        show ? DisclaimerView.show(on: view, delegate: delegate) : DisclaimerView.hide(from: view)
+        messageInputBar.isHidden = show
+    }
+    
+    func showOnReceiveDisclaimer(delegate: DisclaimerViewDelegate, contact: ContactDisplayable?) {
+        OnReceiveDisclaimerView.show(on: view, contact: contact, delegate: delegate)
+        messageInputBar.isHidden = true
     }
 }
 

@@ -79,6 +79,7 @@ public class UltraCoreStyle {
     public static var reportViewStyle: ReportViewStyle = ReportViewStyleImpl()
     public static var messageCellStyle: MessageCellStyle = ReportViewStyleImpl()
     public static var fileCellConfig: FileCellConfig = FileCellConfigImpl()
+    public static var disclaimerStyle: DisclaimerStyleConfig = DisclaimerStyleConfigImpl()
 }
 
 private class MessageInputBarConfigImpl: MessageInputBarConfig {
@@ -169,4 +170,16 @@ private class FileCellConfigImpl: FileCellConfig {
         defaultColor: UltraCoreStyle.regularFootnoteConfig.color,
         font: UltraCoreStyle.regularFootnoteConfig.font
     )
+}
+
+private class DisclaimerStyleConfigImpl: DisclaimerStyleConfig {
+    var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .bgSurfaceMuted, darkColor: .bgSurfaceMuted)
+    var warningImage: TwiceImage = TwiceImageImpl(dark: UIImage(named: "conversation_warning")!, default: UIImage(named: "conversation_warning")!)
+    var warningTextConfig: LabelConfig = LabelConfigImpl(darkColor: .textSecondary, defaultColor: .textSecondary, font: .defaultRegularFootnote)
+    var closeButtonBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white, darkColor: .white)
+    var closeButtontTextConfig: LabelConfig = LabelConfigImpl(darkColor: .baseBlue, defaultColor: .baseBlue, font: .defaultRegularCallout)
+    var agreeButtonBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .uiBlueMuted, darkColor: .uiBlueMuted)
+    var agreeButtonTextConfig: LabelConfig = LabelConfigImpl(darkColor: .baseBlue, defaultColor: .baseBlue, font: .defaultRegularCallout)
+    var contactTextConfig: LabelConfig = LabelConfigImpl(darkColor: .textPrimary, defaultColor: .textPrimary, font: .title3)
+    var contactDescriptionConfig: LabelConfig = LabelConfigImpl(darkColor: .textPrimary, defaultColor: .textPrimary, font: .defaultRegularFootnote)
 }

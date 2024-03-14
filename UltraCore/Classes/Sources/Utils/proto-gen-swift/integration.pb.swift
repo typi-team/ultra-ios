@@ -43,9 +43,20 @@ struct CreateChatByPhoneResponse {
 
   var chatID: String = String()
 
+  var chat: Chat {
+    get {return _chat ?? Chat()}
+    set {_chat = newValue}
+  }
+  /// Returns true if `chat` has been explicitly set.
+  var hasChat: Bool {return self._chat != nil}
+  /// Clears the value of `chat`. Subsequent reads from it will return its default value.
+  mutating func clearChat() {self._chat = nil}
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
+
+  fileprivate var _chat: Chat? = nil
 }
 
 #if swift(>=5.5) && canImport(_Concurrency)
@@ -98,6 +109,7 @@ extension CreateChatByPhoneResponse: SwiftProtobuf.Message, SwiftProtobuf._Messa
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "user_id"),
     2: .standard(proto: "chat_id"),
+    3: .same(proto: "chat"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -108,24 +120,33 @@ extension CreateChatByPhoneResponse: SwiftProtobuf.Message, SwiftProtobuf._Messa
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.userID) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.chatID) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._chat) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if !self.userID.isEmpty {
       try visitor.visitSingularStringField(value: self.userID, fieldNumber: 1)
     }
     if !self.chatID.isEmpty {
       try visitor.visitSingularStringField(value: self.chatID, fieldNumber: 2)
     }
+    try { if let v = self._chat {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: CreateChatByPhoneResponse, rhs: CreateChatByPhoneResponse) -> Bool {
     if lhs.userID != rhs.userID {return false}
     if lhs.chatID != rhs.chatID {return false}
+    if lhs._chat != rhs._chat {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
