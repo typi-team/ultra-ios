@@ -154,9 +154,9 @@ class ConversationDBService {
                 if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID) {
                     conversation.unreadMessageCount = 0
                     realm.add(conversation, update: .all)
-                    UnreadMessagesService.updateUnreadMessagesCount()
                 }
             }
+            UnreadMessagesService.updateUnreadMessagesCount()
             return true
         } catch {
             return false
