@@ -166,7 +166,13 @@ private extension UpdateRepositoryImpl {
             }
         }
         updateListenStream?.status.whenComplete { status in
-            PP.debug("Update listen stream is completed with status - \(status)")
+            switch status {
+            case .success(let response):
+                PP.debug("Update listen stream is completed with code - \(response.code); isOk - \(response.isOk); message - \(response.message); cause - \(response.cause)")
+            case .failure(let error):
+                PP.debug("Update listen stream is completed with error - \(error); localeError - \(error.localeError)")
+            }
+            
         }
         
     }

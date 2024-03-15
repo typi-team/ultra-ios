@@ -35,22 +35,15 @@ open class AppSettingsImpl: AppSettings  {
     lazy var connectionBackoff = ConnectionBackoff()
 
     lazy var channel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
-                                                                            port: serverConfig.portOfServer),
-                                                              transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1)) {
-        setupChannelConfiguration(configuration: &$0)
-    }
+                                                                                port: serverConfig.portOfServer),
+                                                                  transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
+        lazy var fileChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
+                                                                                   port: serverConfig.portOfServer),
+                                                                     transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
 
-    lazy var fileChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
-                                                                               port: serverConfig.portOfServer),
-                                                                 transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1)){
-        setupChannelConfiguration(configuration: &$0)
-    }
-
-    lazy var updateChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
-                                                                                  port: serverConfig.portOfServer),
-                                                                    transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1)) {
-        setupChannelConfiguration(configuration: &$0)
-    }
+        lazy var updateChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
+                                                                                      port: serverConfig.portOfServer),
+                                                                        transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
 
 //    MARK: GRPC Services
     lazy var callService: CallServiceClientProtocol = CallServiceNIOClient(channel: channel)
