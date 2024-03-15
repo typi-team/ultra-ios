@@ -215,6 +215,7 @@ class MessageDBService {
         } else {
             conversation.unreadMessageCount = 0
         }
+        UnreadMessagesService.updateUnreadMessagesCount()
     }
     
     func deleteMessages(in conversationID: String, ranges: [ClosedRange<Int64>]) -> Single<Void> {

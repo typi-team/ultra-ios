@@ -29,6 +29,8 @@ struct UserResponse: Codable {
 class ViewModel {
     fileprivate var timerUpdate: Timer?
     private let disposeBag = DisposeBag()
+    
+    var onUnreadMessagesUpdated: ((Int) -> Void)?
 
     func viewDidLoad() {
         UltraCoreSettings.delegate = self
@@ -91,6 +93,11 @@ extension ViewModel: UltraCoreFutureDelegate {
 }
 
 extension ViewModel: UltraCoreSettingsDelegate {
+    
+    func unreadMessagesUpdated(count: Int) {
+        onUnreadMessagesUpdated?(count)
+    }
+    
     func token(callback: @escaping (Result<String, Error>) -> Void) {
         let userDef = UserDefaults.standard
         guard let lastname = userDef.string(forKey: "last_name"),
@@ -169,6 +176,10 @@ extension ViewModel: UltraCoreSettingsDelegate {
     
     func callImage() -> UIImage? {
         return UIImage(named: "tradernet_call_icon")
+    }
+    
+    func disclaimerDescriptionFor(contact: String) -> String {
+        return NSLocalizedString("conversation.disclaimerDescription", comment: "")
     }
 
 }
