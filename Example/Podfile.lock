@@ -9,6 +9,9 @@ PODS:
   - CNIOHTTPParser (2.40.0)
   - CNIOLinux (2.40.0)
   - CNIOWindows (2.40.0)
+  - CocoaLumberjack/Core (3.8.5)
+  - CocoaLumberjack/Swift (3.8.5):
+    - CocoaLumberjack/Core
   - Differentiator (5.0.0)
   - FirebaseCore (10.17.0):
     - FirebaseCoreInternal (~> 10.0)
@@ -233,6 +236,7 @@ PODS:
     - SwiftNIOTLS (< 3, >= 2.32.0)
   - SwiftProtobuf (1.25.1)
   - UltraCore (0.1.4):
+    - CocoaLumberjack/Swift
     - gRPC-Swift
     - IGListKit
     - LiveKitClient
@@ -262,6 +266,7 @@ SPEC REPOS:
     - CNIOHTTPParser
     - CNIOLinux
     - CNIOWindows
+    - CocoaLumberjack
     - Differentiator
     - FirebaseCore
     - FirebaseCoreInternal
@@ -318,6 +323,7 @@ SPEC CHECKSUMS:
   CNIOHTTPParser: 8ce395236fa1d09ac3b4f4bcfba79b849b2ac684
   CNIOLinux: 62e3505f50de558c393dc2f273dde71dcce518da
   CNIOWindows: 3047f2d8165848a3936a0a755fee27c6b5ee479b
+  CocoaLumberjack: 6a459bc897d6d80bd1b8c78482ec7ad05dffc3f0
   Differentiator: e8497ceab83c1b10ca233716d547b9af21b9344d
   FirebaseCore: 534544dd98cabcf4bf8598d88ec683b02319a528
   FirebaseCoreInternal: 2cf9202e226e3f78d2bf6d56c472686b935bfb7f
@@ -358,7 +364,7 @@ SPEC CHECKSUMS:
   SwiftNIOTLS: 598af547490133e9aac52aed0c23c4a90c31dcfc
   SwiftNIOTransportServices: 0b2b407819d82eb63af558c5396e33c945759503
   SwiftProtobuf: 69f02cd54fb03201c5e6bf8b76f687c5ef7541a3
-  UltraCore: 1fd0e88f526cecc3a090cfc01cbdd7ee1616c7c0
+  UltraCore: fca70d8c43e9484e6be691394f3e31afe066a886
   WebRTC-SDK: 082ae4893212534a779ca233f19a9df8efd5f3bd
 
 PODFILE CHECKSUM: 05a3927b15bbe6caf93b241464429054c7b34ff0
