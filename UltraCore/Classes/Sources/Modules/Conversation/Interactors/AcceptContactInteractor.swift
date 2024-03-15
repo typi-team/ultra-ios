@@ -16,6 +16,7 @@ class AcceptContactInteractor: GRPCErrorUseCase<String, Void> {
     }
     
     override func job(params: String) -> Single<Void> {
+        PP.debug("Attempt to accept contact - \(params)")
         return Single<Void>.create { [unowned self] single in
             let request = AcceptContactRequest.with {
                 $0.userID = params
@@ -25,8 +26,10 @@ class AcceptContactInteractor: GRPCErrorUseCase<String, Void> {
                 .whenComplete { result in
                     switch result {
                     case .success:
+                        PP.debug("Successfully accepted contact - \(params)")
                         single(.success(()))
                     case .failure(let error):
+                        PP.error("Error on accepting contact - \(error.localeError)")
                         single(.failure(error))
                     }
                 }

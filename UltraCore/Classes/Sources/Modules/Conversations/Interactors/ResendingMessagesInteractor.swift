@@ -102,6 +102,7 @@ final class ResendingMessagesInteractor: UseCase<Void, Void> {
             onCompletion()
             return
         }
+        PP.debug("Attempt to resend message - \(messages.count) with index - \(index)")
         var message = messages[index]
         var params = MessageSendRequest()
         params.peer.user = .with({ peer in
@@ -124,7 +125,8 @@ final class ResendingMessagesInteractor: UseCase<Void, Void> {
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { [weak self] _ in
                 self?.resendMessages(messages: messages, index: index + 1, onCompletion: onCompletion)
-            }, onFailure: { error in PP.debug(error.localizedDescription)
+            }, onFailure: { error in 
+                PP.error("Failed to send message to user ID \(message.receiver.userID); error: \(error.localeError)")
             })
             .disposed(by: disposeBag)
     }
