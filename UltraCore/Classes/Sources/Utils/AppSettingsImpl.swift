@@ -35,22 +35,15 @@ open class AppSettingsImpl: AppSettings  {
     lazy var connectionBackoff = ConnectionBackoff()
 
     lazy var channel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
-                                                                            port: serverConfig.portOfServer),
-                                                              transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1)) {
-        setupChannelConfiguration(configuration: &$0)
-    }
+                                                                                port: serverConfig.portOfServer),
+                                                                  transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
+        lazy var fileChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
+                                                                                   port: serverConfig.portOfServer),
+                                                                     transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
 
-    lazy var fileChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
-                                                                               port: serverConfig.portOfServer),
-                                                                 transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1)){
-        setupChannelConfiguration(configuration: &$0)
-    }
-
-    lazy var updateChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
-                                                                                  port: serverConfig.portOfServer),
-                                                                    transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1)) {
-        setupChannelConfiguration(configuration: &$0)
-    }
+        lazy var updateChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
+                                                                                      port: serverConfig.portOfServer),
+                                                                        transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
 
 //    MARK: GRPC Services
     lazy var callService: CallServiceClientProtocol = CallServiceNIOClient(channel: channel)
@@ -103,6 +96,10 @@ open class AppSettingsImpl: AppSettings  {
                                                                                                                  messageService: messageService,
                                                                                                                  contactsService: contactsService)
     
+    init() {
+        PP.initialize()
+    }
+    
     func logout() {
         let realm = Realm.myRealm()
         try? realm.write({
@@ -114,7 +111,7 @@ open class AppSettingsImpl: AppSettings  {
     private func setupChannelConfiguration(configuration: inout GRPCChannelPool.Configuration) {
         configuration.keepalive = keepalive
         configuration.connectionBackoff = connectionBackoff
-        configuration.idleTimeout = TimeAmount.seconds(1)
+        configuration.idleTimeout = TimeAmount.seconds(60)
     }
 }
 

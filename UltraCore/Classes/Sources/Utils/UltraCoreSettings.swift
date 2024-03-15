@@ -127,6 +127,7 @@ public extension UltraCoreSettings {
 
     static func update(sid token: String, timeOut: TimeInterval = 0,
                        with callback: @escaping (Error?) -> Void) {
+        PP.debug("Attempt to update session token")
         let shared = AppSettingsImpl.shared
         shared.appStore.ssid = token
         // TODO: Refactor this case into interactor or something like this object
@@ -141,10 +142,10 @@ public extension UltraCoreSettings {
             .whenComplete { result in
                 switch result {
                 case let .failure(error):
-                    print("[ISSUE JWT] Error: \(error)")
+                    PP.error("Error on JWT issue - \(error.localeError)")
                     callback(error)
                 case let .success(value):
-                    print("[ISSUE JWT] JWT: \(value.token)")
+                    PP.debug("Successfully updated session token")
                     shared.appStore.store(token: value.token)
                     shared.appStore.store(userID: value.userID)
                     shared.updateRepository.setupSubscription()
@@ -166,7 +167,7 @@ public extension UltraCoreSettings {
 
     static func update(firebase token: String, voipToken: String?) {
         if AppSettingsImpl.shared.appStore.token == nil {
-            PP.error("Don't call it without token")
+            PP.error("Error on updateDevice; No token found")
             return
         }
         
@@ -185,7 +186,7 @@ public extension UltraCoreSettings {
             case .success:
                 PP.info("Data about device is updated")
             case let .failure(error):
-                PP.error("Data about device is updated with \(error.localeError)")
+                PP.error("Error on updateDevice \(error.localeError)")
             }
         })
     }

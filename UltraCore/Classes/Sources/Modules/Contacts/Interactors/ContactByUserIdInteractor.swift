@@ -21,7 +21,8 @@ class ContactByUserIdInteractor: GRPCErrorUseCase<String, ContactDisplayable> {
     }
         
     override func job(params: String) -> Single<ContactDisplayable> {
-        Single<ContactDisplayable>.create { [weak self] observer -> Disposable in
+        PP.debug("Starting to get contact by ID - \(params)")
+        return Single<ContactDisplayable>.create { [weak self] observer -> Disposable in
             guard let `self` = self else { return Disposables.create() }
             let requestParam = ContactByUserIdRequest.with({ $0.userID = params })
             self.contactsService.getContactByUserId(requestParam, callOptions: .default())
@@ -29,7 +30,7 @@ class ContactByUserIdInteractor: GRPCErrorUseCase<String, ContactDisplayable> {
                 .whenComplete { result in
                     switch result {
                     case let .success(userByContact):
-                        
+                        PP.debug("Successfully received a contact")
                         let photo = userByContact.contact.hasPhoto ? userByContact.contact.photo : userByContact.user.photo
                         let lastname = userByContact.hasContact ? userByContact.contact.lastname : userByContact.user.lastname
                         let firstname = userByContact.hasContact ? userByContact.contact.firstname : userByContact.user.firstname
@@ -48,6 +49,7 @@ class ContactByUserIdInteractor: GRPCErrorUseCase<String, ContactDisplayable> {
                             contact.isBlocked = userByContact.hasContact ? userByContact.contact.isBlocked : userByContact.user.isBlocked
                         }))))
                     case let .failure(error):
+                        PP.error("Failed to get contact with ID - \(params); error - \(error.localeError)")
                         observer(.failure(error))
                     }
                 }
