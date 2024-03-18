@@ -174,7 +174,7 @@ private class FileCellConfigImpl: FileCellConfig {
 
 private class DisclaimerStyleConfigImpl: DisclaimerStyleConfig {
     var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .bgSurfaceMuted, darkColor: .bgSurfaceMuted)
-    var warningImage: TwiceImage = TwiceImageImpl(dark: UIImage(named: "conversation_warning")!, default: UIImage(named: "conversation_warning")!)
+    var warningImage: TwiceImage = TwiceImageImpl(dark: UIImage.fromAssets("conversation_warning")!, default: UIImage.fromAssets("conversation_warning")!)
     var warningTextConfig: LabelConfig = LabelConfigImpl(darkColor: .textSecondary, defaultColor: .textSecondary, font: .defaultRegularFootnote)
     var closeButtonBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white, darkColor: .white)
     var closeButtontTextConfig: LabelConfig = LabelConfigImpl(darkColor: .baseBlue, defaultColor: .baseBlue, font: .defaultRegularCallout)
