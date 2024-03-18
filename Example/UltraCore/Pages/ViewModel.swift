@@ -96,6 +96,12 @@ extension ViewModel: UltraCoreSettingsDelegate {
     
     func unreadMessagesUpdated(count: Int) {
         onUnreadMessagesUpdated?(count)
+        switch UIApplication.shared.applicationState {
+            case .active:
+                UIApplication.shared.applicationIconBadgeNumber = count
+            default:
+                break
+        }
     }
     
     func token(callback: @escaping (Result<String, Error>) -> Void) {

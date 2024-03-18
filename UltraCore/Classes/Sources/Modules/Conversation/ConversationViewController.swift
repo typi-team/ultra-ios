@@ -171,7 +171,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     override func setupStyle() {
         super.setupStyle()
         self.tableView.backgroundView = backgroundImageView
-        view.backgroundColor = .white
     }
     override func setupConstraints() {
         super.setupConstraints()

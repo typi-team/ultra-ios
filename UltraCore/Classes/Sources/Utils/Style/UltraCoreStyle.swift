@@ -113,24 +113,26 @@ private class VoiceInputBarConfigImpl: VoiceInputBarConfig {
     var durationLabel: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray500, font: .defaultRegularBody)
 }
 
-private class CallPageStyleImpl: CallPageStyle {
-    var background: TwiceColor = TwiceColorImpl(defaultColor: .from(hex: "#0F141B"), darkColor: .from(hex: "#0F141B"))
-    var backButtonTint: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .green500)
-    var companionConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .white, font: .defaultRegularTitle2)
-    var durationConfig: LabelConfig = LabelConfigImpl(darkColor: .gray400, defaultColor: .gray400, font: .defaultRegularBody)
-    var companionVideoConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .white, font: .defaultRegularHeadline)
-    var durationVideoConfig: LabelConfig = LabelConfigImpl(darkColor: .gray400, defaultColor: .gray400, font: .defaultRegularFootnote)
-    var mouthpieceOnImage: UIImage = .fromAssets("calling.mouthpieceOn")!
-    var mouthpieceOffImage: UIImage = .fromAssets("calling.mouthpieceOff")!
-    var micOnImage: UIImage = .fromAssets("calling.micOn")!
-    var micOffImage: UIImage = .fromAssets("calling.micOff")!
-    var cameraOnImage: UIImage = .fromAssets("calling.cameraOn")!
-    var cameraOffImage: UIImage = .fromAssets("calling.cameraOff")!
-    var answerImage: UIImage = .fromAssets("calling.answer")!
-    var declineImage: UIImage = .fromAssets("calling.decline")!
-    var closeImage: UIImage = .fromAssets("calling.close")!
-    var switchFrontCameraImage: UIImage = .fromAssets("calling.switchCameraPosition")!
-    var switchBackCameraImage: UIImage = .fromAssets("calling.switchCameraPosition")!
+open class CallPageStyleImpl: CallPageStyle {
+    open var background: TwiceColor = TwiceColorImpl(defaultColor: .from(hex: "#0F141B"), darkColor: .from(hex: "#0F141B"))
+    open var backButtonTint: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .green500)
+    open var companionConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .white, font: .defaultRegularTitle2)
+    open var durationConfig: LabelConfig = LabelConfigImpl(darkColor: .gray400, defaultColor: .gray400, font: .defaultRegularBody)
+    open var companionVideoConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .white, font: .defaultRegularHeadline)
+    open var durationVideoConfig: LabelConfig = LabelConfigImpl(darkColor: .gray400, defaultColor: .gray400, font: .defaultRegularFootnote)
+    open var mouthpieceOnImage: UIImage = .fromAssets("calling.mouthpieceOn")!
+    open var mouthpieceOffImage: UIImage = .fromAssets("calling.mouthpieceOff")!
+    open var micOnImage: UIImage = .fromAssets("calling.micOn")!
+    open var micOffImage: UIImage = .fromAssets("calling.micOff")!
+    open var cameraOnImage: UIImage = .fromAssets("calling.cameraOn")!
+    open var cameraOffImage: UIImage = .fromAssets("calling.cameraOff")!
+    open var answerImage: UIImage = .fromAssets("calling.answer")!
+    open var declineImage: UIImage = .fromAssets("calling.decline")!
+    open var closeImage: UIImage = .fromAssets("calling.close")!
+    open var switchFrontCameraImage: UIImage = .fromAssets("calling.switchCameraPosition")!
+    open var switchBackCameraImage: UIImage = .fromAssets("calling.switchCameraPosition")!
+    
+    public init() {}
 }
 
 private class ConversationCellConfigImpl: ConversationCellConfig {
