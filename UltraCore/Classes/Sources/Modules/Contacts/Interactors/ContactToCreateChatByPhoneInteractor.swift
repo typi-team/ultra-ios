@@ -67,7 +67,8 @@ class ContactToConversationInteractor: GRPCErrorUseCase<IContact, Conversation?>
                                     contact: contact,
                                     idintification: contactToCreateChat.chatID,
                                     addContact: contactToCreateChat.chat.settings.addContact,
-                                    seqNumber: contactToCreateChat.chat.messageSeqNumber
+                                    seqNumber: contactToCreateChat.chat.messageSeqNumber, 
+                                    callAllowed: contactToCreateChat.chat.settings.callAllowed
                                 )
                             })
                     })

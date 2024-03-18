@@ -119,6 +119,10 @@ final class ConversationPresenter {
 // MARK: - Extensions -
 
 extension ConversationPresenter: ConversationPresenterInterface {
+    
+    func allowedToCall() -> Bool {
+        conversation.callAllowed
+    }
 
     func subscribeToVisibility() {
         if let userID = self.conversation.peer?.userID {
@@ -500,6 +504,14 @@ extension ConversationPresenter: ConversationPresenterInterface {
                     .disposed(by: self.disposeBag)
             })
             .subscribe()
+            .disposed(by: disposeBag)
+        conversationRepository
+            .callAllowed(for: conversation.idintification)
+            .debug("CALLALLOWED")
+            .observe(on: MainScheduler.instance)
+            .subscribe { [weak self] isAllowed in
+                self?.view?.update(callAllowed: isAllowed)
+            }
             .disposed(by: disposeBag)
     }
     

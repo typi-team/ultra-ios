@@ -119,7 +119,9 @@ extension ContactServiceClientProtocol {
     )
   }
 
-  /// Unary call to AcceptContact
+  /// Add the user to contact list. Accepted user can see users's lastSeen
+  /// and will be allowed to call user in case `callDisabledForNonContactUser`
+  /// feature is enabled
   ///
   /// - Parameters:
   ///   - request: Request to send to AcceptContact.
@@ -453,6 +455,9 @@ internal protocol ContactServiceProvider: CallHandlerProvider {
 
   func getStatuses(request: GetStatusesRequest, context: StatusOnlyCallContext) -> EventLoopFuture<GetStatusesResponse>
 
+  /// Add the user to contact list. Accepted user can see users's lastSeen
+  /// and will be allowed to call user in case `callDisabledForNonContactUser`
+  /// feature is enabled
   func acceptContact(request: AcceptContactRequest, context: StatusOnlyCallContext) -> EventLoopFuture<AcceptContactResponse>
 }
 
@@ -545,6 +550,9 @@ internal protocol ContactServiceAsyncProvider: CallHandlerProvider, Sendable {
     context: GRPCAsyncServerCallContext
   ) async throws -> GetStatusesResponse
 
+  /// Add the user to contact list. Accepted user can see users's lastSeen
+  /// and will be allowed to call user in case `callDisabledForNonContactUser`
+  /// feature is enabled
   func acceptContact(
     request: AcceptContactRequest,
     context: GRPCAsyncServerCallContext

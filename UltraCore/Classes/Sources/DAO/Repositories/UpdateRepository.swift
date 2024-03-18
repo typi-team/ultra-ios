@@ -260,8 +260,19 @@ private extension UpdateRepositoryImpl {
             PP.debug(data.textFormatString())
         case .coinTransferStatus(let data):
             PP.debug(data.textFormatString())
-        case .chat:
-            break
+        case .chat(let chat):
+            if chat.settings.callAllowed {
+                self.conversationService
+                    .update(callAllowed: chat.settings.callAllowed, id: chat.chatID)
+                    .subscribe()
+                    .disposed(by: disposeBag)
+            }
+            if chat.settings.addContact {
+                self.conversationService
+                    .update(addContact: chat.settings.addContact, id: chat.chatID)
+                    .subscribe()
+                    .disposed(by: disposeBag)
+            }
         }
     }
 }

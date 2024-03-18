@@ -283,16 +283,19 @@ struct Unblock {
   init() {}
 }
 
+/// Main message for delivering real-time changes
 struct Update {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
+  /// State of update, for presences value is always `0`
   var state: UInt64 {
     get {return _storage._state}
     set {_uniqueStorage()._state = newValue}
   }
 
+  /// Persistent updates
   var ofUpdate: OneOf_OfUpdate? {
     get {return _storage._ofUpdate}
     set {_uniqueStorage()._ofUpdate = newValue}
@@ -370,6 +373,7 @@ struct Update {
     set {_uniqueStorage()._ofUpdate = .coinTransferStatus(newValue)}
   }
 
+  /// Chat changes specific to the user (privacy configurations)
   var chat: Chat {
     get {
       if case .chat(let v)? = _storage._ofUpdate {return v}
@@ -378,6 +382,8 @@ struct Update {
     set {_uniqueStorage()._ofUpdate = .chat(newValue)}
   }
 
+  /// Stateless updates which is actual only in case
+  /// user has active connection
   var ofPresence: OneOf_OfPresence? {
     get {return _storage._ofPresence}
     set {_uniqueStorage()._ofPresence = newValue}
@@ -457,6 +463,7 @@ struct Update {
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
+  /// Persistent updates
   enum OneOf_OfUpdate: Equatable {
     case message(Message)
     case contact(Contact)
@@ -467,6 +474,7 @@ struct Update {
     case moneyTransferStatus(MoneyTransferStatus)
     case stockTransferStatus(StockTransferStatus)
     case coinTransferStatus(CoinTransferStatus)
+    /// Chat changes specific to the user (privacy configurations)
     case chat(Chat)
 
   #if !swift(>=4.1)
@@ -521,6 +529,8 @@ struct Update {
   #endif
   }
 
+  /// Stateless updates which is actual only in case
+  /// user has active connection
   enum OneOf_OfPresence: Equatable {
     case typing(UserTyping)
     case audioRecording(UserAudioRecording)
