@@ -152,6 +152,10 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         }
     )
     
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
     // MARK: - Private Methods
     
     override func setupViews() {
@@ -194,6 +198,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     
     override func setupInitialData() {
         super.setupInitialData()
+        NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground(_:)), name: UIApplication.didEnterBackgroundNotification, object: nil)
         self.presenter?
             .messages
             .distinctUntilChanged()
@@ -201,7 +206,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .observe(on: MainScheduler.instance)
             .do(onNext: {[weak self] messages in
                 self?.messages = messages
-                self?.tableView.backgroundView = messages.isEmpty ? UltraCoreSettings.delegate?.emptyConversationDetailView() : self?.backgroundImageView
+                self?.tableView.backgroundView = messages.isEmpty ? ConversationEmptyViewContainer(emptyView: UltraCoreSettings.delegate?.emptyConversationDetailView() ?? .init()) : self?.backgroundImageView
             })
             .map({messages -> [SectionModel<String, Message>] in
                 if messages.isEmpty {return []}
@@ -247,6 +252,11 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.tableView.contentInset = insets
         self.tableView.scrollIndicatorInsets = insets
         
+        if let backgroundView = tableView.backgroundView as? ConversationEmptyViewContainer {
+            backgroundView.setSubviewOffset(
+                y: keyBoardHeight == 0 ? 0 : -keyBoardHeight
+            )
+        }
         
         if tableView.contentSize.height > tableView.frame.height {
             if keyBoardHeight > 0 {
@@ -302,6 +312,10 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                 })
             })
             .disposed(by: disposeBag)
+    }
+    
+    @objc func didEnterBackground(_ sender: Any) {
+        messageInputBar.endEditing(true)
     }
     
 }
