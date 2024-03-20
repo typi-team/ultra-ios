@@ -36,6 +36,7 @@ struct ChatMember {
   init() {}
 }
 
+/// ChatSettings represents user specific configurations for the chat
 struct ChatSettings {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -44,6 +45,12 @@ struct ChatSettings {
   /// Indicator that user from p2p chat can be accepted
   /// as contact. Can be "true" only for p2p chats
   var addContact: Bool = false
+
+  /// indicates is it possible to call participant
+  /// in case "callDisabledForNonContactUser" set to true
+  /// then call will not be allowed in case receiver is not
+  /// added sender to contacts
+  var callAllowed: Bool = false
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -219,6 +226,7 @@ extension ChatSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   static let protoMessageName: String = "ChatSettings"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "addContact"),
+    2: .same(proto: "callAllowed"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -228,6 +236,7 @@ extension ChatSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularBoolField(value: &self.addContact) }()
+      case 2: try { try decoder.decodeSingularBoolField(value: &self.callAllowed) }()
       default: break
       }
     }
@@ -237,11 +246,15 @@ extension ChatSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
     if self.addContact != false {
       try visitor.visitSingularBoolField(value: self.addContact, fieldNumber: 1)
     }
+    if self.callAllowed != false {
+      try visitor.visitSingularBoolField(value: self.callAllowed, fieldNumber: 2)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ChatSettings, rhs: ChatSettings) -> Bool {
     if lhs.addContact != rhs.addContact {return false}
+    if lhs.callAllowed != rhs.callAllowed {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

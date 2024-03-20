@@ -16,6 +16,13 @@ class ConversationDBService {
     
     fileprivate let appStore: AppSettingsStore
     fileprivate lazy var chatService: ChatServiceClientProtocol = AppSettingsImpl.shared.conversationService
+    fileprivate lazy var callAllowedSubject = PublishSubject<(String, Bool)>()
+    
+    var callAllowedObservable: Observable<(String, Bool)> {
+        callAllowedSubject
+            .asObservable()
+            .share(replay: 1)
+    }
     
     fileprivate var userID: String  {
         return self.appStore.userID()
@@ -69,7 +76,8 @@ class ConversationDBService {
                                         value: DBConversation(
                                             message: message,
                                             user: self.userID,
-                                            addContact: response.settings.addContact
+                                            addContact: response.settings.addContact, 
+                                            callAllowed: response.settings.callAllowed
                                         )
                                     )
                                     conversation.contact = contact
@@ -184,6 +192,28 @@ class ConversationDBService {
             do {
                 try realm.write {
                     conversation.addContact = addContact
+                    realm.add(conversation, update: .all)
+                }
+                single(.success(()))
+            } catch {
+                single(.failure(error))
+            }
+            return Disposables.create()
+        }
+    }
+    
+    func update(callAllowed: Bool, id: String) -> Single<Void> {
+        callAllowedSubject.onNext((id, callAllowed))
+        return Single.create { single in
+            let realm = Realm.myRealm()
+            let conversations = realm.objects(DBConversation.self)
+            guard let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: id) else {
+                single(.failure(ConversationError.notFound))
+                return Disposables.create()
+            }
+            do {
+                try realm.write {
+                    conversation.callAllowed = callAllowed
                     realm.add(conversation, update: .all)
                 }
                 single(.success(()))

@@ -401,6 +401,43 @@ extension ConversationViewController: ConversationViewInterface {
         self.headline.setup(conversation: conversation)
     }
     
+    func update(callAllowed: Bool) {
+        let items: [UIBarButtonItem]
+        if callAllowed {
+            items = [
+                .init(
+                    image: .named("conversation.dots"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(self.more(_:))
+                ),
+                .init(
+                    image: .named("conversation_video_camera_icon"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(self.callWithVideo)
+                ),
+                .init(
+                    image: .named("contact_phone_icon"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(self.callWithVoice)
+                )
+            ]
+        } else {
+            items = [
+                .init(
+                    image: .named("conversation.dots"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(self.more(_:))
+                )
+            ]
+        }
+        let mustBeHidden = UltraCoreSettings.futureDelegate?.availableToBlock(conversation: self) ?? false
+        navigationItem.rightBarButtonItems = mustBeHidden ? items : nil
+    }
+    
     func showDisclaimer(show: Bool, delegate: DisclaimerViewDelegate) {
         show ? DisclaimerView.show(on: view, delegate: delegate) : DisclaimerView.hide(from: view)
         messageInputBar.isHidden = show
@@ -417,26 +454,31 @@ private extension ConversationViewController {
     
     func setupNavigationMore() {
         let mustBeHide = UltraCoreSettings.futureDelegate?.availableToBlock(conversation: self) ?? false
-        let items: [UIBarButtonItem] = [
+        var items: [UIBarButtonItem] = [
             .init(
                 image: .named("conversation.dots"),
                 style: .plain,
                 target: self,
                 action: #selector(self.more(_:))
-            ),
-            .init(
-                image: .named("conversation_video_camera_icon"),
-                style: .plain,
-                target: self,
-                action: #selector(self.callWithVideo)
-            ),
-            .init(
-                image: .named("contact_phone_icon"),
-                style: .plain,
-                target: self,
-                action: #selector(self.callWithVoice)
             )
         ]
+        if presenter?.allowedToCall() ?? false {
+            let callItems: [UIBarButtonItem] = [
+                .init(
+                    image: .named("conversation_video_camera_icon"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(self.callWithVideo)
+                ),
+                .init(
+                    image: .named("contact_phone_icon"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(self.callWithVoice)
+                )
+            ]
+            items.append(contentsOf: callItems)
+        }
         self.navigationItem.rightBarButtonItems = mustBeHide ? items : nil
     }
     
