@@ -152,6 +152,10 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         }
     )
     
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
     // MARK: - Private Methods
     
     override func setupViews() {
@@ -194,6 +198,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     
     override func setupInitialData() {
         super.setupInitialData()
+        NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground(_:)), name: UIApplication.didEnterBackgroundNotification, object: nil)
         self.presenter?
             .messages
             .distinctUntilChanged()
@@ -307,6 +312,10 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                 })
             })
             .disposed(by: disposeBag)
+    }
+    
+    @objc func didEnterBackground(_ sender: Any) {
+        messageInputBar.endEditing(true)
     }
     
 }
