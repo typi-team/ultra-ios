@@ -90,6 +90,7 @@ extension UltraVoIPManager: PKPushRegistryDelegate {
             if callInfoMeta == nil {
                 UltraCoreSettings.updateSession { _ in }
                 let uuid = UUID()
+//                configureAudioSession()
                 provider.reportNewIncomingCall(with: uuid, update: callReport, completion: { error in
                     completion()
                 })
@@ -127,23 +128,6 @@ extension UltraVoIPManager: CXProviderDelegate {
         configureAudioSession()
         action.fulfill()
         PP.debug("[CALL] CXAnswerCallAction CXProviderDelegate for uuid - \(callInfoMeta.uuid)")
-        if let topController = UIApplication.topViewController(), !(topController is IncomingCallViewController) {
-            topController.presentWireframe(
-                IncomingCallWireframe(call: .incoming(callInfoMeta.callInfo)),
-                animated: true) {
-                    RoomManager.shared.connectRoom(with: callInfoMeta.callInfo) { error in
-                        if let error = error {
-                            PP.debug("Error on connecting room - \(callInfoMeta.callInfo.room) \(error)")
-                        }
-                    }
-                }
-        } else {
-            RoomManager.shared.connectRoom(with: callInfoMeta.callInfo) { error in
-                if let error = error {
-                    PP.debug("Error on connecting room - \(callInfoMeta.callInfo.room) \(error)")
-                }
-            }
-        }
     }
     
     public func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
@@ -206,6 +190,35 @@ extension UltraVoIPManager: CXProviderDelegate {
             return incomingCall
         }
         return nil
+    }
+    
+    public func provider(_ provider: CXProvider, didActivate audioSession: AVAudioSession) {
+        PP.debug("[CALL] Did Activate audiosession")
+        guard 
+            let callInfoMeta = callInfoMeta,
+            wasAnswered
+        else { return }
+        if let topController = UIApplication.topViewController(), !(topController is IncomingCallViewController) {
+            topController.presentWireframe(
+                IncomingCallWireframe(call: .incoming(callInfoMeta.callInfo)),
+                animated: true) {
+                    RoomManager.shared.connectRoom(with: callInfoMeta.callInfo) { error in
+                        if let error = error {
+                            PP.debug("Error on connecting room - \(callInfoMeta.callInfo.room) \(error)")
+                        }
+                    }
+                }
+        } else {
+            RoomManager.shared.connectRoom(with: callInfoMeta.callInfo) { error in
+                if let error = error {
+                    PP.debug("Error on connecting room - \(callInfoMeta.callInfo.room) \(error)")
+                }
+            }
+        }
+    }
+    
+    public func provider(_ provider: CXProvider, didDeactivate audioSession: AVAudioSession) {
+        PP.debug("[CALL] Did Deactivate audiosession")
     }
     
     func startOutgoingCall(callInfo: CallInformation) {
@@ -333,14 +346,11 @@ extension UltraVoIPManager: CXProviderDelegate {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(
                 .playAndRecord,
-                mode: .voiceChat,
-                options: [
-                    .allowBluetooth, .allowBluetoothA2DP, .duckOthers
-                ]
+                mode: .voiceChat
             )
             try session.setPreferredIOBufferDuration(0.005)
             try session.setPreferredSampleRate(44100)
-            try session.overrideOutputAudioPort(.none)
+//            try session.overrideOutputAudioPort(.none)
             try session.setActive(true)
         } catch {
             PP.debug("[CALL] Error on configuring audio session - \(error)")
