@@ -26,7 +26,7 @@ public class PP {
         fileLogger.logFileManager.maximumNumberOfLogFiles = 5
         DDLog.add(DDOSLogger.sharedInstance)
         DDLog.add(fileLogger)
-        dynamicLogLevel = .debug
+        dynamicLogLevel = .error
     }
 
     static func verbose(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
