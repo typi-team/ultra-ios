@@ -201,7 +201,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .observe(on: MainScheduler.instance)
             .do(onNext: {[weak self] messages in
                 self?.messages = messages
-                self?.tableView.backgroundView = messages.isEmpty ? UltraCoreSettings.delegate?.emptyConversationDetailView() : self?.backgroundImageView
+                self?.tableView.backgroundView = messages.isEmpty ? ConversationEmptyViewContainer(emptyView: UltraCoreSettings.delegate?.emptyConversationDetailView() ?? .init()) : self?.backgroundImageView
             })
             .map({messages -> [SectionModel<String, Message>] in
                 if messages.isEmpty {return []}
@@ -247,6 +247,11 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.tableView.contentInset = insets
         self.tableView.scrollIndicatorInsets = insets
         
+        if let backgroundView = tableView.backgroundView as? ConversationEmptyViewContainer {
+            backgroundView.setSubviewOffset(
+                y: keyBoardHeight == 0 ? 0 : -keyBoardHeight
+            )
+        }
         
         if tableView.contentSize.height > tableView.frame.height {
             if keyBoardHeight > 0 {
