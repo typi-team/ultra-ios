@@ -31,12 +31,15 @@ class UpdateTokenInteractorImpl: UseCase<Void, Void> {
                 delegate.token { result in
                     switch result {
                     case .success(let token):
+                        PP.debug("Updated token in UpdateTokenInteractorImpl")
                         observer(.success(token))
                     case .failure(let error):
+                        PP.debug("Failed to update token - \(error.localeError)")
                         observer(.failure(error))
                     }
                 }
             } else {
+                PP.error("UpdateTokenInteractorImpl is nil, failed to update token")
                 observer(.failure(NSError.objectsIsNill))
             }
 
@@ -59,8 +62,10 @@ class UpdateTokenInteractorImpl: UseCase<Void, Void> {
             call.response.whenComplete { result in
                 switch result {
                 case let .failure(error):
+                    PP.debug("Error on JWT token update \(error.localeError)")
                     observer(.failure(error))
                 case let .success(value):
+                    PP.debug("Updated JWT token")
                     observer(.success(value))
                 }
             }

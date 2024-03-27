@@ -12,6 +12,7 @@ protocol ConversationRepository {
     func createIfNotExist(from message: Message) -> Single<Void>
     func conversations() -> Observable<[Conversation]>
     func update(addContact: Bool, for conversationID: String) -> Single<Void>
+    func callAllowed(for conversationID: String) -> Observable<Bool>
 }
 
 class ConversationRepositoryImpl {
@@ -38,5 +39,11 @@ extension ConversationRepositoryImpl: ConversationRepository {
     
     func update(addContact: Bool, for conversationID: String) -> Single<Void> {
         conversationService.update(addContact: addContact, id: conversationID)
+    }
+    
+    func callAllowed(for conversationID: String) -> Observable<Bool> {
+        conversationService.callAllowedObservable
+            .filter { $0.0 == conversationID }
+            .map(\.1)
     }
 }

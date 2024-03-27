@@ -152,6 +152,7 @@ private extension UpdateRepositoryImpl {
     }
     
     func setupChangesSubscription(with state: UInt64) {
+        PP.debug("Setting up change subscription")
         let state: ListenRequest = .with { $0.localState = .with { $0.state = state } }
         self.updateListenStream = updateClient.listen(state, callOptions: .default(include: false)) { [weak self] response in
             guard let `self` = self else { return }
@@ -165,7 +166,13 @@ private extension UpdateRepositoryImpl {
             }
         }
         updateListenStream?.status.whenComplete { status in
-            print(status)
+            switch status {
+            case .success(let response):
+                PP.debug("Update listen stream is completed with code - \(response.code); isOk - \(response.isOk); message - \(response.message); cause - \(response.cause)")
+            case .failure(let error):
+                PP.debug("Update listen stream is completed with error - \(error); localeError - \(error.localeError)")
+            }
+            
         }
         
     }
@@ -253,8 +260,19 @@ private extension UpdateRepositoryImpl {
             PP.debug(data.textFormatString())
         case .coinTransferStatus(let data):
             PP.debug(data.textFormatString())
-        case .chat:
-            break
+        case .chat(let chat):
+            if chat.settings.callAllowed {
+                self.conversationService
+                    .update(callAllowed: chat.settings.callAllowed, id: chat.chatID)
+                    .subscribe()
+                    .disposed(by: disposeBag)
+            }
+            if chat.settings.addContact {
+                self.conversationService
+                    .update(addContact: chat.settings.addContact, id: chat.chatID)
+                    .subscribe()
+                    .disposed(by: disposeBag)
+            }
         }
     }
 }

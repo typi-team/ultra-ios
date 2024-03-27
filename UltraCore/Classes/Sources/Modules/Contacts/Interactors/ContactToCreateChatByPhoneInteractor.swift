@@ -15,7 +15,8 @@ class ContactToCreateChatByPhoneInteractor: GRPCErrorUseCase<IContact, CreateCha
     }
     
     override func job(params: IContact) -> Single<CreateChatByPhoneResponse> {
-        Single.create(subscribe: { [weak self] observer in
+        PP.debug("Attempt to create chat by phone for \(params.identifier)")
+        return Single.create(subscribe: { [weak self] observer in
             guard let `self` = self else { return Disposables.create() }
 
             self.integrateService.createChatByPhone(.with({
@@ -26,8 +27,10 @@ class ContactToCreateChatByPhoneInteractor: GRPCErrorUseCase<IContact, CreateCha
             .whenComplete({ result in
                 switch result {
                 case let .success(response):
+                    PP.debug("Created chat by phone for \(params.identifier)")
                     observer(.success(response))
                 case let .failure(error):
+                    PP.debug("Failed to create chat by phone for \(params.identifier); error - \(error.localeError)")
                     observer(.failure(error))
                 }
 
@@ -64,7 +67,8 @@ class ContactToConversationInteractor: GRPCErrorUseCase<IContact, Conversation?>
                                     contact: contact,
                                     idintification: contactToCreateChat.chatID,
                                     addContact: contactToCreateChat.chat.settings.addContact,
-                                    seqNumber: contactToCreateChat.chat.messageSeqNumber
+                                    seqNumber: contactToCreateChat.chat.messageSeqNumber, 
+                                    callAllowed: contactToCreateChat.chat.settings.callAllowed
                                 )
                             })
                     })

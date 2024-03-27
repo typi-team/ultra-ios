@@ -21,7 +21,7 @@ class MessageDBService {
 
 //  MARK: Обновление сообщения в базе данных
     func update(message: Message) -> Single<Bool> {
-        PP.debug("[Message] [DB message update]: \(message)")
+        PP.debug("[Message] [DB message update]: \(message.id)")
         return Single.create {[weak self ] completable in
             guard let `self` = self else { return Disposables.create() }
             do {
@@ -60,8 +60,10 @@ class MessageDBService {
                         message.state?.delivered = true
                     }
                 }
+                PP.debug("Marking messages before \(data.maxSeqNumber) in chat \(data.chatID) as delivered")
                 completable(.success(true))
             } catch {
+                PP.error("Failed to mark messages for chatID \(data.chatID) as delivered")
                 completable(.failure(error))
             }
             return Disposables.create()
@@ -82,8 +84,10 @@ class MessageDBService {
                         message.state?.delivered = true
                     }
                 }
+                PP.debug("Marking messages before \(data.maxSeqNumber) in chat \(data.chatID) as read")
                 completable(.success(true))
             } catch {
+                PP.error("Failed to mark messages for chatID \(data.chatID) as read")
                 completable(.failure(error))
             }
             return Disposables.create()

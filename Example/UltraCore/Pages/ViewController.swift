@@ -64,6 +64,14 @@ private extension ViewController {
             }), title: NSLocalizedString("Продукты", comment: ""), image: UIImage(named: "cards")!),
             createNavController(for: UIViewController({
                 $0.view.backgroundColor = UIColor(red: 243.0 / 255.0, green: 244.0 / 255.0, blue: 246.0 / 255.0, alpha: 1.0)
+                $0.view.addSubview(UIButton.init({
+                    $0.setTitle("Логи", for: .normal)
+                    $0.addTarget(self, action: #selector(self.exportLogs(_:)), for: .touchUpInside)
+                     $0.frame.origin = .init(x: 120, y: 120)
+                     $0.frame.origin = .init(x: 120, y: 240)
+                     $0.frame.size = .init(width: 120, height: 52)
+                     $0.setTitleColor(.green500, for: .normal)
+                 }))
             }), title: NSLocalizedString("Платежи", comment: ""), image: UIImage(named: "payments")!),
             createNavController(for: UIViewController({
                 $0.view.addSubview(UILabel{
@@ -94,5 +102,12 @@ private extension ViewController {
     
     @objc func logout(_ sender: Any) {
         UltraCoreSettings.logout()
+    }
+    
+    @objc func exportLogs(_ sender: Any) {
+        PP.getLogFile { [weak self] fileURL in
+            let activity = UIActivityViewController(activityItems: [fileURL], applicationActivities: nil)
+            self?.present(activity, animated: true)
+        }
     }
 }

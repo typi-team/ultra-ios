@@ -152,6 +152,10 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         }
     )
     
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
     // MARK: - Private Methods
     
     override func setupViews() {
@@ -171,7 +175,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     override func setupStyle() {
         super.setupStyle()
         self.tableView.backgroundView = backgroundImageView
-        view.backgroundColor = .white
     }
     override func setupConstraints() {
         super.setupConstraints()
@@ -195,6 +198,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     
     override func setupInitialData() {
         super.setupInitialData()
+        NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground(_:)), name: UIApplication.didEnterBackgroundNotification, object: nil)
         self.presenter?
             .messages
             .distinctUntilChanged()
@@ -202,7 +206,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .observe(on: MainScheduler.instance)
             .do(onNext: {[weak self] messages in
                 self?.messages = messages
-                self?.tableView.backgroundView = messages.isEmpty ? UltraCoreSettings.delegate?.emptyConversationDetailView() : self?.backgroundImageView
+                self?.tableView.backgroundView = messages.isEmpty ? ConversationEmptyViewContainer(emptyView: UltraCoreSettings.delegate?.emptyConversationDetailView() ?? .init()) : self?.backgroundImageView
             })
             .map({messages -> [SectionModel<String, Message>] in
                 if messages.isEmpty {return []}
@@ -248,6 +252,11 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.tableView.contentInset = insets
         self.tableView.scrollIndicatorInsets = insets
         
+        if let backgroundView = tableView.backgroundView as? ConversationEmptyViewContainer {
+            backgroundView.setSubviewOffset(
+                y: keyBoardHeight == 0 ? 0 : -keyBoardHeight
+            )
+        }
         
         if tableView.contentSize.height > tableView.frame.height {
             if keyBoardHeight > 0 {
@@ -303,6 +312,10 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                 })
             })
             .disposed(by: disposeBag)
+    }
+    
+    @objc func didEnterBackground(_ sender: Any) {
+        messageInputBar.endEditing(true)
     }
     
 }
@@ -388,6 +401,43 @@ extension ConversationViewController: ConversationViewInterface {
         self.headline.setup(conversation: conversation)
     }
     
+    func update(callAllowed: Bool) {
+        let items: [UIBarButtonItem]
+        if callAllowed {
+            items = [
+                .init(
+                    image: .named("conversation.dots"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(self.more(_:))
+                ),
+                .init(
+                    image: .named("conversation_video_camera_icon"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(self.callWithVideo)
+                ),
+                .init(
+                    image: .named("contact_phone_icon"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(self.callWithVoice)
+                )
+            ]
+        } else {
+            items = [
+                .init(
+                    image: .named("conversation.dots"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(self.more(_:))
+                )
+            ]
+        }
+        let mustBeHidden = UltraCoreSettings.futureDelegate?.availableToBlock(conversation: self) ?? false
+        navigationItem.rightBarButtonItems = mustBeHidden ? items : nil
+    }
+    
     func showDisclaimer(show: Bool, delegate: DisclaimerViewDelegate) {
         show ? DisclaimerView.show(on: view, delegate: delegate) : DisclaimerView.hide(from: view)
         messageInputBar.isHidden = show
@@ -404,26 +454,31 @@ private extension ConversationViewController {
     
     func setupNavigationMore() {
         let mustBeHide = UltraCoreSettings.futureDelegate?.availableToBlock(conversation: self) ?? false
-        let items: [UIBarButtonItem] = [
+        var items: [UIBarButtonItem] = [
             .init(
                 image: .named("conversation.dots"),
                 style: .plain,
                 target: self,
                 action: #selector(self.more(_:))
-            ),
-            .init(
-                image: .named("conversation_video_camera_icon"),
-                style: .plain,
-                target: self,
-                action: #selector(self.callWithVideo)
-            ),
-            .init(
-                image: .named("contact_phone_icon"),
-                style: .plain,
-                target: self,
-                action: #selector(self.callWithVoice)
             )
         ]
+        if presenter?.allowedToCall() ?? false {
+            let callItems: [UIBarButtonItem] = [
+                .init(
+                    image: .named("conversation_video_camera_icon"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(self.callWithVideo)
+                ),
+                .init(
+                    image: .named("contact_phone_icon"),
+                    style: .plain,
+                    target: self,
+                    action: #selector(self.callWithVoice)
+                )
+            ]
+            items.append(contentsOf: callItems)
+        }
         self.navigationItem.rightBarButtonItems = mustBeHide ? items : nil
     }
     

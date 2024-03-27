@@ -26,6 +26,7 @@ protocol ConversationViewInterface: ViewInterface {
     func blocked(is blocked: Bool)
     func showDisclaimer(show: Bool, delegate: DisclaimerViewDelegate)
     func showOnReceiveDisclaimer(delegate: DisclaimerViewDelegate, contact: ContactDisplayable?)
+    func update(callAllowed: Bool)
 }
 
 protocol ConversationPresenterInterface: PresenterInterface {
@@ -45,6 +46,7 @@ protocol ConversationPresenterInterface: PresenterInterface {
     func openMoneyController()
     func report(_ message: Message, with type: ComplainTypeEnum?, comment: String?)
     
+    func allowedToCall() -> Bool
     func callVideo()
     func callVoice()
 }

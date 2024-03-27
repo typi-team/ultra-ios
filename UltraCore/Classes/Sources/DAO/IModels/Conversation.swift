@@ -17,6 +17,7 @@ protocol Conversation: Any {
     var idintification: String { get set }
     var typingData: [UserTypingWithDate] { get set }
     var addContact: Bool { get set }
+    var callAllowed: Bool { get set }
     var seqNumber: UInt64 { get set }
 }
 
@@ -30,15 +31,17 @@ class ConversationImpl: Conversation {
     var peer: ContactDisplayable?
     var typingData: [UserTypingWithDate] = []
     var addContact: Bool
+    var callAllowed: Bool
     var seqNumber: UInt64
     
-    init(contact: ContactDisplayable, idintification: String, addContact: Bool, seqNumber: UInt64) {
+    init(contact: ContactDisplayable, idintification: String, addContact: Bool, seqNumber: UInt64, callAllowed: Bool) {
         self.peer = contact
         self.title = contact.displaName
         self.lastMessage = nil
         self.idintification = idintification
         self.addContact = addContact
         self.seqNumber = seqNumber
+        self.callAllowed = callAllowed
     }
     
     init(dbConversation: DBConversation) {
@@ -51,6 +54,7 @@ class ConversationImpl: Conversation {
         self.unreadCount = dbConversation.unreadMessageCount
         self.addContact = dbConversation.addContact
         self.seqNumber = UInt64(dbConversation.seqNumber)
+        self.callAllowed = dbConversation.callAllowed
     }
 }
 
