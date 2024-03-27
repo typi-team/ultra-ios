@@ -12,6 +12,7 @@ public protocol UltraCoreFutureDelegate: AnyObject {
     func availableToLocation() -> Bool
     func availableToSendMoney() -> Bool
     func availableToRecordVoice() -> Bool
+    func availableToCall() -> Bool
     func localize(for key: String) -> String?
     func availableToReport(message: Any) -> Bool
     func availableToBlock(conversation: Any) -> Bool
@@ -31,6 +32,7 @@ public protocol UltraCoreSettingsDelegate: AnyObject {
     func disclaimerDescriptionFor(contact: String) -> String
     func tokenUpdated()
     func unreadMessagesUpdated(count: Int)
+    func provideTransferScreen(for userID: String, viewController: UIViewController, transferCallback: MoneyCallback)
 }
 
 extension UltraCoreSettingsDelegate {

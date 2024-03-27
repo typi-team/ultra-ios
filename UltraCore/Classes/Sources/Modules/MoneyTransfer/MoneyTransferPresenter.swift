@@ -14,6 +14,8 @@ public struct MoneyTransfer {
     let amout: Int64
     let currency: String
     let transactionID: String
+    let reception: String
+    let status: Int
 }
 
 public typealias MoneyCallback = (MoneyTransfer) -> Void
@@ -67,7 +69,9 @@ final class MoneyTransferPresenter {
                 guard let `self` = self else { return }
                 let value: MoneyTransfer = .init(amout: Int64(amount),
                                                  currency: self.currency,
-                                                 transactionID: response.transaction_id)
+                                                 transactionID: response.transaction_id, 
+                                                 reception: "", 
+                                                 status: 0)
                 self.resultCallback(value)
                 callback()
             })
