@@ -42,6 +42,7 @@ final class DisclaimerView: UIView {
             UIImage(color: UltraCoreStyle.disclaimerStyle.agreeButtonBackgroundColor.color.withAlphaComponent(0.5)),
             for: .normal
         )
+        button.backgroundColor = UltraCoreStyle.disclaimerStyle.agreeButtonBackgroundColor.color
         button.clipsToBounds = true
         button.setTitle(ConversationStrings.disclaimerAgree.localized, for: .normal)
         button.setTitleColor(UltraCoreStyle.disclaimerStyle.agreeButtonTextConfig.color, for: .normal)
