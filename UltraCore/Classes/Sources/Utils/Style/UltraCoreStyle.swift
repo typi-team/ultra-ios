@@ -182,4 +182,5 @@ private class DisclaimerStyleConfigImpl: DisclaimerStyleConfig {
     var agreeButtonTextConfig: LabelConfig = LabelConfigImpl(darkColor: .baseBlue, defaultColor: .baseBlue, font: .defaultRegularCallout)
     var contactTextConfig: LabelConfig = LabelConfigImpl(darkColor: .textPrimary, defaultColor: .textPrimary, font: .title3)
     var contactDescriptionConfig: LabelConfig = LabelConfigImpl(darkColor: .textPrimary, defaultColor: .textPrimary, font: .defaultRegularFootnote)
+    var logoPlaceholder: TwiceImage = TwiceImageImpl(dark: UIImage.fromAssets("conversation_user_contact")!, default: UIImage.fromAssets("conversation_user_contact")!)
 }

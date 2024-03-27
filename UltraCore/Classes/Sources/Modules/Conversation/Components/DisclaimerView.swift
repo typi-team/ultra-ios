@@ -35,7 +35,7 @@ final class DisclaimerView: UIView {
     private let agreeButton: UIButton = {
         let button = UIButton()
         button.setBackgroundImage(
-            UIImage(color: UltraCoreStyle.disclaimerStyle.agreeButtonBackgroundColor.color), 
+            UIImage(color: UltraCoreStyle.disclaimerStyle.agreeButtonBackgroundColor.color),
             for: .normal
         )
         button.setBackgroundImage(
@@ -63,7 +63,11 @@ final class DisclaimerView: UIView {
         label.text = ConversationStrings.disclaimer.localized
         return label
     }()
-    private let disclaimerLogo = UIImageView(image: UltraCoreStyle.disclaimerStyle.warningImage.image)
+    private let disclaimerLogo: UIImageView = {
+        let imageView = UIImageView(image: UltraCoreStyle.disclaimerStyle.warningImage.image)
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
     private lazy var disclaimerStack: UIStackView = {
         let stack = UIStackView(arrangedSubviews: [disclaimerLogo, disclaimerLabel])
         stack.spacing = 16
@@ -83,7 +87,7 @@ final class DisclaimerView: UIView {
     }
     
     private func setupViews() {
-        disclaimerLogo.snp.makeConstraints { $0.size.equalTo(36) }
+        disclaimerLogo.snp.makeConstraints { $0.width.equalTo(36) }
         agreeButton.snp.makeConstraints { $0.height.equalTo(48) }
         agreeButton.addAction { [weak self] in
             self?.delegate?.disclaimerDidTapAgree()
