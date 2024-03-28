@@ -17,4 +17,5 @@ public protocol DisclaimerStyleConfig {
     var agreeButtonTextConfig: LabelConfig { get set }
     var contactTextConfig: LabelConfig { get set }
     var contactDescriptionConfig: LabelConfig { get set }
+    var logoPlaceholder: TwiceImage { get set } 
 }

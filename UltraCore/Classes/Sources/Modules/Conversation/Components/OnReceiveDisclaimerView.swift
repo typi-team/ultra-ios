@@ -78,7 +78,7 @@ final class OnReceiveDisclaimerView: UIView {
     func update(with contact: ContactDisplayable?) {
         nameLabel.text = contact?.displaName
         descriptionLabel.text = UltraCoreSettings.delegate?.disclaimerDescriptionFor(contact: contact?.phone ?? "")
-        avatarImageView.image = contact?.image ?? UltraCoreStyle.defaultPlaceholder?.image
+        avatarImageView.image = contact?.image ?? UltraCoreStyle.disclaimerStyle.logoPlaceholder.image
     }
 }
 

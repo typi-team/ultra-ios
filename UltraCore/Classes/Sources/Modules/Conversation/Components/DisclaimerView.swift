@@ -35,13 +35,14 @@ final class DisclaimerView: UIView {
     private let agreeButton: UIButton = {
         let button = UIButton()
         button.setBackgroundImage(
-            UIImage(color: UltraCoreStyle.disclaimerStyle.agreeButtonBackgroundColor.color), 
+            UIImage(color: UltraCoreStyle.disclaimerStyle.agreeButtonBackgroundColor.color),
             for: .normal
         )
         button.setBackgroundImage(
             UIImage(color: UltraCoreStyle.disclaimerStyle.agreeButtonBackgroundColor.color.withAlphaComponent(0.5)),
             for: .normal
         )
+        button.backgroundColor = UltraCoreStyle.disclaimerStyle.agreeButtonBackgroundColor.color
         button.clipsToBounds = true
         button.setTitle(ConversationStrings.disclaimerAgree.localized, for: .normal)
         button.setTitleColor(UltraCoreStyle.disclaimerStyle.agreeButtonTextConfig.color, for: .normal)
@@ -63,7 +64,11 @@ final class DisclaimerView: UIView {
         label.text = ConversationStrings.disclaimer.localized
         return label
     }()
-    private let disclaimerLogo = UIImageView(image: UltraCoreStyle.disclaimerStyle.warningImage.image)
+    private let disclaimerLogo: UIImageView = {
+        let imageView = UIImageView(image: UltraCoreStyle.disclaimerStyle.warningImage.image)
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
     private lazy var disclaimerStack: UIStackView = {
         let stack = UIStackView(arrangedSubviews: [disclaimerLogo, disclaimerLabel])
         stack.spacing = 16
@@ -83,7 +88,7 @@ final class DisclaimerView: UIView {
     }
     
     private func setupViews() {
-        disclaimerLogo.snp.makeConstraints { $0.size.equalTo(36) }
+        disclaimerLogo.snp.makeConstraints { $0.width.equalTo(36) }
         agreeButton.snp.makeConstraints { $0.height.equalTo(48) }
         agreeButton.addAction { [weak self] in
             self?.delegate?.disclaimerDidTapAgree()
