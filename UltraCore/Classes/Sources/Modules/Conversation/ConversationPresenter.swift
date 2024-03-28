@@ -572,7 +572,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
     }
     
     func didTapTransfer() {
-        guard let userID = conversation.peer?.userID,
+        guard let userID = conversation.peer?.phone,
               let viewController = view as? UIViewController
         else {
             return
