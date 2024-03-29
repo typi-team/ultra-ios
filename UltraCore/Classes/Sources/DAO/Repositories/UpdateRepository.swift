@@ -282,7 +282,7 @@ extension UpdateRepositoryImpl {
     func handleNewMessageOnRead(message: Message) {
         PP.debug("Handle new message on read")
         guard message.sender.userID != self.appStore.userID() else { return }
-        self.conversationService.incrementUnread(for: message.receiver.chatID)
+        self.conversationService.incrementUnread(for: message.receiver.chatID, count: message.state.read ? 0 : 1)
     }
     
     func update(message: Message, completion: @escaping (() -> Void)) {

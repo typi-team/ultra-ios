@@ -38,24 +38,9 @@ class ConversationDBService {
         return Single.create { [weak self] observer -> Disposable in
             guard let `self` = self else { return Disposables.create() }
             let realm = Realm.myRealm()
-            let peerID = message.peerId(user: self.userID)
-            let contact = realm.object(ofType: DBContact.self, forPrimaryKey: peerID )
             let existConversation = realm.object(ofType: DBConversation.self, forPrimaryKey: message.receiver.chatID)
             if let conversation = existConversation {
-                do {
-                    try realm.write {
-                        conversation.contact = contact
-                        conversation.lastSeen = message.meta.created
-                        conversation.message = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm, user: self.userID)
-                        if message.sender.userID != self.appStore.userID() {
-                            conversation.unreadMessageCount += 1
-                        }
-                        realm.create(DBConversation.self, value: conversation, update: .all)
-                    }
-                    observer(.success(()))
-                } catch {
-                    observer(.failure(error))
-                }
+                self.updateConversationMessages(from: message, observer: observer)
             } else {
                 let request = GetChatSettingsRequest.with {
                     $0.id = message.receiver.chatID
@@ -68,6 +53,10 @@ class ConversationDBService {
                         case .success(let response):
                             do {
                                 let localRealm = Realm.myRealm()
+                                if localRealm.object(ofType: DBConversation.self, forPrimaryKey: message.receiver.chatID) != nil {
+                                    self.updateConversationMessages(from: message, observer: observer)
+                                    return
+                                }
                                 let peerID = message.peerId(user: self.userID)
                                 let contact = localRealm.object(ofType: DBContact.self, forPrimaryKey: peerID)
                                 try localRealm.write {
@@ -82,7 +71,7 @@ class ConversationDBService {
                                     )
                                     conversation.contact = contact
                                     if message.sender.userID != self.appStore.userID() {
-                                        conversation.unreadMessageCount += 1
+                                        conversation.unreadMessageCount += message.state.read ? 0 : 1
                                     }
                                     localRealm.add(conversation)
                                 }
@@ -96,6 +85,29 @@ class ConversationDBService {
                     }
             }
             return Disposables.create()
+        }
+    }
+    
+    func updateConversationMessages(from message: Message, observer: (Result<Void, Error>) -> Void) {
+        let realm = Realm.myRealm()
+        let peerID = message.peerId(user: userID)
+        let contact = realm.object(ofType: DBContact.self, forPrimaryKey: peerID )
+        let existConversation = realm.object(ofType: DBConversation.self, forPrimaryKey: message.receiver.chatID)
+        if let conversation = existConversation {
+            do {
+                try realm.write {
+                    conversation.contact = contact
+                    conversation.lastSeen = message.meta.created
+                    conversation.message = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm, user: self.userID)
+                    if message.sender.userID != self.appStore.userID() {
+                        conversation.unreadMessageCount += message.state.read ? 0 : 1
+                    }
+                    realm.create(DBConversation.self, value: conversation, update: .all)
+                }
+                observer(.success(()))
+            } catch {
+                observer(.failure(error))
+            }
         }
     }
     
@@ -121,7 +133,7 @@ class ConversationDBService {
     }
     
     @discardableResult
-    func incrementUnread(for conversationID: String, count: Int = 1) -> Bool {
+    func incrementUnread(for conversationID: String, count: Int) -> Bool {
         PP.debug("Trying to increment unread for conversationID - \(conversationID)")
         do {
             let realm = Realm.myRealm()
@@ -206,7 +218,6 @@ class ConversationDBService {
         callAllowedSubject.onNext((id, callAllowed))
         return Single.create { single in
             let realm = Realm.myRealm()
-            let conversations = realm.objects(DBConversation.self)
             guard let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: id) else {
                 single(.failure(ConversationError.notFound))
                 return Disposables.create()
