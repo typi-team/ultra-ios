@@ -29,7 +29,6 @@ class MessageInputBar: UIView {
     fileprivate let kInputSendImage: UIImage? = .named("conversation_send")
     fileprivate let kInputPlusImage: UIImage? = .named("conversation_plus")
     fileprivate let kInputMicroImage: UIImage? = .named("message_input_micro")
-    fileprivate let kInputExchangeImage: UIImage? = .named("message_input_exchange")
     
     fileprivate lazy var audioRecordUtils: AudioRecordUtils = .init({
         $0.delegate = self
@@ -70,7 +69,7 @@ class MessageInputBar: UIView {
     
     private lazy var exchangesButton: UIButton = .init { [weak self] button in
         guard let self else { return }
-        button.setImage(self.kInputExchangeImage, for: .normal)
+        button.setImage(style?.sendMoneyImage.image, for: .normal)
         button.addAction {
             self.delegate?.exchanges()
         }

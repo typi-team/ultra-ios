@@ -354,17 +354,18 @@ extension ConversationViewController: MessageInputBarDelegate {
     }
     
     func exchanges() {
-        let viewController = AdditioanalController()
-        viewController.resultCallback = { [weak self] action in
-            guard let `self` = self else { return }
-            switch action {
-            case .money_tranfer:
-                self.openMoneyTransfer()
-            }
-        }
-        viewController.modalPresentationStyle = .custom
-        viewController.transitioningDelegate = sheetTransitioningDelegate
-        present(viewController, animated: true)
+        presenter?.didTapTransfer()
+//        let viewController = AdditioanalController()
+//        viewController.resultCallback = { [weak self] action in
+//            guard let `self` = self else { return }
+//            switch action {
+//            case .money_tranfer:
+//                self.openMoneyTransfer()
+//            }
+//        }
+//        viewController.modalPresentationStyle = .custom
+//        viewController.transitioningDelegate = sheetTransitioningDelegate
+//        present(viewController, animated: true)
     }
     
     func message(text: String) {
@@ -403,7 +404,7 @@ extension ConversationViewController: ConversationViewInterface {
     
     func update(callAllowed: Bool) {
         let items: [UIBarButtonItem]
-        if callAllowed {
+        if callAllowed && UltraCoreSettings.futureDelegate?.availableToCall() ?? false {
             items = [
                 .init(
                     image: .named("conversation.dots"),
@@ -462,7 +463,7 @@ private extension ConversationViewController {
                 action: #selector(self.more(_:))
             )
         ]
-        if presenter?.allowedToCall() ?? false {
+        if presenter?.allowedToCall() ?? false && UltraCoreSettings.futureDelegate?.availableToCall() ?? false {
             let callItems: [UIBarButtonItem] = [
                 .init(
                     image: .named("conversation_video_camera_icon"),

@@ -49,4 +49,5 @@ protocol ConversationPresenterInterface: PresenterInterface {
     func allowedToCall() -> Bool
     func callVideo()
     func callVoice()
+    func didTapTransfer()
 }

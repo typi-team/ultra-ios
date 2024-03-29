@@ -12,7 +12,7 @@ public protocol MessageInputBarConfig {
     var background: TwiceColor { get set }
     var textConfig: TextViewConfig { get set }
     var sendMessageViewTint: TwiceColor { get set }
-    var sendMoneyViewTint: TwiceColor { get set }
+    var sendMoneyImage: TwiceImage { get set }
     var recordViewTint: TwiceColor { get set }
     var messageContainerBackground: TwiceColor { get set }
     

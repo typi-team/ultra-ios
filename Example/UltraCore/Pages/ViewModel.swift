@@ -83,6 +83,10 @@ extension ViewModel: UltraCoreFutureDelegate {
         true
     }
     
+    func availableToCall() -> Bool {
+        true
+    }
+    
     func localize(for key: String) -> String? {
         nil
     }
@@ -93,6 +97,9 @@ extension ViewModel: UltraCoreFutureDelegate {
 }
 
 extension ViewModel: UltraCoreSettingsDelegate {
+    func provideTransferScreen(for userID: String, viewController: UIViewController, transferCallback: (UltraCore.MoneyTransfer) -> Void) {
+        
+    }
     
     func unreadMessagesUpdated(count: Int) {
         onUnreadMessagesUpdated?(count)
