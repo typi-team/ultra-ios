@@ -570,6 +570,73 @@ extension ConversationPresenter: ConversationPresenterInterface {
             })
             .disposed(by: disposeBag)
     }
+    
+    func didTapTransfer() {
+        guard let userID = conversation.peer?.phone,
+              let viewController = view as? UIViewController
+        else {
+            return
+        }
+        UltraCoreSettings.delegate?.provideTransferScreen(
+            for: userID,
+            viewController: viewController,
+            transferCallback: { [weak self] moneyTransfer in
+                guard let self, let receiverID = self.conversation.peer?.userID else { return }
+                var params = MessageSendRequest()
+
+                params.peer.user = .with({ peer in
+                    peer.userID = receiverID
+                })
+
+                params.message.id = UUID().uuidString
+                params.message.meta.created = Date().nanosec
+
+                var message = Message()
+                message.money = .with({
+                    $0.transactionID = moneyTransfer.transactionID
+                    $0.money = .with({ money in
+                        money.units = moneyTransfer.amout
+                        money.currencyCode = moneyTransfer.currency
+                    })
+                })
+                message .text = params.textFormatString()
+                message.id = params.message.id
+                message.receiver = .with({ receiver in
+                    receiver.userID = receiverID
+                    receiver.chatID = self.conversation.idintification
+                })
+                message.sender = .with({ $0.userID = self.userID })
+                message.meta = .with({ $0.created = Date().nanosec })
+                
+                params.message = message
+                
+                self.conversationRepository
+                    .createIfNotExist(from: message)
+                    .flatMap({ [weak self] in
+                        guard let self else { throw NSError.selfIsNill }
+                        return messageRepository.save(message: message)
+                    })
+                    .flatMap({ [weak self] in
+                        guard let self else { throw NSError.selfIsNill }
+                        return messageSenderInteractor.executeSingle(params: params)
+                    })
+                    .flatMap({ [weak self] (response: MessageSendResponse) in
+                        guard let self else { throw NSError.selfIsNill }
+                        message.meta.created = response.meta.created
+                        message.state.delivered = false
+                        message.state.read = false
+                        message.seqNumber = response.seqNumber
+                        return messageRepository.update(message: message)
+                    })
+                    .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+                    .observe(on: MainScheduler.instance)
+                    .subscribe(onSuccess: { [weak self] _ in
+                        self?.playSentMessageSound()
+                    })
+                    .disposed(by: disposeBag)
+            }
+        )
+    }
 
 }
 
