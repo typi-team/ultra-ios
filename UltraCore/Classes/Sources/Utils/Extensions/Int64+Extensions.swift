@@ -42,7 +42,7 @@ func getTimeText(start: Date, end: Date) -> String {
     let calendar = Calendar.current
 
     // Получите компоненты времени между начальной и конечной датой
-    let components = calendar.dateComponents([.day, .hour, .minute], from: start, to: end)
+    let components = calendar.dateComponents([.month, .day, .hour, .minute], from: start, to: end)
 
     // Извлеките компоненты времени
     let months = components.month ?? 0
