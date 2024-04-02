@@ -52,9 +52,12 @@ final class IncomingCallInfoView: UIView {
     // MARK: - Methods
     
     func confige(view contact: ContactDisplayable) {
-        avatarView.set(contact: contact, placeholder: UltraCoreStyle.defaultPlaceholder?.image)
-        companionLabel.text = contact.displaName
-        phoneLabel.text = contact.phone
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return } 
+            avatarView.set(contact: contact, placeholder: UltraCoreStyle.defaultPlaceholder?.image)
+            companionLabel.text = contact.displaName
+            phoneLabel.text = contact.phone
+        }
     }
     
     func setDuration(text: String) {

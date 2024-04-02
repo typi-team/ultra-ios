@@ -19,6 +19,11 @@ protocol CallInformation {
     var video: Bool { get set }
 }
 
+struct CallPrepearing {
+    var sender: String
+    var video: Bool
+}
+
 extension CallRequest: CallInformation {}
 
 struct CallOutging: CallInformation {
@@ -32,12 +37,25 @@ struct CallOutging: CallInformation {
 enum CallStatus {
     case incoming(CallInformation)
     case outcoming(CallInformation)
+    case prepeare(CallPrepearing)
     
-    var callInfo: CallInformation {
+    var callInfo: CallInformation? {
         switch self {
         case let .outcoming(callRequest),
              let .incoming(callRequest):
             return callRequest
+        case .prepeare:
+            return nil
+        }
+    }
+    
+    var isVideoCall: Bool {
+        switch self {
+        case let .outcoming(callRequest),
+             let .incoming(callRequest):
+            return callRequest.video
+        case let .prepeare(callRequest):
+            return callRequest.video
         }
     }
 }
@@ -61,6 +79,7 @@ protocol IncomingCallViewInterface: ViewInterface {
 
 protocol IncomingCallPresenterInterface: PresenterInterface {
     func viewDidLoad()
+    func createCall()
     func didTapBack()
     func answerCall()
     func getLocalParticipant() -> LocalParticipant?
