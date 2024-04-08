@@ -50,7 +50,7 @@ Pod::Spec.new do |s|
    s.dependency 'RealmSwift'
    s.dependency 'RxDataSources'
    s.dependency 'NVActivityIndicatorView'
-   s.dependency 'LiveKitClient'
+   s.dependency 'LiveKitClient', '1.0.13'
    s.dependency 'CocoaLumberjack/Swift'
    
 end
