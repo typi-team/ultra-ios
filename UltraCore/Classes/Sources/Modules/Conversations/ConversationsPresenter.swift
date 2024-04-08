@@ -27,8 +27,12 @@ final class ConversationsPresenter: BasePresenter {
     fileprivate let resendMessagesInteractor: ResendingMessagesInteractor
     fileprivate let reachabilityInteractor: ReachabilityInteractor
     
-    lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(conversationRepository.conversations(), updateRepository.typingUsers)
-        .map({ conversations, typingUsers in
+    lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(
+        conversationRepository.conversations(),
+        updateRepository.typingUsers,
+        updateRepository.updateSyncObservable.debug("Updated Sync")
+    )
+        .map({ conversations, typingUsers, _ in
             return conversations.map { conversation in
                 var mutable = conversation
                 if let typing = typingUsers[conversation.idintification] {

@@ -63,25 +63,25 @@ class ConversationDBService {
                 self.chatService
                     .getSettings(request, callOptions: .default())
                     .response
-                    .whenComplete { result in
+                    .whenComplete { [weak self] result in
                         switch result {
                         case .success(let response):
                             do {
                                 let localRealm = Realm.myRealm()
-                                let peerID = message.peerId(user: self.userID)
+                                let peerID = message.peerId(user: self?.userID ?? "")
                                 let contact = localRealm.object(ofType: DBContact.self, forPrimaryKey: peerID)
                                 try localRealm.write {
                                     let conversation = localRealm.create(
                                         DBConversation.self,
                                         value: DBConversation(
                                             message: message,
-                                            user: self.userID,
-                                            addContact: response.settings.addContact, 
+                                            user: self?.userID ?? "",
+                                            addContact: response.settings.addContact,
                                             callAllowed: response.settings.callAllowed
                                         )
                                     )
                                     conversation.contact = contact
-                                    if message.sender.userID != self.appStore.userID() {
+                                    if message.sender.userID != self?.appStore.userID() ?? "" {
                                         conversation.unreadMessageCount += 1
                                     }
                                     localRealm.add(conversation)

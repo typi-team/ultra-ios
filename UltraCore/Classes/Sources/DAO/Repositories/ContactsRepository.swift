@@ -58,9 +58,9 @@ extension Realm {
         var config = Realm.Configuration(fileURL: realmURL, schemaVersion: 3)
         config.objectTypes = [
             DBContact.self, DBConversation.self, DBMessage.self, DBMessageState.self,
-            DBReceiver.self, DBSender.self, DBMessageMeta.self, DBAudioMessage.self,
-            DBAudioMessage.self, DBVoiceMessage.self, DBPhotoMessage.self,
-            DBVideoMessage.self, DBPhotoMessage.self, DBVideoMessage.self,
+            DBReceiver.self, DBSender.self, DBMessageMeta.self,
+            DBAudioMessage.self, DBVoiceMessage.self,
+            DBVideoMessage.self, DBPhotoMessage.self,
             DBMoneyMessage.self, DBFileMessage.self, DBContactMessage.self, DBLocationMessage.self,
             DBPhoto.self
         ]

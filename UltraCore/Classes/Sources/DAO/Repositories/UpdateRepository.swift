@@ -18,11 +18,15 @@ protocol UpdateRepository: AnyObject {
     func retreiveContactStatuses()
     func readAll(in conversation: Conversation)
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> { get set }
+    var updateSyncObservable: Observable<Void> { get }
 }
 
 class UpdateRepositoryImpl {
     
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> = .init(value: [:])
+    var updateSyncObservable: Observable<Void> {
+        updateSyncSubject.asObservable().share(replay: 1)
+    }
     
     fileprivate let disposeBag = DisposeBag()
     fileprivate let appStore: AppSettingsStore
@@ -38,6 +42,8 @@ class UpdateRepositoryImpl {
     fileprivate var pintPongTimer: Timer?
     fileprivate var updateListenStream: ServerStreamingCall<ListenRequest, Updates>?
     
+    private let updateSyncSubject = ReplaySubject<Void>.create(bufferSize: 1)
+    private let semaphore = DispatchSemaphore(value: 1)
     
     init(appStore: AppSettingsStore,
          messageService: MessageDBService,
@@ -122,13 +128,16 @@ extension UpdateRepositoryImpl: UpdateRepository {
                         let group = DispatchGroup()
                         response.messages.forEach { message in
                             group.enter()
+                            self.semaphore.wait()
                             self.update(message: message, completion: {
+                                self.semaphore.signal()
                                 group.leave()
                             })
                         }
                         
-                        group.notify(queue: DispatchQueue.main) {
-                            self.handleUnread(from: response.chats)
+                        group.notify(queue: DispatchQueue.main) { [weak self] in
+                            self?.handleUnread(from: response.chats)
+                            self?.updateSyncSubject.onNext(())
                         }
                         self.appStore.store(last: Int64(response.state))
                         self.setupChangesSubscription(with: response.state)
@@ -136,6 +145,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
                     }
                 }
         } else {
+            updateSyncSubject.onNext(())
             self.retreiveContactStatuses()
             self.setupChangesSubscription(with: UInt64(appStore.lastState))
         }
