@@ -21,7 +21,7 @@ class OutcomeFileCell : BaseMessageCell {
         let spinner = NVActivityIndicatorView(
             frame: CGRect(origin: .zero, size: .init(width: 20, height: 20)),
             type: .circleStrokeSpin,
-            color: UltraCoreStyle.fileCellConfig.loaderTintColor.color,
+            color: UltraCoreStyle.outcomeMessageCell?.fileCellConfig.loaderTintColor.color,
             padding: 0
         )
         spinner.startAnimating()
@@ -31,8 +31,8 @@ class OutcomeFileCell : BaseMessageCell {
     }()
     fileprivate let fileLabel: RegularFootnote = .init({
         $0.text = MessageStrings.fileWithoutSmile.localized
-        $0.textColor = UltraCoreStyle.fileCellConfig.fileTextConfig.color
-        $0.font = UltraCoreStyle.fileCellConfig.fileTextConfig.font
+        $0.textColor = UltraCoreStyle.outcomeMessageCell?.fileCellConfig.fileTextConfig.color
+        $0.font = UltraCoreStyle.outcomeMessageCell?.fileCellConfig.fileTextConfig.font
     })
     fileprivate let mediaRepository: MediaRepository = AppSettingsImpl.shared.mediaRepository
     

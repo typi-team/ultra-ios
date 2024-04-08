@@ -17,6 +17,7 @@ public protocol MessageCellConfig {
     var moneyImage: TwiceImage? { get set }
     var locationPinImage: TwiceImage? { get set }
     var linkColor: TwiceColor { get set }
+    var fileCellConfig: FileCellConfig { get set }
 }
 
 public protocol OutcomingMessageCellConfig: MessageCellConfig {

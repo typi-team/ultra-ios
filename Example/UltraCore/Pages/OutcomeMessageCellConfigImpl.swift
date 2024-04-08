@@ -34,4 +34,5 @@ class OutcomeMessageCellConfigImpl: OutcomingMessageCellConfig {
         default: .init(named: "conversation_location_pin")!.withRenderingMode(.alwaysTemplate)
     )
     var linkColor: TwiceColor = TwiceColorImpl(defaultColor: .systemBlue, darkColor: .systemBlue)
+    var fileCellConfig: UltraCore.FileCellConfig = FileCellConfigImpl()
 }
