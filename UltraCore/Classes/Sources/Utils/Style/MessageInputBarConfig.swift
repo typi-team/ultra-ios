@@ -16,6 +16,10 @@ public protocol MessageInputBarConfig {
     var recordViewTint: TwiceColor { get set }
     var messageContainerBackground: TwiceColor { get set }
     
+    var sendImage: TwiceImage { get set }
+    var plusImage: TwiceImage { get set }
+    var microphoneImage: TwiceImage { get set }
+    
     var blockedViewConfig: MessageInputBarBlockedConfig { get set }
 }
 

@@ -14,6 +14,10 @@ private class IncomeMessageCellConfigImpl: MessageCellConfig {
     var sentImage: TwiceImage?  = TwiceImageImpl.init(dark: .named("conversation_status_sent")!, default: .named("conversation_status_sent")!)
     var deliveredImage: TwiceImage?  = TwiceImageImpl.init(dark: .named("conversation_status_delivered")!, default: .named("conversation_status_delivered")!)
     var readImage: TwiceImage?  = TwiceImageImpl.init(dark: .named("conversation_status_read")!, default: .named("conversation_status_read")!)
+    var locationMediaImage: TwiceImage? = TwiceImageImpl(dark: .named("ff_logo_text")!, default: .named("ff_logo_text")!)
+    var moneyImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_money_icon")!, default: .named("conversation_money_icon")!)
+    var locationPinImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_location_pin")!, default: .named("conversation_location_pin")!)
+    var linkColor: TwiceColor = TwiceColorImpl(defaultColor: .systemBlue, darkColor: .systemBlue)
     
     var textLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularBody)
     var deliveryLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
@@ -28,6 +32,10 @@ private class OutcomeMessageCellConfigImpl: OutcomingMessageCellConfig {
     var sentImage: TwiceImage?  = nil
     var deliveredImage: TwiceImage?  = nil
     var readImage: TwiceImage?  = nil
+    var locationMediaImage: TwiceImage? = TwiceImageImpl(dark: .named("ff_logo_text")!, default: .named("ff_logo_text")!)
+    var moneyImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_money_icon")!, default: .named("conversation_money_icon")!)
+    var locationPinImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_location_pin")!, default: .named("conversation_location_pin")!)
+    var linkColor: TwiceColor = TwiceColorImpl(defaultColor: .systemBlue, darkColor: .systemBlue)
     
     var fileIconImage: TwiceImage? = TwiceImageImpl(dark: UIImage.named("contact_file_icon")!, default: UIImage.named("contact_file_icon")!)
     
@@ -53,6 +61,7 @@ public class UltraCoreStyle {
     public static var regularCaption3Config: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularCaption3)
 //    MARK: Conversation controller style
     public static var conversationBackgroundImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_background") ?? UIImage(), default: .named("conversation_background") ?? UIImage())
+    public static var backButton: TwiceImage? = TwiceImageImpl(dark: .named("icon_back_button")!, default: .named("icon_back_button")!)
 //    MARK: UIViewContoller
     public static var controllerBackground: TwiceColor? = TwiceColorImpl(defaultColor: .gray100, darkColor: .gray700)
     public static var divederColor: TwiceColor? = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
@@ -80,6 +89,8 @@ public class UltraCoreStyle {
     public static var messageCellStyle: MessageCellStyle = ReportViewStyleImpl()
     public static var fileCellConfig: FileCellConfig = FileCellConfigImpl()
     public static var disclaimerStyle: DisclaimerStyleConfig = DisclaimerStyleConfigImpl()
+    public static var editActionBottomBar: EditActionBottomBarConfig = EditActionBottomBarConfigImpl()
+    public static var fileSelectionStyle: FileSelectionConfig = FileSelectionConfigImpl()
 }
 
 private class MessageInputBarConfigImpl: MessageInputBarConfig {
@@ -94,6 +105,9 @@ private class MessageInputBarConfigImpl: MessageInputBarConfig {
     var sendMoneyImage: TwiceImage = TwiceImageImpl(dark: .named("message_input_exchange")!, default: .named("message_input_exchange")!)
     var recordViewTint: TwiceColor = TwiceColorImpl(defaultColor: .gray400, darkColor: .white)
     var messageContainerBackground: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
+    var sendImage: TwiceImage = TwiceImageImpl(dark: .named("conversation_send")!, default: .named("conversation_send")!)
+    var plusImage: TwiceImage = TwiceImageImpl(dark: .named("conversation_plus")!, default: .named("conversation_plus")!)
+    var microphoneImage: TwiceImage = TwiceImageImpl(dark: .named("message_input_micro")!, default: .named("message_input_micro")!)
 }
 
 private class MessageInputBarBlockedConfigImpl: MessageInputBarBlockedConfig {
@@ -183,4 +197,18 @@ private class DisclaimerStyleConfigImpl: DisclaimerStyleConfig {
     var agreeButtonTextConfig: LabelConfig = LabelConfigImpl(darkColor: .baseBlue, defaultColor: .baseBlue, font: .defaultRegularCallout)
     var contactTextConfig: LabelConfig = LabelConfigImpl(darkColor: .textPrimary, defaultColor: .textPrimary, font: .title3)
     var contactDescriptionConfig: LabelConfig = LabelConfigImpl(darkColor: .textPrimary, defaultColor: .textPrimary, font: .defaultRegularFootnote)
+}
+
+private class EditActionBottomBarConfigImpl: EditActionBottomBarConfig {
+    var trashImage: TwiceImage? = TwiceImageImpl(dark: .named("edit.action.bar.trash")!, default: .named("edit.action.bar.trash")!)
+    var shareImage: TwiceImage? = TwiceImageImpl(dark: .named("edit.action.bar.share")!, default: .named("edit.action.bar.share")!)
+    var replyImage: TwiceImage? = TwiceImageImpl(dark: .named("edit.action.bar.reply")!, default: .named("edit.action.bar.reply")!)
+}
+
+private class FileSelectionConfigImpl : FileSelectionConfig {
+    var cameraImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_camera")!, default: .named("conversation_camera")!)
+    var photoImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_photo")!, default: .named("conversation_photo")!)
+    var documentImage: TwiceImage? = TwiceImageImpl(dark: .named("contact_file_icon")!, default: .named("contact_file_icon")!)
+    var contactImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_user_contact")!, default: .named("conversation_user_contact")!)
+    var locationImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_location")!, default: .named("conversation_location")!)
 }

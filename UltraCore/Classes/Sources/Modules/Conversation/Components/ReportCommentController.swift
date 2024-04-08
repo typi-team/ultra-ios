@@ -34,7 +34,7 @@ class ReportCommentController: BaseViewController<String> {
         
         $0.rightView = UIButton({
             
-            $0.setImage(.named("conversation_erase"), for: .normal)
+            $0.setImage(style?.textFieldEraseImage.image, for: .normal)
             $0.addAction { [weak self] in
                 guard let `self` = self else { return }
                 self.textField.text = ""

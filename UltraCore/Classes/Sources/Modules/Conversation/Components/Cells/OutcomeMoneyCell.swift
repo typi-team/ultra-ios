@@ -11,7 +11,7 @@ class OutcomeMoneyCell : BaseMessageCell {
     
     fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
     fileprivate let moneyAvatarView: UIImageView = .init({
-        $0.image = UIImage.named("conversation_money_icon")
+        $0.image = UltraCoreStyle.outcomeMessageCell?.moneyImage?.image
         $0.contentMode = .center
     })
     

@@ -14,7 +14,7 @@ class OutcomeFileCell : BaseMessageCell {
     
     fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
     fileprivate let fileIconView: UIImageView = .init({
-        $0.image = UIImage.named("contact_file_icon")
+        $0.image = UltraCoreStyle.outcomeMessageCell?.fileIconImage?.image
         $0.contentMode = .center
     })
     fileprivate let spinner: NVActivityIndicatorView = {

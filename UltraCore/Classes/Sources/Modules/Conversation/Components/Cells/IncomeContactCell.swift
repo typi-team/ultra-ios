@@ -15,7 +15,7 @@ class IncomeContactCell : BaseMessageCell {
     fileprivate let phoneNumberLabel: RegularFootnote = .init({ $0.text = "+ 7 777 777 77 77" })
     fileprivate let moneyAvatarView: UIImageView = .init({
         $0.contentMode = .center
-        $0.image = UIImage.named("contact_file_icon")
+        $0.image = UltraCoreStyle.incomeMessageCell?.fileIconImage?.image
     })
     
     override func setupView() {

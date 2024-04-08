@@ -26,9 +26,9 @@ class MessageInputBar: UIView {
     
     fileprivate var lastTypingDate: Date = .init()
     fileprivate let kTextFieldMaxHeight: CGFloat = 120
-    fileprivate let kInputSendImage: UIImage? = .named("conversation_send")
-    fileprivate let kInputPlusImage: UIImage? = .named("conversation_plus")
-    fileprivate let kInputMicroImage: UIImage? = .named("message_input_micro")
+    fileprivate lazy var kInputSendImage: UIImage? = style?.sendImage.image
+    fileprivate lazy var kInputPlusImage: UIImage? = style?.plusImage.image
+    fileprivate lazy var kInputMicroImage: UIImage? = style?.microphoneImage.image
     
     fileprivate lazy var audioRecordUtils: AudioRecordUtils = .init({
         $0.delegate = self

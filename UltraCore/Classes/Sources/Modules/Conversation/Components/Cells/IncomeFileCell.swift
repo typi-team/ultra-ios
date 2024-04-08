@@ -20,7 +20,7 @@ class IncomeFileCell : BaseMessageCell {
         $0.font = UltraCoreStyle.fileCellConfig.fileTextConfig.font
     })
     fileprivate let fileIconView: UIImageView = .init({
-        $0.image = UIImage.named("contact_file_icon")
+        $0.image = UltraCoreStyle.incomeMessageCell?.fileIconImage?.image
         $0.contentMode = .center
     })
     fileprivate let spinner: NVActivityIndicatorView = {

@@ -24,8 +24,8 @@ class EditActionBottomBar: UIView {
         $0.distribution = .fillEqually
     })
     
-    fileprivate lazy var strashButton: UIButton = .init({
-        $0.setImage(.named("edit.action.bar.trash"), for: .normal)
+    fileprivate lazy var trashButton: UIButton = .init({
+        $0.setImage(UltraCoreStyle.editActionBottomBar.trashImage?.image, for: .normal)
         $0.addAction {[weak self] in
             guard let `self` = self else {
                  return
@@ -35,7 +35,7 @@ class EditActionBottomBar: UIView {
     })
     
     fileprivate lazy var shareButton: UIButton = .init({
-        $0.setImage(.named("edit.action.bar.share"), for: .normal)
+        $0.setImage(UltraCoreStyle.editActionBottomBar.shareImage?.image, for: .normal)
         $0.addAction {[weak self] in
             guard let `self` = self else {
                  return
@@ -45,7 +45,7 @@ class EditActionBottomBar: UIView {
     })
     
     fileprivate lazy var replyButton: UIButton = .init({
-        $0.setImage(.named("edit.action.bar.reply"), for: .normal)
+        $0.setImage(UltraCoreStyle.editActionBottomBar.replyImage?.image, for: .normal)
         $0.addAction {[weak self] in
             guard let `self` = self else {
                  return
@@ -83,7 +83,7 @@ private extension EditActionBottomBar {
     func setupViews() {
         self.addSubview(stackView)
         self.backgroundColor = .gray100
-        self.stackView.addArrangedSubview(self.strashButton)
+        self.stackView.addArrangedSubview(self.trashButton)
 //        self.stackView.addArrangedSubview(self.shareButton)
 //        self.stackView.addArrangedSubview(self.replyButton)
         self.setupStyle()

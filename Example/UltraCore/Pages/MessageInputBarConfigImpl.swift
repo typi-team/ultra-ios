@@ -19,6 +19,18 @@ class MessageInputBarConfigImpl: MessageInputBarConfig {
     var sendMoneyImage: TwiceImage = TwiceImageImpl(dark: .init(named: "message_input_exchange")!, default: .init(named: "message_input_exchange")!)
     var recordViewTint: TwiceColor = TwiceColorImpl(defaultColor: .gray400, darkColor: .white)
     var messageContainerBackground: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
+    var sendImage: TwiceImage = TwiceImageImpl(
+        dark: .init(named: "conversation_send")!.withRenderingMode(.alwaysTemplate),
+        default: .init(named: "conversation_send")!.withRenderingMode(.alwaysTemplate)
+    )
+    var plusImage: TwiceImage = TwiceImageImpl(
+        dark: .init(named: "conversation_plus")!.withRenderingMode(.alwaysTemplate),
+        default: .init(named: "conversation_plus")!.withRenderingMode(.alwaysTemplate)
+    )
+    var microphoneImage: TwiceImage = TwiceImageImpl(
+        dark: .init(named: "message_input_micro")!.withRenderingMode(.alwaysTemplate),
+        default: .init(named: "message_input_micro")!.withRenderingMode(.alwaysTemplate)
+    )
 }
 
 

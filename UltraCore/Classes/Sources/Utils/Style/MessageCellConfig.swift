@@ -13,7 +13,10 @@ public protocol MessageCellConfig {
     var sildirBackgroundColor: TwiceColor { get set }
     var textLabelConfig: LabelConfig { get set }
     var deliveryLabelConfig: LabelConfig { get set }
-    
+    var locationMediaImage: TwiceImage? { get set }
+    var moneyImage: TwiceImage? { get set }
+    var locationPinImage: TwiceImage? { get set }
+    var linkColor: TwiceColor { get set }
 }
 
 public protocol OutcomingMessageCellConfig: MessageCellConfig {
@@ -51,4 +54,18 @@ public protocol FileCellConfig {
     var fileTextConfig: LabelConfig { get set }
     var loaderTintColor: TwiceColor { get set }
     var loaderBackgroundColor: TwiceColor { get set }
+}
+
+public protocol EditActionBottomBarConfig {
+    var trashImage: TwiceImage? { get set }
+    var shareImage: TwiceImage? { get set }
+    var replyImage: TwiceImage? { get set }
+}
+
+public protocol FileSelectionConfig {
+    var cameraImage: TwiceImage? { get set }
+    var photoImage: TwiceImage? { get set }
+    var documentImage: TwiceImage? { get set }
+    var contactImage: TwiceImage? { get set }
+    var locationImage: TwiceImage? { get set }
 }

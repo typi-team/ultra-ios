@@ -20,4 +20,17 @@ class IncomeMessageCellConfigImpl: MessageCellConfig {
     var deliveryLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
     var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white, darkColor: .gray500)
     var sildirBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
+    var locationMediaImage: TwiceImage? = TwiceImageImpl(
+        dark: .init(named: "ff_logo_text")!.withRenderingMode(.alwaysTemplate),
+        default: .init(named: "ff_logo_text")!.withRenderingMode(.alwaysTemplate)
+    )
+    var moneyImage: TwiceImage? = TwiceImageImpl(
+        dark: .init(named: "conversation_money_icon")!.withRenderingMode(.alwaysTemplate),
+        default: .init(named: "conversation_money_icon")!.withRenderingMode(.alwaysTemplate)
+    )
+    var locationPinImage: TwiceImage? = TwiceImageImpl(
+        dark: .init(named: "conversation_location_pin")!.withRenderingMode(.alwaysTemplate),
+        default: .init(named: "conversation_location_pin")!.withRenderingMode(.alwaysTemplate)
+    )
+    var linkColor: TwiceColor = TwiceColorImpl(defaultColor: .systemBlue, darkColor: .systemBlue)
 }

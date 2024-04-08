@@ -14,7 +14,7 @@ class OutcomeLocationCell: BaseMessageCell {
     fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
     
     fileprivate lazy var mediaView: UIImageView = .init {
-        $0.image = .named("ff_logo_text")
+        $0.image = UltraCoreStyle.outcomeMessageCell?.locationMediaImage?.image
         $0.contentMode = .scaleAspectFill
     }
 
@@ -74,10 +74,10 @@ class OutcomeLocationCell: BaseMessageCell {
 
                 let image = snapshot.image
                 let point = snapshot.point(for: locationCoordinate)
-                if let pinImage = UIImage.named("conversation_location_pin") {
-                    let pinPoint = CGPoint(x: point.x - (pinImage.size.width / 2), y: point.y - (pinImage.size.height / 2))
+                if let pinImage = UltraCoreStyle.outcomeMessageCell?.locationPinImage {
+                    let pinPoint = CGPoint(x: point.x - (pinImage.image.size.width / 2), y: point.y - (pinImage.image.size.height / 2))
                     image.draw(at: pinPoint, blendMode: .normal, alpha: 1.0)
-                    pinImage.draw(at: pinPoint, blendMode: .normal, alpha: 1.0)
+                    pinImage.image.draw(at: pinPoint, blendMode: .normal, alpha: 1.0)
                 }
                 SDImageCache.shared.store(image, forKey: message.location.locationID, toDisk: true, completion: nil)
 

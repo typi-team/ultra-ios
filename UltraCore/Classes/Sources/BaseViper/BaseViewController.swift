@@ -133,7 +133,7 @@ extension UIViewController {
     
     @objc func setupViews() {
 
-        let yourBackImage = UIImage.named( "icon_back_button")
+        let yourBackImage = UltraCoreStyle.backButton?.image
         self.navigationController?.navigationBar.backIndicatorImage = yourBackImage
         self.navigationController?.navigationBar.backIndicatorTransitionMaskImage = yourBackImage
         self.navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
