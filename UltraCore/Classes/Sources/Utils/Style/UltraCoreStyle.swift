@@ -84,14 +84,13 @@ public class UltraCoreStyle {
 //    MARK: Calling page config
     public static var callingConfig: CallPageStyle = CallPageStyleImpl()
 //    MARK: File page config
-    public static var filePageConfig: FilesControllerConfig?
+    public static var filePageConfig: FilesControllerConfig? = FilesControllerConfigImpl()
 //    MARK: Report page config
     public static var reportCommentControllerStyle: ReportCommentControllerStyle? = ReportCommentControllerStyleImpl()
     public static var reportViewStyle: ReportViewStyle = ReportViewStyleImpl()
     public static var messageCellStyle: MessageCellStyle = ReportViewStyleImpl()
     public static var disclaimerStyle: DisclaimerStyleConfig = DisclaimerStyleConfigImpl()
     public static var editActionBottomBar: EditActionBottomBarConfig = EditActionBottomBarConfigImpl()
-    public static var fileSelectionStyle: FileSelectionConfig = FileSelectionConfigImpl()
 }
 
 private class MessageInputBarConfigImpl: MessageInputBarConfig {
@@ -206,10 +205,10 @@ private class EditActionBottomBarConfigImpl: EditActionBottomBarConfig {
     var replyImage: TwiceImage? = TwiceImageImpl(dark: .named("edit.action.bar.reply")!, default: .named("edit.action.bar.reply")!)
 }
 
-private class FileSelectionConfigImpl : FileSelectionConfig {
-    var cameraImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_camera")!, default: .named("conversation_camera")!)
-    var photoImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_photo")!, default: .named("conversation_photo")!)
-    var documentImage: TwiceImage? = TwiceImageImpl(dark: .named("contact_file_icon")!, default: .named("contact_file_icon")!)
-    var contactImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_user_contact")!, default: .named("conversation_user_contact")!)
-    var locationImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_location")!, default: .named("conversation_location")!)
+private class FilesControllerConfigImpl : FilesControllerConfig {
+    var takePhotoImage: TwiceImage = TwiceImageImpl(dark: .named("conversation_camera")!, default: .named("conversation_camera")!)
+    var fromGalleryImage: TwiceImage = TwiceImageImpl(dark: .named("conversation_photo")!, default: .named("conversation_photo")!)
+    var documentImage: TwiceImage = TwiceImageImpl(dark: .named("contact_file_icon")!, default: .named("contact_file_icon")!)
+    var contactImage: TwiceImage = TwiceImageImpl(dark: .named("conversation_user_contact")!, default: .named("conversation_user_contact")!)
+    var locationImage: TwiceImage = TwiceImageImpl(dark: .named("conversation_location")!, default: .named("conversation_location")!)
 }

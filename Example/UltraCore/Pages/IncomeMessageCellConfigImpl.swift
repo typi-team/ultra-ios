@@ -7,15 +7,29 @@
 //
 
 import UltraCore
+import UIKit
 
 class IncomeMessageCellConfigImpl: MessageCellConfig {
-    var fileIconImage: UltraCore.TwiceImage?
-    
-    var loadingImage: UltraCore.TwiceImage?
-    var sentImage: UltraCore.TwiceImage?
-    var deliveredImage: UltraCore.TwiceImage?
-    var readImage: UltraCore.TwiceImage?
-    
+    var fileIconImage: UltraCore.TwiceImage? = TwiceImageImpl(
+        dark: .init(named: "contact_file_icon")!.withRenderingMode(.alwaysTemplate),
+        default: .init(named: "contact_file_icon")!.withRenderingMode(.alwaysTemplate)
+    )
+    var loadingImage: UltraCore.TwiceImage? = TwiceImageImpl(
+        dark: .init(named: "conversation_status_loading")!,
+        default: .init(named: "conversation_status_loading")!
+    )
+    var sentImage: UltraCore.TwiceImage? = TwiceImageImpl(
+        dark: .init(named: "conversation_status_sent")!,
+        default: .init(named: "conversation_status_sent")!
+    )
+    var deliveredImage: UltraCore.TwiceImage? = TwiceImageImpl(
+        dark: .init(named: "conversation_status_delivered")!,
+        default: .init(named: "conversation_status_delivered")!
+    )
+    var readImage: UltraCore.TwiceImage? = TwiceImageImpl(
+        dark: .init(named: "conversation_status_read")!,
+        default: .init(named: "conversation_status_read")!
+    )
     var textLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularBody)
     var deliveryLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
     var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white, darkColor: .gray500)

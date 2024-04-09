@@ -25,7 +25,6 @@ class FilesController: BaseViewController<String> {
     })
 
     fileprivate lazy var takePhoto: TextButton = .init({
-        $0.setImage(UltraCoreStyle.fileSelectionStyle.cameraImage?.image, for: .normal)
         $0.setTitle(ConversationStrings.toMakeAPhoto.localized, for: .normal)
         $0.addAction { [weak self] in
             guard let `self` = self else { return }
@@ -36,7 +35,6 @@ class FilesController: BaseViewController<String> {
     fileprivate var style: FilesControllerConfig? = UltraCoreStyle.filePageConfig
     
     fileprivate lazy var fromGallery: TextButton = .init({
-        $0.setImage(UltraCoreStyle.fileSelectionStyle.photoImage?.image, for: .normal)
         $0.setTitle(ConversationStrings.selectionFromLibrary.localized, for: .normal)
         $0.addAction { [weak self] in
             guard let `self` = self else { return }
@@ -45,7 +43,6 @@ class FilesController: BaseViewController<String> {
     })
     
     fileprivate lazy var document: TextButton = .init({
-        $0.setImage(UltraCoreStyle.fileSelectionStyle.documentImage?.image, for: .normal)
         $0.setTitle(ConversationStrings.selectDocument.localized, for: .normal)
         $0.addAction { [weak self] in
             guard let `self` = self else { return }
@@ -54,7 +51,6 @@ class FilesController: BaseViewController<String> {
     })
     
     fileprivate lazy var contact: TextButton = .init({
-        $0.setImage(UltraCoreStyle.fileSelectionStyle.contactImage?.image, for: .normal)
         $0.setTitle(ConversationStrings.contact.localized, for: .normal)
         $0.addAction { [weak self] in
             guard let `self` = self else { return }
@@ -63,7 +59,6 @@ class FilesController: BaseViewController<String> {
     })
     
     fileprivate lazy var location: TextButton = .init({
-        $0.setImage(UltraCoreStyle.fileSelectionStyle.locationImage?.image, for: .normal)
         $0.setTitle(ConversationStrings.location.localized, for: .normal)
         $0.addAction { [weak self] in
             guard let `self` = self else { return }
