@@ -47,6 +47,7 @@ protocol ConversationPresenterInterface: PresenterInterface {
     func report(_ message: Message, with type: ComplainTypeEnum?, comment: String?)
     
     func allowedToCall() -> Bool
+    func isAssistance() -> Bool
     func callVideo()
     func callVoice()
     func didTapTransfer()
