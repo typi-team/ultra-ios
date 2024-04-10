@@ -32,7 +32,7 @@ public protocol UltraCoreSettingsDelegate: AnyObject {
     func disclaimerDescriptionFor(contact: String) -> String
     func tokenUpdated()
     func unreadMessagesUpdated(count: Int)
-    func provideTransferScreen(for userID: String, viewController: UIViewController, transferCallback: MoneyCallback)
+    func provideTransferScreen(for userID: String, viewController: UIViewController, transferCallback: @escaping MoneyCallback)
 }
 
 extension UltraCoreSettingsDelegate {
