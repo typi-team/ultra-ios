@@ -48,4 +48,8 @@ class IncomeMessageCellConfigImpl: MessageCellConfig {
     )
     var linkColor: TwiceColor = TwiceColorImpl(defaultColor: .systemBlue, darkColor: .systemBlue)
     var fileCellConfig: UltraCore.FileCellConfig = FileCellConfigImpl()
+    var mediaImage: UltraCore.TwiceImage? = TwiceImageImpl(
+        dark: .init(named: "conversation_media_play")!.withRenderingMode(.alwaysTemplate),
+        default: .init(named: "conversation_media_play")!.withRenderingMode(.alwaysTemplate)
+    )
 }
