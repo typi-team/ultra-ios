@@ -51,9 +51,11 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
         self.tableView.sectionHeaderHeight = 0
         self.tableView.registerCell(type: ConversationCell.self)
         self.tableView.separatorInset = .init(top: 0, left: kMediumPadding * 2, bottom: 0, right: kMediumPadding)
-        self.navigationItem.rightBarButtonItem = .init(image: .named("conversation_new_icon"),
-                                                       style: .plain, target: self,
-                                                       action: #selector(self.openContacts))
+        self.navigationItem.rightBarButtonItem = .init(
+            image: UltraCoreStyle.conversationScreenConfig.startConversationImage.image,
+            style: .plain, target: self,
+            action: #selector(self.openContacts)
+        )
         
         self.navigationItem.title = ConversationsStrings.chats.localized
         self.hidesBottomBarWhenPushed = false
@@ -76,6 +78,7 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
             .debounce(.milliseconds(200), scheduler: MainScheduler.instance)
             .do(onNext: {[weak self] conversations in
                 guard let `self` = self else { return }
+                PP.debug("Conversations count is - \(conversations.count)")
                 if conversations.isEmpty {
                     self.tableView.backgroundView = UltraCoreSettings.delegate?.emptyConversationView() ?? self.backgroundView
                 } else {
