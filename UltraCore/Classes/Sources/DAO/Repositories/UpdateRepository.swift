@@ -266,6 +266,7 @@ private extension UpdateRepositoryImpl {
             self.deleteConversation(chat)
         case let .moneyTransferStatus(status):
             PP.debug(status.textFormatString())
+            self.conversationService.updateTransferStatus(status)
         case .stockTransferStatus(let data):
             PP.debug(data.textFormatString())
         case .coinTransferStatus(let data):
