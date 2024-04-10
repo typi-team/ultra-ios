@@ -24,6 +24,7 @@ private class IncomeMessageCellConfigImpl: MessageCellConfig {
     var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white, darkColor: .gray500)
     var sildirBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
     var fileCellConfig: FileCellConfig = FileCellConfigImpl()
+    var mediaImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_media_play")!, default: .named("conversation_media_play")!)
 }
 
 private class OutcomeMessageCellConfigImpl: OutcomingMessageCellConfig {
@@ -45,6 +46,7 @@ private class OutcomeMessageCellConfigImpl: OutcomingMessageCellConfig {
     var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray900)
     var sildirBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
     var fileCellConfig: FileCellConfig = FileCellConfigImpl()
+    var mediaImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_media_play")!, default: .named("conversation_media_play")!)
 }
 
 
@@ -61,6 +63,7 @@ public class UltraCoreStyle {
     public static var regularCalloutConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularCallout)
     public static var regularFootnoteConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
     public static var regularCaption3Config: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularCaption3)
+    public static var title3Config: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .textPrimary, font: .title3)
 //    MARK: Conversation controller style
     public static var conversationBackgroundImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_background") ?? UIImage(), default: .named("conversation_background") ?? UIImage())
     public static var backButton: TwiceImage? = TwiceImageImpl(dark: .named("icon_back_button")!, default: .named("icon_back_button")!)
@@ -91,6 +94,8 @@ public class UltraCoreStyle {
     public static var messageCellStyle: MessageCellStyle = ReportViewStyleImpl()
     public static var disclaimerStyle: DisclaimerStyleConfig = DisclaimerStyleConfigImpl()
     public static var editActionBottomBar: EditActionBottomBarConfig = EditActionBottomBarConfigImpl()
+    public static var conversationScreenConfig: ConversationScreenStyleConfig = ConversationScreenStyleConfigImpl()
+    public static var iconClose: TwiceImage = TwiceImageImpl(dark: .named("icon_close")!, default: .named("icon_close")!)
 }
 
 private class MessageInputBarConfigImpl: MessageInputBarConfig {
@@ -126,6 +131,11 @@ private class VoiceInputBarConfigImpl: VoiceInputBarConfig {
     var roundedViewBackground: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray100)
     var removeButtonBackground: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
     var durationLabel: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray500, font: .defaultRegularBody)
+    var recordButtonDefaultImage: TwiceImage = TwiceImageImpl(dark: UIImage.named("message_input_micro")!, default: UIImage.named("message_input_micro")!)
+    var recordButtonRecordingImage: TwiceImage = TwiceImageImpl(dark: UIImage.named("voice.recording")!, default: UIImage.named("voice.recording")!)
+    var smallMicImage: TwiceImage = TwiceImageImpl(dark: UIImage.named("mic_red")!, default: UIImage.named("mic_red")!)
+    var bucketLidImage: TwiceImage = TwiceImageImpl(dark: UIImage.named("bucket_lid")!, default: UIImage.named("bucket_lid")!)
+    var bucketBodyImage: TwiceImage = TwiceImageImpl(dark: UIImage.named("bucket_body")!, default: UIImage.named("bucket_body")!)
 }
 
 open class CallPageStyleImpl: CallPageStyle {
@@ -135,17 +145,17 @@ open class CallPageStyleImpl: CallPageStyle {
     open var durationConfig: LabelConfig = LabelConfigImpl(darkColor: .gray400, defaultColor: .gray400, font: .defaultRegularBody)
     open var companionVideoConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .white, font: .defaultRegularHeadline)
     open var durationVideoConfig: LabelConfig = LabelConfigImpl(darkColor: .gray400, defaultColor: .gray400, font: .defaultRegularFootnote)
-    open var mouthpieceOnImage: UIImage = .fromAssets("calling.mouthpieceOn")!
-    open var mouthpieceOffImage: UIImage = .fromAssets("calling.mouthpieceOff")!
-    open var micOnImage: UIImage = .fromAssets("calling.micOn")!
-    open var micOffImage: UIImage = .fromAssets("calling.micOff")!
-    open var cameraOnImage: UIImage = .fromAssets("calling.cameraOn")!
-    open var cameraOffImage: UIImage = .fromAssets("calling.cameraOff")!
-    open var answerImage: UIImage = .fromAssets("calling.answer")!
-    open var declineImage: UIImage = .fromAssets("calling.decline")!
-    open var closeImage: UIImage = .fromAssets("calling.close")!
-    open var switchFrontCameraImage: UIImage = .fromAssets("calling.switchCameraPosition")!
-    open var switchBackCameraImage: UIImage = .fromAssets("calling.switchCameraPosition")!
+    open var mouthpieceOnImage: TwiceImage = TwiceImageImpl(dark: .fromAssets("calling.mouthpieceOn")!, default: .fromAssets("calling.mouthpieceOn")!)
+    open var mouthpieceOffImage: TwiceImage = TwiceImageImpl(dark: .fromAssets("calling.mouthpieceOff")!, default: .fromAssets("calling.mouthpieceOff")!)
+    open var micOnImage: TwiceImage = TwiceImageImpl(dark: .fromAssets("calling.micOn")!, default: .fromAssets("calling.micOn")!)
+    open var micOffImage: TwiceImage = TwiceImageImpl(dark: .fromAssets("calling.micOff")!, default: .fromAssets("calling.micOff")!)
+    open var cameraOnImage: TwiceImage = TwiceImageImpl(dark: .fromAssets("calling.cameraOn")!, default: .fromAssets("calling.cameraOn")!)
+    open var cameraOffImage: TwiceImage = TwiceImageImpl(dark: .fromAssets("calling.cameraOff")!, default: .fromAssets("calling.cameraOff")!)
+    open var answerImage: TwiceImage = TwiceImageImpl(dark: .fromAssets("calling.answer")!, default: .fromAssets("calling.answer")!)
+    open var declineImage: TwiceImage = TwiceImageImpl(dark: .fromAssets("calling.decline")!, default: .fromAssets("calling.decline")!)
+    open var closeImage: TwiceImage = TwiceImageImpl(dark: .fromAssets("calling.close")!, default: .fromAssets("calling.close")!)
+    open var switchFrontCameraImage: TwiceImage = TwiceImageImpl(dark: .fromAssets("calling.switchCameraPosition")!, default: .fromAssets("calling.switchCameraPosition")!)
+    open var switchBackCameraImage: TwiceImage = TwiceImageImpl(dark: .fromAssets("calling.switchCameraPosition")!, default: .fromAssets("calling.switchCameraPosition")!)
     
     public init() {}
 }
@@ -211,4 +221,23 @@ private class FilesControllerConfigImpl : FilesControllerConfig {
     var documentImage: TwiceImage = TwiceImageImpl(dark: .named("contact_file_icon")!, default: .named("contact_file_icon")!)
     var contactImage: TwiceImage = TwiceImageImpl(dark: .named("conversation_user_contact")!, default: .named("conversation_user_contact")!)
     var locationImage: TwiceImage = TwiceImageImpl(dark: .named("conversation_location")!, default: .named("conversation_location")!)
+}
+
+private class ConversationScreenStyleConfigImpl: ConversationScreenStyleConfig {
+    var startConversationImage: TwiceImage = TwiceImageImpl(
+        dark: .named("conversation_new_icon")!,
+        default: .named("conversation_new_icon")!
+    )
+    var conversationOptionsImage: TwiceImage = TwiceImageImpl(
+        dark: .named("conversation.dots")!,
+        default: .named("conversation.dots")!
+    )
+    var conversationVideoCallImage: TwiceImage = TwiceImageImpl(
+        dark: .named("conversation_video_camera_icon")!,
+        default: .named("conversation_video_camera_icon")!
+    )
+    var conversationVoiceCallImage: TwiceImage = TwiceImageImpl(
+        dark: .named("contact_phone_icon")!,
+        default: .named("contact_phone_icon")!
+    )
 }

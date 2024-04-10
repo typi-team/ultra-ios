@@ -19,7 +19,7 @@ class FilesController: BaseViewController<String> {
     
     var resultCallback: ((FilesAction) -> Void)?
 
-    fileprivate let headlineLabel: HeadlineBody = .init({
+    fileprivate let headlineLabel: Title3Label = .init({
         $0.textAlignment = .left
         $0.text = ConversationStrings.addAttachment.localized
     })

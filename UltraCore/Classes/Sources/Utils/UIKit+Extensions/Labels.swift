@@ -80,6 +80,18 @@ class SubHeadline: BaseLabel {
     }
 }
 
+class Title3Label: BaseLabel {
+    override func setupView() {
+        super.setupView()
+        self.font = UltraCoreStyle.title3Config.font
+        self.textColor = UltraCoreStyle.title3Config.color
+    }
+    
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        self.textColor = UltraCoreStyle.title3Config.color
+    }
+}
+
 
 class LabelWithInsets: BaseLabel {
     

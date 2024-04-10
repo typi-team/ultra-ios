@@ -31,7 +31,7 @@ final class ContactViewController: BaseViewController<ContactPresenter> {
     })
     
     fileprivate lazy var phoneButton: TextButton = .init({
-        $0.setImage(.named("contact_phone_icon"), for: .normal)
+        $0.setImage(UltraCoreStyle.conversationScreenConfig.conversationVoiceCallImage.image, for: .normal)
         $0.setTitle(ProfileEnums.phone.localized, for: .normal)
     })
     

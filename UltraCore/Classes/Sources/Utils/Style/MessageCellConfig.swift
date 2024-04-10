@@ -15,6 +15,7 @@ public protocol MessageCellConfig {
     var deliveryLabelConfig: LabelConfig { get set }
     var locationMediaImage: TwiceImage? { get set }
     var moneyImage: TwiceImage? { get set }
+    var mediaImage: TwiceImage? { get set }
     var locationPinImage: TwiceImage? { get set }
     var linkColor: TwiceColor { get set }
     var fileCellConfig: FileCellConfig { get set }

@@ -407,19 +407,19 @@ extension ConversationViewController: ConversationViewInterface {
         if callAllowed && UltraCoreSettings.futureDelegate?.availableToCall() ?? false {
             items = [
                 .init(
-                    image: .named("conversation.dots"),
+                    image: UltraCoreStyle.conversationScreenConfig.conversationOptionsImage.image,
                     style: .plain,
                     target: self,
                     action: #selector(self.more(_:))
                 ),
                 .init(
-                    image: .named("conversation_video_camera_icon"),
+                    image: UltraCoreStyle.conversationScreenConfig.conversationVideoCallImage.image,
                     style: .plain,
                     target: self,
                     action: #selector(self.callWithVideo)
                 ),
                 .init(
-                    image: .named("contact_phone_icon"),
+                    image: UltraCoreStyle.conversationScreenConfig.conversationVoiceCallImage.image,
                     style: .plain,
                     target: self,
                     action: #selector(self.callWithVoice)
@@ -428,7 +428,7 @@ extension ConversationViewController: ConversationViewInterface {
         } else {
             items = [
                 .init(
-                    image: .named("conversation.dots"),
+                    image: UltraCoreStyle.conversationScreenConfig.conversationOptionsImage.image,
                     style: .plain,
                     target: self,
                     action: #selector(self.more(_:))
@@ -457,7 +457,7 @@ private extension ConversationViewController {
         let mustBeHide = UltraCoreSettings.futureDelegate?.availableToBlock(conversation: self) ?? false
         var items: [UIBarButtonItem] = [
             .init(
-                image: .named("conversation.dots"),
+                image: UltraCoreStyle.conversationScreenConfig.conversationOptionsImage.image,
                 style: .plain,
                 target: self,
                 action: #selector(self.more(_:))
@@ -466,13 +466,13 @@ private extension ConversationViewController {
         if presenter?.allowedToCall() ?? false && UltraCoreSettings.futureDelegate?.availableToCall() ?? false {
             let callItems: [UIBarButtonItem] = [
                 .init(
-                    image: .named("conversation_video_camera_icon"),
+                    image: UltraCoreStyle.conversationScreenConfig.conversationVideoCallImage.image,
                     style: .plain,
                     target: self,
                     action: #selector(self.callWithVideo)
                 ),
                 .init(
-                    image: .named("contact_phone_icon"),
+                    image: UltraCoreStyle.conversationScreenConfig.conversationVoiceCallImage.image,
                     style: .plain,
                     target: self,
                     action: #selector(self.callWithVoice)
@@ -766,7 +766,12 @@ extension ConversationViewController {
     
     func presentEditController(for message: Message, indexPath: IndexPath) {
         dismissKeyboardGesture.isEnabled = false
-        navigationItem.rightBarButtonItem = .init(image: .named("icon_close"), style: .done, target: self, action: #selector(self.cancel))
+        navigationItem.rightBarButtonItem = .init(
+            image: UltraCoreStyle.iconClose.image,
+            style: .done,
+            target: self,
+            action: #selector(self.cancel)
+        )
         tableView.allowsMultipleSelectionDuringEditing = true
         tableView.setEditing(!tableView.isEditing, animated: true)
         

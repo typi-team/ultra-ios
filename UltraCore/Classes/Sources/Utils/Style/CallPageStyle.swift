@@ -17,19 +17,19 @@ public protocol CallPageStyle {
     var companionVideoConfig: LabelConfig { get set }
     var durationVideoConfig: LabelConfig { get set }
     
-    var mouthpieceOnImage: UIImage { get set }
+    var mouthpieceOnImage: TwiceImage { get set }
     
-    var mouthpieceOffImage: UIImage { get set }
+    var mouthpieceOffImage: TwiceImage { get set }
     
-    var micOnImage: UIImage { get set }
-    var micOffImage: UIImage { get set }
+    var micOnImage: TwiceImage { get set }
+    var micOffImage: TwiceImage { get set }
     
-    var cameraOnImage: UIImage { get set }
-    var cameraOffImage: UIImage { get set }
+    var cameraOnImage: TwiceImage { get set }
+    var cameraOffImage: TwiceImage { get set }
     
-    var answerImage: UIImage { get set }
-    var declineImage: UIImage { get set }
+    var answerImage: TwiceImage { get set }
+    var declineImage: TwiceImage { get set }
     
-    var switchFrontCameraImage: UIImage { get set }
-    var switchBackCameraImage: UIImage { get set }
+    var switchFrontCameraImage: TwiceImage { get set }
+    var switchBackCameraImage: TwiceImage { get set }
 }

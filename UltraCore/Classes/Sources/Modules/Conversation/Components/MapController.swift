@@ -21,7 +21,7 @@ class MapController: BaseViewController<String>, MKMapViewDelegate {
         
         button.cornerRadius = 24
         button.backgroundColor = .white
-        button.setImage(UIImage.named("icon_close"), for: .normal)
+        button.setImage(UltraCoreStyle.iconClose.image, for: .normal)
         button.addAction {[weak self] in
             self?.dismiss(animated: true)
         }

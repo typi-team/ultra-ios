@@ -14,7 +14,7 @@ class MediaCell: BaseMessageCell {
     let playView: UIImageView = .init {
         $0.isHidden = true
         $0.isUserInteractionEnabled = false
-        $0.image = .named("conversation_media_play")
+        $0.image = UltraCoreStyle.incomeMessageCell?.mediaImage?.image
     }
 
     let deliveryWrapper: UIView = .init {
