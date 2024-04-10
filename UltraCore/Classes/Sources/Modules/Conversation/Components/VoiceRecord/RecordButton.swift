@@ -47,7 +47,6 @@ open class RecordButton: UIButton, UIGestureRecognizerDelegate {
         if image(for: .normal) == nil {
             setImage(defaultImage, for: .normal)
             self.imageView?.contentMode = .scaleAspectFit
-            tintColor = .green500
         }
 
         moveGesture = UIPanGestureRecognizer(target: self, action: #selector(touchMoved(_:)))
