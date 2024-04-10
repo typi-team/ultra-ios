@@ -120,8 +120,12 @@ final class ConversationPresenter {
 
 extension ConversationPresenter: ConversationPresenterInterface {
     
+    func isAssistance() -> Bool {
+        conversation.peer?.phone == "+00000000000"
+    }
+    
     func allowedToCall() -> Bool {
-        conversation.callAllowed
+        conversation.callAllowed && !isAssistance()
     }
 
     func subscribeToVisibility() {

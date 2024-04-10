@@ -14,6 +14,7 @@ protocol MessageInputBarDelegate: VoiceInputBarDelegate {
     func typing(is active: Bool)
     func pressedDone(in view: MessageInputBar)
     func pressedPlus(in view: MessageInputBar)
+    func isAssistance() -> Bool
 }
 
 class MessageInputBar: UIView {
@@ -24,9 +25,9 @@ class MessageInputBar: UIView {
     
 //    MARK: Static properties
     
-    fileprivate var lastTypingDate: Date = .init()
+    var lastTypingDate: Date = .init()
     fileprivate let kTextFieldMaxHeight: CGFloat = 120
-    fileprivate let kInputSendImage: UIImage? = .named("conversation_send")
+    let kInputSendImage: UIImage? = .named("conversation_send")
     fileprivate let kInputPlusImage: UIImage? = .named("conversation_plus")
     fileprivate let kInputMicroImage: UIImage? = .named("message_input_micro")
     
@@ -42,7 +43,7 @@ class MessageInputBar: UIView {
         $0.clipsToBounds = false
     }
     
-    private lazy var messageTextView: MessageInputTextView = MessageInputTextView.init {[weak self] textView in
+    lazy var messageTextView: MessageInputTextView = MessageInputTextView.init {[weak self] textView in
         textView.delegate = self
         textView.inputAccessoryView = UIView()
         textView.cornerRadius = kLowPadding
@@ -52,22 +53,15 @@ class MessageInputBar: UIView {
         textView.font = .defaultRegularSubHeadline
     }
     
-    private lazy var sendButton: UIButton = .init {[weak self] button in
+    lazy var sendButton: UIButton = .init {[weak self] button in
         guard let self else { return }
         button.setImage(self.kInputPlusImage, for: .normal)
         button.addAction {
-            guard let message = self.messageTextView.text?.trimmingCharacters(in: .whitespacesAndNewlines),
-                    !message.isEmpty else {
-                self.delegate?.pressedPlus(in: self)
-                return
-            }
-            self.messageTextView.text = ""
-            self.delegate?.message(text: message)
-            self.textViewDidChange(self.messageTextView)
+            self.sendButtonDidTap()
         }
     }
     
-    private lazy var exchangesButton: UIButton = .init { [weak self] button in
+    lazy var exchangesButton: UIButton = .init { [weak self] button in
         guard let self else { return }
         button.setImage(style?.sendMoneyImage.image, for: .normal)
         button.addAction {
@@ -87,7 +81,7 @@ class MessageInputBar: UIView {
         $0.slideToCancelText = ActionStrings.decline.localized
     })
     
-    private lazy var microButton: RecordButton = .init {[weak self] button in
+    lazy var microButton: RecordButton = .init {[weak self] button in
         guard let `self` = self else { return }
         button.recordView = self.recordView
         button.clipsToBounds = false
@@ -111,8 +105,9 @@ class MessageInputBar: UIView {
     weak var delegate: MessageInputBarDelegate?
     weak var futureDelegate: UltraCoreFutureDelegate? = UltraCoreSettings.futureDelegate
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    init(delegate: MessageInputBarDelegate) {
+        self.delegate = delegate
+        super.init(frame: .zero)
         self.setupViews()
         self.setupConstraints()
         self.setupStyle()
@@ -156,7 +151,7 @@ class MessageInputBar: UIView {
     
     private func setupConstraints() {
         
-        let availableToSendMoney = self.futureDelegate?.availableToSendMoney() ?? true
+        let availableToSendMoney = self.futureDelegate?.availableToSendMoney() ?? true && !(delegate?.isAssistance() ?? false)
         
         self.exchangesButton.snp.makeConstraints { make in
             make.height.equalTo(36)
@@ -208,6 +203,17 @@ class MessageInputBar: UIView {
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         self.setupStyle()
+    }
+    
+    func sendButtonDidTap() {
+        guard let message = messageTextView.text?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !message.isEmpty else {
+            delegate?.pressedPlus(in: self)
+            return
+        }
+        messageTextView.text = ""
+        delegate?.message(text: message)
+        textViewDidChange(self.messageTextView)
     }
 }
 

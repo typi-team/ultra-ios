@@ -75,9 +75,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         }
     })
     
-    private lazy var messageInputBar: MessageInputBar = .init({ [weak self] inputBar in
-        inputBar.delegate = self
-    })
+    private lazy var messageInputBar: MessageInputBar = isAssistance() ? MessageInputBarAssistance(delegate: self) : MessageInputBar(delegate: self)
     
     private lazy var editInputBar: EditActionBottomBar = .init({ [weak self] inputBar in
         inputBar.delegate = self
@@ -323,6 +321,11 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     // MARK: - UITextViewDelegate
 
 extension ConversationViewController: MessageInputBarDelegate {
+    
+    func isAssistance() -> Bool {
+        presenter?.isAssistance() ?? false
+    }
+    
     func unblock() {
         self.presenter?.block()
     }
