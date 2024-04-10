@@ -194,22 +194,9 @@ public extension UltraCoreSettings {
     }
 
     static func handleNotification(data: [AnyHashable: Any], callback: @escaping (UIViewController?) -> Void) {
-        _ = AppSettingsImpl
-            .shared
-            .superMessageSaverInteractor
-            .executeSingle(params: data)
-            .subscribe(on: MainScheduler.instance)
-            .observe(on: MainScheduler.instance)
-            .subscribe(onSuccess: { conversation in
-                if let conversation = conversation {
-                    callback(ConversationWireframe(with: conversation).viewController)
-                } else {
-                    callback(nil)
-                }
-
-            }, onFailure: { error in
-                callback(nil)
-            })
+        NotificationHandlerInteractor.shared.handle(params: data) { conversation in
+            callback(ConversationWireframe(with: conversation).viewController)
+        }
     }
 
     static func conversation(by contact: IContact, callback: @escaping (UIViewController?) -> Void){

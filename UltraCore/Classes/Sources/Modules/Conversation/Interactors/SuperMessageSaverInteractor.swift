@@ -62,3 +62,35 @@ class SuperMessageSaverInteractor: UseCase<MessageData, Conversation?> {
     }
 }
 
+class NotificationHandlerInteractor {
+    
+    fileprivate let disposeBag = DisposeBag()
+    static let shared = NotificationHandlerInteractor()
+
+    private init() {}
+    
+    func handle(params: MessageData, onCompletion: ((Conversation) -> Void)?) {
+        guard let conversationID = params["chat_id"] as? String else { return }
+        
+        AppSettingsImpl
+            .shared
+            .conversationDBService
+            .conversation(by: conversationID)
+            .subscribe(on: MainScheduler.instance)
+            .observe(on: MainScheduler.instance)
+            .subscribe { result in
+                switch result {
+                case let .success(conversation):
+                    if let conversation {
+                        onCompletion?(conversation)
+                    } else {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                            self?.handle(params: params, onCompletion: onCompletion)
+                        }
+                    }
+                default:
+                    break
+                }
+            }.disposed(by: disposeBag)
+    }
+}
