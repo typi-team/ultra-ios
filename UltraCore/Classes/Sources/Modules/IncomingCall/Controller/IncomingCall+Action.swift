@@ -61,7 +61,7 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
     
     func answerToCall() {
         guard let callStatus = presenter?.getCallStatus(), !(presenter?.getIsConnected() ?? false) else { return }
-        if callStatus.callInfo.video {
+        if callStatus.isVideoCall {
             actionStackView.setAsActiveCamera()
             remakeInfoViewConstraints(isVideo: true)
         } else {

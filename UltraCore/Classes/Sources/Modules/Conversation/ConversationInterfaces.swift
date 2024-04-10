@@ -14,7 +14,7 @@ import RealmSwift
 protocol ConversationWireframeInterface: WireframeInterface {
     func navigateTo(contact: ContactDisplayable)
     func openMoneyController(callback: @escaping MoneyCallback)
-    func navigateToCall(response: CreateCallResponse, isVideo: Bool)
+    func navigateToCall(callStatus: CallStatus)
     func closeChat()
 }
 

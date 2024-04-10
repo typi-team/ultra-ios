@@ -235,7 +235,7 @@ PODS:
     - SwiftNIOPosix (< 3, >= 2.32.0)
     - SwiftNIOTLS (< 3, >= 2.32.0)
   - SwiftProtobuf (1.25.1)
-  - UltraCore (0.1.4):
+  - UltraCore (0.2.0):
     - CocoaLumberjack/Swift
     - gRPC-Swift
     - IGListKit
@@ -364,9 +364,9 @@ SPEC CHECKSUMS:
   SwiftNIOTLS: 598af547490133e9aac52aed0c23c4a90c31dcfc
   SwiftNIOTransportServices: 0b2b407819d82eb63af558c5396e33c945759503
   SwiftProtobuf: 69f02cd54fb03201c5e6bf8b76f687c5ef7541a3
-  UltraCore: fca70d8c43e9484e6be691394f3e31afe066a886
+  UltraCore: dda66869fe697d3f6d13a5d5163bbb0efaeb9d70
   WebRTC-SDK: 082ae4893212534a779ca233f19a9df8efd5f3bd
 
 PODFILE CHECKSUM: 05a3927b15bbe6caf93b241464429054c7b34ff0
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.12.1

@@ -22,10 +22,12 @@ final class IncomingCallPresenter {
     
     fileprivate let contactInteractor: ContactByUserIdInteractor
     fileprivate let contactService: ContactDBService
+    fileprivate let callService: CallServiceClientProtocol
+
     fileprivate let userId: String
     
     private let wireframe: IncomingCallWireframeInterface
-    fileprivate let callStatus: CallStatus
+    fileprivate var callStatus: CallStatus
     private var isDismissing: Bool = false
     // MARK: - Lifecycle -
 
@@ -33,12 +35,14 @@ final class IncomingCallPresenter {
          callInformation: CallStatus,
          view: IncomingCallViewInterface,
          contactService: ContactDBService,
+         callService: CallServiceClientProtocol,
          wireframe: IncomingCallWireframeInterface,
          contactInteractor: ContactByUserIdInteractor) {
         self.view = view
         self.userId = userId
         self.wireframe = wireframe
         self.contactService = contactService
+        self.callService = callService
         self.callStatus = callInformation
         self.contactInteractor = contactInteractor
         RoomManager.shared.roomManagerDelegate = self
@@ -80,7 +84,64 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
     }
     
     func viewDidLoad() {
-        if let contact = contactService.contact(id: callStatus.callInfo.sender) {
+        connectToRoom()
+    }
+    
+    func createCall() {
+        callService.create(.with({
+            $0.users = [userId]
+            $0.video = callStatus.isVideoCall
+        }), callOptions: .default())
+        .response
+        .whenComplete({ [weak self] result in
+            guard let self else { return }
+            switch result {
+            case let .success(response):
+                let info = CallOutging(
+                    video: callStatus.isVideoCall,
+                    host: response.host,
+                    room: response.room,
+                    sender: userId,
+                    accessToken: response.accessToken
+                )
+                callStatus = .outcoming(info)
+                connectToRoom()
+            case let .failure(error):
+                PP.error(error.localizedDescription)
+            }
+        })
+    }
+  
+    private func connectToRoom() {
+        switch callStatus {
+        case let .prepeare(client):
+            displayClientInfo(sender: client.sender)
+        case let .incoming(client),
+            let .outcoming(client):
+            displayClientInfo(sender: client.sender)
+        }
+        guard RoomManager.shared.room.connectionState != .connected else {
+            self.view.updateForStartCall()
+            self.view.setMicEnabled(RoomManager.shared.room.localParticipant?.isMicrophoneEnabled() ?? false)
+            self.view.setCameraEnabled(RoomManager.shared.room.localParticipant?.isCameraEnabled() ?? false)
+            self.view.setSpeakerButtonEnabled(AudioManager.shared.preferSpeakerOutput)
+            self.updateParticipantTrack(for: RoomManager.shared.room)
+            return
+        }
+        AudioManager.shared.preferSpeakerOutput = callStatus.isVideoCall
+        if case .outcoming = callStatus {
+            switch callStatus {
+            case let .incoming(client),
+                let .outcoming(client):
+                UltraVoIPManager.shared.startOutgoingCall(callInfo: client)
+            default:
+                break
+            }
+        }
+    }
+    
+    private func displayClientInfo(sender: String) {
+        if let contact = contactService.contact(id: sender) {
             self.view.dispay(view: contact)
         } else {
 //            self.contactInteractor
@@ -93,18 +154,6 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
 //                    self.view.dispay(view: contact)
 //                })
 //                .disposed(by: disposeBag)
-        }
-        guard RoomManager.shared.room.connectionState != .connected else {
-            self.view.updateForStartCall()
-            self.view.setMicEnabled(RoomManager.shared.room.localParticipant?.isMicrophoneEnabled() ?? false)
-            self.view.setCameraEnabled(RoomManager.shared.room.localParticipant?.isCameraEnabled() ?? false)
-            self.view.setSpeakerButtonEnabled(AudioManager.shared.preferSpeakerOutput)
-            self.updateParticipantTrack(for: RoomManager.shared.room)
-            return
-        }
-        AudioManager.shared.preferSpeakerOutput = callStatus.callInfo.video
-        if case .outcoming = callStatus {
-            UltraVoIPManager.shared.startOutgoingCall(callInfo: callStatus.callInfo)
         }
     }
     
