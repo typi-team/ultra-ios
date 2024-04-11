@@ -78,7 +78,6 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
             .debounce(.milliseconds(200), scheduler: MainScheduler.instance)
             .do(onNext: {[weak self] conversations in
                 guard let `self` = self else { return }
-                PP.debug("Conversations count is - \(conversations.count)")
                 if conversations.isEmpty {
                     self.tableView.backgroundView = UltraCoreSettings.delegate?.emptyConversationView() ?? self.backgroundView
                 } else {
