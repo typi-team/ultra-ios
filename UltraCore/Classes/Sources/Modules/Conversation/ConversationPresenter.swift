@@ -197,7 +197,9 @@ extension ConversationPresenter: ConversationPresenterInterface {
     func createCall(with video: Bool = false) {
         guard let user = self.conversation.peer?.userID else { return }
         let callStatus = CallStatus.prepeare(CallPrepearing(sender: user, video: video))
-        wireframe.navigateToCall(callStatus: callStatus)
+        DispatchQueue.main.async { [weak self] in
+            self?.wireframe.navigateToCall(callStatus: callStatus)
+        }
     }
     
     func send(location: LocationMessage) {
