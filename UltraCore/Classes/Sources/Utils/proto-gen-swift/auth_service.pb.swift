@@ -25,13 +25,23 @@ struct IssueJwtRequest {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
+  /// User id
   var userID: String = String()
 
+  /// Unique ID for user device
   var deviceID: String = String()
 
+  /// Device type
   var device: DeviceEnum = .web
 
+  /// optional, needed for integration authorizations
+  /// when session id retrieved from external service
   var sessionID: String = String()
+
+  /// allow impersonate token in case server has such logic
+  /// currently used only for Support Managers to manage
+  /// support chats
+  var allowImpersonate: Bool = false
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -101,6 +111,7 @@ extension IssueJwtRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     2: .standard(proto: "device_id"),
     3: .same(proto: "device"),
     4: .standard(proto: "session_id"),
+    5: .standard(proto: "allow_impersonate"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -113,6 +124,7 @@ extension IssueJwtRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
       case 2: try { try decoder.decodeSingularStringField(value: &self.deviceID) }()
       case 3: try { try decoder.decodeSingularEnumField(value: &self.device) }()
       case 4: try { try decoder.decodeSingularStringField(value: &self.sessionID) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self.allowImpersonate) }()
       default: break
       }
     }
@@ -131,6 +143,9 @@ extension IssueJwtRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     if !self.sessionID.isEmpty {
       try visitor.visitSingularStringField(value: self.sessionID, fieldNumber: 4)
     }
+    if self.allowImpersonate != false {
+      try visitor.visitSingularBoolField(value: self.allowImpersonate, fieldNumber: 5)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -139,6 +154,7 @@ extension IssueJwtRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     if lhs.deviceID != rhs.deviceID {return false}
     if lhs.device != rhs.device {return false}
     if lhs.sessionID != rhs.sessionID {return false}
+    if lhs.allowImpersonate != rhs.allowImpersonate {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

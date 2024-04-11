@@ -283,6 +283,26 @@ struct Unblock {
   init() {}
 }
 
+struct Call {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var status: CallStatusEnum = .callStatusCreated
+
+  /// timestamp in unix micro
+  var startTime: Int64 = 0
+
+  /// timestamp in unix micro
+  var endTime: Int64 = 0
+
+  var room: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 /// Main message for delivering real-time changes
 struct Update {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
@@ -382,6 +402,15 @@ struct Update {
     set {_uniqueStorage()._ofUpdate = .chat(newValue)}
   }
 
+  /// Call updates
+  var call: Call {
+    get {
+      if case .call(let v)? = _storage._ofUpdate {return v}
+      return Call()
+    }
+    set {_uniqueStorage()._ofUpdate = .call(newValue)}
+  }
+
   /// Stateless updates which is actual only in case
   /// user has active connection
   var ofPresence: OneOf_OfPresence? {
@@ -476,6 +505,8 @@ struct Update {
     case coinTransferStatus(CoinTransferStatus)
     /// Chat changes specific to the user (privacy configurations)
     case chat(Chat)
+    /// Call updates
+    case call(Call)
 
   #if !swift(>=4.1)
     static func ==(lhs: Update.OneOf_OfUpdate, rhs: Update.OneOf_OfUpdate) -> Bool {
@@ -521,6 +552,10 @@ struct Update {
       }()
       case (.chat, .chat): return {
         guard case .chat(let l) = lhs, case .chat(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.call, .call): return {
+        guard case .call(let l) = lhs, case .call(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -627,6 +662,7 @@ extension CallReject: @unchecked Sendable {}
 extension CallCancel: @unchecked Sendable {}
 extension Block: @unchecked Sendable {}
 extension Unblock: @unchecked Sendable {}
+extension Call: @unchecked Sendable {}
 extension Update: @unchecked Sendable {}
 extension Update.OneOf_OfUpdate: @unchecked Sendable {}
 extension Update.OneOf_OfPresence: @unchecked Sendable {}
@@ -1295,6 +1331,56 @@ extension Unblock: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
   }
 }
 
+extension Call: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "Call"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "status"),
+    2: .standard(proto: "start_time"),
+    3: .standard(proto: "end_time"),
+    4: .same(proto: "room"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.status) }()
+      case 2: try { try decoder.decodeSingularInt64Field(value: &self.startTime) }()
+      case 3: try { try decoder.decodeSingularInt64Field(value: &self.endTime) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.room) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.status != .callStatusCreated {
+      try visitor.visitSingularEnumField(value: self.status, fieldNumber: 1)
+    }
+    if self.startTime != 0 {
+      try visitor.visitSingularInt64Field(value: self.startTime, fieldNumber: 2)
+    }
+    if self.endTime != 0 {
+      try visitor.visitSingularInt64Field(value: self.endTime, fieldNumber: 3)
+    }
+    if !self.room.isEmpty {
+      try visitor.visitSingularStringField(value: self.room, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Call, rhs: Call) -> Bool {
+    if lhs.status != rhs.status {return false}
+    if lhs.startTime != rhs.startTime {return false}
+    if lhs.endTime != rhs.endTime {return false}
+    if lhs.room != rhs.room {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension Update: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "Update"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -1309,6 +1395,7 @@ extension Update: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
     18: .same(proto: "stockTransferStatus"),
     19: .same(proto: "coinTransferStatus"),
     22: .same(proto: "chat"),
+    23: .same(proto: "call"),
     8: .same(proto: "typing"),
     9: .same(proto: "audioRecording"),
     10: .standard(proto: "user_status"),
@@ -1599,6 +1686,19 @@ extension Update: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
             _storage._ofUpdate = .chat(v)
           }
         }()
+        case 23: try {
+          var v: Call?
+          var hadOneofValue = false
+          if let current = _storage._ofUpdate {
+            hadOneofValue = true
+            if case .call(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._ofUpdate = .call(v)
+          }
+        }()
         default: break
         }
       }
@@ -1702,9 +1802,17 @@ extension Update: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBas
       }()
       default: break
       }
-      try { if case .chat(let v)? = _storage._ofUpdate {
+      switch _storage._ofUpdate {
+      case .chat?: try {
+        guard case .chat(let v)? = _storage._ofUpdate else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 22)
-      } }()
+      }()
+      case .call?: try {
+        guard case .call(let v)? = _storage._ofUpdate else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 23)
+      }()
+      default: break
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }

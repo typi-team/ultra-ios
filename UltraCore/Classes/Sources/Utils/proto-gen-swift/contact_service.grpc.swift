@@ -36,6 +36,11 @@ internal protocol ContactServiceClientProtocol: GRPCClient {
     callOptions: CallOptions?
   ) -> UnaryCall<GetStatusesRequest, GetStatusesResponse>
 
+  func getContactStatus(
+    _ request: GetContactStatusRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<GetContactStatusRequest, GetContactStatusResponse>
+
   func acceptContact(
     _ request: AcceptContactRequest,
     callOptions: CallOptions?
@@ -116,6 +121,25 @@ extension ContactServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeGetStatusesInterceptors() ?? []
+    )
+  }
+
+  /// Get one contact status, if contact is not sharing status then
+  /// empty status will be returned
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to GetContactStatus.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  internal func getContactStatus(
+    _ request: GetContactStatusRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<GetContactStatusRequest, GetContactStatusResponse> {
+    return self.makeUnaryCall(
+      path: ContactServiceClientMetadata.Methods.getContactStatus.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetContactStatusInterceptors() ?? []
     )
   }
 
@@ -222,6 +246,11 @@ internal protocol ContactServiceAsyncClientProtocol: GRPCClient {
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<GetStatusesRequest, GetStatusesResponse>
 
+  func makeGetContactStatusCall(
+    _ request: GetContactStatusRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<GetContactStatusRequest, GetContactStatusResponse>
+
   func makeAcceptContactCall(
     _ request: AcceptContactRequest,
     callOptions: CallOptions?
@@ -283,6 +312,18 @@ extension ContactServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeGetStatusesInterceptors() ?? []
+    )
+  }
+
+  internal func makeGetContactStatusCall(
+    _ request: GetContactStatusRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<GetContactStatusRequest, GetContactStatusResponse> {
+    return self.makeAsyncUnaryCall(
+      path: ContactServiceClientMetadata.Methods.getContactStatus.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetContactStatusInterceptors() ?? []
     )
   }
 
@@ -349,6 +390,18 @@ extension ContactServiceAsyncClientProtocol {
     )
   }
 
+  internal func getContactStatus(
+    _ request: GetContactStatusRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> GetContactStatusResponse {
+    return try await self.performAsyncUnaryCall(
+      path: ContactServiceClientMetadata.Methods.getContactStatus.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetContactStatusInterceptors() ?? []
+    )
+  }
+
   internal func acceptContact(
     _ request: AcceptContactRequest,
     callOptions: CallOptions? = nil
@@ -393,6 +446,9 @@ internal protocol ContactServiceClientInterceptorFactoryProtocol: Sendable {
   /// - Returns: Interceptors to use when invoking 'getStatuses'.
   func makeGetStatusesInterceptors() -> [ClientInterceptor<GetStatusesRequest, GetStatusesResponse>]
 
+  /// - Returns: Interceptors to use when invoking 'getContactStatus'.
+  func makeGetContactStatusInterceptors() -> [ClientInterceptor<GetContactStatusRequest, GetContactStatusResponse>]
+
   /// - Returns: Interceptors to use when invoking 'acceptContact'.
   func makeAcceptContactInterceptors() -> [ClientInterceptor<AcceptContactRequest, AcceptContactResponse>]
 }
@@ -406,6 +462,7 @@ internal enum ContactServiceClientMetadata {
       ContactServiceClientMetadata.Methods.getContacts,
       ContactServiceClientMetadata.Methods.getContactByUserId,
       ContactServiceClientMetadata.Methods.getStatuses,
+      ContactServiceClientMetadata.Methods.getContactStatus,
       ContactServiceClientMetadata.Methods.acceptContact,
     ]
   )
@@ -435,6 +492,12 @@ internal enum ContactServiceClientMetadata {
       type: GRPCCallType.unary
     )
 
+    internal static let getContactStatus = GRPCMethodDescriptor(
+      name: "GetContactStatus",
+      path: "/ContactService/GetContactStatus",
+      type: GRPCCallType.unary
+    )
+
     internal static let acceptContact = GRPCMethodDescriptor(
       name: "AcceptContact",
       path: "/ContactService/AcceptContact",
@@ -454,6 +517,10 @@ internal protocol ContactServiceProvider: CallHandlerProvider {
   func getContactByUserId(request: ContactByUserIdRequest, context: StatusOnlyCallContext) -> EventLoopFuture<ContactByUserIdResponse>
 
   func getStatuses(request: GetStatusesRequest, context: StatusOnlyCallContext) -> EventLoopFuture<GetStatusesResponse>
+
+  /// Get one contact status, if contact is not sharing status then
+  /// empty status will be returned
+  func getContactStatus(request: GetContactStatusRequest, context: StatusOnlyCallContext) -> EventLoopFuture<GetContactStatusResponse>
 
   /// Add the user to contact list. Accepted user can see users's lastSeen
   /// and will be allowed to call user in case `callDisabledForNonContactUser`
@@ -509,6 +576,15 @@ extension ContactServiceProvider {
         userFunction: self.getStatuses(request:context:)
       )
 
+    case "GetContactStatus":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<GetContactStatusRequest>(),
+        responseSerializer: ProtobufSerializer<GetContactStatusResponse>(),
+        interceptors: self.interceptors?.makeGetContactStatusInterceptors() ?? [],
+        userFunction: self.getContactStatus(request:context:)
+      )
+
     case "AcceptContact":
       return UnaryServerHandler(
         context: context,
@@ -549,6 +625,13 @@ internal protocol ContactServiceAsyncProvider: CallHandlerProvider, Sendable {
     request: GetStatusesRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> GetStatusesResponse
+
+  /// Get one contact status, if contact is not sharing status then
+  /// empty status will be returned
+  func getContactStatus(
+    request: GetContactStatusRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> GetContactStatusResponse
 
   /// Add the user to contact list. Accepted user can see users's lastSeen
   /// and will be allowed to call user in case `callDisabledForNonContactUser`
@@ -614,6 +697,15 @@ extension ContactServiceAsyncProvider {
         wrapping: { try await self.getStatuses(request: $0, context: $1) }
       )
 
+    case "GetContactStatus":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<GetContactStatusRequest>(),
+        responseSerializer: ProtobufSerializer<GetContactStatusResponse>(),
+        interceptors: self.interceptors?.makeGetContactStatusInterceptors() ?? [],
+        wrapping: { try await self.getContactStatus(request: $0, context: $1) }
+      )
+
     case "AcceptContact":
       return GRPCAsyncServerHandler(
         context: context,
@@ -647,6 +739,10 @@ internal protocol ContactServiceServerInterceptorFactoryProtocol: Sendable {
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeGetStatusesInterceptors() -> [ServerInterceptor<GetStatusesRequest, GetStatusesResponse>]
 
+  /// - Returns: Interceptors to use when handling 'getContactStatus'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeGetContactStatusInterceptors() -> [ServerInterceptor<GetContactStatusRequest, GetContactStatusResponse>]
+
   /// - Returns: Interceptors to use when handling 'acceptContact'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeAcceptContactInterceptors() -> [ServerInterceptor<AcceptContactRequest, AcceptContactResponse>]
@@ -661,6 +757,7 @@ internal enum ContactServiceServerMetadata {
       ContactServiceServerMetadata.Methods.getContacts,
       ContactServiceServerMetadata.Methods.getContactByUserId,
       ContactServiceServerMetadata.Methods.getStatuses,
+      ContactServiceServerMetadata.Methods.getContactStatus,
       ContactServiceServerMetadata.Methods.acceptContact,
     ]
   )
@@ -687,6 +784,12 @@ internal enum ContactServiceServerMetadata {
     internal static let getStatuses = GRPCMethodDescriptor(
       name: "GetStatuses",
       path: "/ContactService/GetStatuses",
+      type: GRPCCallType.unary
+    )
+
+    internal static let getContactStatus = GRPCMethodDescriptor(
+      name: "GetContactStatus",
+      path: "/ContactService/GetContactStatus",
       type: GRPCCallType.unary
     )
 
