@@ -68,6 +68,10 @@
 "conversation.unknowNumber" = "";
 "conversation.prints" = "prints...";
 "conversation.moneyTransfer" = "Transfer";
+"conversation.transferStatusUnknown" = "Unknown";
+"conversation.transferStatusInProgress" = "In Progress";
+"conversation.transferStatusCompleted" = "Completed";
+"conversation.transferStatusRejected" = "Rejected";
 "conversation.insertMoney" = "";
 "conversation.send" = "Send";
 "conversation.insideTheBank" = "Inside the Bank";

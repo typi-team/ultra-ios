@@ -13,6 +13,10 @@ enum ConversationStrings: String, StringLocalizable {
     case online
     case unknowNumber
     case moneyTransfer
+    case transferStatusUnknown
+    case transferStatusInProgress
+    case transferStatusCompleted
+    case transferStatusRejected
     case insertMoney
     case send
     case insideTheBank

@@ -70,6 +70,10 @@
 "conversation.unknowNumber" = "";
 "conversation.prints" = "печатает...";
 "conversation.moneyTransfer" = "Переводы";
+"conversation.transferStatusUnknown" = "Неизвестный";
+"conversation.transferStatusInProgress" = "В процессе";
+"conversation.transferStatusCompleted" = "Завершент";
+"conversation.transferStatusRejected" = "Отклонен";
 "conversation.insertMoney" = "";
 "conversation.send" = "Отправить";
 "conversation.insideTheBank" = "Внутри банка";

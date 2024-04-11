@@ -80,6 +80,22 @@ class OutcomeMoneyCell : BaseMessageCell {
         super.setup(message: message)
         self.statusView.image = message.statusImage
         self.moneyAmountLabel.text = message.money.money.formattedPrice
+        self.moneyCaptionlabel.text = getStatusText(for: message)
+    }
+    
+    private func getStatusText(for message: Message) -> String {
+        switch message.money.status.status {
+        case .moneyStatusUnknown:
+            return ConversationStrings.transferStatusUnknown.localized
+        case .inProgress:
+            return ConversationStrings.transferStatusInProgress.localized
+        case .completed:
+            return ConversationStrings.transferStatusCompleted.localized
+        case .rejected:
+            return ConversationStrings.transferStatusRejected.localized
+        case .UNRECOGNIZED(let int):
+            return ""
+        }
     }
 }
 
