@@ -375,18 +375,18 @@ extension ConversationViewController: MessageInputBarDelegate {
     }
     
     func exchanges() {
-        presenter?.didTapTransfer()
-//        let viewController = AdditioanalController()
-//        viewController.resultCallback = { [weak self] action in
-//            guard let `self` = self else { return }
-//            switch action {
-//            case .money_tranfer:
-//                self.openMoneyTransfer()
-//            }
-//        }
-//        viewController.modalPresentationStyle = .custom
-//        viewController.transitioningDelegate = sheetTransitioningDelegate
-//        present(viewController, animated: true)
+//        presenter?.didTapTransfer()
+        let viewController = AdditioanalController()
+        viewController.resultCallback = { [weak self] action in
+            guard let `self` = self else { return }
+            switch action {
+            case .money_tranfer:
+                self.openMoneyTransfer()
+            }
+        }
+        viewController.modalPresentationStyle = .custom
+        viewController.transitioningDelegate = sheetTransitioningDelegate
+        present(viewController, animated: true)
     }
     
     func message(text: String) {

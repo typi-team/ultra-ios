@@ -248,6 +248,23 @@ class ConversationDBService {
         }
     }
     
+    func updateTransferStatus(_ status: MoneyTransferStatus) {
+        let realm = Realm.myRealm()
+        if let dbMessage = realm.object(ofType: DBMessage.self, forPrimaryKey: status.messageID) {
+            do {
+                try realm.write {
+                    dbMessage.moneyMessage?.status = status.status.status.rawValue
+                    realm.add(dbMessage, update: .all)
+                }
+            }
+            catch {
+                PP.error("Couldn't save DBMessage; reason - \(error)")
+            }
+        } else {
+            PP.error("Couldn't update transfer status for message id - \(status.messageID); Message doesn't exist")
+        }
+    }
+    
     func delete(conversation id: String) -> Single<Void> {
         return Single.create(subscribe: {observer in
             do {

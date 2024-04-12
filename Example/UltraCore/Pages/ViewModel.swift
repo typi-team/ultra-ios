@@ -93,7 +93,7 @@ extension ViewModel: UltraCoreFutureDelegate {
     }
     
     func availableToSendMoney() -> Bool {
-        return false
+        return true
     }
 }
 
