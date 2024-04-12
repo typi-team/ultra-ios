@@ -87,7 +87,7 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
         connectToRoom()
     }
     
-    func createCall() {
+    func createCall(userID: String) {
         callService.create(.with({
             $0.users = [userId]
             $0.video = callStatus.isVideoCall
