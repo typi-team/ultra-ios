@@ -381,6 +381,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
     }
     
     func loadMoreMessages(maxSeqNumber: UInt64 ) {
+        PP.debug("Loading more message for chat - \(conversation.idintification) seqNumber - \(maxSeqNumber)")
         messagesInteractor
             .executeSingle(params: .with({ [weak self] in
                 guard let self else { return }
@@ -390,6 +391,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { [weak self] message in
+                PP.debug("Finished loading messages for chat - \(conversation.idintification)")
                 self?.view?.stopRefresh(removeController: message.isEmpty)
             })
             .disposed(by: disposeBag)
