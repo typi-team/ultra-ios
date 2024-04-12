@@ -120,9 +120,12 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
         actionStackView.configure(status: status)
         switch status {
         case .incoming:
-            infoView.setDuration(text: status.callInfo.video ? CallStrings.incomeVideoCalling.localized : CallStrings.incomeAudioCalling.localized)
+            infoView.setDuration(text: status.isVideoCall ? CallStrings.incomeVideoCalling.localized : CallStrings.incomeAudioCalling.localized)
         case .outcoming:
             infoView.setDuration(text: CallStrings.connecting.localized)
+        case let .prepeare(sender):
+            infoView.setDuration(text: CallStrings.connecting.localized)
+            presenter?.createCall(userID: sender.sender)
         }
         presenter?.viewDidLoad()
     }

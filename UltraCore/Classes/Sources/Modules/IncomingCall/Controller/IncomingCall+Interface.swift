@@ -10,8 +10,8 @@ extension IncomingCallViewController: IncomingCallViewInterface {
         if case .incoming = callStatus {
             updateForStartCall()
         }
-        if callStatus.callInfo.video && actionStackView.cameraButton.isSelected {
-            setVideoCallIfPossible(enabled: callStatus.callInfo.video)
+        if callStatus.isVideoCall && actionStackView.cameraButton.isSelected {
+            setVideoCallIfPossible(enabled: callStatus.isVideoCall)
         }
         if actionStackView.microButton.isSelected {
             setMicrophoneIfPossible(enabled: actionStackView.microButton.isSelected)
