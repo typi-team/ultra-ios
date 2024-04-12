@@ -36,6 +36,7 @@ class UpdateRepositoryImpl {
     fileprivate let conversationService: ConversationDBService
     fileprivate let pingPongInteractorImpl: GRPCErrorUseCase<Void, Void>
     fileprivate let retrieveContactStatusesInteractorImpl: GRPCErrorUseCase<Void, Void>
+    fileprivate let updateContactStatusInteractor: GRPCErrorUseCase<String, Void>
     fileprivate let contactByIDInteractor: GRPCErrorUseCase<String, ContactDisplayable>
     fileprivate let deliveredMessageInteractor: GRPCErrorUseCase<Message, MessagesDeliveredResponse>
     
@@ -53,6 +54,7 @@ class UpdateRepositoryImpl {
          pingPongInteractorImpl: GRPCErrorUseCase<Void, Void>,
          userByIDInteractor: GRPCErrorUseCase<String, ContactDisplayable>,
          retrieveContactStatusesInteractorImpl: GRPCErrorUseCase<Void, Void>,
+         updateContactStatusInteractor: GRPCErrorUseCase<String, Void>,
          deliveredMessageInteractor: GRPCErrorUseCase<Message, MessagesDeliveredResponse>) {
         self.updateClient = updateClient
         self.appStore = appStore
@@ -63,6 +65,7 @@ class UpdateRepositoryImpl {
         self.pingPongInteractorImpl = pingPongInteractorImpl
         self.deliveredMessageInteractor = deliveredMessageInteractor
         self.retrieveContactStatusesInteractorImpl = retrieveContactStatusesInteractorImpl
+        self.updateContactStatusInteractor = updateContactStatusInteractor
     }
 }
 
@@ -280,6 +283,18 @@ private extension UpdateRepositoryImpl {
             if chat.settings.addContact {
                 self.conversationService
                     .update(addContact: chat.settings.addContact, id: chat.chatID)
+                    .subscribe()
+                    .disposed(by: disposeBag)
+                self.conversationService
+                    .conversation(by: chat.chatID)
+                    .flatMap { [weak self] conversation in
+                        guard let self = self, let userID = conversation?.peer?.userID else {
+                            return Observable<Void>.empty().asSingle()
+                        }
+                        return self.updateContactStatusInteractor.executeSingle(params: userID)
+                    }
+                    .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+                    .observe(on: MainScheduler.instance)
                     .subscribe()
                     .disposed(by: disposeBag)
             }
