@@ -89,7 +89,7 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
     
     func createCall(userID: String) {
         callService.create(.with({
-            $0.users = [userId]
+            $0.users = [userID]
             $0.video = callStatus.isVideoCall
         }), callOptions: .default())
         .response
@@ -101,7 +101,7 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
                     video: callStatus.isVideoCall,
                     host: response.host,
                     room: response.room,
-                    sender: userId,
+                    sender: userID,
                     accessToken: response.accessToken
                 )
                 callStatus = .outcoming(info)
