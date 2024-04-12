@@ -113,6 +113,7 @@
 "message.fileWithoutSmile" = "File";
 "message.contact" = "📇 Contact";
 "message.moneyTransfer" = "Transfer";
+"message.call" = "📞 Call";
 "message.uploadingInProgress" = "Uploading in progress";
 "message.reply" = "Reply";
 "message.copy" = "Copy";

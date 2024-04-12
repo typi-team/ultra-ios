@@ -81,6 +81,8 @@ extension Message.OneOf_Content {
             return MessageStrings.moneyTransfer.localized
         case .coin:
             return MessageStrings.moneyTransfer.localized
+        case .call(_):
+            return MessageStrings.call.localized
         }
     }
 }

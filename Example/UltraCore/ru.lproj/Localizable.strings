@@ -114,6 +114,7 @@
 "message.fileWithoutSmile" = "Файл";
 "message.contact" = "📇 Контакт";
 "message.moneyTransfer" = "Перевод";
+"message.call" = "📞 Call";
 "message.uploadingInProgress" = "Идет выгрузка";
 
 "message.reply" = "Ответить";

@@ -761,6 +761,9 @@ extension ConversationViewController {
         case .coin(_):
             let cell: BaseMessageCell = tableView.dequeueCell()
              return cell
+        case .call(_):
+            let cell: BaseMessageCell = tableView.dequeueCell()
+            return cell
         }
     }
     

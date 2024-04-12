@@ -18,6 +18,7 @@ enum MessageStrings: String, StringLocalizable {
     case file
     case contact
     case moneyTransfer
+    case call
     case uploadingInProgress
     case fileWithoutSmile
     

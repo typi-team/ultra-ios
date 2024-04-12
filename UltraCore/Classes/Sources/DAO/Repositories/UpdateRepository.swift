@@ -283,6 +283,8 @@ private extension UpdateRepositoryImpl {
                     .subscribe()
                     .disposed(by: disposeBag)
             }
+        case .call:
+            break
         }
     }
 }
