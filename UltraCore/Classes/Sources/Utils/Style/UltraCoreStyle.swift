@@ -240,4 +240,8 @@ private class ConversationScreenStyleConfigImpl: ConversationScreenStyleConfig {
         dark: .named("contact_phone_icon")!,
         default: .named("contact_phone_icon")!
     )
+    var loaderTintColor: TwiceColor = TwiceColorImpl(
+        defaultColor: .black,
+        darkColor: .black
+    )
 }

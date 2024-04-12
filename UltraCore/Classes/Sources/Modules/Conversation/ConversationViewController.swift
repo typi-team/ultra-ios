@@ -16,6 +16,7 @@ import QuickLook
 import ContactsUI
 import RxDataSources
 import AVFoundation
+import NVActivityIndicatorView
 
 final class ConversationViewController: BaseViewController<ConversationPresenterInterface> {
     // MARK: - Properties
@@ -92,6 +93,17 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         imageView.contentMode = .scaleAspectFill
         imageView.image = UltraCoreStyle.conversationBackgroundImage?.image
     }
+    
+    private lazy var spinner: NVActivityIndicatorView = {
+        let spinner = NVActivityIndicatorView(
+            frame: CGRect(origin: .zero, size: .init(width: 30, height: 30)),
+            type: .circleStrokeSpin,
+            color: UltraCoreStyle.conversationScreenConfig.loaderTintColor.color,
+            padding: 0
+        )
+        spinner.translatesAutoresizingMaskIntoConstraints = false
+        return spinner
+    }()
 
    private lazy var dataSource = RxTableViewSectionedReloadDataSource<SectionModel<String, Message>>(
         configureCell: { [weak self] _, tableView, indexPath,
@@ -168,6 +180,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.view.addSubview(navigationDivider)
         self.view.addSubview(editInputBar)
         self.view.addSubview(voiceInputBar)
+        self.view.addSubview(spinner)
         
         self.navigationItem.leftItemsSupplementBackButton = true
         self.navigationItem.leftBarButtonItem = .init(customView: headline)
@@ -194,6 +207,10 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(view.snp.bottom)
         }
+        self.spinner.snp.makeConstraints {
+            $0.top.equalTo(navigationDivider.snp.bottom).offset(12)
+            $0.centerX.equalToSuperview()
+        }
     }
     
     override func setupInitialData() {
@@ -205,6 +222,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
             .do(onNext: {[weak self] messages in
+                PP.debug("[MESSAGES] - \(messages.count)")
                 self?.messages = messages
                 self?.tableView.backgroundView = messages.isEmpty ? ConversationEmptyViewContainer(emptyView: UltraCoreSettings.delegate?.emptyConversationDetailView() ?? .init()) : self?.backgroundImageView
             })
@@ -290,7 +308,10 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         guard let cell = self.tableView.visibleCells.first as? BaseMessageCell,
-              let seqNumber = cell.message?.seqNumber else { return }
+              let seqNumber = cell.message?.seqNumber,
+              seqNumber > 1 else { return }
+        tableView.contentInset = UIEdgeInsets(top: 40, left: 0, bottom: 0, right: 0)
+        spinner.startAnimating()
         self.presenter?.loadMoreMessages(maxSeqNumber: seqNumber)
     }
     
@@ -389,6 +410,16 @@ extension ConversationViewController: ConversationViewInterface {
     
     
     func stopRefresh(removeController: Bool) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+            guard let self = self else {
+                return
+            }
+            self.spinner.stopAnimating()
+            let topInset = max(0, self.tableView.contentInset.top - 40.0)
+            var newInset = self.tableView.contentInset
+            newInset.top = topInset
+            self.tableView.contentInset = newInset
+        }
         self.refreshControl.endRefreshing()
         if(removeController) {
             self.refreshControl.removeFromSuperview()

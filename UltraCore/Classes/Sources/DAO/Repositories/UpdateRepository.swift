@@ -39,6 +39,7 @@ class UpdateRepositoryImpl {
     fileprivate let updateContactStatusInteractor: GRPCErrorUseCase<String, Void>
     fileprivate let contactByIDInteractor: GRPCErrorUseCase<String, ContactDisplayable>
     fileprivate let deliveredMessageInteractor: GRPCErrorUseCase<Message, MessagesDeliveredResponse>
+    fileprivate let chatInteractor: GRPCErrorUseCase<String, Chat>
     
     fileprivate var pintPongTimer: Timer?
     fileprivate var updateListenStream: ServerStreamingCall<ListenRequest, Updates>?
@@ -55,7 +56,8 @@ class UpdateRepositoryImpl {
          userByIDInteractor: GRPCErrorUseCase<String, ContactDisplayable>,
          retrieveContactStatusesInteractorImpl: GRPCErrorUseCase<Void, Void>,
          updateContactStatusInteractor: GRPCErrorUseCase<String, Void>,
-         deliveredMessageInteractor: GRPCErrorUseCase<Message, MessagesDeliveredResponse>) {
+         deliveredMessageInteractor: GRPCErrorUseCase<Message, MessagesDeliveredResponse>,
+         chatInteractor: GRPCErrorUseCase<String, Chat>) {
         self.updateClient = updateClient
         self.appStore = appStore
         self.messageService = messageService
@@ -66,6 +68,7 @@ class UpdateRepositoryImpl {
         self.deliveredMessageInteractor = deliveredMessageInteractor
         self.retrieveContactStatusesInteractorImpl = retrieveContactStatusesInteractorImpl
         self.updateContactStatusInteractor = updateContactStatusInteractor
+        self.chatInteractor = chatInteractor
     }
 }
 
@@ -285,13 +288,22 @@ private extension UpdateRepositoryImpl {
                     .update(addContact: chat.settings.addContact, id: chat.chatID)
                     .subscribe()
                     .disposed(by: disposeBag)
-                self.conversationService
-                    .conversation(by: chat.chatID)
-                    .flatMap { [weak self] conversation in
-                        guard let self = self, let userID = conversation?.peer?.userID else {
-                            return Observable<Void>.empty().asSingle()
+                
+                self.chatInteractor
+                    .executeSingle(params: chat.chatID)
+                    .asObservable()
+                    .flatMap { [weak self] chat in
+                        guard let self = self else {
+                            return Observable<[Void]>.empty()
                         }
-                        return self.updateContactStatusInteractor.executeSingle(params: userID)
+                        let members = chat.members
+                        let methods = members
+                            .filter { $0.id != self.appStore.userID() }
+                            .map(\.id)
+                            .map { id in
+                                return self.updateContactStatusInteractor.executeSingle(params: id).asObservable()
+                            }
+                        return Observable.zip(methods)
                     }
                     .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
                     .observe(on: MainScheduler.instance)
