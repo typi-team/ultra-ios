@@ -79,7 +79,7 @@ protocol IncomingCallViewInterface: ViewInterface {
 
 protocol IncomingCallPresenterInterface: PresenterInterface {
     func viewDidLoad()
-    func createCall()
+    func createCall(userID: String)
     func didTapBack()
     func answerCall()
     func getLocalParticipant() -> LocalParticipant?

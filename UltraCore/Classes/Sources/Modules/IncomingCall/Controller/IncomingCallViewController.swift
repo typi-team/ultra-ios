@@ -123,9 +123,9 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
             infoView.setDuration(text: status.isVideoCall ? CallStrings.incomeVideoCalling.localized : CallStrings.incomeAudioCalling.localized)
         case .outcoming:
             infoView.setDuration(text: CallStrings.connecting.localized)
-        case .prepeare:
+        case let .prepeare(sender):
             infoView.setDuration(text: CallStrings.connecting.localized)
-            presenter?.createCall()
+            presenter?.createCall(userID: sender.sender)
         }
         presenter?.viewDidLoad()
     }
