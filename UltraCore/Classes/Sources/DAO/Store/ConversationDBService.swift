@@ -66,30 +66,54 @@ class ConversationDBService {
                     .whenComplete { [weak self] result in
                         switch result {
                         case .success(let response):
-                            do {
+                            Realm.realmQueue.async {
                                 let localRealm = Realm.myRealm()
                                 let peerID = message.peerId(user: self?.userID ?? "")
                                 let contact = localRealm.object(ofType: DBContact.self, forPrimaryKey: peerID)
-                                try localRealm.write {
-                                    let conversation = localRealm.create(
-                                        DBConversation.self,
-                                        value: DBConversation(
-                                            message: message,
-                                            user: self?.userID ?? "",
-                                            addContact: response.settings.addContact,
-                                            callAllowed: response.settings.callAllowed
-                                        )
-                                    )
-                                    conversation.contact = contact
-                                    if message.sender.userID != self?.appStore.userID() ?? "" {
-                                        conversation.unreadMessageCount += 1
+                                let existConversation = localRealm.object(ofType: DBConversation.self, forPrimaryKey: message.receiver.chatID)
+                                if let conversation = existConversation {
+                                    do {
+                                        try localRealm.write {
+                                            conversation.contact = contact
+                                            conversation.lastSeen = message.meta.created
+                                            conversation.message = localRealm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: localRealm, user: self?.userID ?? "")
+                                            conversation.callAllowed = response.settings.callAllowed
+                                            conversation.addContact = response.settings.addContact
+                                            if message.sender.userID != self?.appStore.userID() ?? "" {
+                                                conversation.unreadMessageCount += 1
+                                            }
+                                            localRealm.create(DBConversation.self, value: conversation, update: .all)
+                                        }
+                                        observer(.success(()))
+                                    } catch {
+                                        observer(.failure(error))
                                     }
-                                    localRealm.add(conversation)
+                                } else {
+                                    do {
+                                        try localRealm.write {
+                                            let conversation = localRealm.create(
+                                                DBConversation.self,
+                                                value: DBConversation(
+                                                    message: message,
+                                                    user: self?.userID ?? "",
+                                                    addContact: response.settings.addContact,
+                                                    callAllowed: response.settings.callAllowed
+                                                )
+                                            )
+                                            conversation.contact = contact
+                                            if message.sender.userID != self?.appStore.userID() ?? "" {
+                                                conversation.unreadMessageCount += 1
+                                            }
+                                            localRealm.add(conversation)
+                                        }
+                                        observer(.success(()))
+                                    }
+                                    catch {
+                                        observer(.failure(error))
+                                    }
                                 }
-                                observer(.success(()))
-                            } catch {
-                                observer(.failure(error))
                             }
+                            
                         case .failure(let error):
                             observer(.failure(error))
                         }

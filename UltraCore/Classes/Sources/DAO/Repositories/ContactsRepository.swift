@@ -73,4 +73,6 @@ extension Realm {
             return try! Realm() // если ошибка, то создаем объект Realm с настройками по умолчанию
         }
     }
+    
+    static var realmQueue = DispatchQueue(label: "UltracoreRealm")
 }
