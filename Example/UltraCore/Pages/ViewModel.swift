@@ -35,6 +35,7 @@ class ViewModel {
     func viewDidLoad() {
         UltraCoreSettings.delegate = self
         UltraCoreSettings.futureDelegate = self
+        PP.logLevel = .verbose
     }
     
     var phone: String? {UserDefaults.standard.string(forKey: "phone") }
