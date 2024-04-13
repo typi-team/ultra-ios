@@ -32,6 +32,7 @@ class AppSettingsStoreImpl {
 extension AppSettingsStoreImpl: AppSettingsStore {
     
     func store(last state: Int64) {
+        PP.debug("Saved App Store state - \(state)")
         self.userDefault?.set(state, forKey: kLastState)
     }
     

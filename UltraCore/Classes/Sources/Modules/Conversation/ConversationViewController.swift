@@ -222,7 +222,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
             .do(onNext: {[weak self] messages in
-                PP.debug("[MESSAGES] - \(messages.count)")
+                PP.debug("[MESSAGES] - \(messages.count) - \(messages.suffix(10).map(\.id))")
                 self?.messages = messages
                 self?.tableView.backgroundView = messages.isEmpty ? ConversationEmptyViewContainer(emptyView: UltraCoreSettings.delegate?.emptyConversationDetailView() ?? .init()) : self?.backgroundImageView
             })

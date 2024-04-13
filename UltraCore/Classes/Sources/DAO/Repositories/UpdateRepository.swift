@@ -168,11 +168,10 @@ private extension UpdateRepositoryImpl {
     }
     
     func setupChangesSubscription(with state: UInt64) {
-        PP.debug("Setting up change subscription")
+        PP.debug("Setting up change subscription with state - \(state)")
         let state: ListenRequest = .with { $0.localState = .with { $0.state = state } }
         self.updateListenStream = updateClient.listen(state, callOptions: .default(include: false)) { [weak self] response in
             guard let `self` = self else { return }
-            self.appStore.store(last: max(Int64(response.lastState), self.appStore.lastState))
             response.updates.forEach { update in
                 if let ofUpdate = update.ofUpdate {
                     self.handle(of: ofUpdate)
@@ -180,6 +179,8 @@ private extension UpdateRepositoryImpl {
                     self.handle(of: presence)
                 }
             }
+            PP.debug("Trying to save last state; Server last state - \(response.lastState); local last state - \(self.appStore.lastState)")
+            self.appStore.store(last: max(Int64(response.lastState), self.appStore.lastState))
         }
         updateListenStream?.status.whenComplete { status in
             switch status {
