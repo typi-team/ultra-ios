@@ -33,6 +33,7 @@ public protocol UltraCoreSettingsDelegate: AnyObject {
     func tokenUpdated()
     func unreadMessagesUpdated(count: Int)
     func provideTransferScreen(for userID: String, viewController: UIViewController, transferCallback: MoneyCallback)
+    func realmEncryptionKeyData() -> Data?
 }
 
 extension UltraCoreSettingsDelegate {
