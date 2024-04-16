@@ -30,6 +30,16 @@ class ConversationDBService {
     
     init(appStore: AppSettingsStore) {
         self.appStore = appStore
+        if let realmOldURL = FileManager.default
+            .urls(for: .documentDirectory, in: .userDomainMask)
+            .first?.appendingPathComponent("UltraCore.realm") {
+            do {
+                appStore.deleteAll()
+                try FileManager.default.removeItem(at: realmOldURL)
+            } catch {
+                PP.error(error.localizedDescription)
+            }
+        }
         self.chatService = chatService
         UnreadMessagesService.updateUnreadMessagesCount()
     }
