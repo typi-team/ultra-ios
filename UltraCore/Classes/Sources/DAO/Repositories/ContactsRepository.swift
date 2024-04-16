@@ -53,7 +53,7 @@ extension Realm {
     static func myRealm() -> Realm {
         let realmURL = FileManager.default
             .urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("UltraCore.realm")
+            .appendingPathComponent("Ultra-Core.realm")
 
         var config = Realm.Configuration(fileURL: realmURL, schemaVersion: 3)
         config.objectTypes = [
@@ -64,6 +64,10 @@ extension Realm {
             DBMoneyMessage.self, DBFileMessage.self, DBContactMessage.self, DBLocationMessage.self,
             DBPhoto.self
         ]
+        
+        if let encryptionKey = UltraCoreSettings.delegate?.realmEncryptionKeyData() {
+            config.encryptionKey = encryptionKey
+        }
 
         do {
             let realm = try Realm(configuration: config)

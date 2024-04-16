@@ -195,5 +195,18 @@ extension ViewModel: UltraCoreSettingsDelegate {
     func disclaimerDescriptionFor(contact: String) -> String {
         return NSLocalizedString("conversation.disclaimerDescription", comment: "")
     }
+    
+    func realmEncryptionKeyData() -> Data? {
+        if let key = UserDefaults.standard.data(forKey: "encryption_key") {
+            return key
+        } else {
+            var key = Data(count: 64)
+            _ = key.withUnsafeMutableBytes { pointer in
+                SecRandomCopyBytes(kSecRandomDefault, 64, pointer.baseAddress!)
+            }
+            UserDefaults.standard.set(key, forKey: "encryption_key")
+            return key
+        }
+    }
 
 }
