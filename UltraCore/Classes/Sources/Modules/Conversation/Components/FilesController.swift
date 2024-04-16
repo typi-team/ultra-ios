@@ -90,6 +90,9 @@ class FilesController: BaseViewController<String> {
         }
     }
     
+    private var bottomInset: CGFloat {
+        presentingViewController?.view.safeAreaInsets.bottom ?? 0
+    }
     
     override func setupViews() {
         super.setupViews()
@@ -99,10 +102,10 @@ class FilesController: BaseViewController<String> {
     override func setupConstraints() {
         super.setupConstraints()
         self.stackView.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(kHeadlinePadding + kMediumPadding)
+            make.top.greaterThanOrEqualToSuperview().offset(kHeadlinePadding)
             make.left.equalToSuperview().offset(kMediumPadding)
             make.right.equalToSuperview().offset(-kMediumPadding)
-            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottomMargin).offset(-kLowPadding)
+            make.bottom.equalToSuperview().offset(-bottomInset)
         }
     }
     

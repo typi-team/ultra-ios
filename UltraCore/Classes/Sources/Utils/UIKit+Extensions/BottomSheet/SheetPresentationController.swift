@@ -33,7 +33,7 @@ final class SheetPresentationController: UIPresentationController {
     let targetHeight = presentedViewHeight == .zero ? maximumHeight : presentedViewHeight
     
     // Adjust the height of the view by adding the bottom safe area inset.
-    let adjustedHeight = min(targetHeight, maximumHeight) + containerView.safeAreaInsets.bottom
+    let adjustedHeight = min(targetHeight, maximumHeight)
     
     let targetSize = CGSize(width: containerView.frame.width, height: adjustedHeight)
     let targetOrigin = CGPoint(x: .zero, y: containerView.frame.maxY - targetSize.height)
