@@ -12,14 +12,10 @@ import UIKit
 
 final class MoneyTransferWireframe: BaseWireframe<MoneyTransferViewController> {
 
-    // MARK: - Private properties -
-    fileprivate let moneyTransitioningDelegate = SheetTransitioningDelegate()
     // MARK: - Module setup -
 
     init(conversation: Conversation, moneyCallback: @escaping MoneyCallback) {
         let moduleViewController = MoneyTransferViewController()
-        moduleViewController.modalPresentationStyle = .custom
-        moduleViewController.transitioningDelegate = moneyTransitioningDelegate
     
         super.init(viewController: moduleViewController)
 

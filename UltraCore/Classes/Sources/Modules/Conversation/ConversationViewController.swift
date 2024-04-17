@@ -17,12 +17,10 @@ import ContactsUI
 import RxDataSources
 import AVFoundation
 import NVActivityIndicatorView
+import FittedSheets
 
 final class ConversationViewController: BaseViewController<ConversationPresenterInterface> {
     // MARK: - Properties
-    
-    let reportTransitioningDelegate = SheetTransitioningDelegate()
-    let sheetTransitioningDelegate = SheetTransitioningDelegate()
     fileprivate var mediaItem: URL?
     fileprivate var isDrawingTable: Bool = false
     lazy var dismissKeyboardGesture = UITapGestureRecognizer.init(target: self, action: #selector(hideKeyboard))
@@ -351,6 +349,7 @@ extension ConversationViewController: MessageInputBarDelegate {
     func pressedPlus(in view: MessageInputBar) {
         view.endEditing(true)
         let viewController = FilesController()
+        let sheetController = SheetViewController(contentController: viewController)
         viewController.resultCallback = {[weak self] action in
             guard let `self` = self else { return }
             switch action {
@@ -361,9 +360,7 @@ extension ConversationViewController: MessageInputBarDelegate {
             case .location: self.openMap()
             }
         }
-        viewController.modalPresentationStyle = .custom
-        viewController.transitioningDelegate = sheetTransitioningDelegate
-        present(viewController, animated: true)
+        present(sheetController, animated: true)
     }
     
     func pressedDone(in view: MessageInputBar) {
@@ -839,10 +836,8 @@ extension ConversationViewController: EditActionBottomBarDelegate {
                 self.cancel()
             }
         })
-        
-        viewController.modalPresentationStyle = .custom
-        viewController.transitioningDelegate = reportTransitioningDelegate
-        present(viewController, animated: true)
+        let sheetController = SheetViewController(contentController: viewController)
+        present(sheetController, animated: true)
     }
     
     @objc func cancel() {
