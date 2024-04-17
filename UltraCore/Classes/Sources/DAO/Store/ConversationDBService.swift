@@ -32,7 +32,9 @@ class ConversationDBService {
         self.appStore = appStore
         if let realmOldURL = FileManager.default
             .urls(for: .documentDirectory, in: .userDomainMask)
-            .first?.appendingPathComponent("UltraCore.realm") {
+            .first?.appendingPathComponent("UltraCore.realm"),
+           FileManager.default.fileExists(atPath: realmOldURL.path)
+        {
             do {
                 appStore.deleteAll()
                 try FileManager.default.removeItem(at: realmOldURL)
