@@ -36,7 +36,7 @@ class ConversationDBService {
            FileManager.default.fileExists(atPath: realmOldURL.path)
         {
             do {
-                appStore.deleteAll()
+                appStore.store(last: 0)
                 try FileManager.default.removeItem(at: realmOldURL)
             } catch {
                 PP.error(error.localizedDescription)
