@@ -9,7 +9,9 @@ import Foundation
 import FittedSheets
 import UIKit
 
-extension SheetViewController {
+typealias SheetController = FittedSheets.SheetViewController
+
+extension SheetController {
     convenience init(contentController: UIViewController) {
         let options = SheetOptions(shrinkPresentingViewController: false)
         self.init(controller: contentController, sizes: [.intrinsic], options: options)

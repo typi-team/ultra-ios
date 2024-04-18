@@ -349,7 +349,7 @@ extension ConversationViewController: MessageInputBarDelegate {
     func pressedPlus(in view: MessageInputBar) {
         view.endEditing(true)
         let viewController = FilesController()
-        let sheetController = SheetViewController(contentController: viewController)
+        let sheetController = SheetController(contentController: viewController)
         viewController.resultCallback = {[weak self] action in
             guard let `self` = self else { return }
             switch action {
@@ -836,7 +836,7 @@ extension ConversationViewController: EditActionBottomBarDelegate {
                 self.cancel()
             }
         })
-        let sheetController = SheetViewController(contentController: viewController)
+        let sheetController = SheetController(contentController: viewController)
         present(sheetController, animated: true)
     }
     
