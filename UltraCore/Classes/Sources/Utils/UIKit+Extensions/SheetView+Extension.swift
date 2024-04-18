@@ -6,14 +6,11 @@
 //
 
 import Foundation
-import FittedSheets
 import UIKit
 
-typealias SheetController = FittedSheets.SheetViewController
-
-extension SheetController {
+extension UltraSheetViewController {
     convenience init(contentController: UIViewController) {
-        let options = SheetOptions(shrinkPresentingViewController: false)
+        let options = UltraSheetOptions(shrinkPresentingViewController: false)
         self.init(controller: contentController, sizes: [.intrinsic], options: options)
         allowPullingPastMaxHeight = false
     }

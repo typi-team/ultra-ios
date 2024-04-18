@@ -17,7 +17,6 @@ import ContactsUI
 import RxDataSources
 import AVFoundation
 import NVActivityIndicatorView
-import FittedSheets
 
 final class ConversationViewController: BaseViewController<ConversationPresenterInterface> {
     // MARK: - Properties
@@ -349,7 +348,7 @@ extension ConversationViewController: MessageInputBarDelegate {
     func pressedPlus(in view: MessageInputBar) {
         view.endEditing(true)
         let viewController = FilesController()
-        let sheetController = SheetController(contentController: viewController)
+        let sheetController = UltraSheetViewController(contentController: viewController)
         viewController.resultCallback = {[weak self] action in
             guard let `self` = self else { return }
             switch action {
@@ -836,7 +835,7 @@ extension ConversationViewController: EditActionBottomBarDelegate {
                 self.cancel()
             }
         })
-        let sheetController = SheetController(contentController: viewController)
+        let sheetController = UltraSheetViewController(contentController: viewController)
         present(sheetController, animated: true)
     }
     
