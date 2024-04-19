@@ -57,7 +57,7 @@ final class MoneyTransferPresenter {
     fileprivate let currency: String = "USD"
     
     func send(money amount: Double, callback: @escaping VoidCallback) {
-        guard let receiver = self.conversation.peer?.userID else { return }
+        guard let receiver = self.conversation.peers.first?.userID else { return }
         let moneyParams = TransferPayload(sender: self.appStore.userID(),
                                           receiver: receiver,
                                           amount: amount,

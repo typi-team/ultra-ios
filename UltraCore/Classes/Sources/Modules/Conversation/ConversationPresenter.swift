@@ -125,14 +125,17 @@ extension ConversationPresenter: ConversationPresenterInterface {
     }
 
     func subscribeToVisibility() {
-        if let userID = self.conversation.peer?.userID {
+        guard conversation.chatType == .peerToPeer else {
+            return
+        }
+        if let userID = self.conversation.peers.first?.userID {
             let timerUpdate = Observable<Int>.interval(.seconds(30), scheduler: MainScheduler.instance)
             let contacts = self.contactRepository.contacts().do { [weak self] contacts in
-                guard let `self` = self, 
-                        let selectedContact = contacts.filter({ contact in contact.userID == userID }).first else { return }
-                    self.conversation.peer = selectedContact
-                    self.view?.blocked(is: selectedContact.isBlocked)
-                    self.view?.setup(conversation: self.conversation)
+                guard let `self` = self,
+                      let selectedContact = contacts.filter({ contact in contact.userID == userID }).first else { return }
+                self.conversation.peers = [selectedContact]
+                self.view?.blocked(is: selectedContact.isBlocked)
+                self.view?.setup(conversation: self.conversation)
                 
             }
             Observable.combineLatest(timerUpdate, contacts)
@@ -142,7 +145,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 }
                 .do(onNext: { [weak self] contact in
                     guard let `self` = self else { return }
-                    self.conversation.peer = contact
+                    self.conversation.peers = [contact]
                     self.view?.blocked(is: contact.isBlocked)
                     self.view?.setup(conversation: self.conversation)
                 })
@@ -152,11 +155,11 @@ extension ConversationPresenter: ConversationPresenterInterface {
     }
 
     func isBlock() -> Bool {
-        return self.conversation.peer?.isBlocked ?? false
+        return self.conversation.peers.first?.isBlocked ?? false
     }
     
     func block() {
-        guard let contact = self.conversation.peer else { return }
+        guard let contact = self.conversation.peers.first else { return }
         let userId = contact.userID
         self.blockContactInteractor
             .executeSingle(params: (userId, !contact.isBlocked))
@@ -199,7 +202,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
     }
     
     func createCall(with video: Bool = false) {
-        guard let user = self.conversation.peer?.userID else { return }
+        guard let user = self.conversation.peers.first?.userID else { return }
         self.callService.create(.with({
             $0.users = [user]
             $0.video = video
@@ -221,19 +224,12 @@ extension ConversationPresenter: ConversationPresenterInterface {
     func send(location: LocationMessage) {
         var params = MessageSendRequest()
         
-        params.peer.user = .with({ [weak self] peer in
-            guard let `self` = self else { return }
-            peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
-        })
+        params.updatePeer(with: conversation)
 
         var message = Message()
         message.id = UUID().uuidString
         message.meta.created = Date().nanosec
-        message.receiver = .with({[weak self] receiver in
-            guard let `self` = self else { return }
-            receiver.chatID = conversation.idintification
-            receiver.userID = self.conversation.peer?.userID ?? ""
-        })
+        message.receiver = .from(conversation: conversation)
         message.location = location
         
         message.sender = .with({ $0.userID = self.userID })
@@ -272,19 +268,12 @@ extension ConversationPresenter: ConversationPresenterInterface {
     func send(contact: ContactMessage) {
         var params = MessageSendRequest()
         
-        params.peer.user = .with({ [weak self] peer in
-            guard let `self` = self else { return }
-            peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
-        })
+        params.updatePeer(with: conversation)
 
         var message = Message()
         message.id = UUID().uuidString
         message.meta.created = Date().nanosec
-        message.receiver = .with({[weak self] receiver in
-            guard let `self` = self else { return }
-            receiver.chatID = conversation.idintification
-            receiver.userID = self.conversation.peer?.userID ?? ""
-        })
+        message.receiver = .from(conversation: conversation)
         message.contact = contact
         
         message.sender = .with({ $0.userID = self.userID })
@@ -324,7 +313,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
     
     func openMoneyController() {
         wireframe.openMoneyController(callback: { [weak self] value in
-            guard let self, let receiverID = self.conversation.peer?.userID else { return }
+            guard let self, let receiverID = self.conversation.peers.first?.userID else { return }
             var params = MessageSendRequest()
 
             params.peer.user = .with({ peer in
@@ -397,7 +386,8 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .disposed(by: disposeBag)
     }
     func navigateToContact() {
-        guard let contact = self.conversation.peer else { return }
+        guard conversation.chatType == .peerToPeer else { return }
+        guard let contact = self.conversation.peers.first else { return }
         wireframe.navigateTo(contact: contact)
     }
     
@@ -475,7 +465,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
         subscribeToVisibility()
         view?.setup(conversation: conversation)
         if conversation.addContact && conversation.seqNumber > 0 {
-            view?.showOnReceiveDisclaimer(delegate: self, contact: conversation.peer)
+            view?.showOnReceiveDisclaimer(delegate: self, contact: conversation.peers.first)
         } else if conversation.addContact {
             view?.showDisclaimer(show: true, delegate: self)
         }
@@ -520,9 +510,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
     func send(message text: String) {
         var params = MessageSendRequest()
         
-        params.peer.user = .with({ [weak self] peer in
-            peer.userID = self?.conversation.peer?.userID ?? "u1FNOmSc0DAwM"
-        })
+        params.updatePeer(with: conversation)
         params.message.text = text
         params.message.id = UUID().uuidString
         params.message.meta.created = Date().nanosec
@@ -530,11 +518,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
         var message = Message()
         message.text = text
         message.id = params.message.id
-        message.receiver = .with({ [weak self] receiver in
-            guard let self else { return }
-            receiver.chatID = conversation.idintification
-            receiver.userID = conversation.peer?.userID ?? ""
-        })
+        message.receiver = .from(conversation: conversation)
         message.sender = .with({ [weak self] in
             guard let self else { return }
             $0.userID = userID
@@ -574,7 +558,8 @@ extension ConversationPresenter: ConversationPresenterInterface {
     }
     
     func didTapTransfer() {
-        guard let userID = conversation.peer?.phone,
+        guard conversation.chatType == .peerToPeer,
+              let userID = conversation.peers.first?.phone,
               let viewController = view as? UIViewController
         else {
             return
@@ -583,7 +568,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
             for: userID,
             viewController: viewController,
             transferCallback: { [weak self] moneyTransfer in
-                guard let self, let receiverID = self.conversation.peer?.userID else { return }
+                guard let self, let receiverID = self.conversation.peers.first?.userID else { return }
                 var params = MessageSendRequest()
 
                 params.peer.user = .with({ peer in
@@ -644,7 +629,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
 
 extension ConversationPresenter: DisclaimerViewDelegate {
     func disclaimerDidTapAgree() {
-        guard let userID = self.conversation.peer?.userID else {
+        guard let userID = self.conversation.peers.first?.userID else {
             return
         }
         acceptContactInteractor

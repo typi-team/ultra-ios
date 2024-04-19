@@ -118,7 +118,7 @@ class ConversationCell: BaseCell {
     }
     
     private func setupAvatar(conversation: Conversation) {
-        if let contact = conversation.peer {
+        if let contact = conversation.peers.first {
             self.avatarView.set(contact: contact, placeholder: UltraCoreStyle.defaultPlaceholder?.image)
         } else {
             self.avatarView.set(placeholder: .initial(text: conversation.title))
