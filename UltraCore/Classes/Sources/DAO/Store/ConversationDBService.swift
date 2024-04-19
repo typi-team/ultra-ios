@@ -56,7 +56,10 @@ class ConversationDBService {
             if let conversation = existConversation {
                 do {
                     try realm.write {
-                        conversation.contact = contact
+                        if let contact = contact, !conversation.contact.contains(where: { $0.userID == contact.userID }) {
+                            conversation.contact.append(contact)
+                        }
+
                         conversation.lastSeen = message.meta.created
                         conversation.message = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm, user: self.userID)
                         if message.sender.userID != self.appStore.userID() {
@@ -69,11 +72,11 @@ class ConversationDBService {
                     observer(.failure(error))
                 }
             } else {
-                let request = GetChatSettingsRequest.with {
+                let request = GetChatRequest.with {
                     $0.id = message.receiver.chatID
                 }
                 self.chatService
-                    .getSettings(request, callOptions: .default())
+                    .getByID(request, callOptions: .default())
                     .response
                     .whenComplete { [weak self] result in
                         switch result {
@@ -86,11 +89,14 @@ class ConversationDBService {
                                 if let conversation = existConversation {
                                     do {
                                         try localRealm.write {
-                                            conversation.contact = contact
+                                            if let contact = contact, !conversation.contact.contains(where: { $0.userID == contact.userID }) {
+                                                conversation.contact.append(contact)
+                                            }
                                             conversation.lastSeen = message.meta.created
                                             conversation.message = localRealm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: localRealm, user: self?.userID ?? "")
-                                            conversation.callAllowed = response.settings.callAllowed
-                                            conversation.addContact = response.settings.addContact
+                                            conversation.callAllowed = response.chat.settings.callAllowed
+                                            conversation.addContact = response.chat.settings.addContact
+                                            conversation.conversationType = response.chat.chatType.rawValue
                                             if message.sender.userID != self?.appStore.userID() ?? "" {
                                                 conversation.unreadMessageCount += 1
                                             }
@@ -108,11 +114,14 @@ class ConversationDBService {
                                                 value: DBConversation(
                                                     message: message,
                                                     user: self?.userID ?? "",
-                                                    addContact: response.settings.addContact,
-                                                    callAllowed: response.settings.callAllowed
+                                                    addContact: response.chat.settings.addContact,
+                                                    callAllowed: response.chat.settings.callAllowed
                                                 )
                                             )
-                                            conversation.contact = contact
+                                            conversation.conversationType = response.chat.chatType.rawValue
+                                            if let contact = contact, !conversation.contact.contains(where: { $0.userID == contact.userID }) {
+                                                conversation.contact.append(contact)
+                                            }
                                             if message.sender.userID != self?.appStore.userID() ?? "" {
                                                 conversation.unreadMessageCount += 1
                                             }
@@ -305,7 +314,7 @@ extension Message {
         return sender.userID == id ? receiver.userID : sender.userID
     }
     
-    var isIncome: Bool { self.receiver.userID == AppSettingsImpl.shared.appStore.userID() }
+    var isIncome: Bool { self.sender.userID != AppSettingsImpl.shared.appStore.userID() }
     
     var message: String? {
         content?.description ?? text

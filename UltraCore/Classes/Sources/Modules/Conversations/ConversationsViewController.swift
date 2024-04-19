@@ -36,7 +36,7 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
         cell.setup(conversation: model)
         return cell
     }, canEditRowAtIndexPath: { data, indexpath in
-        if let phone = data.sectionModels[indexpath.section].items[indexpath.row].peer?.phone {
+        if let phone = data.sectionModels[indexpath.section].items[indexpath.row].peers.first?.phone {
             return !phone.contains("+00000000000")
         } else {
             return true

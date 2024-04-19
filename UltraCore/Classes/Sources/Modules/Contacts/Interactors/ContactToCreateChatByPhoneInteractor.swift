@@ -64,7 +64,7 @@ class ContactToConversationInteractor: GRPCErrorUseCase<IContact, Conversation?>
                         return self.contactDBService.save(contact: contact)
                             .map({ 
                                 ConversationImpl(
-                                    contact: contact,
+                                    contacts: [contact],
                                     idintification: contactToCreateChat.chatID,
                                     addContact: contactToCreateChat.chat.settings.addContact,
                                     seqNumber: contactToCreateChat.chat.messageSeqNumber, 

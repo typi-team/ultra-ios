@@ -273,9 +273,15 @@ private extension MediaRepositoryImpl {
             }
             try mediaUtils.write(file.data, file: originalFileId, and: extensions)
             let request = MessageSendRequest.with({ req in
-                req.peer.user = .with({ peer in
-                    peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
-                })
+                if conversation.chatType == .peerToPeer {
+                    req.peer.chat = .with({ chat in
+                        chat.chatID = conversation.idintification
+                    })
+                } else {
+                    req.peer.user = .with({ peer in
+                        peer.userID = conversation.peers.first?.userID ?? "u1FNOmSc0DAwM"
+                    })
+                }
                 req.message = message
             })
             onCompletion(request)

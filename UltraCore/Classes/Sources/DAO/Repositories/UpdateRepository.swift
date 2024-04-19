@@ -144,6 +144,10 @@ extension UpdateRepositoryImpl: UpdateRepository {
                             })
                         }
                         
+                        response.chats.forEach { chat in
+                            chat.chatType
+                        }
+                        
                         group.notify(queue: DispatchQueue.main) { [weak self] in
                             self?.handleUnread(from: response.chats)
                             self?.updateSyncSubject.onNext(())

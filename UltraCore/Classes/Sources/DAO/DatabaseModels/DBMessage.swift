@@ -66,7 +66,7 @@ class DBMessage: Object {
         }
         
         if let id = id {
-            self.isIncome = message.receiver.userID == id
+            self.isIncome = message.sender.userID != id
         }
     }
     

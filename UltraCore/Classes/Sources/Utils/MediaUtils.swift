@@ -51,7 +51,7 @@ class MediaUtils {
         return Message.with { mess in
             mess.receiver = .with({ receiver in
                 receiver.chatID = conversation.idintification
-                receiver.userID = conversation.peer?.userID ?? ""
+                receiver.userID = conversation.peers.first?.userID ?? ""
             })
             mess.meta = .with { $0.created = Date().nanosec }
             mess.sender = .with { $0.userID = userID }

@@ -72,7 +72,7 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
 
 extension ConversationWireframe: ConversationWireframeInterface {
     func navigateToCall(response: CreateCallResponse, isVideo: Bool) {
-        guard let reciever = self.conversation.peer?.userID else { return }
+        guard let reciever = self.conversation.peers.first?.userID else { return }
         let info = CallOutging(video: isVideo, host: response.host, room: response.room, sender: reciever, accessToken: response.accessToken)
         self.navigationController?.presentWireframe(IncomingCallWireframe(call: .outcoming(info)), animated: true, completion: nil)
     }
