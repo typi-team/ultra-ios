@@ -62,6 +62,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.registerCell(type: IncomeLocationCell.self)
         tableView.registerCell(type: OutcomeLocationCell.self)
         tableView.registerCell(type: OutgoingMessageCell.self)
+        tableView.registerCell(type: SystemMessageCell.self)
         tableView.addGestureRecognizer(dismissKeyboardGesture)
         tableView.contentInset = .zero
     }
@@ -108,6 +109,12 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             guard let `self` = self else {
                 return UITableViewCell.init()
             }
+            if message.type == .system {
+                let cell: SystemMessageCell = tableView.dequeueCell()
+                cell.setup(text: message.text)
+                return cell
+            }
+            
             let cell = self.cell(message, in: tableView)
             cell.longTapCallback = {[weak self] actionType in
                 guard let `self` = self else { return }

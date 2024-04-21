@@ -100,6 +100,7 @@ public class UltraCoreStyle {
         defaultColor: UIColor.from(hex: "e5e7eb").withAlphaComponent(0.5),
         darkColor: UIColor.from(hex: "e5e7eb").withAlphaComponent(0.5)
     )
+    public static var systemMessageTextConfig: LabelConfig = LabelConfigImpl(darkColor: .textTertiary, defaultColor: .textTertiary, font: .defaultRegularFootnote)
 }
 
 private class MessageInputBarConfigImpl: MessageInputBarConfig {
