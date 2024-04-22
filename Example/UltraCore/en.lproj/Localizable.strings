@@ -157,3 +157,5 @@
 "conversation.disclaimerAgree" = "Agree";
 "conversation.disclaimerClose" = "Close";
 "conversation.disclaimerDescription" = "The company's client wrote to you";
+
+"conversation.supportChat" = "Чат с брокером";

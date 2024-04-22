@@ -58,6 +58,8 @@ enum ConversationStrings: String, StringLocalizable {
     case disclaimerAgree
     case disclaimerClose
     
+    case supportChat
+    
     var prefixOfTemplate: String { "conversation" }
     var localizableValue: String { rawValue }
 }
