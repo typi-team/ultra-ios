@@ -160,3 +160,5 @@
 "conversation.disclaimerAgree" = "Согласен";
 "conversation.disclaimerClose" = "Закрыть";
 "conversation.disclaimerDescription" = "Вам написал Клиент компании";
+
+"conversation.supportChat" = "Чат с брокером";
