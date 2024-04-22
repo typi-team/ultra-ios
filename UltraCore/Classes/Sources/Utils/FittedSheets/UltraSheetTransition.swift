@@ -40,10 +40,6 @@ public class UltraSheetTransition: NSObject, UIViewControllerAnimatedTransitioni
             }
             sheet.contentViewController.view.transform = .identity
             containerView.addSubview(sheet.view)
-            //sheet.view.frame = containerView.frame
-            Constraints(for: sheet.view) {
-                $0.edges.pinToSuperview()
-            }
             UIView.performWithoutAnimation {
                 sheet.view.layoutIfNeeded()
             }
@@ -52,8 +48,6 @@ public class UltraSheetTransition: NSObject, UIViewControllerAnimatedTransitioni
             let contentView = sheet.contentViewController.contentView
             contentView.transform = CGAffineTransform(translationX: 0, y: contentView.bounds.height)
             sheet.overlayView.alpha = 0
-            
-            let heightPercent = contentView.bounds.height / UIScreen.main.bounds.height
             
             UIView.performWithoutAnimation {
                 sheet.view.layoutIfNeeded()
@@ -71,8 +65,8 @@ public class UltraSheetTransition: NSObject, UIViewControllerAnimatedTransitioni
             UIView.animate(
                 withDuration: self.options.transitionDuration,
                 delay: 0,
-                usingSpringWithDamping: self.options.transitionDampening + ((heightPercent - 0.2) * 1.25 * 0.17),
-                initialSpringVelocity: self.options.transitionVelocity * heightPercent,
+                usingSpringWithDamping: self.options.transitionDampening,
+                initialSpringVelocity: self.options.transitionVelocity,
                 options: self.options.transitionAnimationOptions,
                 animations: {
                     contentView.transform = .identity

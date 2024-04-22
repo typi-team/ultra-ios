@@ -216,6 +216,7 @@ private class EditActionBottomBarConfigImpl: EditActionBottomBarConfig {
 }
 
 private class FilesControllerConfigImpl : FilesControllerConfig {
+    var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .gray100, darkColor: .gray100)
     var takePhotoImage: TwiceImage = TwiceImageImpl(dark: .named("conversation_camera")!, default: .named("conversation_camera")!)
     var fromGalleryImage: TwiceImage = TwiceImageImpl(dark: .named("conversation_photo")!, default: .named("conversation_photo")!)
     var documentImage: TwiceImage = TwiceImageImpl(dark: .named("contact_file_icon")!, default: .named("contact_file_icon")!)

@@ -153,7 +153,7 @@ public class UltraSheetViewController: UIViewController {
     
     public private(set) var contentViewController: UltraSheetContentViewController
     var overlayView = UIView()
-    var blurView = UIVisualEffectView()
+    var blurView = CustomIntensityVissualEffectView(effect: UIBlurEffect(style: .regular), intensity: 0.1)
     var overlayTapView = UIView()
     var overflowView = UIView()
     var overlayTapGesture: UITapGestureRecognizer?
@@ -412,7 +412,6 @@ public class UltraSheetViewController: UIViewController {
                 if offset > 0 {
                     let percent = max(0, min(1, offset / max(1, newHeight)))
                     self.transition.setPresentor(percentComplete: percent)
-                    self.overlayView.alpha = 1 - percent
                     self.contentViewController.view.transform = CGAffineTransform(translationX: 0, y: offset)
                 } else {
                     self.contentViewController.view.transform = CGAffineTransform.identity
@@ -783,6 +782,23 @@ extension UltraSheetViewController: UIViewControllerTransitioningDelegate {
     public func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         transition.presenting = false
         return transition
+    }
+}
+
+final class CustomIntensityVissualEffectView: UIVisualEffectView {
+    private var animator: UIViewPropertyAnimator!
+    
+    init(effect: UIVisualEffect?, intensity: CGFloat) {
+        super.init(effect: nil)
+        animator = UIViewPropertyAnimator(duration: 1.0, curve: .linear, animations: { [unowned self] in
+            self.effect = effect
+        })
+        animator.pausesOnCompletion = true
+        animator.fractionComplete = intensity
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
     }
 }
 

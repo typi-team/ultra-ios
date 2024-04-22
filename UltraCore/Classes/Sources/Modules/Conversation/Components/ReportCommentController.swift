@@ -84,11 +84,10 @@ class ReportCommentController: BaseViewController<String> {
         stack.setCustomSpacing(kHeadlinePadding, after: textField)
         
         stack.addArrangedSubview(saveButton)
-        stack.setCustomSpacing(kHeadlinePadding, after: saveButton)
+        stack.setCustomSpacing(kLowPadding, after: saveButton)
     
         
         stack.addArrangedSubview(cancelButton)
-        stack.setCustomSpacing(kHeadlinePadding, after: cancelButton)
     }
     
     override func setupViews() {
@@ -113,7 +112,7 @@ class ReportCommentController: BaseViewController<String> {
         }
         [cancelButton, textField, saveButton].forEach({
             $0.snp.makeConstraints({
-                $0.height.equalTo(56)
+                $0.height.equalTo(52)
             })
         })
     }

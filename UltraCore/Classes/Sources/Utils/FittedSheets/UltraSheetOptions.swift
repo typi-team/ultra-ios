@@ -26,10 +26,10 @@ public struct UltraSheetOptions {
     public var setIntrinsicHeightOnNavigationControllers = true
 
     public var transitionAnimationOptions: UIView.AnimationOptions = [.curveEaseOut]
-    public var transitionDampening: CGFloat = 0.7
+    public var transitionDampening: CGFloat = 1.0
     public var transitionDuration: TimeInterval = 0.4
     /// Transition velocity base value. Automatically adjusts based on the initial size of the sheet.
-    public var transitionVelocity: CGFloat = 0.8
+    public var transitionVelocity: CGFloat = 1.0
     public var transitionOverflowType: TransitionOverflowType = .automatic
     
     /// Default value 500, greater value will require more velocity to dismiss. Lesser values will do opposite.
