@@ -349,6 +349,7 @@ extension ConversationViewController: MessageInputBarDelegate {
         view.endEditing(true)
         let viewController = FilesController()
         let sheetController = UltraSheetViewController(contentController: viewController)
+        sheetController.hasBlurBackground = true
         viewController.resultCallback = {[weak self] action in
             guard let `self` = self else { return }
             switch action {
@@ -836,6 +837,7 @@ extension ConversationViewController: EditActionBottomBarDelegate {
             }
         })
         let sheetController = UltraSheetViewController(contentController: viewController)
+        sheetController.hasBlurBackground = true
         present(sheetController, animated: true)
     }
     

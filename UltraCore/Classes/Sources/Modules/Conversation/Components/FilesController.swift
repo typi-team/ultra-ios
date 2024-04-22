@@ -110,6 +110,7 @@ class FilesController: BaseViewController<String> {
         super.setupStyle()
         
         if let style = self.style {
+            self.view.backgroundColor = style.backgroundColor.color
             self.takePhoto.setImage(style.takePhotoImage.image, for: .normal)
             self.fromGallery.setImage(style.fromGalleryImage.image, for: .normal)
             self.document.setImage(style.documentImage.image, for: .normal)
