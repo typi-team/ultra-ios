@@ -259,6 +259,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         animationDuration: Double,
         animationOptions: UIView.AnimationOptions
     ) {
+        guard presentedViewController == nil else { return }
         var contentOffset = tableView.contentOffset
         
         let keyBoardHeight = UIScreen.main.bounds.height - frame.origin.y
@@ -828,6 +829,7 @@ extension ConversationViewController: EditActionBottomBarDelegate {
     }
     
     func presentReportMessageView(_ message: Message, with type: ComplainTypeEnum) {
+        messageInputBar.endEditing(true)
         let viewController = ReportCommentController({ controler in
             controler.saveAction = {[weak self] comment in
                 guard let `self` = self else { return }

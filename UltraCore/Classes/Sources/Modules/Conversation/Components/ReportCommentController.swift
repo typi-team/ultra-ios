@@ -31,6 +31,7 @@ class ReportCommentController: BaseViewController<String> {
         $0.placeholder = MessageStrings.comment.localized
         $0.returnKeyType = .done
         $0.delegate = self
+        $0.inputAccessoryView = UIView()
         
         $0.rightView = UIButton({
             
@@ -93,7 +94,6 @@ class ReportCommentController: BaseViewController<String> {
     override func setupViews() {
         super.setupViews()
         self.view.addSubview(stackView)
-        self.handleKeyboardTransmission = true
         self.stackView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(endTyping(_:))))
     }
     
@@ -139,17 +139,6 @@ class ReportCommentController: BaseViewController<String> {
         
         self.headlineLabel.font = style?.headlineConfig.font
         self.headlineLabel.textColor = style?.headlineConfig.color
-    }
-    
-    override func changedKeyboard(
-        frame: CGRect,
-        animationDuration: Double,
-        animationOptions: UIView.AnimationOptions
-    ) {
-        let keyboardHeight = UIScreen.main.bounds.height - frame.origin.y
-        UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
-            self.view.frame.origin.y = keyboardHeight > 0 ? UIScreen.main.bounds.height - self.view.frame.height - keyboardHeight : 0
-        }
     }
 }
 

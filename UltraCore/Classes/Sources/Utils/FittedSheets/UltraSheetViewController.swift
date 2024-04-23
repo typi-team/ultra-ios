@@ -67,7 +67,6 @@ public class UltraSheetViewController: UIViewController {
     public var hasBlurBackground = UltraSheetViewController.hasBlurBackground {
         didSet {
             blurView.isHidden = !hasBlurBackground
-            overlayView.backgroundColor = hasBlurBackground ? .clear : self.overlayColor
         }
     }
     
@@ -81,11 +80,11 @@ public class UltraSheetViewController: UIViewController {
     }
     
     /// The default color of the overlay background
-    public static var overlayColor = UIColor(white: 0, alpha: 0.25)
+    public static var overlayColor = UIColor.from(hex: "0B101A").withAlphaComponent(0.3)
     /// The color of the overlay background
     public var overlayColor = UltraSheetViewController.overlayColor {
         didSet {
-            self.overlayView.backgroundColor = self.hasBlurBackground ? .clear : self.overlayColor
+            self.overlayView.backgroundColor = self.overlayColor
         }
     }
     

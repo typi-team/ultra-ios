@@ -96,6 +96,10 @@ public class UltraCoreStyle {
     public static var editActionBottomBar: EditActionBottomBarConfig = EditActionBottomBarConfigImpl()
     public static var conversationScreenConfig: ConversationScreenStyleConfig = ConversationScreenStyleConfigImpl()
     public static var iconClose: TwiceImage = TwiceImageImpl(dark: .named("icon_close")!, default: .named("icon_close")!)
+    public static var sheetGripColor: TwiceColor = TwiceColorImpl(
+        defaultColor: UIColor.from(hex: "e5e7eb").withAlphaComponent(0.5),
+        darkColor: UIColor.from(hex: "e5e7eb").withAlphaComponent(0.5)
+    )
 }
 
 private class MessageInputBarConfigImpl: MessageInputBarConfig {
