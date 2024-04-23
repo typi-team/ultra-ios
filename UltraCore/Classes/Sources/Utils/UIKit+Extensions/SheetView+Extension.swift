@@ -13,7 +13,7 @@ extension UltraSheetViewController {
         let options = UltraSheetOptions(shrinkPresentingViewController: false)
         self.init(controller: contentController, sizes: [.intrinsic], options: options)
         gripSize = .init(width: 81.0, height: 3.0)
-        gripColor = UIColor.from(hex: "e5e7eb").withAlphaComponent(0.5)
+        gripColor = UltraCoreStyle.sheetGripColor.color
         allowPullingPastMaxHeight = false
     }
 }
