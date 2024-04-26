@@ -98,7 +98,7 @@ extension ViewModel: UltraCoreFutureDelegate {
 }
 
 extension ViewModel: UltraCoreSettingsDelegate {
-    func provideTransferScreen(for userID: String, viewController: UIViewController, transferCallback: (UltraCore.MoneyTransfer) -> Void) {
+    func provideTransferScreen(for userID: String, viewController: UIViewController, transferCallback: @escaping (UltraCore.MoneyTransfer) -> Void) {
         
     }
     
