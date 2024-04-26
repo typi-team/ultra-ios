@@ -308,13 +308,13 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             return
         }
         UltraCoreSettings.delegate?.activeConversationID = chatID
-        guard let cell = self.tableView.visibleCells.first as? BaseMessageCell,
-              let seqNumber = cell.message?.seqNumber else {
+        guard let message = messages.first else {
             return
         }
-        guard (presenter?.loadIfFirstTime(seqNumber: seqNumber) ?? false) && messages.count <= 1 else {
+        guard (presenter?.loadIfFirstTime(seqNumber: message.seqNumber) ?? false) && messages.count <= 1 else {
             return
         }
+        self.presenter?.loadMoreMessages(maxSeqNumber: message.seqNumber)
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {

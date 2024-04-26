@@ -466,7 +466,6 @@ extension ConversationPresenter: ConversationPresenterInterface {
         }
         
         appStore.saveLoadState(for: conversation.idintification)
-        loadMoreMessages(maxSeqNumber: seqNumber)
         return true
     }
     
