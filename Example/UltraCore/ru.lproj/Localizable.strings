@@ -162,3 +162,6 @@
 "conversation.disclaimerDescription" = "Вам написал Клиент компании";
 
 "conversation.supportChat" = "Чат с брокером";
+"conversation.supportChatOpened" = "Оператор подключится в ближайшее время";
+"conversation.supportChatClosed" = "Диалог с оператором завершился";
+"conversation.supportChatPostponed" = "Для подключения оператора необходиио еще некоторое время";

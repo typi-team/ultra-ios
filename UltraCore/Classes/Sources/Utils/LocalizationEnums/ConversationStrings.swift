@@ -59,6 +59,9 @@ enum ConversationStrings: String, StringLocalizable {
     case disclaimerClose
     
     case supportChat
+    case supportChatOpened
+    case supportChatClosed
+    case supportChatPostponed
     
     var prefixOfTemplate: String { "conversation" }
     var localizableValue: String { rawValue }

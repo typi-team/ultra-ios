@@ -136,16 +136,14 @@ extension UpdateRepositoryImpl: UpdateRepository {
 
                         let group = DispatchGroup()
                         response.messages.forEach { message in
-                            group.enter()
-                            self.semaphore.wait()
-                            self.update(message: message, completion: {
-                                self.semaphore.signal()
-                                group.leave()
-                            })
-                        }
-                        
-                        response.chats.forEach { chat in
-                            chat.chatType
+                            if message.shouldBeSaved {
+                                group.enter()
+                                self.semaphore.wait()
+                                self.update(message: message, completion: {
+                                    self.semaphore.signal()
+                                    group.leave()
+                                })
+                            }
                         }
                         
                         group.notify(queue: DispatchQueue.main) { [weak self] in
@@ -265,6 +263,9 @@ private extension UpdateRepositoryImpl {
         PP.debug("[UPDATE] - \(update)")
         switch update {
         case let .message(message):
+            guard message.shouldBeSaved else {
+                return
+            }
             let senderID = appStore.userID()
             self.update(message: message, completion: {
                 guard message.sender.userID != senderID else { return }
