@@ -312,12 +312,11 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        guard let cell = self.tableView.visibleCells.first as? BaseMessageCell,
-              let seqNumber = cell.message?.seqNumber,
-              seqNumber > 1 else { return }
+        guard let message = messages.first,
+              message.seqNumber > 1 else { return }
         tableView.contentInset = UIEdgeInsets(top: 40, left: 0, bottom: 0, right: 0)
         spinner.startAnimating()
-        self.presenter?.loadMoreMessages(maxSeqNumber: seqNumber)
+        self.presenter?.loadMoreMessages(maxSeqNumber: message.seqNumber)
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {

@@ -105,11 +105,15 @@ class DBMessage: Object {
             switch systemActionType.getActionType() {
             case .supportManagerAssigned:
                 if let supportManagerAssigned = supportManagerAssigned {
-                    message.supportManagerAssigned = SystemActionSupportManagerAssigned.with { $0.userID = supportManagerAssigned.userID }
+                    let supportManagerAssigned = SystemActionSupportManagerAssigned.with { $0.userID = supportManagerAssigned.userID }
+                    message.supportManagerAssigned = supportManagerAssigned
+                    message.systemAction = .supportManagerAssigned(supportManagerAssigned)
                 }
             case .supportStatusChanged:
                 if let supportStatusChanged = supportStatusChanged {
-                    message.supportStatusChanged = SystemActionSupportStatusChanged.with { $0.status = SupportChatStatusEnum.init(rawValue: supportStatusChanged.status)! }
+                    let supportStatusChanged = SystemActionSupportStatusChanged.with { $0.status = SupportChatStatusEnum.init(rawValue: supportStatusChanged.status)! }
+                    message.supportStatusChanged = supportStatusChanged
+                    message.systemAction = .supportStatusChanged(supportStatusChanged)
                 }
             default:
                 break

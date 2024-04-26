@@ -65,8 +65,10 @@ extension Message {
             return ""
         case .photoDeleted:
             return ""
-        case .supportManagerAssigned:
-            return ""
+        case .supportManagerAssigned(let supportManagerAssigned):
+            return String.init(
+                format: ConversationStrings.supportChatManagerAssigned.localized, supportManagerAssigned.userID
+            )
         case .supportStatusChanged(let systemActionSupportStatusChanged):
             switch systemActionSupportStatusChanged.status {
             case .supportChatStatusClosed:

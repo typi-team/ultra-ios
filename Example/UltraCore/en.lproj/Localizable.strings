@@ -160,5 +160,6 @@
 
 "conversation.supportChat" = "Chat with a broker";
 "conversation.supportChatOpened" = "The operator will connect shortly";
-"conversation.supportChatClosed" = "The dialogue with the operator has ended";
+"conversation.supportChatClosed" = "The conversation with the operator has ended";
 "conversation.supportChatPostponed" = "It takes some more time to connect the operator";
+"conversation.supportChatManagerAssigned" = "Operator %@ joined the conversation";
