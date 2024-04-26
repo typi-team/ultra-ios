@@ -62,7 +62,7 @@ extension Realm {
             DBAudioMessage.self, DBVoiceMessage.self,
             DBVideoMessage.self, DBPhotoMessage.self,
             DBMoneyMessage.self, DBFileMessage.self, DBContactMessage.self, DBLocationMessage.self,
-            DBPhoto.self
+            DBPhoto.self, DBSystemActionSupportManagerAssigned.self, DBSystemActionSupportStatusChanged.self
         ]
         
         if let encryptionKey = UltraCoreSettings.delegate?.realmEncryptionKeyData() {

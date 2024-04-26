@@ -111,7 +111,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             }
             if message.type == .system {
                 let cell: SystemMessageCell = tableView.dequeueCell()
-                cell.setup(text: message.text)
+                cell.setup(text: message.supportMessage)
                 return cell
             }
             

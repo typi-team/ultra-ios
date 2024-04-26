@@ -26,6 +26,9 @@ class DBMessage: Object {
     @objc dynamic var moneyMessage: DBMoneyMessage?
     @objc dynamic var contactMessage: DBContactMessage?
     @objc dynamic var locationMessage: DBLocationMessage?
+    @objc dynamic var supportManagerAssigned: DBSystemActionSupportManagerAssigned?
+    @objc dynamic var supportStatusChanged: DBSystemActionSupportStatusChanged?
+    @objc dynamic var systemActionType: DBSystemActionType?
     
     @objc dynamic var isIncome: Bool = false
     
@@ -45,6 +48,22 @@ class DBMessage: Object {
         self.sender = realm.object(ofType: DBSender.self, forPrimaryKey: message.sender.userID) ?? DBSender.init(from: message.sender)
         self.meta = DBMessageMeta.init(proto: message.meta)
         self.text = message.text
+        if let systemAction = message.systemAction {
+            self.systemActionType = .init(systemAction: systemAction)
+            switch systemAction {
+            case .supportManagerAssigned(let systemActionSupportManagerAssigned):
+                self.supportManagerAssigned = .init(action: systemActionSupportManagerAssigned)
+            case .supportStatusChanged(let systemActionSupportStatusChanged):
+                switch systemActionSupportStatusChanged.status {
+                case .supportChatStatusOpen, .supportChatStatusClosed:
+                    self.supportStatusChanged = .init(action: systemActionSupportStatusChanged)
+                default:
+                    break
+                }
+            default:
+                break
+            }
+        }
         switch message.content {
         case .audio(let audioMessage):
             self.audioMessage = .init(fromProto: audioMessage)
@@ -82,6 +101,20 @@ class DBMessage: Object {
         message.receiver = receiver!.toProto()
         message.chatType = ChatTypeEnum(rawValue: chatType) ?? ChatTypeEnum.peerToPeer
         message.type = MessageTypeEnum.init(rawValue: self.type) ?? MessageTypeEnum.text
+        if let systemActionType = systemActionType {
+            switch systemActionType.getActionType() {
+            case .supportManagerAssigned:
+                if let supportManagerAssigned = supportManagerAssigned {
+                    message.supportManagerAssigned = SystemActionSupportManagerAssigned.with { $0.userID = supportManagerAssigned.userID }
+                }
+            case .supportStatusChanged:
+                if let supportStatusChanged = supportStatusChanged {
+                    message.supportStatusChanged = SystemActionSupportStatusChanged.with { $0.status = SupportChatStatusEnum.init(rawValue: supportStatusChanged.status)! }
+                }
+            default:
+                break
+            }
+        }
         
         if let audioMessage = audioMessage {
             message.content = .audio(audioMessage.toProto())
