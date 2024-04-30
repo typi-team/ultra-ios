@@ -63,6 +63,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.registerCell(type: OutcomeLocationCell.self)
         tableView.registerCell(type: OutgoingMessageCell.self)
         tableView.registerCell(type: SystemMessageCell.self)
+        tableView.registerCell(type: GroupIncomeMessageCell.self)
         tableView.addGestureRecognizer(dismissKeyboardGesture)
         tableView.contentInset = .zero
     }
@@ -101,6 +102,13 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             if message.type == .system {
                 let cell: SystemMessageCell = tableView.dequeueCell()
                 cell.setup(text: message.supportMessage)
+                return cell
+            }
+            if presenter?.isGroupChat() ?? false && message.isIncome {
+                let contact = presenter?.getContact(for: message.sender.userID)
+                let cell: GroupIncomeMessageCell = tableView.dequeueCell()
+                cell.setup(contact: contact)
+                cell.setup(message: message)
                 return cell
             }
             

@@ -19,6 +19,7 @@ public protocol MessageCellConfig {
     var locationPinImage: TwiceImage? { get set }
     var linkColor: TwiceColor { get set }
     var fileCellConfig: FileCellConfig { get set }
+    var contactLabelConfig: LabelConfig { get set }
 }
 
 public protocol OutcomingMessageCellConfig: MessageCellConfig {

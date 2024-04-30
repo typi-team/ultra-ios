@@ -120,6 +120,14 @@ final class ConversationPresenter {
 
 extension ConversationPresenter: ConversationPresenterInterface {
     
+    func isGroupChat() -> Bool {
+        return conversation.chatType == .support || conversation.chatType == .group
+    }
+    
+    func getContact(for id: String) -> ContactDisplayable? {
+        contactRepository.contact(id: id)
+    }
+    
     func allowedToCall() -> Bool {
         conversation.callAllowed
     }
