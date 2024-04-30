@@ -52,4 +52,5 @@ class IncomeMessageCellConfigImpl: MessageCellConfig {
         dark: .init(named: "conversation_media_play")!.withRenderingMode(.alwaysTemplate),
         default: .init(named: "conversation_media_play")!.withRenderingMode(.alwaysTemplate)
     )
+    var contactLabelConfig: UltraCore.LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultBoldBody)
 }

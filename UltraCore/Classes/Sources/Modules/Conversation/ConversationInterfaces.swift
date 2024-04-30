@@ -50,4 +50,6 @@ protocol ConversationPresenterInterface: PresenterInterface {
     func callVideo()
     func callVoice()
     func didTapTransfer()
+    func isGroupChat() -> Bool
+    func getContact(for id: String) -> ContactDisplayable?
 }

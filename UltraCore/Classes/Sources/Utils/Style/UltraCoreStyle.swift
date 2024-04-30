@@ -25,6 +25,7 @@ private class IncomeMessageCellConfigImpl: MessageCellConfig {
     var sildirBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
     var fileCellConfig: FileCellConfig = FileCellConfigImpl()
     var mediaImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_media_play")!, default: .named("conversation_media_play")!)
+    var contactLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultBoldBody)
 }
 
 private class OutcomeMessageCellConfigImpl: OutcomingMessageCellConfig {
@@ -47,6 +48,7 @@ private class OutcomeMessageCellConfigImpl: OutcomingMessageCellConfig {
     var sildirBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
     var fileCellConfig: FileCellConfig = FileCellConfigImpl()
     var mediaImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_media_play")!, default: .named("conversation_media_play")!)
+    var contactLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultBoldBody)
 }
 
 
