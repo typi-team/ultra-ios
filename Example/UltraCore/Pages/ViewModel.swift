@@ -208,5 +208,9 @@ extension ViewModel: UltraCoreSettingsDelegate {
             return key
         }
     }
+    
+    func didTapTransactionCell(transactionID: String) {
+        
+    }
 
 }

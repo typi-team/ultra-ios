@@ -82,10 +82,13 @@ final class MoneyTransferViewController: BaseViewController<MoneyTransferPresent
         $0.setCustomSpacing(kHeadlinePadding * 2, after: continButton)
     }
     
+    fileprivate lazy var dismissKeyboardGesture = UITapGestureRecognizer.init(target: self, action: #selector(dismissKeyboard))
+    
     override func setupViews() {
         super.setupViews()
         self.handleKeyboardTransmission = true
         self.view.addSubview(stackView)
+        stackView.addGestureRecognizer(dismissKeyboardGesture)
     }
     
     override func setupConstraints() {
@@ -104,6 +107,10 @@ final class MoneyTransferViewController: BaseViewController<MoneyTransferPresent
         self.continButton.snp.makeConstraints { make in
             make.height.equalTo(56)
         }
+    }
+    
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
     }
     
     override func setupInitialData() {
