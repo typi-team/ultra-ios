@@ -523,7 +523,7 @@ private extension ConversationViewController {
             let controller = UIImagePickerController()
             controller.delegate = self
             controller.sourceType = type
-            controller.videoQuality = .typeMedium
+            controller.videoQuality = .typeHigh
             controller.mediaTypes = ["public.movie", "public.image"]
             controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
             self.present(controller, animated: true)
@@ -543,7 +543,7 @@ private extension ConversationViewController {
                     let controller = UIImagePickerController()
                     controller.delegate = self
                     controller.sourceType = type
-                    controller.videoQuality = .typeMedium
+                    controller.videoQuality = .typeHigh
                     controller.mediaTypes = ["public.movie", "public.image"]
                     controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
                     self.present(controller, animated: true)
@@ -553,7 +553,7 @@ private extension ConversationViewController {
             let controller = UIImagePickerController()
             controller.delegate = self
             controller.sourceType = type
-            controller.videoQuality = .typeMedium
+            controller.videoQuality = .typeHigh
             controller.mediaTypes = ["public.movie", "public.image"]
             controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
             self.present(controller, animated: true)

@@ -56,6 +56,10 @@ public class UltraCoreSettings {
 }
 
 public extension UltraCoreSettings {
+    
+    static var isConnected: Bool {
+        AppSettingsImpl.shared.updateRepository.isConnectedToListenStream
+    }
 
     static func update(contacts: [IContactInfo]) throws {
         try ContactDBService.update(contacts: contacts)

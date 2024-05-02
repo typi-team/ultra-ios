@@ -19,6 +19,9 @@ class ViewController: UITabBarController {
         self.setupView()
         self.setupVCs()
         
+        NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground(_:)), name: UIApplication.didEnterBackgroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(didEnterForeground(_:)), name: UIApplication.willEnterForegroundNotification, object: nil)
+        
         self.viewModel.setupSID(callback: {[weak self] error in
             guard let `self` = self else { return }
             DispatchQueue.main.async {
@@ -40,6 +43,18 @@ class ViewController: UITabBarController {
             }
         }
         
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    @objc func didEnterBackground(_ sender: Any) {
+        UltraCoreSettings.stopSession()
+    }
+
+    @objc func didEnterForeground(_ sender: Any) {
+        UltraCoreSettings.updateSession(callback: { _ in })
     }
     
 }

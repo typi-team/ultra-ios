@@ -127,6 +127,10 @@ class BaseMessageCell: BaseCell {
         }
         if let message = message {
             if message.isIncome {
+                self.textView.hyperlinkAttributes = [
+                    .foregroundColor: UltraCoreStyle.incomeMessageCell?.linkColor.color ?? .systemBlue,
+                    .underlineStyle: NSUnderlineStyle.single.rawValue
+                ]
                 self.container.backgroundColor = UltraCoreStyle.incomeMessageCell?.backgroundColor.color
                 self.deliveryDateLabel.font = UltraCoreStyle.incomeMessageCell?.deliveryLabelConfig.font
                 self.deliveryDateLabel.textColor = UltraCoreStyle.incomeMessageCell?.deliveryLabelConfig.color
@@ -141,6 +145,10 @@ class BaseMessageCell: BaseCell {
                     )
                 )
             } else {
+                self.textView.hyperlinkAttributes = [
+                    .foregroundColor: UltraCoreStyle.outcomeMessageCell?.linkColor.color ?? .systemBlue,
+                    .underlineStyle: NSUnderlineStyle.single.rawValue
+                ]
                 self.container.backgroundColor = UltraCoreStyle.outcomeMessageCell?.backgroundColor.color
                 
                 self.deliveryDateLabel.font = UltraCoreStyle.outcomeMessageCell?.deliveryLabelConfig.font
