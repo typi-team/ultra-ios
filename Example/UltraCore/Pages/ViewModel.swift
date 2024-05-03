@@ -209,7 +209,7 @@ extension ViewModel: UltraCoreSettingsDelegate {
         }
     }
     
-    func didTapTransactionCell(transactionID: String) {
+    func didTapTransactionCell(transactionID: String, viewController: UIViewController) {
         
     }
 

@@ -38,7 +38,7 @@ public protocol UltraCoreSettingsDelegate: AnyObject {
         transferCallback: @escaping MoneyCallback
     )
     func realmEncryptionKeyData() -> Data?
-    func didTapTransactionCell(transactionID: String)
+    func didTapTransactionCell(transactionID: String, viewController: UIViewController)
 }
 
 extension UltraCoreSettingsDelegate {

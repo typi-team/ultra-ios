@@ -141,7 +141,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                         UIApplication.shared.open(url, options: [:], completionHandler: nil)
                     }
                 case .money(let moneyMessage):
-                    UltraCoreSettings.delegate?.didTapTransactionCell(transactionID: moneyMessage.transactionID)
+                    UltraCoreSettings.delegate?.didTapTransactionCell(transactionID: moneyMessage.transactionID, viewController: self)
                 case .voice:
                     break
                 default:
