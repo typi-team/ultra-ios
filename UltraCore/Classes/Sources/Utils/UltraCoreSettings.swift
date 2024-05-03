@@ -57,6 +57,8 @@ public class UltraCoreSettings {
 
 public extension UltraCoreSettings {
     
+    private static var isUpdatingSession: Bool = false
+    
     static var isConnected: Bool {
         AppSettingsImpl.shared.updateRepository.isConnectedToListenStream
     }
@@ -105,6 +107,9 @@ public extension UltraCoreSettings {
     }
 
     static func updateSession(callback: @escaping (Error?) -> Void) {
+        guard !isUpdatingSession else {
+            return
+        }
         let tokenWork = Observable<String>.create { observer in
             Self.delegate?.token(callback: { result in
                 switch result {
@@ -117,17 +122,20 @@ public extension UltraCoreSettings {
             })
             return Disposables.create()
         }
+        isUpdatingSession = true
         tokenWork
             .retry(when: { errors in
                 return errors.enumerated().flatMap { (attempt, error) -> Observable<Int> in
                     let maxAttempts = 20
                     if attempt > maxAttempts {
+                        isUpdatingSession = false
                         return Observable.error(error)
                     }
                     return Observable<Int>.timer(.seconds(5), scheduler: MainScheduler.instance)
                 }
             })
             .subscribe { token in
+                isUpdatingSession = false
                 Self.update(sid: token, with: callback)
             }
             .disposed(by: disposeBag)
