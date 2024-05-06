@@ -38,6 +38,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         $0.backgroundColor = UltraCoreStyle.divederColor?.color
     })
     
+    var paginationWorkItem: DispatchWorkItem?
+    
     private lazy var tableView: UITableView = .init {[weak self] tableView in
         guard let `self` = self else { return }
         tableView.separatorStyle = .none
@@ -316,8 +318,13 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         guard let cell = self.tableView.visibleCells.first as? BaseMessageCell,
               let seqNumber = cell.message?.seqNumber,
               seqNumber > 1 else { return }
-        tableView.contentInset = UIEdgeInsets(top: 40, left: 0, bottom: 0, right: 0)
-        spinner.startAnimating()
+        let requestWorkItem = DispatchWorkItem { [weak self] in
+            self?.tableView.contentInset = UIEdgeInsets(top: 40, left: 0, bottom: 0, right: 0)
+            self?.spinner.startAnimating()
+        }
+        paginationWorkItem = requestWorkItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(500),
+                                      execute: requestWorkItem)
         self.presenter?.loadMoreMessages(maxSeqNumber: seqNumber)
     }
     
@@ -416,16 +423,12 @@ extension ConversationViewController: ConversationViewInterface {
     
     
     func stopRefresh(removeController: Bool) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            guard let self = self else {
-                return
-            }
-            self.spinner.stopAnimating()
-            let topInset = max(0, self.tableView.contentInset.top - 40.0)
-            var newInset = self.tableView.contentInset
-            newInset.top = topInset
-            self.tableView.contentInset = newInset
-        }
+        paginationWorkItem?.cancel()
+        self.spinner.stopAnimating()
+        let topInset = max(0, self.tableView.contentInset.top - 40.0)
+        var newInset = self.tableView.contentInset
+        newInset.top = topInset
+        self.tableView.contentInset = newInset
         self.refreshControl.endRefreshing()
         if(removeController) {
             self.refreshControl.removeFromSuperview()

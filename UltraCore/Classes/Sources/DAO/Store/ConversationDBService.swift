@@ -289,7 +289,7 @@ class ConversationDBService {
                     let messages = realm.objects(DBMessage.self).where({$0.receiver.chatID == id })
                     messages.forEach({ realm.delete($0)})
                 })
-                
+                UnreadMessagesService.updateUnreadMessagesCount()
             } catch {
                 observer(.failure(error))
             }
