@@ -305,8 +305,14 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.messageInputBar.endEditing(true)
     }
     
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        UltraCoreSettings.delegate?.activeConversationID = nil
+    }
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+        UltraCoreSettings.delegate?.activeConversationID = self.presenter?.conversation.idintification
         guard let cell = self.tableView.visibleCells.first as? BaseMessageCell,
               let seqNumber = cell.message?.seqNumber,
               seqNumber > 1 else { return }

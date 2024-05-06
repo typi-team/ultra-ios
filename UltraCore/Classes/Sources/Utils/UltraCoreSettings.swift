@@ -19,6 +19,7 @@ public protocol UltraCoreFutureDelegate: AnyObject {
 }
 
 public protocol UltraCoreSettingsDelegate: AnyObject {
+    var activeConversationID: String? { get set }
     func emptyConversationView() -> UIView?
     func emptyConversationDetailView() -> UIView?
     func info(from id: String) -> IContactInfo?
