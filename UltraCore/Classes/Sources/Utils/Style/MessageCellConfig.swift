@@ -41,6 +41,11 @@ public protocol VideoFotoCellConfig  {
     var readImage: TwiceImage? { get set }
 }
 
+public protocol VoiceMessageCellConfig {
+    var minimumTrackTintColor: TwiceColor { get set }
+    var maximumTrackTintColor: TwiceColor { get set }
+}
+
 public protocol HeaderInSectionConfig {
     var labelConfig: LabelConfig { get set }
     var backgroundColor: TwiceColor { get set }

@@ -76,6 +76,8 @@ public class UltraCoreStyle {
     public static var incomeMessageCell: MessageCellConfig? = IncomeMessageCellConfigImpl()
     public static var outcomeMessageCell: OutcomingMessageCellConfig? = OutcomeMessageCellConfigImpl()
     public static var videoFotoMessageCell: VideoFotoCellConfig?
+    public static var incomeVoiceMessageCell: VoiceMessageCellConfig? = IncomeVoiceMessageCellConfigImpl()
+    public static var outcomeVoiceMessageCell: VoiceMessageCellConfig? = OutcomeVoiceMessageCellConfigImpl()
 //    MARK: Date header
     public static var headerInSection: HeaderInSectionConfig? = HeaderInSectionConfigImpl()
 //    MARK: Conversation Profile header
@@ -248,5 +250,27 @@ private class ConversationScreenStyleConfigImpl: ConversationScreenStyleConfig {
     var loaderTintColor: TwiceColor = TwiceColorImpl(
         defaultColor: .black,
         darkColor: .black
+    )
+}
+
+private class IncomeVoiceMessageCellConfigImpl: VoiceMessageCellConfig {
+    var minimumTrackTintColor: TwiceColor = TwiceColorImpl(
+        defaultColor: .baseBlue,
+        darkColor: .baseBlue
+    )
+    var maximumTrackTintColor: TwiceColor = TwiceColorImpl(
+        defaultColor: .from(hex: "#B7BCC5"),
+        darkColor: .from(hex: "#B7BCC5")
+    )
+}
+
+private class OutcomeVoiceMessageCellConfigImpl: VoiceMessageCellConfig {
+    var minimumTrackTintColor: TwiceColor = TwiceColorImpl(
+        defaultColor: .white,
+        darkColor: .white
+    )
+    var maximumTrackTintColor: TwiceColor = TwiceColorImpl(
+        defaultColor: .from(hex: "#BFDBFE"),
+        darkColor: .from(hex: "#BFDBFE")
     )
 }

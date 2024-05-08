@@ -65,7 +65,7 @@ class VoiceRepository: NSObject {
         )
     }
 
-    func play(message: Message, atTime: TimeInterval = .zero) {
+    func play(message: Message, atTime: TimeInterval = .zero, isNeedPause: Bool = false) {
         guard let soundURL = self.mediaUtils.mediaURL(from: message) else { return }
         do {
             self.stop()
@@ -80,6 +80,10 @@ class VoiceRepository: NSObject {
             self.timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(updateTime), userInfo: nil, repeats: true)
             runTimerOnRunLoop()
             self.audioPlayer = audioPlayer
+            if isNeedPause {
+                self.audioPlayer?.pause()
+                self.timer?.invalidate()
+            }
             self.currentVoice.on(
                 .next(.init(voiceMessage: message.voice, currentTime: atTime, isPlaying: audioPlayer.isPlaying))
             )

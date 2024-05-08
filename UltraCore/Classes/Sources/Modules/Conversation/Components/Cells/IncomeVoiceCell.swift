@@ -14,6 +14,8 @@ import SDWebImage
 
 class IncomeVoiceCell: MediaCell {
     
+    fileprivate var style: VoiceMessageCellConfig? = UltraCoreStyle.incomeVoiceMessageCell
+    
     fileprivate let playImage: UIImage? = .named("conversation_play_sound_icon")
     fileprivate let pauseImage: UIImage? = .named("conversation_pause_sound_icon")
 
@@ -22,15 +24,23 @@ class IncomeVoiceCell: MediaCell {
     fileprivate var isInSeekMessage: Message?
     
     fileprivate lazy var slider: UISlider = .init({
-        $0.addTarget(self, action: #selector(self.seekTo(_:)), for: [.touchUpInside, .touchUpOutside, .touchDragExit])
+        $0.addTarget(self, action: #selector(self.seekTo(_:)), for: [.touchUpInside, .touchUpOutside])
         $0.addTarget(self, action: #selector(self.beginSeek(_:)), for: .touchDown)
         $0.setThumbImage(.named("conversation.thumbImage"), for: .normal)
+        $0.tintColor = style?.minimumTrackTintColor.color
+        $0.minimumTrackTintColor = style?.minimumTrackTintColor.color
+        $0.maximumTrackTintColor = style?.maximumTrackTintColor.color
+        
         
     })
-    fileprivate let durationLabel: RegularFootnote = .init({ $0.text = "10.00₸" })
+    fileprivate lazy var durationLabel: RegularFootnote = .init({
+        $0.textColor = style?.maximumTrackTintColor.color
+        $0.text = 0.0.description
+    })
     
     fileprivate lazy var controllerView: UIButton = .init({
         $0.setImage(playImage, for: .normal)
+        $0.tintColor = style?.minimumTrackTintColor.color
         $0.addAction {[weak self] in
             guard let `self` = self, let message = self.message else { return }
             let fileID = try? self.voiceRepository.currentVoice.value()?.voiceMessage.fileID
@@ -143,7 +153,7 @@ class IncomeVoiceCell: MediaCell {
         guard let message = self.message else { return }
         self.isInSeekMessage = nil
         let value = TimeInterval(sender.value) * message.voice.duration.timeInterval
-        self.voiceRepository.play(message: message, atTime: value)
+        self.voiceRepository.play(message: message, atTime: value, isNeedPause: !self.voiceRepository.isPlaying)
     }
     
     @objc private func beginSeek(_ sender: UISlider) {
@@ -208,6 +218,7 @@ class OutcomeVoiceCell: IncomeVoiceCell {
     
     
     override func setupView() {
+        self.style = UltraCoreStyle.outcomeVoiceMessageCell
         super.setupView()
         self.container.addSubview(statusView)
     }
