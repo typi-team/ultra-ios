@@ -70,8 +70,6 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
     
     override func setupInitialData() {
         
-        NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground(_:)), name: UIApplication.didEnterBackgroundNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(didEnterForeground(_:)), name: UIApplication.willEnterForegroundNotification, object: nil)
         self.presenter?.conversation
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
@@ -132,12 +130,3 @@ extension ConversationsViewController {
 }
 
 extension ConversationsViewController: ConversationsViewInterface {}
-extension ConversationsViewController {
-    @objc func didEnterBackground(_ sender: Any) {
-        self.presenter?.stopPingPong()
-    }
-
-    @objc func didEnterForeground(_ sender: Any) {
-        self.presenter?.startPingPong()
-    }
-}

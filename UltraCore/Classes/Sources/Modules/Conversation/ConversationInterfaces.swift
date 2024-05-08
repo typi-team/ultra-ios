@@ -30,6 +30,7 @@ protocol ConversationViewInterface: ViewInterface {
 }
 
 protocol ConversationPresenterInterface: PresenterInterface {
+    var conversation: Conversation { get set }
     func block()
     func viewDidLoad()
     func isBlock() -> Bool

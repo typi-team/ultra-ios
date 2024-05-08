@@ -19,6 +19,7 @@ public protocol UltraCoreFutureDelegate: AnyObject {
 }
 
 public protocol UltraCoreSettingsDelegate: AnyObject {
+    var activeConversationID: String? { get set }
     func emptyConversationView() -> UIView?
     func emptyConversationDetailView() -> UIView?
     func info(from id: String) -> IContactInfo?
@@ -32,8 +33,13 @@ public protocol UltraCoreSettingsDelegate: AnyObject {
     func disclaimerDescriptionFor(contact: String) -> String
     func tokenUpdated()
     func unreadMessagesUpdated(count: Int)
-    func provideTransferScreen(for userID: String, viewController: UIViewController, transferCallback: MoneyCallback)
+    func provideTransferScreen(
+        for userID: String,
+        viewController: UIViewController,
+        transferCallback: @escaping MoneyCallback
+    )
     func realmEncryptionKeyData() -> Data?
+    func didTapTransactionCell(transactionID: String, viewController: UIViewController)
 }
 
 extension UltraCoreSettingsDelegate {
@@ -51,6 +57,12 @@ public class UltraCoreSettings {
 }
 
 public extension UltraCoreSettings {
+    
+    private static var isUpdatingSession: Bool = false
+    
+    static var isConnected: Bool {
+        AppSettingsImpl.shared.updateRepository.isConnectedToListenStream
+    }
 
     static func update(contacts: [IContactInfo]) throws {
         try ContactDBService.update(contacts: contacts)
@@ -96,6 +108,9 @@ public extension UltraCoreSettings {
     }
 
     static func updateSession(callback: @escaping (Error?) -> Void) {
+        guard !isUpdatingSession else {
+            return
+        }
         let tokenWork = Observable<String>.create { observer in
             Self.delegate?.token(callback: { result in
                 switch result {
@@ -108,17 +123,20 @@ public extension UltraCoreSettings {
             })
             return Disposables.create()
         }
+        isUpdatingSession = true
         tokenWork
             .retry(when: { errors in
                 return errors.enumerated().flatMap { (attempt, error) -> Observable<Int> in
                     let maxAttempts = 20
                     if attempt > maxAttempts {
+                        isUpdatingSession = false
                         return Observable.error(error)
                     }
                     return Observable<Int>.timer(.seconds(5), scheduler: MainScheduler.instance)
                 }
             })
             .subscribe { token in
+                isUpdatingSession = false
                 Self.update(sid: token, with: callback)
             }
             .disposed(by: disposeBag)

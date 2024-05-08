@@ -16,6 +16,14 @@ public struct MoneyTransfer {
     let transactionID: String
     let reception: String
     let status: Int
+    
+    public init(amout: Int64, currency: String, transactionID: String, reception: String, status: Int) {
+        self.amout = amout
+        self.currency = currency
+        self.transactionID = transactionID
+        self.reception = reception
+        self.status = status
+    }
 }
 
 public typealias MoneyCallback = (MoneyTransfer) -> Void

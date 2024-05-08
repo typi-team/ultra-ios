@@ -19,6 +19,7 @@ protocol UpdateRepository: AnyObject {
     func readAll(in conversation: Conversation)
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> { get set }
     var updateSyncObservable: Observable<Void> { get }
+    var isConnectedToListenStream: Bool { get }
 }
 
 class UpdateRepositoryImpl {
@@ -27,6 +28,7 @@ class UpdateRepositoryImpl {
     var updateSyncObservable: Observable<Void> {
         updateSyncSubject.asObservable().share(replay: 1)
     }
+    var isConnectedToListenStream: Bool = false
     
     fileprivate let disposeBag = DisposeBag()
     fileprivate let appStore: AppSettingsStore
@@ -83,6 +85,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
         self.pintPongTimer?.invalidate()
         self.updateListenStream?.cancel(promise: nil)
         self.contactService.updateContact(status: .unknown)
+        self.isConnectedToListenStream = false
     }
     
     func retreiveContactStatuses() {
@@ -172,6 +175,7 @@ private extension UpdateRepositoryImpl {
     func setupChangesSubscription(with state: UInt64) {
         PP.debug("Setting up change subscription with state - \(state)")
         let state: ListenRequest = .with { $0.localState = .with { $0.state = state } }
+        self.isConnectedToListenStream = true
         self.updateListenStream = updateClient.listen(state, callOptions: .default(include: false)) { [weak self] response in
             guard let `self` = self else { return }
             response.updates.forEach { update in
@@ -185,6 +189,7 @@ private extension UpdateRepositoryImpl {
             self.appStore.store(last: max(Int64(response.lastState), self.appStore.lastState))
         }
         updateListenStream?.status.whenComplete { status in
+            self.isConnectedToListenStream = false
             switch status {
             case .success(let response):
                 PP.debug("Update listen stream is completed with code - \(response.code); isOk - \(response.isOk); message - \(response.message); cause - \(response.cause)")

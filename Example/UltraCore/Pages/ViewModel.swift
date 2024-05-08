@@ -30,6 +30,12 @@ class ViewModel {
     fileprivate var timerUpdate: Timer?
     private let disposeBag = DisposeBag()
     
+    var activeConversationID: String? {
+        didSet {
+            (UIApplication.shared.delegate as? AppDelegate)?.activeConversationID = activeConversationID
+        }
+    }
+    
     var onUnreadMessagesUpdated: ((Int) -> Void)?
 
     func viewDidLoad() {
@@ -98,7 +104,8 @@ extension ViewModel: UltraCoreFutureDelegate {
 }
 
 extension ViewModel: UltraCoreSettingsDelegate {
-    func provideTransferScreen(for userID: String, viewController: UIViewController, transferCallback: (UltraCore.MoneyTransfer) -> Void) {
+        
+    func provideTransferScreen(for userID: String, viewController: UIViewController, transferCallback: @escaping (UltraCore.MoneyTransfer) -> Void) {
         
     }
     
@@ -198,6 +205,10 @@ extension ViewModel: UltraCoreSettingsDelegate {
     
     func realmEncryptionKeyData() -> Data? {
         return nil
+    }
+    
+    func didTapTransactionCell(transactionID: String, viewController: UIViewController) {
+        
     }
 
 }
