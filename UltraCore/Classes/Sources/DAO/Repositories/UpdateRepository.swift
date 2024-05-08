@@ -109,7 +109,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
                     }, onFailure: {error in
                         PP.error("Ping pong is called with error \(error.localeError)")
                     })
-                    .disposed(by: disposeBag)
+                    .disposed(by: self.disposeBag)
             }
         }
     }

@@ -42,24 +42,24 @@ extension IncomingCallViewController: IncomingCallViewInterface {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
             if remote?.isCameraEnabled() ?? false && local?.isCameraEnabled() ?? false {
-                remoteVideoView.track = remote?.videoTracks.first?.track as? VideoTrack
-                localVideoView.track = local?.videoTracks.first?.track as? VideoTrack
-                remoteVideoView.isHidden = false
-                localVideoView.isHidden = false
-                remakeInfoViewConstraints(isVideo: true)
-                actionStackView.setAsActiveCamera()
+                self.remoteVideoView.track = remote?.videoTracks.first?.track as? VideoTrack
+                self.localVideoView.track = local?.videoTracks.first?.track as? VideoTrack
+                self.remoteVideoView.isHidden = false
+                self.localVideoView.isHidden = false
+                self.remakeInfoViewConstraints(isVideo: true)
+                self.actionStackView.setAsActiveCamera()
             } else {
                 if local?.isCameraEnabled() ?? false {
-                    remoteVideoView.track = local?.videoTracks.first?.track as? VideoTrack
-                    remoteVideoView.isHidden = false
-                    localVideoView.isHidden = true
-                    remakeInfoViewConstraints(isVideo: true)
-                    actionStackView.setAsActiveCamera()
+                    self.remoteVideoView.track = local?.videoTracks.first?.track as? VideoTrack
+                    self.remoteVideoView.isHidden = false
+                    self.localVideoView.isHidden = true
+                    self.remakeInfoViewConstraints(isVideo: true)
+                    self.actionStackView.setAsActiveCamera()
                 } else {
-                    remoteVideoView.isHidden = true
-                    localVideoView.isHidden = true
-                    remakeInfoViewConstraints(isVideo: false)
-                    actionStackView.setAsActiveAudio()
+                    self.remoteVideoView.isHidden = true
+                    self.localVideoView.isHidden = true
+                    self.remakeInfoViewConstraints(isVideo: false)
+                    self.actionStackView.setAsActiveAudio()
                 }
             }
         }
@@ -68,8 +68,8 @@ extension IncomingCallViewController: IncomingCallViewInterface {
     func updateForStartCall() {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            infoView.hidePhoneNumber()
-            subscribeToTimer()
+            self.infoView.hidePhoneNumber()
+            self.subscribeToTimer()
         }
     }
     
@@ -98,10 +98,10 @@ extension IncomingCallViewController: IncomingCallViewInterface {
                 DispatchQueue.main.async { [weak self] in
                     guard let self else { return }
                     if granted {
-                        presenter?.setCamera(enabled: enabled)
-                        remakeInfoViewConstraints(isVideo: enabled)
+                        self.presenter?.setCamera(enabled: enabled)
+                        self.remakeInfoViewConstraints(isVideo: enabled)
                     } else {
-                        deniedCameraPermission()
+                        self.deniedCameraPermission()
                     }
                 }
             }
@@ -121,9 +121,9 @@ extension IncomingCallViewController: IncomingCallViewInterface {
                 DispatchQueue.main.async { [weak self] in
                     guard let self else { return }
                     if granted {
-                        presenter?.setMicrophone(enabled: enabled)
+                        self.presenter?.setMicrophone(enabled: enabled)
                     } else {
-                        actionStackView.microButton.isSelected = false
+                        self.actionStackView.microButton.isSelected = false
                     }
                 }
             }

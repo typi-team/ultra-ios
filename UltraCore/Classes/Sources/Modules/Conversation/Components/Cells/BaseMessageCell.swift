@@ -192,17 +192,17 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
             guard let `self` = self else { return nil }
             var action: [UIAction] = []
             if  !message.hasAttachment {
-                action.append(UIAction(title: MessageStrings.copy.localized, image: messageStyle.copy?.image) { _ in
+                action.append(UIAction(title: MessageStrings.copy.localized, image: self.messageStyle.copy?.image) { _ in
                     self.longTapCallback?(.copy(message))
                 })
             }
             
-            action.append(UIAction(title: MessageStrings.delete.localized, image: messageStyle.delete?.image, attributes: .destructive) { _ in
+            action.append(UIAction(title: MessageStrings.delete.localized, image: self.messageStyle.delete?.image, attributes: .destructive) { _ in
                 self.cellActionCallback?()
                 self.longTapCallback?(.delete(message))
             })
 
-            let select = UIAction(title: MessageStrings.select.localized, image: messageStyle.select?.image) { _ in
+            let select = UIAction(title: MessageStrings.select.localized, image: self.messageStyle.select?.image) { _ in
                 self.cellActionCallback?()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.7, execute: {
                     self.longTapCallback?(.select(message))

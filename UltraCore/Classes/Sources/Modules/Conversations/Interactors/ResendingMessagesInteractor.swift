@@ -85,7 +85,7 @@ final class ResendingMessagesInteractor: UseCase<Void, Void> {
                 }
                 return self.messageRepository.update(message: message)
             })
-            .flatMap({ [weak self] result in
+            .flatMap({ [weak self] (result: Bool) in
                 self?.resendFiles(messages: messages, index: index + 1, onCompletion: onCompletion)
                 return Single.just(result)
             })

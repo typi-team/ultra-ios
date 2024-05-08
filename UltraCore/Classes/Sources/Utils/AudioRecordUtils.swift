@@ -36,7 +36,7 @@ class AudioRecordUtils: NSObject {
             AVAudioSession.sharedInstance().requestRecordPermission { [weak self] granted in
                 guard let self, granted else { return }
                 
-                startRecordingAudio()
+                self.startRecordingAudio()
             }
         @unknown default: break
         }

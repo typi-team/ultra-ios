@@ -201,7 +201,7 @@ extension IncomingCallPresenter: RoomManagerDelegate {
     func didConnectToRoom() {
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
-            if case .incoming = callStatus {
+            if case .incoming = self.callStatus {
                 RoomManager.shared.startCallTimer()
             }
             self.view.showConnectedRoom(with: self.callStatus)

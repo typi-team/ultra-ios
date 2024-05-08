@@ -57,12 +57,12 @@ final class ConversationPresenter {
             Observable.from(messages)
                 .flatMap { [weak self] message in
                     guard let self else { throw NSError.selfIsNill }
-                    return mediaRepository.download(from: message)
+                    return self.mediaRepository.download(from: message)
                 }
                 .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
                 .observe(on: MainScheduler.instance)
                 .subscribe()
-                .disposed(by: disposeBag)
+                .disposed(by: self.disposeBag)
         })
 
     // MARK: - Lifecycle -
@@ -247,11 +247,11 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .createIfNotExist(from: message)
             .flatMap({ [weak self] in
                 guard let self else { throw NSError.selfIsNill }
-                return messageRepository.save(message: message)
+                return self.messageRepository.save(message: message)
             })
             .flatMap({ [weak self] in
                 guard let self else { throw NSError.selfIsNill }
-                return messageSenderInteractor.executeSingle(params: params)
+                return self.messageSenderInteractor.executeSingle(params: params)
             })
             .flatMap({ [weak self] (response: MessageSendResponse) in
                 guard let self else { throw NSError.selfIsNill }
@@ -259,7 +259,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 message.state.delivered = false
                 message.state.read = false
                 message.seqNumber = response.seqNumber
-                return messageRepository.update(message: message)
+                return self.messageRepository.update(message: message)
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
@@ -304,7 +304,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 message.state.delivered = false
                 message.state.read = false
                 message.seqNumber = response.seqNumber
-                return messageRepository.update(message: message)
+                return self.messageRepository.update(message: message)
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
@@ -357,11 +357,11 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 .createIfNotExist(from: message)
                 .flatMap({ [weak self] in
                     guard let self else { throw NSError.selfIsNill }
-                    return messageRepository.save(message: message)
+                    return self.messageRepository.save(message: message)
                 })
                 .flatMap({ [weak self] in
                     guard let self else { throw NSError.selfIsNill }
-                    return messageSenderInteractor.executeSingle(params: params)
+                    return self.messageSenderInteractor.executeSingle(params: params)
                 })
                 .flatMap({ [weak self] (response: MessageSendResponse) in
                     guard let self else { throw NSError.selfIsNill }
@@ -369,14 +369,14 @@ extension ConversationPresenter: ConversationPresenterInterface {
                     message.state.delivered = false
                     message.state.read = false
                     message.seqNumber = response.seqNumber
-                    return messageRepository.update(message: message)
+                    return self.messageRepository.update(message: message)
                 })
                 .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
                 .observe(on: MainScheduler.instance)
                 .subscribe(onSuccess: { [weak self] _ in
                     self?.playSentMessageSound()
                 })
-                .disposed(by: disposeBag)
+                .disposed(by: self.disposeBag)
         })
     }
     
@@ -424,19 +424,19 @@ extension ConversationPresenter: ConversationPresenterInterface {
             )
             .flatMap({ [weak self] request in
                 guard let self else { throw NSError.selfIsNill }
-                return messageSenderInteractor.executeSingle(params: request)
+                return self.messageSenderInteractor.executeSingle(params: request)
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { [weak self] response in
-                guard let self, var message = messageRepository.message(id: response.messageID) else {
+                guard let self, var message = self.messageRepository.message(id: response.messageID) else {
                     return
                 }
 
                 message.meta.created = response.meta.created
                 message.seqNumber = response.seqNumber
-                update(message: message)
-                playSentMessageSound()
+                self.update(message: message)
+                self.playSentMessageSound()
             },
                        onFailure: { error in PP.debug(error.localizedDescription)
             })
@@ -485,7 +485,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .observe(on: MainScheduler.instance)
             .map { [weak self] users -> UserTypingWithDate? in
                 guard let self else { return nil }
-                return users[conversation.idintification]
+                return users[self.conversation.idintification]
             }
             .compactMap { $0 }
             .subscribe (onNext: { [weak self] typingUser in
@@ -499,8 +499,8 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 guard let self else { return }
                 let unreadMessages = messages.filter({ $0.sender.userID != self.appStore.userID() }).filter({ $0.state.read == false })
                 guard let lastUnreadMessage = unreadMessages.last else { return }
-                updateRepository.readAll(in: self.conversation)
-                readMessageInteractor.executeSingle(params: lastUnreadMessage)
+                self.updateRepository.readAll(in: self.conversation)
+                self.readMessageInteractor.executeSingle(params: lastUnreadMessage)
                     .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
                     .subscribe()
                     .disposed(by: self.disposeBag)
@@ -547,11 +547,11 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .createIfNotExist(from: message)
             .flatMap({ [weak self] in
                 guard let self else { throw NSError.selfIsNill }
-                return messageRepository.save(message: message)
+                return self.messageRepository.save(message: message)
             })
             .flatMap({ [weak self] in
                 guard let self else { throw NSError.selfIsNill }
-                return messageSenderInteractor.executeSingle(params: params)
+                return self.messageSenderInteractor.executeSingle(params: params)
             })
             .flatMap({ [weak self] (response: MessageSendResponse) in
                 guard let self else { throw NSError.selfIsNill }
@@ -559,7 +559,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 message.state.delivered = false
                 message.state.read = false
                 message.seqNumber = response.seqNumber
-                return messageRepository.update(message: message)
+                return self.messageRepository.update(message: message)
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
@@ -616,11 +616,11 @@ extension ConversationPresenter: ConversationPresenterInterface {
                     .createIfNotExist(from: message)
                     .flatMap({ [weak self] in
                         guard let self else { throw NSError.selfIsNill }
-                        return messageRepository.save(message: message)
+                        return self.messageRepository.save(message: message)
                     })
                     .flatMap({ [weak self] in
                         guard let self else { throw NSError.selfIsNill }
-                        return messageSenderInteractor.executeSingle(params: params)
+                        return self.messageSenderInteractor.executeSingle(params: params)
                     })
                     .flatMap({ [weak self] (response: MessageSendResponse) in
                         guard let self else { throw NSError.selfIsNill }
@@ -628,14 +628,14 @@ extension ConversationPresenter: ConversationPresenterInterface {
                         message.state.delivered = false
                         message.state.read = false
                         message.seqNumber = response.seqNumber
-                        return messageRepository.update(message: message)
+                        return self.messageRepository.update(message: message)
                     })
                     .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
                     .observe(on: MainScheduler.instance)
                     .subscribe(onSuccess: { [weak self] _ in
                         self?.playSentMessageSound()
                     })
-                    .disposed(by: disposeBag)
+                    .disposed(by: self.disposeBag)
             }
         )
     }
