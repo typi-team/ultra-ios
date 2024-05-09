@@ -9,6 +9,7 @@ import Foundation
 
 protocol AppSettingsStore {
     func userID() -> String
+    func deviceID() -> String
     func store(token: String)
     func store(userID: String)
     func store(last state: Int64)
@@ -25,6 +26,7 @@ class AppSettingsStoreImpl {
     fileprivate let kSID = "kSSID"
     fileprivate let kUserID = "kUserID"
     fileprivate let kLastState = "kLastState"
+    fileprivate let kDeviceID = "kDeviceID"
     fileprivate let userDefault = UserDefaults(suiteName: "com.ultaCore.messenger")
     
     var ssid: String?
@@ -47,6 +49,16 @@ extension AppSettingsStoreImpl: AppSettingsStore {
             fatalError("call store(userID:) before call this function")
         }
         return token
+    }
+    
+    func deviceID() -> String {
+        guard let deviceID = self.userDefault?.string(forKey: kDeviceID) else {
+            let deviceID = UUID().uuidString
+            self.userDefault?.set(deviceID, forKey: kDeviceID)
+            return deviceID
+        }
+        
+        return deviceID
     }
     
     func store(userID: String) {

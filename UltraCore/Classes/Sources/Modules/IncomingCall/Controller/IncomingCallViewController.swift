@@ -153,7 +153,7 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
     
     func setSpeaker(_ isEnabled: Bool) {
         PP.debug("[CALL] Set speaker enabled - \(isEnabled)")
-        AudioManager.shared.preferSpeakerOutput = isEnabled
+        AudioManager.shared.isSpeakerOutputPreferred = isEnabled
     }
     
     @objc private func didTapBack() {

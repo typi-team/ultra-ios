@@ -245,6 +245,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 guard let `self` = self else { return }
                 switch result {
                 case let .success(response):
+                    PP.debug("[CALL] create call response - \(response.host), \(response.room), \(response.accessToken)")
                     DispatchQueue.main.async {
                         self.wireframe.navigateToCall(response: response, isVideo: video)
                     }

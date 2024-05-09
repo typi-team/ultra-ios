@@ -46,24 +46,26 @@ final class RoomManager {
     
     func connectRoom(with callInfo: CallInformation, completion: @escaping((Error?) -> Void)) {
         self.callInfo = callInfo
-        room.connect(callInfo.host, callInfo.accessToken).then { [weak self] room in
-            self?.roomManagerDelegate?.didConnectToRoom()
-            completion(nil)
-        }.catch { [weak self] error in
-            PP.error("[CALL] Error on connecting room - \(error.localizedDescription)")
-            self?.roomManagerDelegate?.didFailToConnectToRoom()
-            completion(error)
+        Task {
+            do {
+                try await room.connect(url: callInfo.host, token: callInfo.accessToken)
+                roomManagerDelegate?.didConnectToRoom()
+                completion(nil)
+            } catch {
+                PP.error("[CALL] Error on connecting room - \(error.localizedDescription)")
+                roomManagerDelegate?.didFailToConnectToRoom()
+                completion(error)
+            }
         }
     }
     
     func disconnectRoom() {
         stopCallTimer()
         PP.debug("[CALL] Disconnecting room with state - \(room.connectionState.desctiption)")
-        room.disconnect().then { [weak self] _ in
-            self?.callInfo = nil
-            self?.roomManagerDelegate?.didDisconnectFromRoom()
-        }.catch { error in
-            PP.error("[CALL] Error on disconnecting room - \(error.localizedDescription)")
+        Task {
+            await room.disconnect()
+            callInfo = nil
+            roomManagerDelegate?.didDisconnectFromRoom()
         }
     }
     
@@ -73,11 +75,10 @@ final class RoomManager {
             return
         }
         stopCallTimer()
-        self.room.disconnect().then { [weak self] _ in
-            self?.callInfo = nil
-            self?.roomManagerDelegate?.didDisconnectFromRoom()
-        }.catch { error in
-            PP.error("[CALL] Error on disconnecting room - \(error.localizedDescription)")
+        Task {
+            await self.room.disconnect()
+            callInfo = nil
+            roomManagerDelegate?.didDisconnectFromRoom()
         }
     }
     
