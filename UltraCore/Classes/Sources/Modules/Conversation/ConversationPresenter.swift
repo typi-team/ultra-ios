@@ -470,6 +470,15 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .disposed(by: disposeBag)
     }
     
+    func loadIfFirstTime(seqNumber: UInt64) -> Bool {
+        guard !appStore.loadState(for: conversation.idintification) else {
+            return false
+        }
+        
+        appStore.saveLoadState(for: conversation.idintification)
+        loadMoreMessages(maxSeqNumber: seqNumber)
+        return true
+    }
     
     func viewDidLoad() {
         subscribeToVisibility()

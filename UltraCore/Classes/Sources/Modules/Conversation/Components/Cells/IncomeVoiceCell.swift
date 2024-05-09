@@ -180,7 +180,6 @@ class IncomeVoiceCell: MediaCell {
         let duration = voice.voiceMessage.duration.timeInterval.rounded(.down)
         let value = (voice.currentTime / duration)
         let remainder = voice.currentTime
-        PP.warning(remainder.description)
         self.durationLabel.text = remainder.formatSeconds
         self.slider.setValue(Float(value), animated: animated)
         self.controllerView.setImage(!voice.isPlaying ? self.playImage : self.pauseImage, for: .normal)

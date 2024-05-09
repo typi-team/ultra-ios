@@ -68,7 +68,6 @@ class VoiceRepository: NSObject {
     }
 
     func play(message: Message, atTime: TimeInterval = .zero, isNeedPause: Bool = false) {
-        PP.debug("[VOICE] attempt to play at - \(atTime)")
         guard let soundURL = self.mediaUtils.mediaURL(from: message) else { return }
         do {
             let shouldReset = atTime == .zero

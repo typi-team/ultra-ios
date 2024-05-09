@@ -38,8 +38,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         $0.backgroundColor = UltraCoreStyle.divederColor?.color
     })
     
-    var paginationWorkItem: DispatchWorkItem?
-    
     private lazy var tableView: UITableView = .init {[weak self] tableView in
         guard let `self` = self else { return }
         tableView.separatorStyle = .none
@@ -92,17 +90,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         imageView.contentMode = .scaleAspectFill
         imageView.image = UltraCoreStyle.conversationBackgroundImage?.image
     }
-    
-    private lazy var spinner: NVActivityIndicatorView = {
-        let spinner = NVActivityIndicatorView(
-            frame: CGRect(origin: .zero, size: .init(width: 30, height: 30)),
-            type: .circleStrokeSpin,
-            color: UltraCoreStyle.conversationScreenConfig.loaderTintColor.color,
-            padding: 0
-        )
-        spinner.translatesAutoresizingMaskIntoConstraints = false
-        return spinner
-    }()
 
    private lazy var dataSource = RxTableViewSectionedReloadDataSource<SectionModel<String, Message>>(
         configureCell: { [weak self] _, tableView, indexPath,
@@ -181,7 +168,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.view.addSubview(navigationDivider)
         self.view.addSubview(editInputBar)
         self.view.addSubview(voiceInputBar)
-        self.view.addSubview(spinner)
         
         self.navigationItem.leftItemsSupplementBackButton = true
         self.navigationItem.leftBarButtonItem = .init(customView: headline)
@@ -207,10 +193,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.messageInputBar.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(view.snp.bottom)
-        }
-        self.spinner.snp.makeConstraints {
-            $0.top.equalTo(navigationDivider.snp.bottom).offset(12)
-            $0.centerX.equalToSuperview()
         }
     }
     
@@ -314,18 +296,17 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        UltraCoreSettings.delegate?.activeConversationID = self.presenter?.conversation.idintification
-        guard let cell = self.tableView.visibleCells.first as? BaseMessageCell,
-              let seqNumber = cell.message?.seqNumber,
-              seqNumber > 1 else { return }
-        let requestWorkItem = DispatchWorkItem { [weak self] in
-            self?.tableView.contentInset = UIEdgeInsets(top: 40, left: 0, bottom: 0, right: 0)
-            self?.spinner.startAnimating()
+        guard let chatID = presenter?.conversation.idintification else {
+            return
         }
-        paginationWorkItem = requestWorkItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(500),
-                                      execute: requestWorkItem)
-        self.presenter?.loadMoreMessages(maxSeqNumber: seqNumber)
+        UltraCoreSettings.delegate?.activeConversationID = chatID
+        guard let cell = self.tableView.visibleCells.first as? BaseMessageCell,
+              let seqNumber = cell.message?.seqNumber else {
+            return
+        }
+        guard (presenter?.loadIfFirstTime(seqNumber: seqNumber) ?? false) && messages.count <= 1 else {
+            return
+        }
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -423,12 +404,6 @@ extension ConversationViewController: ConversationViewInterface {
     
     
     func stopRefresh(removeController: Bool) {
-        paginationWorkItem?.cancel()
-        self.spinner.stopAnimating()
-        let topInset = max(0, self.tableView.contentInset.top - 40.0)
-        var newInset = self.tableView.contentInset
-        newInset.top = topInset
-        self.tableView.contentInset = newInset
         self.refreshControl.endRefreshing()
         if(removeController) {
             self.refreshControl.removeFromSuperview()
