@@ -41,12 +41,14 @@ class VoiceRepository: NSObject {
         audioPlayer?.isPlaying ?? false
     }
     
-    func stop() {
+    func stop(shouldReset: Bool = true) {
         self.audioPlayer?.stop()
         self.audioPlayer = nil
-        self.currentVoice.on(.next(nil))
         self.timer?.invalidate()
         try? AVAudioSession.sharedInstance().setActive(false)
+        if shouldReset {
+            self.currentVoice.on(.next(nil))
+        }
     }
 
     func playPause() {
@@ -66,9 +68,11 @@ class VoiceRepository: NSObject {
     }
 
     func play(message: Message, atTime: TimeInterval = .zero, isNeedPause: Bool = false) {
+        PP.debug("[VOICE] attempt to play at - \(atTime)")
         guard let soundURL = self.mediaUtils.mediaURL(from: message) else { return }
         do {
-            self.stop()
+            let shouldReset = atTime == .zero
+            self.stop(shouldReset: shouldReset)
             try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
             try AVAudioSession.sharedInstance().setActive(true)
             let audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
@@ -93,6 +97,11 @@ class VoiceRepository: NSObject {
         }
     }
     
+    func stopTimer() {
+        timer?.invalidate()
+        timer = nil
+    }
+    
     private func runTimerOnRunLoop() {
         guard let timer else { return }
         
@@ -115,8 +124,11 @@ extension VoiceRepository: AVAudioPlayerDelegate {
 private extension VoiceRepository {
     @objc func updateTime() {
         guard let currentTime = self.audioPlayer?.currentTime else { return }
-        try? self.currentVoice.value()?.currentTime = currentTime
-        self.currentVoice.on(.next(try? self.currentVoice.value()))
+        if let currentVoice = try? self.currentVoice.value() {
+            let newValue = currentVoice
+            newValue.currentTime = currentTime
+            self.currentVoice.onNext(newValue)
+        }
     }
 
 }

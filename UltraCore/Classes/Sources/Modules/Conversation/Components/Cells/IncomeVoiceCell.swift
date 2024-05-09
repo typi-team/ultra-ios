@@ -159,6 +159,7 @@ class IncomeVoiceCell: MediaCell {
     @objc private func beginSeek(_ sender: UISlider) {
         guard let message = self.message else { return }
         self.isInSeekMessage = message
+        voiceRepository.stopTimer()
     }
     
     deinit {
