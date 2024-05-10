@@ -55,7 +55,19 @@ extension Realm {
             .urls(for: .documentDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("Ultra-Core.realm")
 
-        var config = Realm.Configuration(fileURL: realmURL, schemaVersion: 3)
+        var config = Realm.Configuration(
+            fileURL: realmURL,
+            schemaVersion: 4) { migration, oldSchemaVersion in
+                if oldSchemaVersion < 4 {
+                    migration.enumerateObjects(ofType: DBConversation.className()) { oldObject, newObject in
+                        if let contact = oldObject!["contact"] as? DBContact {
+                            let list = List<DBContact>()
+                            list.append(contact)
+                            newObject!["contact"] = list
+                        }
+                    }
+                }
+            }
         config.objectTypes = [
             DBContact.self, DBConversation.self, DBMessage.self, DBMessageState.self,
             DBReceiver.self, DBSender.self, DBMessageMeta.self,

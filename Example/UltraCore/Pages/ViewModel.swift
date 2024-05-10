@@ -204,7 +204,16 @@ extension ViewModel: UltraCoreSettingsDelegate {
     }
     
     func realmEncryptionKeyData() -> Data? {
-        return nil
+        if let key = UserDefaults.standard.data(forKey: "encryption_key") {
+            return key
+        } else {
+            var key = Data(count: 64)
+            _ = key.withUnsafeMutableBytes { pointer in
+                SecRandomCopyBytes(kSecRandomDefault, 64, pointer.baseAddress!)
+            }
+            UserDefaults.standard.set(key, forKey: "encryption_key")
+            return key
+        }
     }
     
     func didTapTransactionCell(transactionID: String, viewController: UIViewController) {
