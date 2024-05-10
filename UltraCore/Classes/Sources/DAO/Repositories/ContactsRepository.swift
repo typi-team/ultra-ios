@@ -59,6 +59,8 @@ extension Realm {
             fileURL: realmURL,
             schemaVersion: 4) { migration, oldSchemaVersion in
                 if oldSchemaVersion < 4 {
+                    migration.deleteData(forType: DBContact.className())
+                    
                     migration.enumerateObjects(ofType: DBConversation.className()) { oldObject, newObject in
                         let oldContactObj = oldObject!["contact"] as! MigrationObject
                         let newContactObj = migration.create(DBContact.className(), value: oldContactObj)
