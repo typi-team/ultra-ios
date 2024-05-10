@@ -226,6 +226,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .filter({ !$0.isEmpty })
             .filter({$0.count != prev.count})
             .do(onNext: {prev = $0})
+            .delay(.milliseconds(10), scheduler: MainScheduler.instance)
             .subscribe(onNext: { [weak self] _ in
                 guard let `self` = self else { return }
                 if self.tableView.isDecelerating {
