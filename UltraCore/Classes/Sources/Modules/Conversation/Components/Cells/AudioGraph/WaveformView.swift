@@ -1,26 +1,15 @@
-//
-// Copyright 2013 - 2017, William Entriken and the FDWaveformView contributors.
-//
 import UIKit
 import MediaPlayer
 import AVFoundation
 import Accelerate
 
-// FROM http://stackoverflow.com/questions/5032775/drawing-waveform-with-avassetreader
-// DO SEE http://stackoverflow.com/questions/1191868/uiimageview-scaling-interpolation
-// see http://stackoverflow.com/questions/3514066/how-to-tint-a-transparent-png-image-in-iphone
+open class WaveformView: UIView {
+    open weak var delegate: FDWaveformViewDelegate?
 
-/// A view for rendering audio waveforms
-/*@IBDesignable*/ // IBDesignable support in XCode is so broken it's sad
-open class FDWaveformView: UIView {
-    /// A delegate to accept progress reporting
-    /*@IBInspectable*/ open weak var delegate: FDWaveformViewDelegate?
-
-    /// The audio file to render
-    /*@IBInspectable*/ open var audioURL: URL? {
+    open var audioURL: URL? {
         didSet {
             guard let audioURL = audioURL else {
-                NSLog("FDWaveformView received nil audioURL")
+                NSLog("WaveformView received nil audioURL")
                 audioContext = nil
                 return
             }
@@ -28,12 +17,12 @@ open class FDWaveformView: UIView {
             loadingInProgress = true
             delegate?.waveformViewWillLoad?(self)
 
-            FDAudioContext.load(fromAudioURL: audioURL) { audioContext in
+            AudioContext.load(fromAudioURL: audioURL) { audioContext in
                 DispatchQueue.main.async {
                     guard self.audioURL == audioContext?.audioURL else { return }
 
                     if audioContext == nil {
-                        NSLog("FDWaveformView failed to load URL: \(audioURL)")
+                        NSLog("WaveformView failed to load URL: \(audioURL)")
                     }
 
                     self.audioContext = audioContext // This will reset the view and kick off a layout
@@ -45,13 +34,11 @@ open class FDWaveformView: UIView {
         }
     }
 
-    /// The total number of audio samples in the file
     open var totalSamples: Int {
         return audioContext?.totalSamples ?? 0
     }
 
-    /// The samples to be highlighted in a different color
-    /*@IBInspectable*/ open var highlightedSamples: CountableRange<Int>? = nil {
+    open var highlightedSamples: CountableRange<Int>? = nil {
         didSet {
             guard totalSamples > 0 else {
                 return
@@ -64,8 +51,7 @@ open class FDWaveformView: UIView {
         }
     }
 
-    /// The samples to be displayed
-    /*@IBInspectable*/ open var zoomSamples: CountableRange<Int> = 0 ..< 0 {
+    open var zoomSamples: CountableRange<Int> = 0 ..< 0 {
         didSet {
             if zoomSamples.startIndex < 0{
                 print("rip")
@@ -77,27 +63,7 @@ open class FDWaveformView: UIView {
 
     /// Whether to allow tap and pan gestures to change highlighted range
     /// Pan gives priority to `doesAllowScroll` if this and that are both `true`
-    /*@IBInspectable*/ open var doesAllowScrubbing = true
-
-    /// Whether to allow pinch gesture to change zoom
-    /*@IBInspectable*/ open var doesAllowStretch = true
-
-    /// Whether to allow pan gesture to change zoom
-    /*@IBInspectable*/ open var doesAllowScroll = true
-
-    /// Supported waveform types
-    //TODO: make this public after reconciling FDWaveformView.WaveformType and FDWaveformType
-    enum WaveformType {
-        case linear, logarithmic
-    }
-
-    // Type of waveform to display
-    var waveformType: WaveformType = .logarithmic {
-        didSet {
-            setNeedsDisplay()
-            setNeedsLayout()
-        }
-    }
+    open var doesAllowScrubbing = true
 
     /// The color of the waveform
     @IBInspectable open var wavesColor = UIColor.black {
@@ -112,9 +78,6 @@ open class FDWaveformView: UIView {
             highlightedImage.tintColor = progressColor
         }
     }
-
-
-    //TODO: MAKE PUBLIC
 
     /// The portion of extra pixels to render left and right of the viewable region
     private var horizontalBleedTarget = 0.5
@@ -139,16 +102,12 @@ open class FDWaveformView: UIView {
 
     /// The "zero" level (in dB)
     fileprivate let noiseFloor: CGFloat = -50.0
-
-
-
-    // Mark - Private vars
-
+    
     /// Whether rendering for the current asset failed
     private var renderForCurrentAssetFailed = false
 
     /// Current audio context to be used for rendering
-    private var audioContext: FDAudioContext? {
+    private var audioContext: AudioContext? {
         didSet {
             waveformImage = nil
             zoomSamples = 0 ..< self.totalSamples
@@ -187,17 +146,6 @@ open class FDWaveformView: UIView {
     /// Desired scale of image based on window's screen scale
     private var desiredImageScale: CGFloat {
         return window?.screen.scale ?? UIScreen.main.scale
-    }
-
-    /// Waveform type for rendering waveforms
-    //TODO: make this public after reconciling FDWaveformView.WaveformType and FDWaveformType
-    var waveformRenderType: FDWaveformType {
-        get {
-            switch waveformType {
-            case .linear: return .linear
-            case .logarithmic: return .logarithmic(noiseFloor: noiseFloor)
-            }
-        }
     }
 
     /// Represents the status of the waveform renderings
@@ -245,13 +193,7 @@ open class FDWaveformView: UIView {
     fileprivate var firstGesture = PressType.none
 
     /// Gesture recognizer
-    fileprivate var pinchRecognizer = UIPinchGestureRecognizer()
-
-    /// Gesture recognizer
     fileprivate var panRecognizer = UIPanGestureRecognizer()
-
-    /// Gesture recognizer
-    fileprivate var tapRecognizer = UITapGestureRecognizer()
 
     /// Whether rendering is happening asynchronously
     fileprivate var renderingInProgress = false
@@ -265,15 +207,9 @@ open class FDWaveformView: UIView {
         addSubview(clipping)
         clipsToBounds = true
 
-        pinchRecognizer = UIPinchGestureRecognizer(target: self, action: #selector(handlePinchGesture))
-        pinchRecognizer.delegate = self
-        addGestureRecognizer(pinchRecognizer)
         panRecognizer = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture))
         panRecognizer.delegate = self
         addGestureRecognizer(panRecognizer)
-        tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleTapGesture))
-        //        tapRecognizer.delegate = self
-        addGestureRecognizer(tapRecognizer)
     }
 
     required public init?(coder aCoder: NSCoder) {
@@ -325,9 +261,6 @@ open class FDWaveformView: UIView {
     func isWaveformRenderOperationDirty(_ renderOperation: FDWaveformRenderOperation?) -> Bool? {
         guard let renderOperation = renderOperation else { return nil }
 
-        if renderOperation.format.type != waveformRenderType {
-            return true
-        }
         if renderOperation.format.scale != desiredImageScale {
             return true
         }
@@ -417,7 +350,7 @@ open class FDWaveformView: UIView {
         let widthInPixels = floor(frame.width * CGFloat(horizontalOverdrawTarget))
         let heightInPixels = frame.height * CGFloat(horizontalOverdrawTarget)
         let imageSize = CGSize(width: widthInPixels, height: heightInPixels)
-        let renderFormat = FDWaveformRenderFormat(type: waveformRenderType, wavesColor: .black, scale: desiredImageScale)
+        let renderFormat = WaveformRenderFormat(wavesColor: .black, scale: desiredImageScale)
 
         let waveformRenderOperation = FDWaveformRenderOperation(audioContext: audioContext, imageSize: imageSize, sampleRange: renderSamples, format: renderFormat) { [weak self] image in
             DispatchQueue.main.async {
@@ -441,87 +374,9 @@ open class FDWaveformView: UIView {
     }
 }
 
-//TODO: make this public after reconciling FDWaveformView.WaveformType and FDWaveformType
-enum FDWaveformType: Equatable {
-    /// Waveform is rendered using a linear scale
-    case linear
-
-    /// Waveform is rendered using a logarithmic scale
-    ///   noiseFloor: The "zero" level (in dB)
-    case logarithmic(noiseFloor: CGFloat)
-
-    // See http://stackoverflow.com/questions/24339807/how-to-test-equality-of-swift-enums-with-associated-values
-    public static func ==(lhs: FDWaveformType, rhs: FDWaveformType) -> Bool {
-        switch lhs {
-        case .linear:
-            if case .linear = rhs {
-                return true
-            }
-        case .logarithmic(let lhsNoiseFloor):
-            if case .logarithmic(let rhsNoiseFloor) = rhs {
-                return lhsNoiseFloor == rhsNoiseFloor
-            }
-        }
-        return false
-    }
-
-    public var floorValue: CGFloat {
-        switch self {
-        case .linear: return 0
-        case .logarithmic(let noiseFloor): return noiseFloor
-        }
-    }
-
-    func process(normalizedSamples: inout [Float]) {
-        switch self {
-        case .linear:
-            return
-
-        case .logarithmic(let noiseFloor):
-            // Convert samples to a log scale
-            var zero: Float = 32768.0
-            vDSP_vdbcon(normalizedSamples, 1, &zero, &normalizedSamples, 1, vDSP_Length(normalizedSamples.count), 1)
-
-            //Clip to [noiseFloor, 0]
-            var ceil: Float = 0.0
-            var noiseFloorFloat = Float(noiseFloor)
-            vDSP_vclip(normalizedSamples, 1, &noiseFloorFloat, &ceil, &normalizedSamples, 1, vDSP_Length(normalizedSamples.count))
-        }
-    }
-}
-
-extension FDWaveformView: UIGestureRecognizerDelegate {
+extension WaveformView: UIGestureRecognizerDelegate {
     public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
         return true
-    }
-
-    @objc func handlePinchGesture(_ recognizer: UIPinchGestureRecognizer) {
-        guard doesAllowStretch, recognizer.scale != 1 else { return }
-
-        switch recognizer.state {
-        case .began:
-            if firstGesture == .none {
-                // Set firstGesture to .pinch only if panning gesture is not active.
-                // This enables the user to repetitively pan and zoom action.
-                // If we set firstGesture to .pinch in any state then the user becomes unable
-                // to pan until they release all fingers from the view.
-                firstGesture = .pinch
-            }
-        case .ended, .cancelled:
-            // This happens only if panning has not started.
-            firstGesture = .none
-        default:
-            break
-        }
-
-        let zoomRangeSamples = CGFloat(zoomSamples.count)
-        let pinchCenterSample = zoomSamples.lowerBound + Int(zoomRangeSamples * recognizer.location(in: self).x / bounds.width)
-        let newZoomRangeSamples = Int(zoomRangeSamples * 1.0 / recognizer.scale)
-        let newZoomStart = pinchCenterSample - Int(CGFloat(pinchCenterSample - zoomSamples.lowerBound) * 1.0 / recognizer.scale)
-        let newZoomEnd = newZoomStart + newZoomRangeSamples
-
-        zoomSamples = (newZoomStart ..< newZoomEnd).clamped(to: 0 ..< totalSamples)
-        recognizer.scale = 1
     }
 
     @objc func handlePanGesture(_ recognizer: UIPanGestureRecognizer) {
@@ -533,80 +388,50 @@ extension FDWaveformView: UIGestureRecognizerDelegate {
         case .began:
             guard firstGesture != .pinch else { return }
             firstGesture = .pan
+            if doesAllowScrubbing {
+                delegate?.waveformDidBeginScrubbing?(self)
+            }
         case .ended, .cancelled:
             let isPan = firstGesture == .pan
             firstGesture = .none
             guard isPan else { return }
+            if doesAllowScrubbing {
+                delegate?.waveformDidEndScrubbing?(self)
+            }
         default:
             guard firstGesture == .pan, recognizer.numberOfTouches == 1 else { return }
         }
-
-        if doesAllowScroll {
-            if zoomSamples.count == totalSamples {
-                // No need to handle panning
-                return
-            }
-
-            if recognizer.state == .began {
-                delegate?.waveformDidBeginPanning?(self)
-            }
-
-            let point = recognizer.translation(in: self)
-            recognizer.setTranslation(CGPoint.zero, in: self)
-
-            let samplesPerPixel = CGFloat(zoomSamples.count) / bounds.width
-            let deltaPixels = point.x < 0
-                ? min(-point.x * samplesPerPixel, CGFloat(totalSamples - zoomSamples.endIndex))
-                : min(point.x * samplesPerPixel, CGFloat(zoomSamples.startIndex)) * -1
-            if deltaPixels != 0 {
-                zoomSamples = zoomSamples.startIndex + Int(deltaPixels) ..< zoomSamples.endIndex + Int(deltaPixels)
-            }
-            if recognizer.state == .ended {
-                delegate?.waveformDidEndPanning?(self)
-            }
-        }
-        else if doesAllowScrubbing {
+        
+        if doesAllowScrubbing {
             let rangeSamples = CGFloat(zoomSamples.count)
             let scrubLocation = min(max(recognizer.location(in: self).x, 0), frame.width)    // clamp location within the frame
             highlightedSamples = 0 ..< Int((CGFloat(zoomSamples.startIndex) + rangeSamples * scrubLocation / bounds.width))
-            delegate?.waveformDidEndScrubbing?(self)
         }
+
     }
 
-    @objc func handleTapGesture(_ recognizer: UITapGestureRecognizer) {
-        if doesAllowScrubbing {
-            let rangeSamples = CGFloat(zoomSamples.count)
-            highlightedSamples = 0 ..< Int((CGFloat(zoomSamples.startIndex) + rangeSamples * recognizer.location(in: self).x / bounds.width))
-            delegate?.waveformDidEndScrubbing?(self)
-        }
-    }
 }
 
-/// To receive progress updates from FDWaveformView
+/// To receive progress updates from WaveformView
 @objc public protocol FDWaveformViewDelegate: NSObjectProtocol {
     /// Rendering will begin
-    @objc optional func waveformViewWillRender(_ waveformView: FDWaveformView)
+    @objc optional func waveformViewWillRender(_ waveformView: WaveformView)
 
     /// Rendering did complete
-    @objc optional func waveformViewDidRender(_ waveformView: FDWaveformView)
+    @objc optional func waveformViewDidRender(_ waveformView: WaveformView)
 
     /// An audio file will be loaded
-    @objc optional func waveformViewWillLoad(_ waveformView: FDWaveformView)
+    @objc optional func waveformViewWillLoad(_ waveformView: WaveformView)
 
     /// An audio file was loaded
-    @objc optional func waveformViewDidLoad(_ waveformView: FDWaveformView)
+    @objc optional func waveformViewDidLoad(_ waveformView: WaveformView)
 
     /// The panning gesture began
-    @objc optional func waveformDidBeginPanning(_ waveformView: FDWaveformView)
-
-    /// The panning gesture ended
-    @objc optional func waveformDidEndPanning(_ waveformView: FDWaveformView)
+    @objc optional func waveformDidBeginScrubbing(_ waveformView: WaveformView)
 
     /// The scrubbing gesture ended
-    @objc optional func waveformDidEndScrubbing(_ waveformView: FDWaveformView)
+    @objc optional func waveformDidEndScrubbing(_ waveformView: WaveformView)
 }
-
-//MARK -
 
 extension CountableRange where Bound: Strideable {
 

@@ -1,11 +1,8 @@
-//
-// Copyright 2013 - 2017, William Entriken and the FDWaveformView contributors.
-//
 import UIKit
 import AVFoundation
 
 /// Holds audio information used for building waveforms
-final class FDAudioContext {
+final class AudioContext {
     
     /// The audio asset URL used to load the context
     public let audioURL: URL
@@ -26,11 +23,11 @@ final class FDAudioContext {
         self.assetTrack = assetTrack
     }
     
-    public static func load(fromAudioURL audioURL: URL, completionHandler: @escaping (_ audioContext: FDAudioContext?) -> ()) {
+    public static func load(fromAudioURL audioURL: URL, completionHandler: @escaping (_ audioContext: AudioContext?) -> ()) {
         let asset = AVURLAsset(url: audioURL, options: [AVURLAssetPreferPreciseDurationAndTimingKey: NSNumber(value: true as Bool)])
         
         guard let assetTrack = asset.tracks(withMediaType: AVMediaType.audio).first else {
-            NSLog("FDWaveformView failed to load AVAssetTrack")
+            NSLog("WaveformView failed to load AVAssetTrack")
             completionHandler(nil)
             return
         }
@@ -47,14 +44,14 @@ final class FDAudioContext {
                     else { break }
                 
                 let totalSamples = Int((asbd.pointee.mSampleRate) * Float64(asset.duration.value) / Float64(asset.duration.timescale))
-                let audioContext = FDAudioContext(audioURL: audioURL, totalSamples: totalSamples, asset: asset, assetTrack: assetTrack)
+                let audioContext = AudioContext(audioURL: audioURL, totalSamples: totalSamples, asset: asset, assetTrack: assetTrack)
                 completionHandler(audioContext)
                 return
                 
             case .failed, .cancelled, .loading, .unknown:
-                print("FDWaveformView could not load asset: \(error?.localizedDescription ?? "Unknown error")")
+                print("WaveformView could not load asset: \(error?.localizedDescription ?? "Unknown error")")
             @unknown default:
-                print("FDWaveformView could not load asset: \(error?.localizedDescription ?? "Unknown error")")
+                print("WaveformView could not load asset: \(error?.localizedDescription ?? "Unknown error")")
             }
             
             completionHandler(nil)
