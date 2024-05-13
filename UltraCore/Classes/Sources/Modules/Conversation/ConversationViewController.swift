@@ -25,6 +25,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     fileprivate var mediaItem: URL?
     fileprivate var isDrawingTable: Bool = false
     lazy var dismissKeyboardGesture = UITapGestureRecognizer.init(target: self, action: #selector(hideKeyboard))
+    fileprivate var keyboardDispatchWorkItem: DispatchWorkItem?
     
     // MARK: - Views
     fileprivate lazy var refreshControl = UIRefreshControl{
@@ -244,42 +245,48 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         animationDuration: Double,
         animationOptions: UIView.AnimationOptions
     ) {
-        var contentOffset = tableView.contentOffset
-        
-        let keyBoardHeight = UIScreen.main.bounds.height - frame.origin.y
-        let bottomInset = keyBoardHeight > 0 ? keyBoardHeight - view.safeAreaInsets.bottom : 0
-        let insets = UIEdgeInsets(top: 0, left: 0, bottom: bottomInset, right: 0)
-        self.tableView.contentInset = insets
-        self.tableView.scrollIndicatorInsets = insets
-        
-        if let backgroundView = tableView.backgroundView as? ConversationEmptyViewContainer {
-            backgroundView.setSubviewOffset(
-                y: keyBoardHeight == 0 ? 0 : -keyBoardHeight
-            )
-        }
-        
-        if tableView.contentSize.height > tableView.frame.height {
-            if keyBoardHeight > 0 {
-                contentOffset.y += (keyBoardHeight - self.view.safeAreaInsets.bottom)
-            } else {
-                contentOffset.y -= (frame.height - self.view.safeAreaInsets.bottom)
+        keyboardDispatchWorkItem?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
+            guard let self else { return }
+            var contentOffset = tableView.contentOffset
+            
+            let keyBoardHeight = UIScreen.main.bounds.height - frame.origin.y
+            let bottomInset = keyBoardHeight > 0 ? keyBoardHeight - view.safeAreaInsets.bottom : 0
+            let insets = UIEdgeInsets(top: 0, left: 0, bottom: bottomInset, right: 0)
+            self.tableView.contentInset = insets
+            self.tableView.scrollIndicatorInsets = insets
+            
+            if let backgroundView = tableView.backgroundView as? ConversationEmptyViewContainer {
+                backgroundView.setSubviewOffset(
+                    y: keyBoardHeight == 0 ? 0 : -keyBoardHeight
+                )
+            }
+            
+            if tableView.contentSize.height > tableView.frame.height {
+                if keyBoardHeight > 0 {
+                    contentOffset.y += (keyBoardHeight - self.view.safeAreaInsets.bottom)
+                } else {
+                    contentOffset.y -= (frame.height - self.view.safeAreaInsets.bottom)
+                }
+                UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
+                    self.tableView.contentOffset = contentOffset
+                }
+            }
+            
+            messageInputBar.snp.updateConstraints { make in
+                if keyBoardHeight == 0 {
+                    make.bottom.equalTo(self.view.snp.bottom)
+                } else {
+                    make.bottom.equalTo(self.view.snp.bottom).offset(-(keyBoardHeight - self.view.safeAreaInsets.bottom))
+                }
             }
             UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
-                self.tableView.contentOffset = contentOffset
+                self.view.layoutIfNeeded()
             }
         }
-        
-        messageInputBar.snp.updateConstraints { make in
-            if keyBoardHeight == 0 {
-                make.bottom.equalTo(view.snp.bottom)
-            } else {
-                make.bottom.equalTo(view.snp.bottom).offset(-(keyBoardHeight - view.safeAreaInsets.bottom))
-            }
-        }
-        UIView.animate(withDuration: animationDuration, delay: 0, options: animationOptions) {
-            self.view.layoutIfNeeded()
-        }
-        
+        keyboardDispatchWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(10),
+                                              execute: workItem)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
