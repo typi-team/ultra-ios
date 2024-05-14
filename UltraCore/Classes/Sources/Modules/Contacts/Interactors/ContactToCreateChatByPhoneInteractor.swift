@@ -62,8 +62,9 @@ class ContactToConversationInteractor: GRPCErrorUseCase<IContact, Conversation?>
                     .flatMap({ [weak self] contact in
                         guard let `self` = self else { throw NSError.selfIsNill}
                         return self.contactDBService.save(contact: contact)
-                            .map({ 
+                            .map({ _ in
                                 ConversationImpl(
+                                    title: nil,
                                     contacts: [contact],
                                     idintification: contactToCreateChat.chatID,
                                     addContact: contactToCreateChat.chat.settings.addContact,

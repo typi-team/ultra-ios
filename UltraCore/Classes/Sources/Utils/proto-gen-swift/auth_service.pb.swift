@@ -59,6 +59,12 @@ struct GetUserIdRequest {
 
   var lastname: String = String()
 
+  var isSupportManager: Bool = false
+
+  var reception: String = String()
+
+  var initSupportChats: Bool = false
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -166,6 +172,9 @@ extension GetUserIdRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     1: .same(proto: "phone"),
     2: .same(proto: "firstname"),
     3: .same(proto: "lastname"),
+    4: .standard(proto: "is_support_manager"),
+    5: .same(proto: "reception"),
+    6: .standard(proto: "init_support_chats"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -177,6 +186,9 @@ extension GetUserIdRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
       case 1: try { try decoder.decodeSingularStringField(value: &self.phone) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.firstname) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self.lastname) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self.isSupportManager) }()
+      case 5: try { try decoder.decodeSingularStringField(value: &self.reception) }()
+      case 6: try { try decoder.decodeSingularBoolField(value: &self.initSupportChats) }()
       default: break
       }
     }
@@ -192,6 +204,15 @@ extension GetUserIdRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     if !self.lastname.isEmpty {
       try visitor.visitSingularStringField(value: self.lastname, fieldNumber: 3)
     }
+    if self.isSupportManager != false {
+      try visitor.visitSingularBoolField(value: self.isSupportManager, fieldNumber: 4)
+    }
+    if !self.reception.isEmpty {
+      try visitor.visitSingularStringField(value: self.reception, fieldNumber: 5)
+    }
+    if self.initSupportChats != false {
+      try visitor.visitSingularBoolField(value: self.initSupportChats, fieldNumber: 6)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -199,6 +220,9 @@ extension GetUserIdRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     if lhs.phone != rhs.phone {return false}
     if lhs.firstname != rhs.firstname {return false}
     if lhs.lastname != rhs.lastname {return false}
+    if lhs.isSupportManager != rhs.isSupportManager {return false}
+    if lhs.reception != rhs.reception {return false}
+    if lhs.initSupportChats != rhs.initSupportChats {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

@@ -40,6 +40,7 @@ public protocol UltraCoreSettingsDelegate: AnyObject {
     )
     func realmEncryptionKeyData() -> Data?
     func didTapTransactionCell(transactionID: String, viewController: UIViewController)
+    func getSupportChatsAndManagers(callBack: @escaping (([String: Any]) -> Void))
 }
 
 extension UltraCoreSettingsDelegate {
@@ -76,7 +77,7 @@ public extension UltraCoreSettings {
             .flatMap { contactByUserIdInteractor.executeSingle(params: $0.identifier).retry(2) }
             .flatMap({ contactsDBService.save(contact: $0) })
             .subscribe(
-                onNext: {
+                onNext: { _ in
                     PP.info("Контакты успешно сохранены")
                 },
                 onError: { error in

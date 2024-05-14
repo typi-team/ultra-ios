@@ -14,7 +14,7 @@ import Foundation
 protocol ContactsRepository {
     func contacts() -> Observable<[ContactDisplayable]>
     func contact(id: String) -> ContactDisplayable?
-    func save(contact: ContactDisplayable) -> Single<Void>
+    func save(contact: ContactDisplayable) -> Single<DBContact>
     func delete(contact: ContactDisplayable) -> Single<Void>
     func block(user id: String, blocked: Bool) -> Single<Void>
 }
@@ -36,7 +36,7 @@ class ContactsRepositoryImpl: ContactsRepository {
         return self.contactDBService.contact(id: id)
     }
     
-    func save(contact: ContactDisplayable) -> Single<Void> {
+    func save(contact: ContactDisplayable) -> Single<DBContact> {
         return self.contactDBService.save(contact: contact)
     }
     
@@ -57,7 +57,7 @@ extension Realm {
 
         var config = Realm.Configuration(
             fileURL: realmURL,
-            schemaVersion: 4) { migration, oldSchemaVersion in
+            schemaVersion: 5) { migration, oldSchemaVersion in
                 if oldSchemaVersion < 4 {
                     migration.deleteData(forType: DBContact.className())
                     

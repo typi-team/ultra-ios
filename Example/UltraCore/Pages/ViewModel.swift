@@ -219,5 +219,34 @@ extension ViewModel: UltraCoreSettingsDelegate {
     func didTapTransactionCell(transactionID: String, viewController: UIViewController) {
         
     }
+    
+    func getSupportChatsAndManagers(callBack: @escaping (([String : Any]) -> Void)) {
+        let dict: [String: Any] = [
+            "support_chats": [
+                [
+                  "reception": 50,
+                  "name": "FF Global",
+                  "avatar": nil
+                ],
+                [
+                  "reception": 36,
+                  "name": "FF Казахстан",
+                  "avatar": nil
+                ]
+              ],
+              "personal_managers": [
+                [
+                  "user_id": "3016423",
+                  "nickname": "Денис Черепков"
+                ],
+                [
+                  "user_id": "1880932",
+                  "nickname": "Вера Заколодяжная"
+                ]
+              ],
+              "assistant_enabled": true
+        ]
+        callBack(dict)
+    }
 
 }

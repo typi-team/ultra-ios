@@ -808,6 +808,11 @@ struct Message {
     set {_uniqueStorage()._systemAction = .supportStatusChanged(newValue)}
   }
 
+  var properties: Dictionary<String,String> {
+    get {return _storage._properties}
+    set {_uniqueStorage()._properties = newValue}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   enum OneOf_Content: Equatable {
@@ -2309,6 +2314,7 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     26: .same(proto: "photoDeleted"),
     27: .same(proto: "supportManagerAssigned"),
     28: .same(proto: "supportStatusChanged"),
+    29: .same(proto: "properties"),
   ]
 
   fileprivate class _StorageClass {
@@ -2323,6 +2329,7 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     var _text: String = String()
     var _content: Message.OneOf_Content?
     var _systemAction: Message.OneOf_SystemAction?
+    var _properties: Dictionary<String,String> = [:]
 
     static let defaultInstance = _StorageClass()
 
@@ -2340,6 +2347,7 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
       _text = source._text
       _content = source._content
       _systemAction = source._systemAction
+      _properties = source._properties
     }
   }
 
@@ -2614,6 +2622,7 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
             _storage._systemAction = .supportStatusChanged(v)
           }
         }()
+        case 29: try { try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: &_storage._properties) }()
         default: break
         }
       }
@@ -2735,6 +2744,9 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
       }()
       case nil: break
       }
+      if !_storage._properties.isEmpty {
+        try visitor.visitMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: _storage._properties, fieldNumber: 29)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2755,6 +2767,7 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
         if _storage._text != rhs_storage._text {return false}
         if _storage._content != rhs_storage._content {return false}
         if _storage._systemAction != rhs_storage._systemAction {return false}
+        if _storage._properties != rhs_storage._properties {return false}
         return true
       }
       if !storagesAreEqual {return false}

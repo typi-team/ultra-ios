@@ -18,6 +18,8 @@ class DBConversation: Object {
     @objc dynamic var callAllowed: Bool = true
     @objc dynamic var seqNumber: Int = 0
     @objc dynamic var conversationType: Int = 0
+    @objc dynamic var imagePath: String = ""
+    @objc dynamic var title: String = ""
     
     var typingData: [UserTypingWithDate] = []
     
@@ -25,11 +27,10 @@ class DBConversation: Object {
         return "idintification"
     }
     
-    convenience init(conversation: Conversation) {
+    convenience init(conversation: Conversation, contacts: [DBContact]) {
         self.init()
         self.message = nil
-        conversation.peers
-            .map(DBContact.init(contact:))
+        contacts
             .forEach(contact.append(_:))
         self.lastSeen = conversation.timestamp.nanosec
         self.idintification = conversation.idintification
@@ -38,6 +39,7 @@ class DBConversation: Object {
         self.callAllowed = conversation.callAllowed
         self.seqNumber = Int(conversation.seqNumber)
         self.conversationType = conversation.chatType.rawValue
+        self.imagePath = conversation.imagePath ?? ""
     }
     
     convenience init(message: Message, realm: Realm = .myRealm(), user id: String?, addContact: Bool, callAllowed: Bool) {

@@ -20,6 +20,7 @@ protocol Conversation: Any {
     var callAllowed: Bool { get set }
     var seqNumber: UInt64 { get set }
     var chatType: ConversationType { get set }
+    var imagePath: String? { get set }
 }
 
 class ConversationImpl: Conversation {
@@ -35,10 +36,18 @@ class ConversationImpl: Conversation {
     var callAllowed: Bool
     var seqNumber: UInt64
     var chatType: ConversationType = .peerToPeer
+    var imagePath: String?
     
-    init(contacts: [ContactDisplayable], idintification: String, addContact: Bool, seqNumber: UInt64, callAllowed: Bool) {
+    init(
+        title: String?,
+        contacts: [ContactDisplayable], 
+        idintification: String,
+        addContact: Bool,
+        seqNumber: UInt64,
+        callAllowed: Bool
+    ) {
         self.peers = contacts
-        self.title = contacts.first?.displaName ?? ""
+        self.title = title ?? (contacts.first?.displaName ?? "")
         self.lastMessage = nil
         self.idintification = idintification
         self.addContact = addContact
@@ -47,7 +56,7 @@ class ConversationImpl: Conversation {
     }
     
     init(dbConversation: DBConversation) {
-        self.title = dbConversation.contact.first?.toInterface().displaName ?? ""
+        self.title = dbConversation.title.isEmpty ? (dbConversation.contact.first?.toInterface().displaName ?? "") : dbConversation.title
         self.lastMessage = dbConversation.message?.toProto()
         
         self.peers = dbConversation.contact.map { $0.toInterface() }
