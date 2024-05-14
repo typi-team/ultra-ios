@@ -11,7 +11,7 @@ import RxCocoa
 import RxSwift
 import SDWebImage
 
-class IncomeVoiceCell: MediaCell, FDWaveformViewDelegate {
+class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
     
     fileprivate let playImage: UIImage? = .named("conversation_play_sound_icon")
     fileprivate let pauseImage: UIImage? = .named("conversation_pause_sound_icon")
@@ -20,12 +20,12 @@ class IncomeVoiceCell: MediaCell, FDWaveformViewDelegate {
     
     fileprivate var isInSeekMessage: Message?
 
-    fileprivate lazy var audioWaveView: WaveformView = {
+    lazy var audioWaveView: WaveformView = {
         let view = WaveformView()
         view.loadingInProgress = true
         view.backgroundColor = .clear
-        view.wavesColor = .from(hex: "#BFDBFE")
-        view.progressColor = .white
+        view.wavesColor = .from(hex: "#B7BCC5")
+        view.progressColor = .from(hex: "#3B82F6")
         view.delegate = self
         return view
     }()
@@ -109,11 +109,11 @@ class IncomeVoiceCell: MediaCell, FDWaveformViewDelegate {
         self.durationLabel.text = message.voice.duration.timeInterval.formatSeconds
         bindLoader()
         if let currentVoice = try? voiceRepository.currentVoice.value(),
-           self.message?.voice.fileID == currentVoice.voiceMessage.fileID,
-           currentVoice.isPlaying {
+           self.message?.voice.fileID == currentVoice.voiceMessage.fileID {
             self.setupView(currentVoice, slider: false)
         }
-        if let soundURL = voiceRepository.mediaURL(message: message) {
+        if audioWaveView.audioURL == nil,
+           let soundURL = voiceRepository.mediaURL(message: message) {
             audioWaveView.audioURL = soundURL
         }
     }
@@ -217,6 +217,8 @@ class OutcomeVoiceCell: IncomeVoiceCell {
     
     override func setupView() {
         super.setupView()
+        audioWaveView.wavesColor = .from(hex: "#BFDBFE")
+        audioWaveView.progressColor = .from(hex: "#FFFFFF")
         self.container.addSubview(statusView)
     }
     

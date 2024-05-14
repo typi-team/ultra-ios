@@ -4,7 +4,7 @@ import AVFoundation
 import Accelerate
 
 open class WaveformView: UIView {
-    open weak var delegate: FDWaveformViewDelegate?
+    open weak var delegate: WaveformViewDelegate?
 
     open var audioURL: URL? {
         didSet {
@@ -413,7 +413,7 @@ extension WaveformView: UIGestureRecognizerDelegate {
 }
 
 /// To receive progress updates from WaveformView
-@objc public protocol FDWaveformViewDelegate: NSObjectProtocol {
+@objc public protocol WaveformViewDelegate: NSObjectProtocol {
     /// Rendering will begin
     @objc optional func waveformViewWillRender(_ waveformView: WaveformView)
 
