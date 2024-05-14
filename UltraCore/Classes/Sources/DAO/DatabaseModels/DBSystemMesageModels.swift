@@ -41,6 +41,8 @@ class DBSystemActionType: Object {
             type = 6
         case .supportStatusChanged(let systemActionSupportStatusChanged):
             type = 7
+        case .customTextSended(_):
+            type = 8
         }
     }
     

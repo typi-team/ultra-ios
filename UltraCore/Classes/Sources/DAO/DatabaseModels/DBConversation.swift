@@ -40,6 +40,7 @@ class DBConversation: Object {
         self.seqNumber = Int(conversation.seqNumber)
         self.conversationType = conversation.chatType.rawValue
         self.imagePath = conversation.imagePath ?? ""
+        self.title = conversation.title
     }
     
     convenience init(message: Message, realm: Realm = .myRealm(), user id: String?, addContact: Bool, callAllowed: Bool) {

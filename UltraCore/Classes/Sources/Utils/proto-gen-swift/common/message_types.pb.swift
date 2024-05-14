@@ -568,6 +568,16 @@ struct SystemActionSupportManagerAssigned {
   init() {}
 }
 
+struct SystemActionCustom {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 struct SystemActionSupportStatusChanged {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -808,6 +818,14 @@ struct Message {
     set {_uniqueStorage()._systemAction = .supportStatusChanged(newValue)}
   }
 
+  var customTextSended: SystemActionCustom {
+    get {
+      if case .customTextSended(let v)? = _storage._systemAction {return v}
+      return SystemActionCustom()
+    }
+    set {_uniqueStorage()._systemAction = .customTextSended(newValue)}
+  }
+
   var properties: Dictionary<String,String> {
     get {return _storage._properties}
     set {_uniqueStorage()._properties = newValue}
@@ -893,6 +911,7 @@ struct Message {
     case photoDeleted(SystemActionChatDeletePhoto)
     case supportManagerAssigned(SystemActionSupportManagerAssigned)
     case supportStatusChanged(SystemActionSupportStatusChanged)
+    case customTextSended(SystemActionCustom)
 
   #if !swift(>=4.1)
     static func ==(lhs: Message.OneOf_SystemAction, rhs: Message.OneOf_SystemAction) -> Bool {
@@ -930,6 +949,10 @@ struct Message {
       }()
       case (.supportStatusChanged, .supportStatusChanged): return {
         guard case .supportStatusChanged(let l) = lhs, case .supportStatusChanged(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.customTextSended, .customTextSended): return {
+        guard case .customTextSended(let l) = lhs, case .customTextSended(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -1014,6 +1037,7 @@ extension SystemActionChatDeleteMember: @unchecked Sendable {}
 extension SystemActionChatEditPhoto: @unchecked Sendable {}
 extension SystemActionChatDeletePhoto: @unchecked Sendable {}
 extension SystemActionSupportManagerAssigned: @unchecked Sendable {}
+extension SystemActionCustom: @unchecked Sendable {}
 extension SystemActionSupportStatusChanged: @unchecked Sendable {}
 extension Message: @unchecked Sendable {}
 extension Message.OneOf_Content: @unchecked Sendable {}
@@ -2251,6 +2275,25 @@ extension SystemActionSupportManagerAssigned: SwiftProtobuf.Message, SwiftProtob
   }
 }
 
+extension SystemActionCustom: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "SystemActionCustom"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let _ = try decoder.nextFieldNumber() {
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: SystemActionCustom, rhs: SystemActionCustom) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension SystemActionSupportStatusChanged: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "SystemActionSupportStatusChanged"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -2314,6 +2357,7 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     26: .same(proto: "photoDeleted"),
     27: .same(proto: "supportManagerAssigned"),
     28: .same(proto: "supportStatusChanged"),
+    30: .same(proto: "customTextSended"),
     29: .same(proto: "properties"),
   ]
 
@@ -2623,6 +2667,19 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
           }
         }()
         case 29: try { try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: &_storage._properties) }()
+        case 30: try {
+          var v: SystemActionCustom?
+          var hadOneofValue = false
+          if let current = _storage._systemAction {
+            hadOneofValue = true
+            if case .customTextSended(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._systemAction = .customTextSended(v)
+          }
+        }()
         default: break
         }
       }
@@ -2742,11 +2799,14 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
         guard case .supportStatusChanged(let v)? = _storage._systemAction else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 28)
       }()
-      case nil: break
+      default: break
       }
       if !_storage._properties.isEmpty {
         try visitor.visitMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: _storage._properties, fieldNumber: 29)
       }
+      try { if case .customTextSended(let v)? = _storage._systemAction {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 30)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }

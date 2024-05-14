@@ -123,6 +123,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
     }
     
     func setupSubscription() {
+        Realm.myRealm()
         if appStore.lastState == 0 {
             self.updateClient
                 .getInitialState(InitialStateRequest(), callOptions: .default())

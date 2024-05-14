@@ -43,6 +43,8 @@ extension Message {
             case .UNRECOGNIZED:
                 return false
             }
+        case .customTextSended(_):
+            return false
         }
     }
     
@@ -84,6 +86,8 @@ extension Message {
             case .UNRECOGNIZED:
                 return ""
             }
+        case .customTextSended(let message):
+            return ""
         }
     }
 }

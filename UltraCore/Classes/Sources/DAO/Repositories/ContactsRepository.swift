@@ -59,6 +59,7 @@ extension Realm {
             fileURL: realmURL,
             schemaVersion: 5) { migration, oldSchemaVersion in
                 if oldSchemaVersion < 4 {
+                    AppSettingsImpl.shared.appStore.store(last: 0)
                     migration.deleteData(forType: DBContact.className())
                     
                     migration.enumerateObjects(ofType: DBConversation.className()) { oldObject, newObject in
