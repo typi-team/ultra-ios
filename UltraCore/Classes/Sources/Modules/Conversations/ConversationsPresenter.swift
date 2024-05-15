@@ -33,7 +33,7 @@ final class ConversationsPresenter: BasePresenter {
         conversationRepository.conversations(),
         updateRepository.typingUsers,
         updateRepository.updateSyncObservable.debug("Updated Sync"),
-        updateRepository.personalManagersObservable.map { $0.map { $0.user_id }}
+        updateRepository.personalManagersObservable.map { $0.map { $0.user_id }}.debug("Personal Managers")
     )
         .map({ conversations, typingUsers, _, personalManagers in
             self.personalManagers = personalManagers
@@ -42,7 +42,7 @@ final class ConversationsPresenter: BasePresenter {
                     guard let self = self else {
                         return true
                     }
-                    
+                    PP.debug("Conversation peers are \(conversation.peers.map(\.phone)); type - \(conversation.chatType) - \(conversation.title)")
                     if isSupport {
                         if conversation.chatType == .support {
                             return true
