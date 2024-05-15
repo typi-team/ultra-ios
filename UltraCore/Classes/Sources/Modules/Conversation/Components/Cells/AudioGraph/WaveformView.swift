@@ -6,6 +6,8 @@ import Accelerate
 open class WaveformView: UIView {
     open weak var delegate: WaveformViewDelegate?
 
+    private let mediaRepository: MediaRepository = AppSettingsImpl.shared.mediaRepository
+    
     open var audioURL: URL? {
         didSet {
             guard let audioURL = audioURL else {
@@ -31,6 +33,24 @@ open class WaveformView: UIView {
                     self.delegate?.waveformViewDidLoad?(self)
                 }
             }
+        }
+    }
+    
+    private var pathFile: String? {
+        if let path = audioURL?.lastPathComponent.split(separator: ".").first {
+            return path + ".png"
+        }
+        return nil
+    }
+    
+    private func updateGraphImageIfNeeded() {
+        if let path = pathFile,
+           let image = mediaRepository.audioGraphImage(from: path) {
+            renderForCurrentAssetFailed = true
+            waveformImage = image
+            renderingInProgress = false
+            cachedWaveformRenderOperation = nil
+            setNeedsLayout()
         }
     }
 
@@ -122,7 +142,7 @@ open class WaveformView: UIView {
     }
 
     /// Currently running renderer
-    private var inProgressWaveformRenderOperation: FDWaveformRenderOperation? {
+    private var inProgressWaveformRenderOperation: WaveformRenderOperation? {
         willSet {
             if newValue !== inProgressWaveformRenderOperation {
                 inProgressWaveformRenderOperation?.cancel()
@@ -131,7 +151,7 @@ open class WaveformView: UIView {
     }
 
     /// The render operation used to render the current waveform image
-    private var cachedWaveformRenderOperation: FDWaveformRenderOperation?
+    private var cachedWaveformRenderOperation: WaveformRenderOperation?
 
     /// Image of waveform
     private var waveformImage: UIImage? {
@@ -258,7 +278,7 @@ open class WaveformView: UIView {
         return .notDirty(cancelInProgressRenderOperation: false)
     }
 
-    func isWaveformRenderOperationDirty(_ renderOperation: FDWaveformRenderOperation?) -> Bool? {
+    func isWaveformRenderOperationDirty(_ renderOperation: WaveformRenderOperation?) -> Bool? {
         guard let renderOperation = renderOperation else { return nil }
 
         if renderOperation.format.scale != desiredImageScale {
@@ -312,14 +332,13 @@ open class WaveformView: UIView {
         var highlightScaleX: CGFloat = 0.0
         var highlightClipScaleL: CGFloat = 0.0
         var highlightClipScaleR: CGFloat = 1.0
-        if let cachedSampleRange = cachedWaveformRenderOperation?.sampleRange, !cachedSampleRange.isEmpty {
-            scaleX = CGFloat(zoomSamples.lowerBound - cachedSampleRange.lowerBound) / CGFloat(cachedSampleRange.count)
-            scaleW = CGFloat(cachedSampleRange.count) / CGFloat(zoomSamples.count)
-            if let highlightedSamples = highlightedSamples {
-                highlightScaleX = CGFloat(highlightedSamples.lowerBound - zoomSamples.lowerBound) / CGFloat(cachedSampleRange.count)
-                highlightClipScaleL = max(0.0, CGFloat((highlightedSamples.lowerBound - cachedSampleRange.lowerBound) - (zoomSamples.lowerBound - cachedSampleRange.lowerBound)) / CGFloat(zoomSamples.count))
-                highlightClipScaleR = min(1.0, 1.0 - CGFloat((zoomSamples.upperBound - highlightedSamples.upperBound)) / CGFloat(zoomSamples.count))
-            }
+        let cachedSampleRange = 0..<totalSamples
+        scaleX = CGFloat(zoomSamples.lowerBound - cachedSampleRange.lowerBound) / CGFloat(cachedSampleRange.count)
+        scaleW = CGFloat(cachedSampleRange.count) / CGFloat(zoomSamples.count)
+        if let highlightedSamples = highlightedSamples {
+            highlightScaleX = CGFloat(highlightedSamples.lowerBound - zoomSamples.lowerBound) / CGFloat(cachedSampleRange.count)
+            highlightClipScaleL = max(0.0, CGFloat((highlightedSamples.lowerBound - cachedSampleRange.lowerBound) - (zoomSamples.lowerBound - cachedSampleRange.lowerBound)) / CGFloat(zoomSamples.count))
+            highlightClipScaleR = min(1.0, 1.0 - CGFloat((zoomSamples.upperBound - highlightedSamples.upperBound)) / CGFloat(zoomSamples.count))
         }
         let childFrame = CGRect(x: frame.width * scaleW * -scaleX,
                                 y: 0,
@@ -344,6 +363,12 @@ open class WaveformView: UIView {
 
     func renderWaveform() {
         guard let audioContext = audioContext else { return }
+        if let path = pathFile,
+           mediaRepository.audioGraphImage(from: path) != nil {
+            updateGraphImageIfNeeded()
+            return
+        }
+        
         guard !zoomSamples.isEmpty else { return }
 
         let renderSamples = zoomSamples.extended(byFactor: horizontalBleedTarget).clamped(to: 0 ..< totalSamples)
@@ -352,17 +377,22 @@ open class WaveformView: UIView {
         let imageSize = CGSize(width: widthInPixels, height: heightInPixels)
         let renderFormat = WaveformRenderFormat(wavesColor: .black, scale: desiredImageScale)
 
-        let waveformRenderOperation = FDWaveformRenderOperation(audioContext: audioContext, imageSize: imageSize, sampleRange: renderSamples, format: renderFormat) { [weak self] image in
+        let waveformRenderOperation = WaveformRenderOperation(audioContext: audioContext, imageSize: imageSize, sampleRange: renderSamples, format: renderFormat) { [weak self] image in
             DispatchQueue.main.async {
                 guard let strongSelf = self else { return }
 
+                if let image = image,
+                   let fileID = audioContext.audioURL.lastPathComponent.split(separator: ".").first {
+                    strongSelf.mediaRepository.createAudioGraphImage(from: String(fileID), image: image) {
+                        strongSelf.delegate?.waveformViewDidRender?(strongSelf)
+                    }
+                }
                 strongSelf.renderForCurrentAssetFailed = (image == nil)
                 strongSelf.waveformImage = image
                 strongSelf.renderingInProgress = false
                 strongSelf.cachedWaveformRenderOperation = self?.inProgressWaveformRenderOperation
                 strongSelf.inProgressWaveformRenderOperation = nil
                 strongSelf.setNeedsLayout()
-                strongSelf.delegate?.waveformViewDidRender?(strongSelf)
             }
         }
         self.inProgressWaveformRenderOperation = waveformRenderOperation

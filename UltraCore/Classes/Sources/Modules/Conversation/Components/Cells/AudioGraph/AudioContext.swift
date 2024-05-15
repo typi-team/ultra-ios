@@ -16,6 +16,8 @@ final class AudioContext {
     // Loaded assetTrack
     public let assetTrack: AVAssetTrack
     
+    private static let mediaRepository: MediaRepository = AppSettingsImpl.shared.mediaRepository
+    
     private init(audioURL: URL, totalSamples: Int, asset: AVAsset, assetTrack: AVAssetTrack) {
         self.audioURL = audioURL
         self.totalSamples = totalSamples
@@ -29,6 +31,12 @@ final class AudioContext {
         guard let assetTrack = asset.tracks(withMediaType: AVMediaType.audio).first else {
             NSLog("WaveformView failed to load AVAssetTrack")
             completionHandler(nil)
+            return
+        }
+        
+        if let path = pathFile(from: audioURL),
+           mediaRepository.audioGraphImage(from: path) != nil {
+            completionHandler(AudioContext(audioURL: audioURL, totalSamples: 10000, asset: asset, assetTrack: assetTrack))
             return
         }
         
@@ -56,5 +64,12 @@ final class AudioContext {
             
             completionHandler(nil)
         }
+    }
+    
+    private static func pathFile(from url: URL) -> String? {
+        if let path = url.lastPathComponent.split(separator: ".").first {
+            return path + ".png"
+        }
+        return nil
     }
 }

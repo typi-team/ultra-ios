@@ -20,7 +20,7 @@ struct WaveformRenderFormat {
     }
 }
 
-final public class FDWaveformRenderOperation: Operation {
+final public class WaveformRenderOperation: Operation {
     
     let audioContext: AudioContext
     

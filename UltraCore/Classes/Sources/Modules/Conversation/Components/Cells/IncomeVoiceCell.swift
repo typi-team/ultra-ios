@@ -22,7 +22,6 @@ class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
 
     lazy var audioWaveView: WaveformView = {
         let view = WaveformView()
-        view.loadingInProgress = true
         view.backgroundColor = .clear
         view.wavesColor = .from(hex: "#B7BCC5")
         view.progressColor = .from(hex: "#3B82F6")
@@ -104,6 +103,14 @@ class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
             .disposed(by: disposeBag)
     }
     
+    private func displayAudioGraph() {
+        guard let message = self.message else { return }
+        if audioWaveView.audioURL == nil,
+           let soundURL = voiceRepository.mediaURL(message: message) {
+            audioWaveView.audioURL = soundURL
+        }
+    }
+    
     override func setup(message: Message) {
         super.setup(message: message)
         self.durationLabel.text = message.voice.duration.timeInterval.formatSeconds
@@ -112,10 +119,7 @@ class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
            self.message?.voice.fileID == currentVoice.voiceMessage.fileID {
             self.setupView(currentVoice, slider: false)
         }
-        if audioWaveView.audioURL == nil,
-           let soundURL = voiceRepository.mediaURL(message: message) {
-            audioWaveView.audioURL = soundURL
-        }
+        displayAudioGraph()
     }
     
     private func bindLoader() {
@@ -138,6 +142,9 @@ class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
             .drive(onNext: { [weak self] isLoading in
                 self?.spinner.isHidden = !isLoading
                 isLoading ? self?.spinner.startAnimating() : self?.spinner.stopAnimating()
+                if !isLoading {
+                    self?.displayAudioGraph()
+                }
             })
             .disposed(by: disposeBag)
         driver
@@ -153,6 +160,7 @@ class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
         super.prepareForReuse()
         self.isInSeekMessage = nil
         audioWaveView.highlightedSamples = 0..<0
+        audioWaveView.audioURL = nil
         self.durationLabel.text = 0.0.description
         self.controllerView.isHidden = false
         self.controllerView.setImage(self.playImage, for: .normal)
@@ -180,7 +188,6 @@ class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
         } else if self.isInSeekMessage != nil {
             //                IGNORE THIS CASE
         } else {
-            audioWaveView.highlightedSamples = 0..<0
             self.controllerView.setImage(self.playImage, for: .normal)
         }
     }
@@ -209,6 +216,17 @@ class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
         guard let message = self.message else { return }
         self.isInSeekMessage = message
     }
+    
+    func waveformViewWillLoad(_ waveformView: WaveformView) {
+        spinner.isHidden = false
+        spinner.startAnimating()
+    }
+    
+    func waveformViewDidRender(_ waveformView: WaveformView) {
+        spinner.isHidden = true
+        spinner.stopAnimating()
+    }
+
 }
 
 class OutcomeVoiceCell: IncomeVoiceCell {
