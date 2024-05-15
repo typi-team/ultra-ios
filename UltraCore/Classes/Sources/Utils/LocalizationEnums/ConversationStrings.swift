@@ -64,6 +64,8 @@ enum ConversationStrings: String, StringLocalizable {
     case supportChatPostponed
     case supportChatManagerAssigned
     
+    case noMessages
+    
     var prefixOfTemplate: String { "conversation" }
     var localizableValue: String { rawValue }
 }

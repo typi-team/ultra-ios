@@ -98,7 +98,7 @@ class ConversationCell: BaseCell {
     
     func setup(conversation: Conversation ) {
         self.titleView.text = conversation.title
-        self.descriptionView.text = conversation.lastMessage?.message
+        self.descriptionView.text = conversation.lastMessage?.message ?? ConversationStrings.noMessages.localized
         self.unreadView.isHidden = conversation.unreadCount == 0
         self.unreadView.text = conversation.unreadCount.description
         self.lastSeenView.text = conversation.timestamp.formattedTimeForConversationCell()
@@ -128,7 +128,7 @@ class ConversationCell: BaseCell {
     private func setupTyping(conversation: Conversation) {
         let typingUsers = conversation.typingData.filter({$0.isTyping})
         if typingUsers.isEmpty {
-            self.descriptionView.text = conversation.lastMessage?.message
+            self.descriptionView.text = conversation.lastMessage?.message ?? ConversationStrings.noMessages.localized
         } else {
             self.descriptionView.text = "\(ConversationStrings.prints.localized)"
         }

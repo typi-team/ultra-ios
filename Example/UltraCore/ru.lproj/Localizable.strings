@@ -166,3 +166,5 @@
 "conversation.supportChatClosed" = "Диалог с оператором завершился";
 "conversation.supportChatPostponed" = "Для подключения оператора необходиио еще некоторое время";
 "conversation.supportChatManagerAssigned" = "Оператор %@ подключился к диалогу";
+
+"conversation.noMessages" = "Нет сообщений";

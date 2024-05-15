@@ -163,3 +163,5 @@
 "conversation.supportChatClosed" = "The conversation with the operator has ended";
 "conversation.supportChatPostponed" = "It takes some more time to connect the operator";
 "conversation.supportChatManagerAssigned" = "Operator %@ joined the conversation";
+
+"conversation.noMessages" = "No messages";
