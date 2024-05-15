@@ -13,7 +13,7 @@ import RealmSwift
 import RxSwift
 
 protocol ConversationsWireframeInterface: WireframeInterface {
-    func navigateToConversation(with data: Conversation)
+    func navigateToConversation(with data: Conversation, isPersonalManager: Bool)
     func navigateToContacts(contactsCallback: @escaping ContactsCallback, openConverationCallback: @escaping UserIDCallback)
 }
 

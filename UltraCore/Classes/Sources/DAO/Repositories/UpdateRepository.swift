@@ -20,6 +20,7 @@ protocol UpdateRepository: AnyObject {
     func readAll(in conversation: Conversation)
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> { get set }
     var updateSyncObservable: Observable<Void> { get }
+    var personalManagersObservable: Observable<[PersonalManager]> { get }
     var isConnectedToListenStream: Bool { get }
 }
 
@@ -28,6 +29,9 @@ class UpdateRepositoryImpl {
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> = .init(value: [:])
     var updateSyncObservable: Observable<Void> {
         updateSyncSubject.asObservable().share(replay: 1)
+    }
+    var personalManagersObservable: Observable<[PersonalManager]> {
+        personalManagersSubject.asObservable().share(replay: 1)
     }
     var isConnectedToListenStream: Bool = false
     
@@ -50,6 +54,7 @@ class UpdateRepositoryImpl {
     fileprivate var updateListenStream: ServerStreamingCall<ListenRequest, Updates>?
     
     private let updateSyncSubject = ReplaySubject<Void>.create(bufferSize: 1)
+    private let personalManagersSubject = ReplaySubject<[PersonalManager]>.create(bufferSize: 1)
     private let semaphore = DispatchSemaphore(value: 1)
     
     init(appStore: AppSettingsStore,
@@ -123,7 +128,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
     }
     
     func setupSubscription() {
-        Realm.myRealm()
+        _ = Realm.myRealm()
         if appStore.lastState == 0 {
             self.updateClient
                 .getInitialState(InitialStateRequest(), callOptions: .default())
@@ -166,6 +171,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
                                     self?.initializeSupportChats()
                                 }
                                 .disposed(by: disposeBag)
+                            self.personalManagersSubject.onNext([])
                             self.updateSyncSubject.onNext(())
                         }
                         self.appStore.store(last: Int64(response.state))
@@ -174,6 +180,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
                     }
                 }
         } else {
+            self.personalManagersSubject.onNext([])
             updateSyncSubject.onNext(())
             self.retreiveContactStatuses()
             self.initializeSupportChats()
@@ -366,6 +373,7 @@ private extension UpdateRepositoryImpl {
                         }
                     }
                 }
+                personalManagersSubject.onNext(response.personal_managers)
                 initSupportInteractor.executeSingle(params: request)
                     .asObservable()
                     .flatMap { [weak self] chatsResponse -> Observable<[Void]> in

@@ -43,6 +43,7 @@ final class ConversationPresenter {
     private let messageSenderInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendResponse>
     private let messageSentSoundInteractor: UseCase<MakeSoundInteractor.Sound, Void>
     private let acceptContactInteractor: GRPCErrorUseCase<String, Void>
+    private let isPersonalManager: Bool
     
     // MARK: - Public properties -
 
@@ -69,6 +70,7 @@ final class ConversationPresenter {
 
     init(
         userID: String,
+        isPersonalManager: Bool,
         appStore: AppSettingsStore,
         conversation: Conversation,
         view: ConversationViewInterface,
@@ -93,6 +95,7 @@ final class ConversationPresenter {
     ) {
 
         self.view = view
+        self.isPersonalManager = isPersonalManager
         self.userID = userID
         self.appStore = appStore
         self.wireframe = wireframe
@@ -119,6 +122,10 @@ final class ConversationPresenter {
 // MARK: - Extensions -
 
 extension ConversationPresenter: ConversationPresenterInterface {
+    
+    var isManager: Bool {
+        return self.isPersonalManager
+    }
     
     func isGroupChat() -> Bool {
         return conversation.chatType == .support || conversation.chatType == .group

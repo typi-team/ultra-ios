@@ -22,6 +22,7 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
     fileprivate let conversation: Conversation
     
     init(with conversation: Conversation,
+         isPersonalManager: Bool,
          delegate: UltraCoreSettingsDelegate? = UltraCoreSettings.delegate,
          futureDelegate: UltraCoreFutureDelegate? = UltraCoreSettings.futureDelegate) {
         self.delegate = delegate
@@ -43,6 +44,7 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
         let acceptContactInteractor = AcceptContactInteractor(contactService: appSettings.contactsService)
         let presenter = ConversationPresenter(
             userID: appSettings.appStore.userID(),
+            isPersonalManager: isPersonalManager,
             appStore: appSettings.appStore,
             conversation: conversation,
             view: moduleViewController,

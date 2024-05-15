@@ -31,6 +31,7 @@ protocol ConversationViewInterface: ViewInterface {
 
 protocol ConversationPresenterInterface: PresenterInterface {
     var conversation: Conversation { get set }
+    var isManager: Bool { get }
     func block()
     func viewDidLoad()
     func loadIfFirstTime(seqNumber: UInt64) -> Bool

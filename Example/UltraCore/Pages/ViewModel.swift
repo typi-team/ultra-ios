@@ -104,7 +104,11 @@ extension ViewModel: UltraCoreFutureDelegate {
 }
 
 extension ViewModel: UltraCoreSettingsDelegate {
-        
+
+    func emptyConversationDetailView(isManager: Bool) -> UIView? {
+        return nil
+    }
+
     func provideTransferScreen(for userID: String, viewController: UIViewController, transferCallback: @escaping (UltraCore.MoneyTransfer) -> Void) {
         
     }

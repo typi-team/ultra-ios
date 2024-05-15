@@ -222,7 +222,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .do(onNext: {[weak self] messages in
                 PP.debug("[MESSAGES] - \(messages.count) - \(messages.suffix(10).map(\.id))")
                 self?.messages = messages
-                self?.tableView.backgroundView = messages.isEmpty ? ConversationEmptyViewContainer(emptyView: UltraCoreSettings.delegate?.emptyConversationDetailView() ?? .init()) : self?.backgroundImageView
+                self?.tableView.backgroundView = messages.isEmpty ? ConversationEmptyViewContainer(emptyView: UltraCoreSettings.delegate?.emptyConversationDetailView(isManager: self?.presenter?.isManager ?? false) ?? .init()) : self?.backgroundImageView
             })
             .map({messages -> [SectionModel<String, Message>] in
                 if messages.isEmpty {return []}

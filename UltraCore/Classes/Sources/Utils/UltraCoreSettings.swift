@@ -21,7 +21,7 @@ public protocol UltraCoreFutureDelegate: AnyObject {
 public protocol UltraCoreSettingsDelegate: AnyObject {
     var activeConversationID: String? { get set }
     func emptyConversationView() -> UIView?
-    func emptyConversationDetailView() -> UIView?
+    func emptyConversationDetailView(isManager: Bool) -> UIView?
     func info(from id: String) -> IContactInfo?
     func token(callback: @escaping (Result<String, Error>) -> Void)
     func serverConfig() -> ServerConfigurationProtocol?
@@ -104,8 +104,11 @@ public extension UltraCoreSettings {
         return SignUpWireframe().viewController
     }
 
-    static func entryConversationsViewController() -> UIViewController {
-        return ConversationsWireframe(appDelegate: UltraCoreSettings.delegate).viewController
+    static func entryConversationsViewController(isSupport: Bool = false) -> UIViewController {
+        return ConversationsWireframe(
+            appDelegate: UltraCoreSettings.delegate,
+            isSupport: isSupport
+        ).viewController
     }
 
     static func updateSession(callback: @escaping (Error?) -> Void) {
@@ -222,7 +225,7 @@ public extension UltraCoreSettings {
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { conversation in
                 if let conversation = conversation {
-                    callback(ConversationWireframe(with: conversation).viewController)
+                    callback(ConversationWireframe(with: conversation, isPersonalManager: false).viewController)
                 } else {
                     callback(nil)
                 }
@@ -242,7 +245,7 @@ public extension UltraCoreSettings {
         .observe(on: MainScheduler.instance)
         .subscribe(onSuccess: { conversation in
             if let conversation = conversation {
-                callback(ConversationWireframe(with: conversation).viewController)
+                callback(ConversationWireframe(with: conversation, isPersonalManager: false).viewController)
             } else {
                 callback(nil)
             }
