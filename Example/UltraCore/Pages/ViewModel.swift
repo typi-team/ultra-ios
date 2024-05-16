@@ -254,7 +254,7 @@ extension ViewModel: UltraCoreSettingsDelegate {
     }
     
     func getMessageMeta() -> Dictionary<String, String> {
-        return [:]
+        return ["platform": "iOS"]
     }
 
 }

@@ -238,6 +238,9 @@ extension ConversationPresenter: ConversationPresenterInterface {
     
     func send(location: LocationMessage) {
         var params = MessageSendRequest()
+        if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+            params.message.properties = messageMeta
+        }
         
         params.updatePeer(with: conversation)
 
@@ -287,6 +290,9 @@ extension ConversationPresenter: ConversationPresenterInterface {
         var params = MessageSendRequest()
         
         params.updatePeer(with: conversation)
+        if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+            params.message.properties = messageMeta
+        }
 
         var message = Message()
         message.id = UUID().uuidString
@@ -298,9 +304,6 @@ extension ConversationPresenter: ConversationPresenterInterface {
         message.meta = .with({
             $0.created = Date().nanosec
         })
-        if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
-            message.properties = messageMeta
-        }
         
         params.message = message
         
@@ -360,11 +363,11 @@ extension ConversationPresenter: ConversationPresenterInterface {
             })
             message.sender = .with({ $0.userID = self.userID })
             message.meta = .with({ $0.created = Date().nanosec })
-            if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
-                message.properties = messageMeta
-            }
-            
             params.message = message
+            
+            if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+                params.message.properties = messageMeta
+            }
             
             self.conversationRepository
                 .createIfNotExist(from: message)
@@ -547,6 +550,10 @@ extension ConversationPresenter: ConversationPresenterInterface {
         params.message.id = UUID().uuidString
         params.message.meta.created = Date().nanosec
         
+        if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+            params.message.properties = messageMeta
+        }
+        
         var message = Message()
         message.text = text
         message.id = params.message.id
@@ -558,9 +565,6 @@ extension ConversationPresenter: ConversationPresenterInterface {
         message.meta = .with({
             $0.created = Date().nanosec
         })
-        if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
-            message.properties = messageMeta
-        }
         
         conversationRepository
             .createIfNotExist(from: message)
@@ -621,7 +625,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                         money.currencyCode = moneyTransfer.currency
                     })
                 })
-                message .text = params.textFormatString()
+                message.text = params.textFormatString()
                 message.id = params.message.id
                 message.receiver = .with({ receiver in
                     receiver.userID = receiverID
@@ -629,11 +633,12 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 })
                 message.sender = .with({ $0.userID = self.userID })
                 message.meta = .with({ $0.created = Date().nanosec })
-                if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
-                    message.properties = messageMeta
-                }
                 
                 params.message = message
+                
+                if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+                    params.message.properties = messageMeta
+                }
                 
                 self.conversationRepository
                     .createIfNotExist(from: message)
