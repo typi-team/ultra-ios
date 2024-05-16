@@ -43,7 +43,6 @@ class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
                 self.controllerView.setImage(self.pauseImage, for: .normal)
                 self.voiceRepository.play(message: message)
             }
-            
         }
     })
     
@@ -188,6 +187,7 @@ class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
         } else if self.isInSeekMessage != nil {
             //                IGNORE THIS CASE
         } else {
+            audioWaveView.highlightedSamples = 0..<0
             self.controllerView.setImage(self.playImage, for: .normal)
         }
     }
@@ -225,6 +225,23 @@ class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
     func waveformViewDidRender(_ waveformView: WaveformView) {
         spinner.isHidden = true
         spinner.stopAnimating()
+    }
+    
+    func waveformViewDidLoad(_ waveformView: WaveformView) {
+        if let voiceItem = try? voiceRepository.currentVoice.value(),
+            message?.voice.fileID == voiceItem.voiceMessage.fileID {
+            let duration = voiceItem.voiceMessage.duration.timeInterval.rounded(.down)
+            let currentTime = voiceItem.currentTime
+            let highlightedSamples = 0..<Int(Double(audioWaveView.totalSamples) * currentTime / duration)
+            audioWaveView.highlightedSamples = highlightedSamples
+        }
+    }
+    
+    func waveformScrubbingEnabled(_ waveformView: WaveformView) -> Bool {
+        if let voiceItem = try? voiceRepository.currentVoice.value(), voiceItem.isPlaying {
+            return voiceItem.voiceMessage.originalVoiceFileId == audioWaveView.audioURL?.lastPathComponent.split(separator: ".").first ?? ""
+        }
+        return true
     }
 
 }

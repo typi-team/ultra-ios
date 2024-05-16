@@ -237,6 +237,20 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         
         self.presenter?.viewDidLoad()
         subscribeToInputBoundsChange()
+        
+        tableView.rx
+            .willDisplayCell
+            .subscribe(onNext: { cell, indexPath in
+                if let cell = cell as? OutcomeVoiceCell,
+                   let message = cell.message {
+                    cell.setup(message: message)
+                }
+                if let cell = cell as? IncomeVoiceCell,
+                   let message = cell.message {
+                    cell.setup(message: message)
+                }
+            })
+            .disposed(by: disposeBag)
     }
     
     override func changedKeyboard(

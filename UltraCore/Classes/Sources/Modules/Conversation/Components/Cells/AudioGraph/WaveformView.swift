@@ -27,7 +27,7 @@ open class WaveformView: UIView {
                         NSLog("WaveformView failed to load URL: \(audioURL)")
                     }
 
-                    self.audioContext = audioContext // This will reset the view and kick off a layout
+                    self.audioContext = audioContext
 
                     self.loadingInProgress = false
                     self.delegate?.waveformViewDidLoad?(self)
@@ -157,7 +157,6 @@ open class WaveformView: UIView {
     private var waveformImage: UIImage? {
         get { return imageView.image }
         set {
-            // This will allow us to apply a tint color to the image
             imageView.image = newValue?.withRenderingMode(.alwaysTemplate)
             highlightedImage.image = imageView.image
         }
@@ -410,7 +409,7 @@ extension WaveformView: UIGestureRecognizerDelegate {
     }
 
     @objc func handlePanGesture(_ recognizer: UIPanGestureRecognizer) {
-        guard !zoomSamples.isEmpty else { return }
+        guard !zoomSamples.isEmpty, doesAllowScrubbing, delegate?.waveformScrubbingEnabled?(self) ?? false else { return }
 
         // This method is called even if the user began with pinching.
 
@@ -418,26 +417,19 @@ extension WaveformView: UIGestureRecognizerDelegate {
         case .began:
             guard firstGesture != .pinch else { return }
             firstGesture = .pan
-            if doesAllowScrubbing {
-                delegate?.waveformDidBeginScrubbing?(self)
-            }
+            delegate?.waveformDidBeginScrubbing?(self)
         case .ended, .cancelled:
             let isPan = firstGesture == .pan
             firstGesture = .none
             guard isPan else { return }
-            if doesAllowScrubbing {
-                delegate?.waveformDidEndScrubbing?(self)
-            }
+            delegate?.waveformDidEndScrubbing?(self)
         default:
             guard firstGesture == .pan, recognizer.numberOfTouches == 1 else { return }
         }
         
-        if doesAllowScrubbing {
-            let rangeSamples = CGFloat(zoomSamples.count)
-            let scrubLocation = min(max(recognizer.location(in: self).x, 0), frame.width)    // clamp location within the frame
-            highlightedSamples = 0 ..< Int((CGFloat(zoomSamples.startIndex) + rangeSamples * scrubLocation / bounds.width))
-        }
-
+        let rangeSamples = CGFloat(zoomSamples.count)
+        let scrubLocation = min(max(recognizer.location(in: self).x, 0), frame.width)    // clamp location within the frame
+        highlightedSamples = 0 ..< Int((CGFloat(zoomSamples.startIndex) + rangeSamples * scrubLocation / bounds.width))
     }
 
 }
@@ -461,6 +453,8 @@ extension WaveformView: UIGestureRecognizerDelegate {
 
     /// The scrubbing gesture ended
     @objc optional func waveformDidEndScrubbing(_ waveformView: WaveformView)
+    
+    @objc optional func waveformScrubbingEnabled(_ waveformView: WaveformView) -> Bool
 }
 
 extension CountableRange where Bound: Strideable {
