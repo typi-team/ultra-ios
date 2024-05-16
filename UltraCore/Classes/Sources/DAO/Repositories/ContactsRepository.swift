@@ -57,7 +57,7 @@ extension Realm {
 
         var config = Realm.Configuration(
             fileURL: realmURL,
-            schemaVersion: 5) { migration, oldSchemaVersion in
+            schemaVersion: 6) { migration, oldSchemaVersion in
                 if oldSchemaVersion < 4 {
                     AppSettingsImpl.shared.appStore.store(last: 0)
                     migration.deleteData(forType: DBContact.className())

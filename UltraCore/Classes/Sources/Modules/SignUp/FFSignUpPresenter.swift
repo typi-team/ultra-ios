@@ -87,7 +87,7 @@ extension FFSignUpPresenter: SignUpPresenterInterface {
                         PP.warning(error.localizedDescription)
                     } else if let `self` = self {
                         DispatchQueue.main.async {
-                            self.view?.open(view: UltraCoreSettings.entryConversationsViewController())
+                            self.view?.open(view: UltraCoreSettings.entryConversationsViewController(isSupport: false))
                         }
                     }
                 }

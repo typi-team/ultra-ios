@@ -119,6 +119,9 @@ class ConversationDBService {
                                                 )
                                             )
                                             conversation.conversationType = response.chat.chatType.rawValue
+                                            if response.chat.properties["is_assistant"] == "true" {
+                                                conversation.isAssistant = true
+                                            }
                                             if let contact = contact, !conversation.contact.contains(where: { $0.userID == contact.userID }) {
                                                 conversation.contact.append(contact)
                                             }

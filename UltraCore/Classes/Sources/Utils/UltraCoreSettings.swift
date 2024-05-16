@@ -104,7 +104,7 @@ public extension UltraCoreSettings {
         return SignUpWireframe().viewController
     }
 
-    static func entryConversationsViewController(isSupport: Bool = true) -> UIViewController {
+    static func entryConversationsViewController(isSupport: Bool) -> UIViewController {
         return ConversationsWireframe(
             appDelegate: UltraCoreSettings.delegate,
             isSupport: isSupport

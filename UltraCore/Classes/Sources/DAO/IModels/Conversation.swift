@@ -21,6 +21,7 @@ protocol Conversation: Any {
     var seqNumber: UInt64 { get set }
     var chatType: ConversationType { get set }
     var imagePath: String? { get set }
+    var isAssistant: Bool { get set }
 }
 
 class ConversationImpl: Conversation {
@@ -37,6 +38,7 @@ class ConversationImpl: Conversation {
     var seqNumber: UInt64
     var chatType: ConversationType = .peerToPeer
     var imagePath: String?
+    var isAssistant: Bool = false
     
     init(
         title: String?,
@@ -67,6 +69,7 @@ class ConversationImpl: Conversation {
         self.addContact = dbConversation.addContact
         self.seqNumber = UInt64(dbConversation.seqNumber)
         self.callAllowed = dbConversation.callAllowed
+        self.isAssistant = dbConversation.isAssistant
     }
 }
 

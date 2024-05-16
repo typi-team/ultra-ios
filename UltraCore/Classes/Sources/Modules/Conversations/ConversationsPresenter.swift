@@ -33,16 +33,17 @@ final class ConversationsPresenter: BasePresenter {
         conversationRepository.conversations(),
         updateRepository.typingUsers,
         updateRepository.updateSyncObservable.debug("Updated Sync"),
-        updateRepository.personalManagersObservable.map { $0.map { $0.user_id }}.debug("Personal Managers")
+        updateRepository.supportOfficesObservable
     )
-        .map({ conversations, typingUsers, _, personalManagers in
-            self.personalManagers = personalManagers
+        .map({ conversations, typingUsers, _, supportOffices in
+            let managers = supportOffices?.personal_managers.map(\.user_id) ?? []
+            self.personalManagers = managers
             return conversations
                 .filter { [weak self] conversation in
                     guard let self = self else {
                         return true
                     }
-                    PP.debug("Conversation peers are \(conversation.peers.map(\.phone)); type - \(conversation.chatType) - \(conversation.title)")
+//                    PP.debug("Conversation peers are \(conversation.peers.map(\.phone)); type - \(conversation.chatType) - \(conversation.title), chat ID - \(conversation.idintification)")
                     if isSupport {
                         if conversation.chatType == .support {
                             return true
@@ -50,13 +51,15 @@ final class ConversationsPresenter: BasePresenter {
                             guard let peer = conversation.peers.first else {
                                 return false
                             }
-                            return personalManagers.contains(where: { $0 == peer.phone })
+                            return managers.contains(where: { $0 == peer.phone })
+                        } else if conversation.chatType == .support && conversation.isAssistant {
+                            return supportOffices?.assistant_enabled ?? true
                         } else {
                             return false
                         }
                     }
                     
-                    return true
+                    return !conversation.isAssistant
                 }
                 .map { conversation in
                     var mutable = conversation

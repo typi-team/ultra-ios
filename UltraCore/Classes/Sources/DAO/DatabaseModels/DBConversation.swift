@@ -20,6 +20,7 @@ class DBConversation: Object {
     @objc dynamic var conversationType: Int = 0
     @objc dynamic var imagePath: String = ""
     @objc dynamic var title: String = ""
+    @objc dynamic var isAssistant: Bool = false
     
     var typingData: [UserTypingWithDate] = []
     

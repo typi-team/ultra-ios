@@ -69,7 +69,11 @@ class ChatToConversationInteractor: GRPCErrorUseCase<ChatToConversationParams, V
                             callAllowed: params.chat.settings.callAllowed
                         )
                         let conversation = localRealm.create(DBConversation.self, value: DBConversation(conversation: conv, contacts: contacts))
+                        conversation.conversationType = params.chat.chatType.rawValue
                         conversation.unreadMessageCount = Int(params.chat.unread)
+                        if params.chat.properties["is_assistant"] == "true" {
+                            conversation.isAssistant = true
+                        }
                     }
                     return .just(())
                 } catch {
