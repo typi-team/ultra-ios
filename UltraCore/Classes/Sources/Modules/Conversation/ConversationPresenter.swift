@@ -251,6 +251,9 @@ extension ConversationPresenter: ConversationPresenterInterface {
         message.meta = .with({
             $0.created = Date().nanosec
         })
+        if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+            message.properties = messageMeta
+        }
         
         params.message = message
         
@@ -295,6 +298,9 @@ extension ConversationPresenter: ConversationPresenterInterface {
         message.meta = .with({
             $0.created = Date().nanosec
         })
+        if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+            message.properties = messageMeta
+        }
         
         params.message = message
         
@@ -354,6 +360,9 @@ extension ConversationPresenter: ConversationPresenterInterface {
             })
             message.sender = .with({ $0.userID = self.userID })
             message.meta = .with({ $0.created = Date().nanosec })
+            if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+                message.properties = messageMeta
+            }
             
             params.message = message
             
@@ -549,6 +558,9 @@ extension ConversationPresenter: ConversationPresenterInterface {
         message.meta = .with({
             $0.created = Date().nanosec
         })
+        if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+            message.properties = messageMeta
+        }
         
         conversationRepository
             .createIfNotExist(from: message)
@@ -617,6 +629,9 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 })
                 message.sender = .with({ $0.userID = self.userID })
                 message.meta = .with({ $0.created = Date().nanosec })
+                if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+                    message.properties = messageMeta
+                }
                 
                 params.message = message
                 

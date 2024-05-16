@@ -86,9 +86,8 @@ class ProfileNavigationView: UIView {
             }
         } else {
             sublineText.text = ConversationStrings.supportChat.localized
-            if let imagePath = conversation.imagePath?.url {
-                avatarImageView.sd_setImage(with: imagePath, placeholderImage: UltraCoreStyle.defaultPlaceholder?.image)
-            }
+            sublineText.textColor = style.sublineConfig.color
+            avatarImageView.sd_setImage(with: conversation.imagePath?.url, placeholderImage: UltraCoreStyle.defaultPlaceholder?.image)
         }
     }
     

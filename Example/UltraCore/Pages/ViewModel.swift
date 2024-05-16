@@ -252,5 +252,9 @@ extension ViewModel: UltraCoreSettingsDelegate {
         ]
         callBack(dict)
     }
+    
+    func getMessageMeta() -> Dictionary<String, String> {
+        return [:]
+    }
 
 }
