@@ -59,7 +59,7 @@ final class ConversationsPresenter: BasePresenter {
                         }
                     }
                     
-                    return !conversation.isAssistant
+                    return conversation.chatType != .support
                 }
                 .map { conversation in
                     var mutable = conversation
