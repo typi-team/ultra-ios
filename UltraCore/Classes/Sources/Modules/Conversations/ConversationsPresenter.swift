@@ -36,7 +36,7 @@ final class ConversationsPresenter: BasePresenter {
         updateRepository.supportOfficesObservable
     )
         .map({ conversations, typingUsers, _, supportOffices in
-            let managers = supportOffices?.personalManagers.map(\.userId) ?? []
+            let managers = supportOffices?.personalManagers.map { String($0.userId) } ?? []
             self.personalManagers = managers
             return conversations
                 .filter { [weak self] conversation in

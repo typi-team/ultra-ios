@@ -240,12 +240,12 @@ extension ViewModel: UltraCoreSettingsDelegate {
               ],
               "personalManagers": [
                 [
-                  "userId": "3016423",
+                  "userId": 3016423,
                   "nickname": "Денис Черепков",
                   "avatarUrl": nil
                 ],
                 [
-                  "userId": "1880932",
+                  "userId": 1880932,
                   "nickname": "Вера Заколодяжная",
                   "avatarUrl": nil
                 ]

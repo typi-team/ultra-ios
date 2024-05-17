@@ -20,7 +20,7 @@ struct SupportChat: Codable {
 }
 
 struct PersonalManager: Codable {
-    let userId: String
+    let userId: Int
     let nickname: String
     let avatarUrl: String?
 }

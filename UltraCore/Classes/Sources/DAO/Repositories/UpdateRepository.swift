@@ -369,7 +369,7 @@ private extension UpdateRepositoryImpl {
                     req.managers = response.personalManagers.map { manager in
                         InitSupportChatsRequest.PersonalManager.with {
                             $0.name = manager.nickname
-                            $0.phone = manager.userId
+                            $0.phone = String(manager.userId)
                         }
                     }
                 }
