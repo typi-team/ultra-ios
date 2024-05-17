@@ -267,6 +267,11 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         let keyBoardHeight = UIScreen.main.bounds.height - frame.origin.y
         let bottomInset = keyBoardHeight > 0 ? keyBoardHeight - view.safeAreaInsets.bottom : 0
         let insets = UIEdgeInsets(top: 0, left: 0, bottom: bottomInset, right: 0)
+        
+        guard tableView.contentInset != insets else {
+            return
+        }
+        
         self.tableView.contentInset = insets
         self.tableView.scrollIndicatorInsets = insets
         
