@@ -96,13 +96,13 @@ class ConversationCell: BaseCell {
         }
     }
     
-    func setup(conversation: Conversation ) {
+    func setup(conversation: Conversation, isManager: Bool) {
         self.titleView.text = conversation.title
-        self.descriptionView.text = conversation.lastMessage?.message ?? ConversationStrings.noMessages.localized
+        self.descriptionView.text = conversation.lastMessage?.message ?? getNoMessagesText(isManager: isManager)
         self.unreadView.isHidden = conversation.unreadCount == 0
         self.unreadView.text = conversation.unreadCount.description
         self.lastSeenView.text = conversation.timestamp.formattedTimeForConversationCell()
-        self.setupTyping(conversation: conversation)
+        self.setupTyping(conversation: conversation, isManager: isManager)
         self.setupAvatar(conversation: conversation)
         
         if let message = conversation.lastMessage, !message.isIncome {
@@ -117,6 +117,10 @@ class ConversationCell: BaseCell {
         }
     }
     
+    private func getNoMessagesText(isManager: Bool) -> String {
+        return isManager ? ConversationStrings.noMessagesManager.localized : ConversationStrings.noMessages.localized
+    }
+    
     private func setupAvatar(conversation: Conversation) {
         if let contact = conversation.peers.first {
             self.avatarView.set(contact: contact, placeholder: UltraCoreStyle.defaultPlaceholder?.image)
@@ -125,10 +129,10 @@ class ConversationCell: BaseCell {
         }
     }
     
-    private func setupTyping(conversation: Conversation) {
+    private func setupTyping(conversation: Conversation, isManager: Bool) {
         let typingUsers = conversation.typingData.filter({$0.isTyping})
         if typingUsers.isEmpty {
-            self.descriptionView.text = conversation.lastMessage?.message ?? ConversationStrings.noMessages.localized
+            self.descriptionView.text = conversation.lastMessage?.message ?? getNoMessagesText(isManager: isManager)
         } else {
             self.descriptionView.text = "\(ConversationStrings.prints.localized)"
         }

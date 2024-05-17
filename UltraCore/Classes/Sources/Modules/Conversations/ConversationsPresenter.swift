@@ -125,6 +125,16 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
         }
     }
     
+    func isManager(conversation: Conversation) -> Bool {
+        if conversation.chatType == .peerToPeer {
+            guard let peer = conversation.peers.first else {
+                return false
+            }
+            return personalManagers.contains(where: { $0 == peer.phone })
+        }
+        
+        return false
+    }
     
     func navigateToContacts() {
         self.wireframe.navigateToContacts(

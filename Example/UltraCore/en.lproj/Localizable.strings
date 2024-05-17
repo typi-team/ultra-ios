@@ -165,3 +165,4 @@
 "conversation.supportChatManagerAssigned" = "Operator %@ joined the conversation";
 
 "conversation.noMessages" = "No messages";
+"conversation.noMessagesManager" = "No messages from your manager";

@@ -168,3 +168,4 @@
 "conversation.supportChatManagerAssigned" = "Оператор %@ подключился к диалогу";
 
 "conversation.noMessages" = "Нет сообщений";
+"conversation.noMessagesManager" = "Нет сообщений от вашего мэнеджера";

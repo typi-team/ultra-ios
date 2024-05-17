@@ -33,7 +33,10 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
         model in
         
         let cell: ConversationCell = tableView.dequeueCell()
-        cell.setup(conversation: model)
+        cell.setup(
+            conversation: model,
+            isManager: self.presenter?.isManager(conversation: model) ?? false
+        )
         return cell
     }, canEditRowAtIndexPath: { data, indexpath in
         if let phone = data.sectionModels[indexpath.section].items[indexpath.row].peers.first?.phone {
