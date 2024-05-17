@@ -25,7 +25,7 @@ final class AudioContext {
         self.assetTrack = assetTrack
     }
     
-    public static func load(fromAudioURL audioURL: URL, completionHandler: @escaping (_ audioContext: AudioContext?) -> ()) {
+    public static func load(fromAudioURL audioURL: URL, completionHandler: @escaping (_ audioContext: AudioContext?) -> (), showLoading: () -> Void) {
         let asset = AVURLAsset(url: audioURL, options: [AVURLAssetPreferPreciseDurationAndTimingKey: NSNumber(value: true as Bool)])
         
         guard let assetTrack = asset.tracks(withMediaType: AVMediaType.audio).first else {
@@ -39,6 +39,8 @@ final class AudioContext {
             completionHandler(AudioContext(audioURL: audioURL, totalSamples: 10000, asset: asset, assetTrack: assetTrack))
             return
         }
+        
+        showLoading()
         
         asset.loadValuesAsynchronously(forKeys: ["duration"]) {
             var error: NSError?

@@ -16,10 +16,8 @@ open class WaveformView: UIView {
                 return
             }
 
-            loadingInProgress = true
-            delegate?.waveformViewWillLoad?(self)
-
-            AudioContext.load(fromAudioURL: audioURL) { audioContext in
+            AudioContext.load(fromAudioURL: audioURL) { [weak self] audioContext in
+                guard let self else { return }
                 DispatchQueue.main.async {
                     guard self.audioURL == audioContext?.audioURL else { return }
 
@@ -32,6 +30,9 @@ open class WaveformView: UIView {
                     self.loadingInProgress = false
                     self.delegate?.waveformViewDidLoad?(self)
                 }
+            } showLoading: {
+                self.loadingInProgress = true
+                self.delegate?.waveformViewWillLoad?(self)
             }
         }
     }
