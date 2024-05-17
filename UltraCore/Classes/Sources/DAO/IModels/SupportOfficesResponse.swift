@@ -8,18 +8,19 @@
 import Foundation
 
 struct SupportOfficesResponse: Codable {
-    let support_chats: [SupportChat]
-    let personal_managers: [PersonalManager]
-    let assistant_enabled: Bool
+    let supportChats: [SupportChat]
+    let personalManagers: [PersonalManager]
+    let assistantEnabled: Bool
 }
 
 struct SupportChat: Codable {
     let reception: Int
     let name: String
-    let avatar: String?
+    let avatarUrl: String?
 }
 
 struct PersonalManager: Codable {
-    let user_id: String
+    let userId: String
     let nickname: String
+    let avatarUrl: String?
 }

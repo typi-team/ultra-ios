@@ -226,29 +226,31 @@ extension ViewModel: UltraCoreSettingsDelegate {
     
     func getSupportChatsAndManagers(callBack: @escaping (([String : Any]) -> Void)) {
         let dict: [String: Any] = [
-            "support_chats": [
+            "supportChats": [
                 [
                   "reception": 50,
                   "name": "FF Global",
-                  "avatar": nil
+                  "avatarUrl": nil
                 ],
                 [
                   "reception": 36,
                   "name": "FF Казахстан",
-                  "avatar": nil
+                  "avatarUrl": nil
                 ]
               ],
-              "personal_managers": [
+              "personalManagers": [
                 [
-                  "user_id": "3016423",
-                  "nickname": "Денис Черепков"
+                  "userId": "3016423",
+                  "nickname": "Денис Черепков",
+                  "avatarUrl": nil
                 ],
                 [
-                  "user_id": "1880932",
-                  "nickname": "Вера Заколодяжная"
+                  "userId": "1880932",
+                  "nickname": "Вера Заколодяжная",
+                  "avatarUrl": nil
                 ]
               ],
-              "assistant_enabled": true
+              "assistantEnabled": true
         ]
         callBack(dict)
     }

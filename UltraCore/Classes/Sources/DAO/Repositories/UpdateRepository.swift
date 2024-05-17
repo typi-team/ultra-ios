@@ -360,16 +360,16 @@ private extension UpdateRepositoryImpl {
                 let data = try JSONSerialization.data(withJSONObject: responseDict, options: .fragmentsAllowed)
                 let response = try JSONDecoder().decode(SupportOfficesResponse.self, from: data)
                 let request = InitSupportChatsRequest.with { req in
-                    req.receptions = response.support_chats.map { supportChat in
+                    req.receptions = response.supportChats.map { supportChat in
                         InitSupportChatsRequest.Reception.with {
                             $0.name = supportChat.name
                             $0.reception = String(supportChat.reception)
                         }
                     }
-                    req.managers = response.personal_managers.map { manager in
+                    req.managers = response.personalManagers.map { manager in
                         InitSupportChatsRequest.PersonalManager.with {
                             $0.name = manager.nickname
-                            $0.phone = manager.user_id
+                            $0.phone = manager.userId
                         }
                     }
                 }
@@ -383,7 +383,7 @@ private extension UpdateRepositoryImpl {
                                 self.chatToConversationInteractor.executeSingle(
                                     params: .init(
                                         chat: chat,
-                                        imagePath: response.support_chats.first(where: { $0.name == chat.title })?.avatar
+                                        imagePath: response.supportChats.first(where: { $0.name == chat.title })?.avatarUrl
                                     )
                                 )
                                 .asObservable()

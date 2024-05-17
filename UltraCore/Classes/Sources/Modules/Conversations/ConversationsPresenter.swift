@@ -36,7 +36,7 @@ final class ConversationsPresenter: BasePresenter {
         updateRepository.supportOfficesObservable
     )
         .map({ conversations, typingUsers, _, supportOffices in
-            let managers = supportOffices?.personal_managers.map(\.user_id) ?? []
+            let managers = supportOffices?.personalManagers.map(\.userId) ?? []
             self.personalManagers = managers
             return conversations
                 .filter { [weak self] conversation in
@@ -53,7 +53,7 @@ final class ConversationsPresenter: BasePresenter {
                             }
                             return managers.contains(where: { $0 == peer.phone })
                         } else if conversation.chatType == .support && conversation.isAssistant {
-                            return supportOffices?.assistant_enabled ?? true
+                            return supportOffices?.assistantEnabled ?? true
                         } else {
                             return false
                         }
