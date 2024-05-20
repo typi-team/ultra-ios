@@ -32,6 +32,7 @@ class ChatToConversationInteractor: GRPCErrorUseCase<ChatToConversationParams, V
                 try realm.write {
                     conversation.imagePath = params.imagePath ?? ""
                     conversation.title = params.chat.title
+                    PP.debug("Saving imagepath - \(params.imagePath); title - \(params.chat.title) for existing chatID - \(params.chat.chatID)")
                     realm.create(DBConversation.self, value: conversation, update: .all)
                 }
                 return .just(())
@@ -75,6 +76,7 @@ class ChatToConversationInteractor: GRPCErrorUseCase<ChatToConversationParams, V
                         if params.chat.properties["is_assistant"] == "true" {
                             conversation.isAssistant = true
                         }
+                        PP.debug("Saving imagepath - \(params.imagePath); title - \(params.chat.title) for new chatID - \(params.chat.chatID)")
                     }
                     return .just(())
                 } catch {

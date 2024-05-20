@@ -123,6 +123,7 @@ class ConversationCell: BaseCell {
     
     private func setupAvatar(conversation: Conversation) {
         if conversation.chatType != .peerToPeer {
+            PP.debug("Set conversation avatar - \(conversation.imagePath?.url) for \(conversation.title)")
             self.avatarView.sd_setImage(with: conversation.imagePath?.url, placeholderImage: UltraCoreStyle.defaultPlaceholder?.image)
         }
         else if let contact = conversation.peers.first {
