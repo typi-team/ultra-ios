@@ -281,7 +281,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             )
         }
         
-        if tableView.contentSize.height > tableView.frame.height {
+        if tableView.contentSize.height + keyBoardHeight > tableView.frame.height {
             if keyBoardHeight > 0 {
                 contentOffset.y += (keyBoardHeight - self.view.safeAreaInsets.bottom)
             } else {
