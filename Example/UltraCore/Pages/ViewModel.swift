@@ -228,9 +228,9 @@ extension ViewModel: UltraCoreSettingsDelegate {
         let dict: [String: Any] = [
             "supportChats": [
                 [
-                  "reception": 50,
-                  "name": "FF Global",
-                  "avatarUrl": nil
+                  "reception": 32,
+                  "name": "Цифра Брокер",
+                  "avatarUrl": "https://tradernet.ru/data/images/receptions_settings/file-6645cb72a5d69.png"
                 ],
                 [
                   "reception": 36,

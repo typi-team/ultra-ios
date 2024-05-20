@@ -70,6 +70,7 @@ class ConversationImpl: Conversation {
         self.seqNumber = UInt64(dbConversation.seqNumber)
         self.callAllowed = dbConversation.callAllowed
         self.isAssistant = dbConversation.isAssistant
+        self.imagePath = dbConversation.imagePath.isEmpty ? nil : dbConversation.imagePath
     }
 }
 

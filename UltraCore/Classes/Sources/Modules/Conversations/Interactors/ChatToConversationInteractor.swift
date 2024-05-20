@@ -31,6 +31,7 @@ class ChatToConversationInteractor: GRPCErrorUseCase<ChatToConversationParams, V
             do {
                 try realm.write {
                     conversation.imagePath = params.imagePath ?? ""
+                    conversation.title = params.chat.title
                     realm.create(DBConversation.self, value: conversation, update: .all)
                 }
                 return .just(())
@@ -70,7 +71,7 @@ class ChatToConversationInteractor: GRPCErrorUseCase<ChatToConversationParams, V
                         )
                         let conversation = localRealm.create(DBConversation.self, value: DBConversation(conversation: conv, contacts: contacts))
                         conversation.conversationType = params.chat.chatType.rawValue
-                        conversation.unreadMessageCount = Int(params.chat.unread)
+                        conversation.imagePath = params.imagePath ?? ""
                         if params.chat.properties["is_assistant"] == "true" {
                             conversation.isAssistant = true
                         }

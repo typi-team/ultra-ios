@@ -27,15 +27,15 @@ extension Message {
         case .photoDeleted:
             return false
         case .supportManagerAssigned:
-            return true
+            return false
         case .supportStatusChanged(let systemActionSupportStatusChanged):
             switch systemActionSupportStatusChanged.status {
             case .supportChatStatusClosed:
-                return true
+                return false
             case .supportChatStatusPostponed:
-                return true
+                return false
             case .supportChatStatusOpen:
-                return true
+                return false
             case .supportChatStatusAny:
                 return false
             case .supportChatStatusCreated:

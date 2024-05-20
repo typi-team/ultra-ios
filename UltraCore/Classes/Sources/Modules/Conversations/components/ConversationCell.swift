@@ -122,7 +122,10 @@ class ConversationCell: BaseCell {
     }
     
     private func setupAvatar(conversation: Conversation) {
-        if let contact = conversation.peers.first {
+        if conversation.chatType != .peerToPeer {
+            self.avatarView.sd_setImage(with: conversation.imagePath?.url, placeholderImage: UltraCoreStyle.defaultPlaceholder?.image)
+        }
+        else if let contact = conversation.peers.first {
             self.avatarView.set(contact: contact, placeholder: UltraCoreStyle.defaultPlaceholder?.image)
         } else {
             self.avatarView.set(placeholder: .initial(text: conversation.title))
