@@ -104,8 +104,13 @@ class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
     
     private func displayAudioGraph() {
         guard let message = self.message else { return }
+        
         if audioWaveView.audioURL == nil,
            let soundURL = voiceRepository.mediaURL(message: message) {
+            if let path = pathFile(from: soundURL),
+               let image = mediaRepository.audioGraphImage(from: path) {
+                audioWaveView.waveformImage = image
+            }
             audioWaveView.audioURL = soundURL
         }
     }
@@ -242,6 +247,13 @@ class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
             return voiceItem.voiceMessage.originalVoiceFileId == audioWaveView.audioURL?.lastPathComponent.split(separator: ".").first ?? ""
         }
         return true
+    }
+    
+    private func pathFile(from url: URL) -> String? {
+        if let path = url.lastPathComponent.split(separator: ".").first {
+            return path + ".png"
+        }
+        return nil
     }
 
 }

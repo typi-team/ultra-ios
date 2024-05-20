@@ -155,7 +155,7 @@ open class WaveformView: UIView {
     private var cachedWaveformRenderOperation: WaveformRenderOperation?
 
     /// Image of waveform
-    private var waveformImage: UIImage? {
+    var waveformImage: UIImage? {
         get { return imageView.image }
         set {
             imageView.image = newValue?.withRenderingMode(.alwaysTemplate)
