@@ -569,7 +569,7 @@ extension ConversationViewController: (UIImagePickerControllerDelegate & UINavig
             self.presenter?.upload(file: .init(url: url, data: data, mime: "video/mp4", width: 300, height: 200), isVoice: false)
         } else if let image = info[.originalImage] as? UIImage,
                   let downsampled = image.fixedOrientation().downsample(reductionAmount: 0.5),
-                  let data = downsampled.pngData() {
+                  let data = downsampled.jpegData(compressionQuality: 0.1) {
             picker.dismiss(animated: true, completion: {
                 self.presenter?.upload(file: .init(url: nil, data: data, mime: "image/png", width: image.size.width, height: image.size.height), isVoice: false)
             })
