@@ -43,7 +43,7 @@ final class ConversationsPresenter: BasePresenter {
                     guard let self = self else {
                         return true
                     }
-                    PP.debug("Conversation peers are \(conversation.peers.map(\.phone)); type - \(conversation.chatType) - \(conversation.title), chat ID - \(conversation.idintification)")
+                    PP.debug("Conversation peers are \(conversation.peers.map(\.phone)); type - \(conversation.chatType) - \(conversation.title), chat ID - \(conversation.idintification); personal managers - \(self.personalManagers); isSupport - \(isSupport)")
                     if isSupport {
                         if conversation.chatType == .support {
                             return true
