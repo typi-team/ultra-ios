@@ -356,6 +356,7 @@ private extension UpdateRepositoryImpl {
     func initializeSupportChats() {
         UltraCoreSettings.delegate?.getSupportChatsAndManagers(callBack: { [weak self] responseDict in
             guard let self = self else { return }
+            PP.debug("Get support chats - \(responseDict)")
             do {
                 let data = try JSONSerialization.data(withJSONObject: responseDict, options: .fragmentsAllowed)
                 let response = try JSONDecoder().decode(SupportOfficesResponse.self, from: data)
@@ -373,11 +374,13 @@ private extension UpdateRepositoryImpl {
                         }
                     }
                 }
+                PP.debug("Support manager request - \(request)")
                 supportOfficesSubject.onNext(response)
                 initSupportInteractor.executeSingle(params: request)
                     .asObservable()
                     .flatMap { [weak self] chatsResponse -> Observable<[Void]> in
                         guard let self else { return Observable.empty() }
+                        PP.debug("Support manager response - \(chatsResponse.chats)")
                         let requests = chatsResponse.chats
                             .map { chat in
                                 self.chatToConversationInteractor.executeSingle(
