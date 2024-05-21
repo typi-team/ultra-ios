@@ -12,6 +12,8 @@ protocol AppSettingsStore {
     func store(token: String)
     func store(userID: String)
     func store(last state: Int64)
+    func saveLoadState(for chatID: String)
+    func loadState(for chatID: String) -> Bool
     
     var token: String?  { get set }
     var lastState: Int64 { get }
@@ -53,6 +55,16 @@ extension AppSettingsStoreImpl: AppSettingsStore {
     
     func store(token: String) {
         self.token = token
+    }
+    
+    func saveLoadState(for chatID: String) {
+        let key = "chat_\(chatID)"
+        userDefault?.set(true, forKey: key)
+    }
+    
+    func loadState(for chatID: String) -> Bool {
+        let key = "chat_\(chatID)"
+        return userDefault?.bool(forKey: key) ?? false
     }
     
     func deleteAll() {

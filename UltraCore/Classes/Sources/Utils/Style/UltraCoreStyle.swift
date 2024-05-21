@@ -25,6 +25,7 @@ private class IncomeMessageCellConfigImpl: MessageCellConfig {
     var sildirBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
     var fileCellConfig: FileCellConfig = FileCellConfigImpl()
     var mediaImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_media_play")!, default: .named("conversation_media_play")!)
+    var contactLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultBoldBody)
 }
 
 private class OutcomeMessageCellConfigImpl: OutcomingMessageCellConfig {
@@ -47,6 +48,7 @@ private class OutcomeMessageCellConfigImpl: OutcomingMessageCellConfig {
     var sildirBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
     var fileCellConfig: FileCellConfig = FileCellConfigImpl()
     var mediaImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_media_play")!, default: .named("conversation_media_play")!)
+    var contactLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultBoldBody)
 }
 
 
@@ -76,6 +78,8 @@ public class UltraCoreStyle {
     public static var incomeMessageCell: MessageCellConfig? = IncomeMessageCellConfigImpl()
     public static var outcomeMessageCell: OutcomingMessageCellConfig? = OutcomeMessageCellConfigImpl()
     public static var videoFotoMessageCell: VideoFotoCellConfig?
+    public static var incomeVoiceMessageCell: VoiceMessageCellConfig? = IncomeVoiceMessageCellConfigImpl()
+    public static var outcomeVoiceMessageCell: VoiceMessageCellConfig? = OutcomeVoiceMessageCellConfigImpl()
 //    MARK: Date header
     public static var headerInSection: HeaderInSectionConfig? = HeaderInSectionConfigImpl()
 //    MARK: Conversation Profile header
@@ -100,6 +104,7 @@ public class UltraCoreStyle {
         defaultColor: UIColor.from(hex: "e5e7eb").withAlphaComponent(0.5),
         darkColor: UIColor.from(hex: "e5e7eb").withAlphaComponent(0.5)
     )
+    public static var systemMessageTextConfig: LabelConfig = LabelConfigImpl(darkColor: .textTertiary, defaultColor: .textTertiary, font: .defaultRegularFootnote)
 }
 
 private class MessageInputBarConfigImpl: MessageInputBarConfig {
@@ -248,5 +253,27 @@ private class ConversationScreenStyleConfigImpl: ConversationScreenStyleConfig {
     var loaderTintColor: TwiceColor = TwiceColorImpl(
         defaultColor: .black,
         darkColor: .black
+    )
+}
+
+private class IncomeVoiceMessageCellConfigImpl: VoiceMessageCellConfig {
+    var minimumTrackTintColor: TwiceColor = TwiceColorImpl(
+        defaultColor: .baseBlue,
+        darkColor: .baseBlue
+    )
+    var maximumTrackTintColor: TwiceColor = TwiceColorImpl(
+        defaultColor: .from(hex: "#B7BCC5"),
+        darkColor: .from(hex: "#B7BCC5")
+    )
+}
+
+private class OutcomeVoiceMessageCellConfigImpl: VoiceMessageCellConfig {
+    var minimumTrackTintColor: TwiceColor = TwiceColorImpl(
+        defaultColor: .white,
+        darkColor: .white
+    )
+    var maximumTrackTintColor: TwiceColor = TwiceColorImpl(
+        defaultColor: .from(hex: "#BFDBFE"),
+        darkColor: .from(hex: "#BFDBFE")
     )
 }

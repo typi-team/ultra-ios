@@ -22,6 +22,7 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
     fileprivate let conversation: Conversation
     
     init(with conversation: Conversation,
+         isPersonalManager: Bool,
          delegate: UltraCoreSettingsDelegate? = UltraCoreSettings.delegate,
          futureDelegate: UltraCoreFutureDelegate? = UltraCoreSettings.futureDelegate) {
         self.delegate = delegate
@@ -43,6 +44,7 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
         let acceptContactInteractor = AcceptContactInteractor(contactService: appSettings.contactsService)
         let presenter = ConversationPresenter(
             userID: appSettings.appStore.userID(),
+            isPersonalManager: isPersonalManager,
             appStore: appSettings.appStore,
             conversation: conversation,
             view: moduleViewController,
@@ -72,7 +74,7 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
 
 extension ConversationWireframe: ConversationWireframeInterface {
     func navigateToCall(response: CreateCallResponse, isVideo: Bool) {
-        guard let reciever = self.conversation.peer?.userID else { return }
+        guard let reciever = self.conversation.peers.first?.userID else { return }
         let info = CallOutging(video: isVideo, host: response.host, room: response.room, sender: reciever, accessToken: response.accessToken)
         self.navigationController?.presentWireframe(IncomingCallWireframe(call: .outcoming(info)), animated: true, completion: nil)
     }

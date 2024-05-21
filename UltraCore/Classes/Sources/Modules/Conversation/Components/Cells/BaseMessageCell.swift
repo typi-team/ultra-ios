@@ -25,6 +25,7 @@ enum MessageMenuAction {
 class BaseMessageCell: BaseCell {
     fileprivate lazy var cellAction = UITapGestureRecognizer.init(target: self, action: #selector(self.handleCellPress(_:)))
     
+    var messagePrefix: String?
     var message: Message?
     var cellActionCallback: (() -> Void)?
     var actionCallback: ((Message) -> Void)?
@@ -104,7 +105,11 @@ class BaseMessageCell: BaseCell {
     
     func setup(message: Message) {
         self.message = message
-        self.textView.attributedText = NSAttributedString(string: message.text)
+        if let messagePrefix = messagePrefix {
+            self.textView.attributedText = NSAttributedString(string: "\(messagePrefix)\n\(message.text)")
+        } else {
+            self.textView.attributedText = NSAttributedString(string: message.text)
+        }
         self.deliveryDateLabel.text = message.meta.created.dateBy(format: .hourAndMinute)
         self.traitCollectionDidChange(UIScreen.main.traitCollection)
         if #available(iOS 13.0, *) {
@@ -137,13 +142,24 @@ class BaseMessageCell: BaseCell {
                 
                 self.textView.font = UltraCoreStyle.incomeMessageCell?.textLabelConfig.font
                 self.textView.textColor = UltraCoreStyle.incomeMessageCell?.textLabelConfig.color
-                self.textView.attributedText = NSAttributedString(
+                let attributedStr = NSMutableAttributedString(
                     string: self.textView.text ?? "",
                     attributes: attributes(
                         for: UltraCoreStyle.incomeMessageCell?.textLabelConfig.font,
                         textColor: UltraCoreStyle.incomeMessageCell?.textLabelConfig.color
                     )
                 )
+                if let messagePrefix = messagePrefix {
+                    let range = NSString(string: attributedStr.string).range(of: messagePrefix)
+                    attributedStr.setAttributes(
+                        attributes(
+                            for: UltraCoreStyle.incomeMessageCell?.contactLabelConfig.font,
+                            textColor: UltraCoreStyle.incomeMessageCell?.contactLabelConfig.color),
+                        range: range
+                    )
+                }
+                
+                self.textView.attributedText = attributedStr
             } else {
                 self.textView.hyperlinkAttributes = [
                     .foregroundColor: UltraCoreStyle.outcomeMessageCell?.linkColor.color ?? .systemBlue,

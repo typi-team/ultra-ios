@@ -17,7 +17,7 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
 
     // MARK: - Module setup -
 
-    init(appDelegate: UltraCoreSettingsDelegate?) {
+    init(appDelegate: UltraCoreSettingsDelegate?, isSupport: Bool) {
         self.delegate = appDelegate
         let moduleViewController = ConversationsViewController()
         super.init(viewController: moduleViewController)
@@ -36,16 +36,19 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
 
         let resendMessagesInteractor = ResendingMessagesInteractor(messageRepository: appSettings.messageRespository, mediaRepository: appSettings.mediaRepository, messageSenderInteractor: messageSenderInteractor)
         let reachabilityInteractor = ReachabilityInteractor()
-        let presenter = ConversationsPresenter(view: moduleViewController,
-                                               updateRepository: appSettings.updateRepository,
-                                               contactDBService: appSettings.contactDBService,
-                                               wireframe: self,
-                                               conversationRepository: appSettings.conversationRespository,
-                                               contactByUserIdInteractor: contactByUserIdInteractor,
-                                               deleteConversationInteractor: deleteConversationInteractor,
-                                               contactToConversationInteractor: contactToConversationInteractor,
-                                               resendMessagesInteractor: resendMessagesInteractor,
-                                               reachabilityInteractor: reachabilityInteractor)
+        let presenter = ConversationsPresenter(
+            view: moduleViewController,
+            isSupport: isSupport,
+            updateRepository: appSettings.updateRepository,
+            contactDBService: appSettings.contactDBService,
+            wireframe: self,
+            conversationRepository: appSettings.conversationRespository,
+            contactByUserIdInteractor: contactByUserIdInteractor,
+            deleteConversationInteractor: deleteConversationInteractor,
+            contactToConversationInteractor: contactToConversationInteractor,
+            resendMessagesInteractor: resendMessagesInteractor,
+            reachabilityInteractor: reachabilityInteractor
+        )
 
         moduleViewController.presenter = presenter
     }
@@ -63,7 +66,7 @@ extension ConversationsWireframe: ConversationsWireframeInterface {
         }
     }
     
-    func navigateToConversation(with data: Conversation) {
-        self.navigationController?.pushWireframe(ConversationWireframe(with: data))
+    func navigateToConversation(with data: Conversation, isPersonalManager: Bool) {
+        self.navigationController?.pushWireframe(ConversationWireframe(with: data, isPersonalManager: isPersonalManager))
     }
 }

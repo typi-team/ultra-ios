@@ -119,6 +119,8 @@ struct Chat {
   /// Clears the value of `supportSettings`. Subsequent reads from it will return its default value.
   mutating func clearSupportSettings() {self._supportSettings = nil}
 
+  var properties: Dictionary<String,String> = [:]
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -365,6 +367,7 @@ extension Chat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     6: .same(proto: "messageSeqNumber"),
     7: .same(proto: "settings"),
     8: .same(proto: "supportSettings"),
+    9: .same(proto: "properties"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -381,6 +384,7 @@ extension Chat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
       case 6: try { try decoder.decodeSingularUInt64Field(value: &self.messageSeqNumber) }()
       case 7: try { try decoder.decodeSingularMessageField(value: &self._settings) }()
       case 8: try { try decoder.decodeSingularMessageField(value: &self._supportSettings) }()
+      case 9: try { try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: &self.properties) }()
       default: break
       }
     }
@@ -415,6 +419,9 @@ extension Chat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     try { if let v = self._supportSettings {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
     } }()
+    if !self.properties.isEmpty {
+      try visitor.visitMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: self.properties, fieldNumber: 9)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -427,6 +434,7 @@ extension Chat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     if lhs.messageSeqNumber != rhs.messageSeqNumber {return false}
     if lhs._settings != rhs._settings {return false}
     if lhs._supportSettings != rhs._supportSettings {return false}
+    if lhs.properties != rhs.properties {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

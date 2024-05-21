@@ -19,6 +19,7 @@ public protocol MessageCellConfig {
     var locationPinImage: TwiceImage? { get set }
     var linkColor: TwiceColor { get set }
     var fileCellConfig: FileCellConfig { get set }
+    var contactLabelConfig: LabelConfig { get set }
 }
 
 public protocol OutcomingMessageCellConfig: MessageCellConfig {
@@ -39,6 +40,11 @@ public protocol VideoFotoCellConfig  {
     var sentImage: TwiceImage? { get set }
     var deliveredImage: TwiceImage? { get set }
     var readImage: TwiceImage? { get set }
+}
+
+public protocol VoiceMessageCellConfig {
+    var minimumTrackTintColor: TwiceColor { get set }
+    var maximumTrackTintColor: TwiceColor { get set }
 }
 
 public protocol HeaderInSectionConfig {

@@ -202,6 +202,9 @@ private extension MediaRepositoryImpl {
             photo.width = Int32(file.width)
             photo.fileID = UUID().uuidString
         })
+        if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+            message.properties = messageMeta
+        }
         preUploading(message: message, file: file, conversation: conversation, onCompletion: onPreUploadingFile)
         return upload(message: message)
     }
@@ -214,6 +217,9 @@ private extension MediaRepositoryImpl {
             photo.fileName = file.filename
             photo.fileID = UUID().uuidString
         })
+        if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+            message.properties = messageMeta
+        }
         preUploading(message: message, file: file, conversation: conversation, onCompletion: onPreUploadingFile)
         return upload(message: message)
     }
@@ -228,6 +234,9 @@ private extension MediaRepositoryImpl {
             photo.width = Int32(file.width)
             photo.fileID = UUID().uuidString
         })
+        if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+            message.properties = messageMeta
+        }
         preUploading(message: message, file: file, conversation: conversation, onCompletion: onPreUploadingFile)
         return uploadVideo(message: message)
     }
@@ -241,6 +250,9 @@ private extension MediaRepositoryImpl {
             photo.fileName = file.filename
             photo.fileID = UUID().uuidString
         })
+        if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+            message.properties = messageMeta
+        }
         preUploading(message: message, file: file, conversation: conversation, onCompletion: onPreUploadingFile)
         return upload(message: message)
     }
@@ -273,9 +285,15 @@ private extension MediaRepositoryImpl {
             }
             try mediaUtils.write(file.data, file: originalFileId, and: extensions)
             let request = MessageSendRequest.with({ req in
-                req.peer.user = .with({ peer in
-                    peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
-                })
+                if conversation.chatType == .peerToPeer {
+                    req.peer.user = .with({ peer in
+                        peer.userID = conversation.peers.first?.userID ?? ""
+                    })
+                } else {
+                    req.peer.chat = .with({ chat in
+                        chat.chatID = conversation.idintification
+                    })
+                }
                 req.message = message
             })
             onCompletion(request)

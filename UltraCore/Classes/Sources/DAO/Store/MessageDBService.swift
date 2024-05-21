@@ -251,6 +251,7 @@ class MessageDBService {
     }
     
     func save(messages: [Message]) -> Single<Void> {
+        let messages = messages.filter { $0.shouldBeSaved }
         PP.debug("[Message] [DB MESSAGES save]: \(messages)")
         return Single.create {[weak self] completable in
             guard let `self` = self else { return Disposables.create() }

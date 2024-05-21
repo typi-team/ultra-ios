@@ -25,6 +25,10 @@ extension UIFont {
     class var defaultRegularBody: UIFont {
         return UIFont.systemFont(ofSize: 17.0, weight: .regular)
     }
+    
+    class var defaultBoldBody: UIFont {
+        return UIFont.systemFont(ofSize: 17.0, weight: .bold)
+    }
 
     class var defaultRegularCallout: UIFont {
         return UIFont.systemFont(ofSize: 16.0, weight: .regular)

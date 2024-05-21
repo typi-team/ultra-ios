@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import RealmSwift
 import RxSwift
 import GRPC
 import CallKit
@@ -19,6 +20,7 @@ protocol UpdateRepository: AnyObject {
     func readAll(in conversation: Conversation)
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> { get set }
     var updateSyncObservable: Observable<Void> { get }
+    var supportOfficesObservable: Observable<SupportOfficesResponse?> { get }
     var isConnectedToListenStream: Bool { get }
 }
 
@@ -27,6 +29,9 @@ class UpdateRepositoryImpl {
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> = .init(value: [:])
     var updateSyncObservable: Observable<Void> {
         updateSyncSubject.asObservable().share(replay: 1)
+    }
+    var supportOfficesObservable: Observable<SupportOfficesResponse?> {
+        supportOfficesSubject.asObservable().startWith(nil).share(replay: 1)
     }
     var isConnectedToListenStream: Bool = false
     
@@ -42,11 +47,14 @@ class UpdateRepositoryImpl {
     fileprivate let contactByIDInteractor: GRPCErrorUseCase<String, ContactDisplayable>
     fileprivate let deliveredMessageInteractor: GRPCErrorUseCase<Message, MessagesDeliveredResponse>
     fileprivate let chatInteractor: GRPCErrorUseCase<String, Chat>
+    fileprivate let initSupportInteractor: GRPCErrorUseCase<InitSupportChatsRequest, InitSupportChatsResponse>
+    fileprivate let chatToConversationInteractor: GRPCErrorUseCase<ChatToConversationParams, Void>
     
     fileprivate var pintPongTimer: Timer?
     fileprivate var updateListenStream: ServerStreamingCall<ListenRequest, Updates>?
     
     private let updateSyncSubject = ReplaySubject<Void>.create(bufferSize: 1)
+    private let supportOfficesSubject = ReplaySubject<SupportOfficesResponse?>.create(bufferSize: 1)
     private let semaphore = DispatchSemaphore(value: 1)
     
     init(appStore: AppSettingsStore,
@@ -59,7 +67,10 @@ class UpdateRepositoryImpl {
          retrieveContactStatusesInteractorImpl: GRPCErrorUseCase<Void, Void>,
          updateContactStatusInteractor: GRPCErrorUseCase<String, Void>,
          deliveredMessageInteractor: GRPCErrorUseCase<Message, MessagesDeliveredResponse>,
-         chatInteractor: GRPCErrorUseCase<String, Chat>) {
+         chatInteractor: GRPCErrorUseCase<String, Chat>,
+         initSupportInteractor: GRPCErrorUseCase<InitSupportChatsRequest, InitSupportChatsResponse>,
+         chatToConversationInteractor: GRPCErrorUseCase<ChatToConversationParams, Void>
+    ) {
         self.updateClient = updateClient
         self.appStore = appStore
         self.messageService = messageService
@@ -71,6 +82,8 @@ class UpdateRepositoryImpl {
         self.retrieveContactStatusesInteractorImpl = retrieveContactStatusesInteractorImpl
         self.updateContactStatusInteractor = updateContactStatusInteractor
         self.chatInteractor = chatInteractor
+        self.initSupportInteractor = initSupportInteractor
+        self.chatToConversationInteractor = chatToConversationInteractor
     }
 }
 
@@ -115,6 +128,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
     }
     
     func setupSubscription() {
+        _ = Realm.myRealm()
         if appStore.lastState == 0 {
             self.updateClient
                 .getInitialState(InitialStateRequest(), callOptions: .default())
@@ -136,17 +150,28 @@ extension UpdateRepositoryImpl: UpdateRepository {
 
                         let group = DispatchGroup()
                         response.messages.forEach { message in
-                            group.enter()
-                            self.semaphore.wait()
-                            self.update(message: message, completion: {
-                                self.semaphore.signal()
-                                group.leave()
-                            })
+                            if message.shouldBeSaved {
+                                group.enter()
+                                self.semaphore.wait()
+                                self.update(message: message, completion: {
+                                    self.semaphore.signal()
+                                    group.leave()
+                                })
+                            }
                         }
                         
                         group.notify(queue: DispatchQueue.main) { [weak self] in
-                            self?.handleUnread(from: response.chats)
-                            self?.updateSyncSubject.onNext(())
+                            guard let self else { return }
+                            self.handleUnread(from: response.chats)
+                            let chatRequests = response.chats.map {
+                                self.chatToConversationInteractor.executeSingle(params: .init(chat: $0, imagePath: nil)).asObservable()
+                            }
+                            Observable.zip(chatRequests)
+                                .subscribe { [weak self] _ in
+                                    self?.initializeSupportChats()
+                                }
+                                .disposed(by: disposeBag)
+                            self.updateSyncSubject.onNext(())
                         }
                         self.appStore.store(last: Int64(response.state))
                         self.setupChangesSubscription(with: response.state)
@@ -156,6 +181,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
         } else {
             updateSyncSubject.onNext(())
             self.retreiveContactStatuses()
+            self.initializeSupportChats()
             self.setupChangesSubscription(with: UInt64(appStore.lastState))
         }
     }
@@ -261,6 +287,9 @@ private extension UpdateRepositoryImpl {
         PP.debug("[UPDATE] - \(update)")
         switch update {
         case let .message(message):
+            guard message.shouldBeSaved else {
+                return
+            }
             let senderID = appStore.userID()
             self.update(message: message, completion: {
                 guard message.sender.userID != senderID else { return }
@@ -320,6 +349,58 @@ private extension UpdateRepositoryImpl {
         case .call:
             break
         }
+    }
+    
+    func initializeSupportChats() {
+        UltraCoreSettings.delegate?.getSupportChatsAndManagers(callBack: { [weak self] responseDict in
+            guard let self = self else { return }
+            PP.debug("Get support chats - \(responseDict)")
+            do {
+                let data = try JSONSerialization.data(withJSONObject: responseDict, options: .fragmentsAllowed)
+                let response = try JSONDecoder().decode(SupportOfficesResponse.self, from: data)
+                let request = InitSupportChatsRequest.with { req in
+                    req.receptions = response.supportChats.map { supportChat in
+                        InitSupportChatsRequest.Reception.with {
+                            $0.name = supportChat.name
+                            $0.reception = String(supportChat.reception)
+                        }
+                    }
+                    req.managers = response.personalManagers.map { manager in
+                        InitSupportChatsRequest.PersonalManager.with {
+                            $0.name = manager.nickname
+                            $0.phone = String(manager.userId)
+                        }
+                    }
+                }
+                PP.debug("Support manager request - \(request)")
+                supportOfficesSubject.onNext(response)
+                initSupportInteractor.executeSingle(params: request)
+                    .asObservable()
+                    .flatMap { [weak self] chatsResponse -> Observable<[Void]> in
+                        guard let self else { return Observable.empty() }
+                        PP.debug("Support manager response - \(chatsResponse.chats)")
+                        let requests = chatsResponse.chats
+                            .map { chat in
+                                self.chatToConversationInteractor.executeSingle(
+                                    params: .init(
+                                        chat: chat,
+                                        imagePath: response.supportChats.first(where: { $0.name == chat.title })?.avatarUrl
+                                    )
+                                )
+                                .asObservable()
+                            }
+                        return Observable.zip(requests)
+                    }
+                    .subscribe { _ in
+                        
+                    } onError: { error in
+                        PP.error(error.localeError)
+                    }
+                    .disposed(by: disposeBag)
+            } catch {
+                PP.error(error.localizedDescription)
+            }
+        })
     }
 }
 

@@ -57,6 +57,7 @@ open class AppSettingsImpl: AppSettings  {
     lazy var conversationService: ChatServiceClientProtocol = ChatServiceNIOClient.init(channel: channel)
     lazy var integrateService: IntegrationServiceClientProtocol = IntegrationServiceNIOClient.init(channel: channel)
     lazy var chatService: ChatServiceClientProtocol = ChatServiceNIOClient(channel: channel)
+    lazy var supportService: SupportServiceClientProtocol = SupportServiceNIOClient(channel: channel)
 
 //    MARK: Services
 
@@ -92,7 +93,15 @@ open class AppSettingsImpl: AppSettings  {
             contactDBService: contactDBService,
             contactService: contactsService),
         deliveredMessageInteractor: DeliveredMessageInteractor.init(messageService: messageService), 
-        chatInteractor: ConversationInteractor(chatService: chatService)
+        chatInteractor: ConversationInteractor(chatService: chatService),
+        initSupportInteractor: InitSupportChatsInteractor(supportService: supportService), 
+        chatToConversationInteractor: ChatToConversationInteractor(
+            contactByUserIdInteractor: ContactByUserIdInteractor.init(
+                delegate: UltraCoreSettings.delegate,
+                contactsService: contactsService
+            ),
+            contactDBService: contactDBService
+        )
     )
     lazy var conversationRespository: ConversationRepository = ConversationRepositoryImpl(conversationService: conversationDBService)
     

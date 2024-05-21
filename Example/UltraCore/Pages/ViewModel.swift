@@ -30,6 +30,12 @@ class ViewModel {
     fileprivate var timerUpdate: Timer?
     private let disposeBag = DisposeBag()
     
+    var activeConversationID: String? {
+        didSet {
+            (UIApplication.shared.delegate as? AppDelegate)?.activeConversationID = activeConversationID
+        }
+    }
+    
     var onUnreadMessagesUpdated: ((Int) -> Void)?
 
     func viewDidLoad() {
@@ -98,6 +104,11 @@ extension ViewModel: UltraCoreFutureDelegate {
 }
 
 extension ViewModel: UltraCoreSettingsDelegate {
+
+    func emptyConversationDetailView(isManager: Bool) -> UIView? {
+        return nil
+    }
+
     func provideTransferScreen(for userID: String, viewController: UIViewController, transferCallback: @escaping (UltraCore.MoneyTransfer) -> Void) {
         
     }
@@ -211,6 +222,41 @@ extension ViewModel: UltraCoreSettingsDelegate {
     
     func didTapTransactionCell(transactionID: String, viewController: UIViewController) {
         
+    }
+    
+    func getSupportChatsAndManagers(callBack: @escaping (([String : Any]) -> Void)) {
+        let dict: [String: Any] = [
+            "supportChats": [
+                [
+                  "reception": 32,
+                  "name": "Цифра Брокер",
+                  "avatarUrl": "https://tradernet.ru/data/images/receptions_settings/file-6645cb72a5d69.png"
+                ],
+                [
+                  "reception": 36,
+                  "name": "FF Казахстан",
+                  "avatarUrl": nil
+                ]
+              ],
+              "personalManagers": [
+                [
+                  "userId": 3016423,
+                  "nickname": "Денис Черепков",
+                  "avatarUrl": nil
+                ],
+                [
+                  "userId": 1880932,
+                  "nickname": "Вера Заколодяжная",
+                  "avatarUrl": nil
+                ]
+              ],
+              "assistantEnabled": true
+        ]
+        callBack(dict)
+    }
+    
+    func getMessageMeta() -> Dictionary<String, String> {
+        return ["platform": "iOS"]
     }
 
 }

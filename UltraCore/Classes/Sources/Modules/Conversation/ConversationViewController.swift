@@ -62,6 +62,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.registerCell(type: IncomeLocationCell.self)
         tableView.registerCell(type: OutcomeLocationCell.self)
         tableView.registerCell(type: OutgoingMessageCell.self)
+        tableView.registerCell(type: SystemMessageCell.self)
+        tableView.registerCell(type: GroupIncomeMessageCell.self)
         tableView.addGestureRecognizer(dismissKeyboardGesture)
         tableView.contentInset = .zero
     }
@@ -90,17 +92,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         imageView.contentMode = .scaleAspectFill
         imageView.image = UltraCoreStyle.conversationBackgroundImage?.image
     }
-    
-    private lazy var spinner: NVActivityIndicatorView = {
-        let spinner = NVActivityIndicatorView(
-            frame: CGRect(origin: .zero, size: .init(width: 30, height: 30)),
-            type: .circleStrokeSpin,
-            color: UltraCoreStyle.conversationScreenConfig.loaderTintColor.color,
-            padding: 0
-        )
-        spinner.translatesAutoresizingMaskIntoConstraints = false
-        return spinner
-    }()
 
    private lazy var dataSource = RxTableViewSectionedReloadDataSource<SectionModel<String, Message>>(
         configureCell: { [weak self] _, tableView, indexPath,
@@ -108,6 +99,19 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             guard let `self` = self else {
                 return UITableViewCell.init()
             }
+            if message.type == .system {
+                let cell: SystemMessageCell = tableView.dequeueCell()
+                cell.setup(text: message.supportMessage)
+                return cell
+            }
+            if presenter?.isGroupChat() ?? false && message.isIncome {
+                let contact = presenter?.getContact(for: message.sender.userID)
+                let cell: GroupIncomeMessageCell = tableView.dequeueCell()
+                cell.setup(contact: contact)
+                cell.setup(message: message)
+                return cell
+            }
+            
             let cell = self.cell(message, in: tableView)
             cell.longTapCallback = {[weak self] actionType in
                 guard let `self` = self else { return }
@@ -179,7 +183,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.view.addSubview(navigationDivider)
         self.view.addSubview(editInputBar)
         self.view.addSubview(voiceInputBar)
-        self.view.addSubview(spinner)
         
         self.navigationItem.leftItemsSupplementBackButton = true
         self.navigationItem.leftBarButtonItem = .init(customView: headline)
@@ -206,10 +209,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(view.snp.bottom)
         }
-        self.spinner.snp.makeConstraints {
-            $0.top.equalTo(navigationDivider.snp.bottom).offset(12)
-            $0.centerX.equalToSuperview()
-        }
     }
     
     override func setupInitialData() {
@@ -223,7 +222,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .do(onNext: {[weak self] messages in
                 PP.debug("[MESSAGES] - \(messages.count) - \(messages.suffix(10).map(\.id))")
                 self?.messages = messages
-                self?.tableView.backgroundView = messages.isEmpty ? ConversationEmptyViewContainer(emptyView: UltraCoreSettings.delegate?.emptyConversationDetailView() ?? .init()) : self?.backgroundImageView
+                self?.tableView.backgroundView = messages.isEmpty ? ConversationEmptyViewContainer(emptyView: UltraCoreSettings.delegate?.emptyConversationDetailView(isManager: self?.presenter?.isManager ?? false) ?? .init()) : self?.backgroundImageView
             })
             .map({messages -> [SectionModel<String, Message>] in
                 if messages.isEmpty {return []}
@@ -242,6 +241,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .filter({ !$0.isEmpty })
             .filter({$0.count != prev.count})
             .do(onNext: {prev = $0})
+            .delay(.milliseconds(10), scheduler: MainScheduler.instance)
             .subscribe(onNext: { [weak self] _ in
                 guard let `self` = self else { return }
                 if self.tableView.isDecelerating {
@@ -267,6 +267,11 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         let keyBoardHeight = UIScreen.main.bounds.height - frame.origin.y
         let bottomInset = keyBoardHeight > 0 ? keyBoardHeight - view.safeAreaInsets.bottom : 0
         let insets = UIEdgeInsets(top: 0, left: 0, bottom: bottomInset, right: 0)
+        
+        guard tableView.contentInset != insets else {
+            return
+        }
+        
         self.tableView.contentInset = insets
         self.tableView.scrollIndicatorInsets = insets
         
@@ -276,7 +281,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             )
         }
         
-        if tableView.contentSize.height > tableView.frame.height {
+        if tableView.contentSize.height + keyBoardHeight > tableView.frame.height {
             if keyBoardHeight > 0 {
                 contentOffset.y += (keyBoardHeight - self.view.safeAreaInsets.bottom)
             } else {
@@ -305,14 +310,24 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.messageInputBar.endEditing(true)
     }
     
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        UltraCoreSettings.delegate?.activeConversationID = nil
+    }
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        guard let cell = self.tableView.visibleCells.first as? BaseMessageCell,
-              let seqNumber = cell.message?.seqNumber,
-              seqNumber > 1 else { return }
-        tableView.contentInset = UIEdgeInsets(top: 40, left: 0, bottom: 0, right: 0)
-        spinner.startAnimating()
-        self.presenter?.loadMoreMessages(maxSeqNumber: seqNumber)
+        guard let chatID = presenter?.conversation.idintification else {
+            return
+        }
+        UltraCoreSettings.delegate?.activeConversationID = chatID
+        guard let message = messages.first else {
+            return
+        }
+        guard (presenter?.loadIfFirstTime(seqNumber: message.seqNumber) ?? false) && messages.count <= 1 else {
+            return
+        }
+        self.presenter?.loadMoreMessages(maxSeqNumber: message.seqNumber)
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -410,16 +425,6 @@ extension ConversationViewController: ConversationViewInterface {
     
     
     func stopRefresh(removeController: Bool) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            guard let self = self else {
-                return
-            }
-            self.spinner.stopAnimating()
-            let topInset = max(0, self.tableView.contentInset.top - 40.0)
-            var newInset = self.tableView.contentInset
-            newInset.top = topInset
-            self.tableView.contentInset = newInset
-        }
         self.refreshControl.endRefreshing()
         if(removeController) {
             self.refreshControl.removeFromSuperview()

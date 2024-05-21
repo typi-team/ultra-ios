@@ -30,8 +30,11 @@ protocol ConversationViewInterface: ViewInterface {
 }
 
 protocol ConversationPresenterInterface: PresenterInterface {
+    var conversation: Conversation { get set }
+    var isManager: Bool { get }
     func block()
     func viewDidLoad()
+    func loadIfFirstTime(seqNumber: UInt64) -> Bool
     func isBlock() -> Bool
     func navigateToContact()
     func typing(is active: Bool)
@@ -50,4 +53,6 @@ protocol ConversationPresenterInterface: PresenterInterface {
     func callVideo()
     func callVoice()
     func didTapTransfer()
+    func isGroupChat() -> Bool
+    func getContact(for id: String) -> ContactDisplayable?
 }
