@@ -603,13 +603,60 @@ extension ConversationViewController: (UIImagePickerControllerDelegate & UINavig
             let data = try? Data(contentsOf: url) {
             picker.dismiss(animated: true)
             self.presenter?.upload(file: .init(url: url, data: data, mime: "video/mp4", width: 300, height: 200), isVoice: false)
-        } else if let image = info[.originalImage] as? UIImage,
-                  let downsampled = image.fixedOrientation().downsample(reductionAmount: 0.5),
-                  let data = downsampled.pngData() {
-            picker.dismiss(animated: true, completion: {
-                self.presenter?.upload(file: .init(url: nil, data: data, mime: "image/png", width: image.size.width, height: image.size.height), isVoice: false)
+        } else if let image = info[.originalImage] as? UIImage {
+            let downsampled = image.fixedOrientation()
+            let resizedImage = resizeImage(image: downsampled)
+            picker.dismiss(animated: true, completion: { [weak self] in
+                self?.presenter?.upload(file: .init(url: nil, data: resizedImage.0, mime: "image/jpeg", width: resizedImage.1.width, height: resizedImage.1.height), isVoice: false)
             })
         }
+    }
+
+    private func resizeImage(image: UIImage, maxDimension: CGFloat = 1280) -> (Data, CGSize) {
+        let size = image.size
+        guard max(size.width, size.height) > maxDimension else {
+            return (image.jpegData(compressionQuality: 1) ?? Data(), size)
+        }
+        let widthRatio  = maxDimension / size.width
+        let heightRatio = maxDimension / size.height
+
+        let scaleFactor = min(widthRatio, heightRatio)
+
+        let newSize = CGSize(width: size.width * scaleFactor, height: size.height * scaleFactor)
+
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = image.scale
+        let renderer = UIGraphicsImageRenderer(size: newSize, format: format)
+        let newImage = renderer.image { (context) in
+            image.draw(in: CGRect(origin: .zero, size: newSize))
+        }
+        if let data = compressTo(0.512, image: newImage) {
+            return (data, size)
+        }
+        return (image.jpegData(compressionQuality: 1) ?? Data(), size)
+    }
+
+    private func compressTo(_ expectedSizeInMb: CGFloat, image: UIImage) -> Data? {
+        let sizeInBytes = expectedSizeInMb * 1024 * 1024
+        var needCompress: Bool = true
+        var imgData: Data?
+        var compressingValue: CGFloat = 1.0
+        while (needCompress && compressingValue > 0.0) {
+            if let data = image.jpegData(compressionQuality: compressingValue) {
+                if data.count < Int(sizeInBytes) {
+                    needCompress = false
+                    imgData = data
+                } else {
+                    compressingValue -= 0.1
+                }
+            }
+        }
+        if let data = imgData {
+            if (data.count < Int(sizeInBytes)) {
+                return data
+            }
+        }
+        return nil
     }
 }
 
