@@ -61,6 +61,7 @@ public class UltraCoreSettings {
 public extension UltraCoreSettings {
     
     private static var isUpdatingSession: Bool = false
+    private static let disposeBag = DisposeBag()
     
     static var isConnected: Bool {
         AppSettingsImpl.shared.updateRepository.isConnectedToListenStream
@@ -267,6 +268,45 @@ public extension UltraCoreSettings {
                             ContactInfo.atLastSeen: $0.status.lastSeen,
                             ContactInfo.displayableDate: $0.status.displayText] }))
             }
+    }
+    
+    static func getSupportStatus(for chatID: String, completion: @escaping ((Result<Bool, Error>) -> Void)) {
+        let timer = Observable<Int>.interval(.seconds(10), scheduler: MainScheduler.instance)
+        let offices = AppSettingsImpl.shared.updateRepository.supportOfficesObservable.compactMap { $0 }.take(until: timer)
+        let chat = AppSettingsImpl.shared.conversationDBService.conversation(by: chatID).asObservable()
+        var result: Result<Bool, Error> = .success(false)
+        chat
+            .flatMap { conversation -> Observable<Bool> in
+                guard let conversation = conversation else {
+                    return Observable.error(NSError(domain: "No conversation Found", code: -1))
+                }
+                
+                if conversation.chatType == .support {
+                    return Observable.just(true)
+                } else if conversation.chatType == .peerToPeer {
+                    return Observable.zip(offices, Observable.just(conversation))
+                        .map { (officesResponse, conversation) in
+                            guard let peer = conversation.peers.first else {
+                                return false
+                            }
+                            let isManager = officesResponse.personalManagers
+                                .map { String($0.userId) }
+                                .contains(where: { $0 == peer.phone })
+                            return isManager
+                        }
+                } else {
+                    return Observable.just(false)
+                }
+            }
+            .take(1)
+            .subscribe { isSupport in
+                result = .success(isSupport)
+            } onError: { error in
+                result = .failure(error)
+            } onCompleted: {
+                completion(result)
+            }
+            .disposed(by: Self.disposeBag)
     }
 
     static func logout() {
