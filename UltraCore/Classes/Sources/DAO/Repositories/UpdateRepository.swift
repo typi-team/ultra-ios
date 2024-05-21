@@ -31,7 +31,7 @@ class UpdateRepositoryImpl {
         updateSyncSubject.asObservable().share(replay: 1)
     }
     var supportOfficesObservable: Observable<SupportOfficesResponse?> {
-        supportOfficesSubject.asObservable().share(replay: 1)
+        supportOfficesSubject.asObservable().startWith(nil).share(replay: 1)
     }
     var isConnectedToListenStream: Bool = false
     
@@ -171,7 +171,6 @@ extension UpdateRepositoryImpl: UpdateRepository {
                                     self?.initializeSupportChats()
                                 }
                                 .disposed(by: disposeBag)
-                            self.supportOfficesSubject.onNext(nil)
                             self.updateSyncSubject.onNext(())
                         }
                         self.appStore.store(last: Int64(response.state))
@@ -180,7 +179,6 @@ extension UpdateRepositoryImpl: UpdateRepository {
                     }
                 }
         } else {
-            self.supportOfficesSubject.onNext(nil)
             updateSyncSubject.onNext(())
             self.retreiveContactStatuses()
             self.initializeSupportChats()
@@ -393,7 +391,9 @@ private extension UpdateRepositoryImpl {
                             }
                         return Observable.zip(requests)
                     }
-                    .subscribe { _ in } onError: { error in
+                    .subscribe { _ in
+                        
+                    } onError: { error in
                         PP.error(error.localeError)
                     }
                     .disposed(by: disposeBag)
