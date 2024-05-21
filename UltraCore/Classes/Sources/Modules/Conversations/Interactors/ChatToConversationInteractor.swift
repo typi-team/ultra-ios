@@ -60,6 +60,18 @@ class ChatToConversationInteractor: GRPCErrorUseCase<ChatToConversationParams, V
             }
             .flatMap { contacts -> Observable<Void> in
                 let localRealm = Realm.myRealm()
+                if let conversation = localRealm.object(ofType: DBConversation.self, forPrimaryKey: params.chat.chatID) {
+                    do {
+                        try localRealm.write {
+                            conversation.imagePath = params.imagePath ?? ""
+                            conversation.title = params.chat.title
+                            localRealm.create(DBConversation.self, value: conversation, update: .all)
+                        }
+                        return .just(())
+                    } catch {
+                        return .error(error)
+                    }
+                }
                 do {
                     try localRealm.write {
                         let conv = ConversationImpl(
