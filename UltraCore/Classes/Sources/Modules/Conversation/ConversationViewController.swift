@@ -604,11 +604,16 @@ extension ConversationViewController: (UIImagePickerControllerDelegate & UINavig
             picker.dismiss(animated: true)
             self.presenter?.upload(file: .init(url: url, data: data, mime: "video/mp4", width: 300, height: 200), isVoice: false)
         } else if let image = info[.originalImage] as? UIImage {
-            let downsampled = image.fixedOrientation()
-            let resizedImage = resizeImage(image: downsampled)
-            picker.dismiss(animated: true, completion: { [weak self] in
-                self?.presenter?.upload(file: .init(url: nil, data: resizedImage.0, mime: "image/jpeg", width: resizedImage.1.width, height: resizedImage.1.height), isVoice: false)
-            })
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                guard let self else { return }
+                let downsampled = image.fixedOrientation()
+                let resizedImage = resizeImage(image: downsampled)
+                DispatchQueue.main.async {
+                    picker.dismiss(animated: true, completion: { [weak self] in
+                        self?.presenter?.upload(file: .init(url: nil, data: resizedImage.0, mime: "image/jpeg", width: resizedImage.1.width, height: resizedImage.1.height), isVoice: false)
+                    })
+                }
+            }
         }
     }
 
