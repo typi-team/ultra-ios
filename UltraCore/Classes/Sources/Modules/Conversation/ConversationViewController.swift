@@ -599,69 +599,13 @@ extension ConversationViewController: (UIImagePickerControllerDelegate & UINavig
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if info[UIImagePickerController.InfoKey.mediaType] as? String == "public.movie",
-           let url = info[.mediaURL]  as? URL,
-            let data = try? Data(contentsOf: url) {
+           let url = info[.mediaURL]  as? URL {
+            presenter?.upload(file: .video(url: url))
             picker.dismiss(animated: true)
-            self.presenter?.upload(file: .init(url: url, data: data, mime: "video/mp4", width: 300, height: 200), isVoice: false)
         } else if let image = info[.originalImage] as? UIImage {
-            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                guard let self else { return }
-                let downsampled = image.fixedOrientation()
-                let resizedImage = resizeImage(image: downsampled)
-                DispatchQueue.main.async {
-                    picker.dismiss(animated: true, completion: { [weak self] in
-                        self?.presenter?.upload(file: .init(url: nil, data: resizedImage.0, mime: "image/jpeg", width: resizedImage.1.width, height: resizedImage.1.height), isVoice: false)
-                    })
-                }
-            }
+            presenter?.upload(file: .image(image: image))
+            picker.dismiss(animated: true)
         }
-    }
-
-    private func resizeImage(image: UIImage, maxDimension: CGFloat = 1280) -> (Data, CGSize) {
-        let size = image.size
-        guard max(size.width, size.height) > maxDimension else {
-            return (image.jpegData(compressionQuality: 1) ?? Data(), size)
-        }
-        let widthRatio  = maxDimension / size.width
-        let heightRatio = maxDimension / size.height
-
-        let scaleFactor = min(widthRatio, heightRatio)
-
-        let newSize = CGSize(width: size.width * scaleFactor, height: size.height * scaleFactor)
-
-        let format = UIGraphicsImageRendererFormat()
-        format.scale = image.scale
-        let renderer = UIGraphicsImageRenderer(size: newSize, format: format)
-        let newImage = renderer.image { (context) in
-            image.draw(in: CGRect(origin: .zero, size: newSize))
-        }
-        if let data = compressTo(0.512, image: newImage) {
-            return (data, size)
-        }
-        return (image.jpegData(compressionQuality: 1) ?? Data(), size)
-    }
-
-    private func compressTo(_ expectedSizeInMb: CGFloat, image: UIImage) -> Data? {
-        let sizeInBytes = expectedSizeInMb * 1024 * 1024
-        var needCompress: Bool = true
-        var imgData: Data?
-        var compressingValue: CGFloat = 1.0
-        while (needCompress && compressingValue > 0.0) {
-            if let data = image.jpegData(compressionQuality: compressingValue) {
-                if data.count < Int(sizeInBytes) {
-                    needCompress = false
-                    imgData = data
-                } else {
-                    compressingValue -= 0.1
-                }
-            }
-        }
-        if let data = imgData {
-            if (data.count < Int(sizeInBytes)) {
-                return data
-            }
-        }
-        return nil
     }
 }
 
@@ -944,12 +888,8 @@ extension ConversationViewController: EditActionBottomBarDelegate {
 
 extension ConversationViewController: UIDocumentPickerDelegate {
         func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-            guard let selectedURL = urls.first,
-                  let data = try? Data(contentsOf: selectedURL) else {
-                return
-            }
-
-            self.presenter?.upload(file: .init(url: selectedURL, data: data, mime: selectedURL.mimeType().containsAudio ? "audio/mp3" : selectedURL.mimeType(), width: 300, height: 300), isVoice: false)
+            guard let selectedURL = urls.first else { return }
+            presenter?.upload(file: .file(url: selectedURL))
         }
         
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) { }
@@ -961,9 +901,8 @@ extension ConversationViewController: VoiceInputBarDelegate {
     }
     
     func recordedVoice(url: URL, in duration: TimeInterval) {
-        guard duration > 2,
-              let data = try? Data(contentsOf: url) else { return }
-        self.presenter?.upload(file: FileUpload(url: nil, data: data, mime: "audio/wav", width: 0, height: 0, duration: duration), isVoice: true)
+        guard duration > 2 else { return }
+        presenter?.upload(file: .audio(url: url, duration: duration))
     }
 }
 

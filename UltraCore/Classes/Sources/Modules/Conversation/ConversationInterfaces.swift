@@ -38,7 +38,7 @@ protocol ConversationPresenterInterface: PresenterInterface {
     func isBlock() -> Bool
     func navigateToContact()
     func typing(is active: Bool)
-    func upload(file: FileUpload, isVoice: Bool)
+    func upload(file: ConversationPresenter.File)
     func send(message text: String)
     func send(location: LocationMessage)
     func send(contact: ContactMessage)

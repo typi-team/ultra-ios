@@ -422,7 +422,65 @@ extension ConversationPresenter: ConversationPresenterInterface {
         return mediaRepository.mediaURL(from: message)
     }
     
-    func upload(file: FileUpload, isVoice: Bool) {
+    func upload(file: File) {
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            switch file {
+            case let .video(url):
+                guard let data = try? Data(contentsOf: url) else { return }
+                self?.upload(
+                    file: .init(
+                        url: url,
+                        data: data,
+                        mime: "video/mp4",
+                        width: 300,
+                        height: 200
+                    ),
+                    isVoice: false
+                )
+            case let .image(image):
+                guard let self else { return }
+                let downsampled = image.fixedOrientation()
+                let resizedImage = resizeImage(image: downsampled)
+                upload(
+                    file: .init(
+                        url: nil,
+                        data: resizedImage.0,
+                        mime: "image/jpeg",
+                        width: resizedImage.1.width,
+                        height: resizedImage.1.height
+                    ),
+                    isVoice: false
+                )
+            case let .file(url):
+                guard let data = try? Data(contentsOf: url) else { return }
+                self?.upload(
+                    file: .init(
+                        url: url,
+                        data: data,
+                        mime: url.mimeType().containsAudio ? "audio/mp3" : url.mimeType(),
+                        width: 300,
+                        height: 300
+                    ),
+                    isVoice: false
+                )
+            case let .audio(url, duration):
+                guard let data = try? Data(contentsOf: url) else { return }
+                self?.upload(
+                    file: FileUpload(
+                        url: nil,
+                        data: data,
+                        mime: "audio/wav",
+                        width: 0,
+                        height: 0,
+                        duration: duration
+                    ),
+                    isVoice: true
+                )
+            }
+        }
+    }
+    
+    private func upload(file: FileUpload, isVoice: Bool) {
         mediaRepository
             .upload(
                 file: file,
@@ -458,6 +516,54 @@ extension ConversationPresenter: ConversationPresenterInterface {
                        onFailure: { error in PP.debug(error.localizedDescription)
             })
             .disposed(by: disposeBag)
+    }
+    
+    
+    private func resizeImage(image: UIImage, maxDimension: CGFloat = 1280) -> (Data, CGSize) {
+        let size = image.size
+        guard max(size.width, size.height) > maxDimension else {
+            return (image.jpegData(compressionQuality: 1) ?? Data(), size)
+        }
+        let widthRatio  = maxDimension / size.width
+        let heightRatio = maxDimension / size.height
+
+        let scaleFactor = min(widthRatio, heightRatio)
+
+        let newSize = CGSize(width: size.width * scaleFactor, height: size.height * scaleFactor)
+
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = image.scale
+        let renderer = UIGraphicsImageRenderer(size: newSize, format: format)
+        let newImage = renderer.image { (context) in
+            image.draw(in: CGRect(origin: .zero, size: newSize))
+        }
+        if let data = compressTo(0.512, image: newImage) {
+            return (data, size)
+        }
+        return (image.jpegData(compressionQuality: 1) ?? Data(), size)
+    }
+
+    private func compressTo(_ expectedSizeInMb: CGFloat, image: UIImage) -> Data? {
+        let sizeInBytes = expectedSizeInMb * 1024 * 1024
+        var needCompress: Bool = true
+        var imgData: Data?
+        var compressingValue: CGFloat = 1.0
+        while (needCompress && compressingValue > 0.0) {
+            if let data = image.jpegData(compressionQuality: compressingValue) {
+                if data.count < Int(sizeInBytes) {
+                    needCompress = false
+                    imgData = data
+                } else {
+                    compressingValue -= 0.1
+                }
+            }
+        }
+        if let data = imgData {
+            if (data.count < Int(sizeInBytes)) {
+                return data
+            }
+        }
+        return nil
     }
     
     private func playSentMessageSound() {
@@ -696,5 +802,14 @@ extension ConversationPresenter: DisclaimerViewDelegate {
     
     func disclaimerDidTapClose() {
         wireframe.closeChat()
+    }
+}
+
+extension ConversationPresenter {
+    enum File {
+        case audio(url: URL, duration: TimeInterval)
+        case video(url: URL)
+        case image(image: UIImage)
+        case file(url: URL)
     }
 }
