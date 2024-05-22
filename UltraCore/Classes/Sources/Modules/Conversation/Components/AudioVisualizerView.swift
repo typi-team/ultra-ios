@@ -36,6 +36,11 @@ class AudioVisualizerView: UIView {
                                                      toRange: 0.0...21.0))
     }
     
+    func appendWaves(values: [Float]) {
+        self.wavePowers.append(contentsOf: values)
+        self.updateWaveform(wavePowers: values)
+    }
+    
     func clearWaves() {
         self.wavePowers = []
         self.waveformLayer.sublayers?.forEach({ $0.removeFromSuperlayer() })
@@ -87,7 +92,10 @@ private extension AudioVisualizerView {
         let startX = (self.bounds.width - totalWidth)
 
         for i in 0 ..< wavePowers.count {
-            let columnHeight = CGFloat(wavePowers[i])
+            var columnHeight = CGFloat(wavePowers[i]) * 24
+            if columnHeight <= 0.9 {
+                columnHeight = 1
+            }
             let x = startX + CGFloat(i) * (columnWidth + spacing)
             let y = self.bounds.height - columnHeight
 

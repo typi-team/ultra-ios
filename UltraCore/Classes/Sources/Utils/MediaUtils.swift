@@ -138,6 +138,28 @@ class MediaUtils {
             return nil
         }
     }
+    
+    func createAudioGraphImage(from path: String, image: UIImage, completion: @escaping (() -> Void)) {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let data = image.pngData() else {
+                DispatchQueue.main.async {
+                    completion()
+                }
+                return
+            }
+            
+            do {
+                try self?.write(data, file: path, and: "png")
+                DispatchQueue.main.async {
+                    completion()
+                }
+            } catch {
+                DispatchQueue.main.async {
+                    completion()
+                }
+            }
+        }
+    }
 
     func compressImageData(from data: Data) -> Data? {
         guard let img = UIImage(data: data) else {

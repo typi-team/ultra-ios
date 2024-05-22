@@ -85,6 +85,10 @@ class VoiceRepository: NSObject {
         }
     }
     
+    func mediaURL(message: Message) -> URL? {
+        mediaUtils.mediaURL(from: message)
+    }
+    
     private func runTimerOnRunLoop() {
         guard let timer else { return }
         
