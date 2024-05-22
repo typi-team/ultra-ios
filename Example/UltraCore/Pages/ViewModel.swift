@@ -163,7 +163,7 @@ extension ViewModel: UltraCoreSettingsDelegate {
         didRegisterForRemoteNotifications()
     }
 
-    func emptyConversationView() -> UIView? {
+    func emptyConversationView(isSupport: Bool) -> UIView? {
         return nil
     }
     

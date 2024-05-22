@@ -80,7 +80,7 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
             .do(onNext: {[weak self] conversations in
                 guard let `self` = self else { return }
                 if conversations.isEmpty {
-                    self.tableView.backgroundView = UltraCoreSettings.delegate?.emptyConversationView() ?? self.backgroundView
+                    self.tableView.backgroundView = UltraCoreSettings.delegate?.emptyConversationView(isSupport: self.presenter?.isSupportScreen ?? false) ?? self.backgroundView
                 } else {
                     self.tableView.backgroundView = nil
                 }
