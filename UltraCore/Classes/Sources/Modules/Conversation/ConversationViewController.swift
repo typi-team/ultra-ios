@@ -113,6 +113,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             }
             
             let cell = self.cell(message, in: tableView)
+            cell.chatType = presenter?.conversation.chatType ?? .peerToPeer
             cell.longTapCallback = {[weak self] actionType in
                 guard let `self` = self else { return }
                 switch actionType {
@@ -253,6 +254,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .disposed(by: disposeBag)
         
         self.presenter?.viewDidLoad()
+        messageInputBar.canSendAttachments = presenter?.canAttach() ?? true
+        messageInputBar.canSendMoney = presenter?.canTransfer() ?? true
         subscribeToInputBoundsChange()
     }
     
@@ -682,6 +685,9 @@ extension ConversationViewController {
     
     @objc func more(_ sender: UIBarButtonItem) {
         guard let blocked = self.presenter?.isBlock() else { return }
+        guard presenter?.canBlock() == true else {
+            return
+        }
         let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         if blocked {
             alert.addAction(.init(title: ConversationStrings.unblock.localized.capitalized, style: .default, handler: { [weak self] _ in

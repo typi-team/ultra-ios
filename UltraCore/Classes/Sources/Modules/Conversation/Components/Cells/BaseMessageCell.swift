@@ -27,6 +27,7 @@ class BaseMessageCell: BaseCell {
     
     var messagePrefix: String?
     var message: Message?
+    var chatType: ConversationType = .peerToPeer
     var cellActionCallback: (() -> Void)?
     var actionCallback: ((Message) -> Void)?
     var longTapCallback:((MessageMenuAction) -> Void)?
@@ -213,10 +214,12 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
                 })
             }
             
-            action.append(UIAction(title: MessageStrings.delete.localized, image: messageStyle.delete?.image, attributes: .destructive) { _ in
-                self.cellActionCallback?()
-                self.longTapCallback?(.delete(message))
-            })
+            if chatType != .support {
+                action.append(UIAction(title: MessageStrings.delete.localized, image: messageStyle.delete?.image, attributes: .destructive) { _ in
+                    self.cellActionCallback?()
+                    self.longTapCallback?(.delete(message))
+                })
+            }
 
             let select = UIAction(title: MessageStrings.select.localized, image: messageStyle.select?.image) { _ in
                 self.cellActionCallback?()
