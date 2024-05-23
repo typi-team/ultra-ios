@@ -53,7 +53,7 @@ final class ConversationsPresenter: BasePresenter {
                             }
                             return managers.contains(where: { $0 == peer.phone })
                         } else if conversation.chatType == .support && conversation.isAssistant {
-                            return supportOffices?.assistantEnabled ?? true
+                            return supportOffices?.assistant != nil
                         } else {
                             return false
                         }

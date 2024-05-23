@@ -10,7 +10,7 @@ import Foundation
 struct SupportOfficesResponse: Codable {
     let supportChats: [SupportChat]
     let personalManagers: [PersonalManager]
-    let assistantEnabled: Bool
+    let assistant: PersonalAssistant?
 }
 
 struct SupportChat: Codable {
@@ -22,5 +22,10 @@ struct SupportChat: Codable {
 struct PersonalManager: Codable {
     let userId: Int
     let nickname: String
+    let avatarUrl: String?
+}
+
+struct PersonalAssistant: Codable {
+    let name: String
     let avatarUrl: String?
 }

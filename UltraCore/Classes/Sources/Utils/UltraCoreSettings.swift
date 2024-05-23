@@ -32,7 +32,9 @@ public protocol UltraCoreSettingsDelegate: AnyObject {
     func callImage() -> UIImage?
     func disclaimerDescriptionFor(contact: String) -> String
     func tokenUpdated()
-    func unreadMessagesUpdated(count: Int)
+    func unreadAllMessagesUpdated(count: Int)
+    func unreadSupportMessagesUpdated(count: Int)
+    func unreadNonSupportMessagesUpdated(count: Int)
     func provideTransferScreen(
         for userID: String,
         viewController: UIViewController,
@@ -182,11 +184,11 @@ public extension UltraCoreSettings {
                     if shared.appStore.lastState == 0 {
                         DispatchQueue.main.asyncAfter(deadline: .now() + timeOut, execute: {
                             callback(nil)
-                            UnreadMessagesService.updateUnreadMessagesCount()
+                            AppSettingsImpl.shared.updateRepository.triggerUnreadUpdate()
                         })
                     } else {
                         callback(nil)
-                        UnreadMessagesService.updateUnreadMessagesCount()
+                        AppSettingsImpl.shared.updateRepository.triggerUnreadUpdate()
                     }
                 }
             }

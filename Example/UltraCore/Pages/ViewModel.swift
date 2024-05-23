@@ -113,7 +113,7 @@ extension ViewModel: UltraCoreSettingsDelegate {
         
     }
     
-    func unreadMessagesUpdated(count: Int) {
+    func unreadAllMessagesUpdated(count: Int) {
         onUnreadMessagesUpdated?(count)
         switch UIApplication.shared.applicationState {
             case .active:
@@ -122,6 +122,15 @@ extension ViewModel: UltraCoreSettingsDelegate {
                 break
         }
     }
+    
+    func unreadSupportMessagesUpdated(count: Int) {
+        
+    }
+    
+    func unreadNonSupportMessagesUpdated(count: Int) {
+        
+    }
+    
     
     func token(callback: @escaping (Result<String, Error>) -> Void) {
         let userDef = UserDefaults.standard
@@ -250,7 +259,10 @@ extension ViewModel: UltraCoreSettingsDelegate {
                   "avatarUrl": nil
                 ]
               ],
-              "assistantEnabled": true
+              "assistant": [
+                "name": "AI Ассистент",
+                "avatarUrl": "https://tradernet.ru/data/images/receptions_settings/file-6645cb72a5d69.png"
+              ]
         ]
         callBack(dict)
     }
