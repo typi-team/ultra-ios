@@ -65,6 +65,8 @@ public extension UltraCoreSettings {
     private static var isUpdatingSession: Bool = false
     private static let disposeBag = DisposeBag()
     
+    static var appLocale: Locale = .current
+    
     static var isConnected: Bool {
         AppSettingsImpl.shared.updateRepository.isConnectedToListenStream
     }
