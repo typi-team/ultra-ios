@@ -525,13 +525,7 @@ private extension ConversationViewController {
     
     func openMedia(type: UIImagePickerController.SourceType) {
         if type == .savedPhotosAlbum {
-            let controller = UIImagePickerController()
-            controller.delegate = self
-            controller.sourceType = type
-            controller.videoQuality = .typeHigh
-            controller.mediaTypes = ["public.movie", "public.image"]
-            controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
-            self.present(controller, animated: true)
+            presentImagePicker(type: type)
             return
         }
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -540,32 +534,31 @@ private extension ConversationViewController {
         case .restricted:
             showAlert(from: ConversationStrings.cameraPermissionRestricted.localized)
         case .notDetermined:
-            AVCaptureDevice.requestAccess(for: .video) { isAuthorized in
+            AVCaptureDevice.requestAccess(for: .video) { [weak self] isAuthorized in
                 guard isAuthorized else {
                     return
                 }
                 DispatchQueue.main.async {
-                    let controller = UIImagePickerController()
-                    controller.delegate = self
-                    controller.sourceType = type
-                    controller.videoQuality = .typeHigh
-                    controller.mediaTypes = ["public.movie", "public.image"]
-                    controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
-                    self.present(controller, animated: true)
+                    self?.presentImagePicker(type: type)
                 }
             }
         case .authorized:
-            let controller = UIImagePickerController()
-            controller.delegate = self
-            controller.sourceType = type
-            controller.videoQuality = .typeHigh
-            controller.mediaTypes = ["public.movie", "public.image"]
-            controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
-            self.present(controller, animated: true)
+            presentImagePicker(type: type)
         default:
             break
         }
-
+    }
+    
+    private func presentImagePicker(type: UIImagePickerController.SourceType) {
+        let controller = UIImagePickerController()
+        controller.delegate = self
+        controller.sourceType = type
+        controller.videoQuality = .typeHigh
+        controller.mediaTypes = ["public.movie", "public.image"]
+        controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
+        controller.allowsEditing = true
+        controller.videoMaximumDuration = 300
+        present(controller, animated: true)
     }
     
     func openDocument() {
@@ -590,16 +583,15 @@ private extension ConversationViewController {
     }
 }
 
-
 extension ConversationViewController: (UIImagePickerControllerDelegate & UINavigationControllerDelegate){
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-            dismiss(animated: true, completion: nil)
+        dismiss(animated: true, completion: nil)
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if info[UIImagePickerController.InfoKey.mediaType] as? String == "public.movie",
-           let url = info[.mediaURL]  as? URL {
+           let url = info[.mediaURL] as? URL {
             presenter?.upload(file: .video(url: url))
             picker.dismiss(animated: true)
         } else if let image = info[.originalImage] as? UIImage {
