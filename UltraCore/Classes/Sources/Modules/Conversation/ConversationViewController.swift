@@ -556,7 +556,6 @@ private extension ConversationViewController {
         controller.videoQuality = .typeHigh
         controller.mediaTypes = ["public.movie", "public.image"]
         controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
-        controller.allowsEditing = true
         controller.videoMaximumDuration = 300
         present(controller, animated: true)
     }
