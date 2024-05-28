@@ -10,7 +10,7 @@ import RxSwift
 
 class SendMessageInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendResponse> {
     final let messageService: MessageServiceClientProtocol
-    private let serialQueue = DispatchQueue(label: "com.ultra.sendMessageQueue")
+    static var messageQueue = DispatchQueue(label: "com.ultra.sendMessageQueue")
 
     init(messageService: MessageServiceClientProtocol) {
         self.messageService = messageService
@@ -21,13 +21,13 @@ class SendMessageInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendRes
         return Single.create { [weak self] observer in
             guard let `self` = self else { return Disposables.create() }
 
-            self.serialQueue.sync {
+            Self.messageQueue.sync {
                 self.messageService.send(params, callOptions: .default()).response.whenComplete { result in
                     switch result {
                     case let .success(response):
                         observer(.success(response))
                     case let .failure(error):
-                        print(error.localizedDescription)
+                        PP.error("[Message] [Send]: Failure - \(error)")
                         observer(.failure(error))
                     }
                 }

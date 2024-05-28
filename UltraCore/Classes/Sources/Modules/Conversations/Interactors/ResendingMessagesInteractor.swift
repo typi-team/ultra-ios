@@ -12,6 +12,7 @@ final class ResendingMessagesInteractor: UseCase<Void, Void> {
     private let messageSenderInteractor: SendMessageInteractor
     
     private let mediaRepository: MediaRepository
+    private let semaphore = DispatchSemaphore(value: 1)
     
     private lazy var disposeBag = DisposeBag()
 
@@ -39,8 +40,12 @@ final class ResendingMessagesInteractor: UseCase<Void, Void> {
     // MARK: - Methods
     
     private func resendMessagesIfNeeded() {
+        PP.debug("[RESEND] resendMessagesIfNeeded")
+        semaphore.wait()
         messageSending.removeAll()
+        PP.debug("[RESEND] get all messages")
         getAllMessages { [weak self] messages in
+            PP.debug("[RESEND] got all messages")
             guard let self else { return }
             let unsendedMessages = messages.filter { $0.seqNumber == 0 && !$0.isIncome }
             var textMessages: [Message] = []
@@ -60,49 +65,63 @@ final class ResendingMessagesInteractor: UseCase<Void, Void> {
                 }
             }
             self.resendMessages(messages: textMessages) {
-                self.resendFiles(messages: fileMessages) {
-                    self.messageSending.removeAll()
+                self.resendFiles(messages: fileMessages) { [weak self] in
+                    self?.messageSending.removeAll()
+                    PP.debug("[RESEND] Done resending")
+                    self?.semaphore.signal()
                 }
             }
         }
     }
     
     func resendFiles(messages: [Message], index: Int = 0, onCompletion:  @escaping () -> Void) {
+        PP.debug("[RESEND] Attempt to resend file message - \(index) of \(messages.count)")
         guard index < messages.count else {
+            PP.debug("[RESEND] Done resending file messages with index - \(index); count - \(messages.count)")
             onCompletion()
             return
         }
         let message = messages[index]
-        self.mediaRepository
-            .upload(message: message)
-            .flatMap({ [weak self] request in
-                guard let `self` = self else { throw NSError.selfIsNill }
-                return self.messageSenderInteractor.executeSingle(params: request)
-            })
-            .flatMap({ [weak self] (response: MessageSendResponse) in
-                guard let `self` = self else {
-                    throw NSError.selfIsNill
+        AppSettingsImpl.shared.conversationDBService.conversation(by: message.receiver.chatID)
+            .subscribe(onSuccess: { [unowned self] conversation in
+                guard let conversation = conversation else {
+                    return
                 }
-                return self.messageRepository.update(message: message)
-            })
-            .flatMap({ [weak self] result in
-                self?.resendFiles(messages: messages, index: index + 1, onCompletion: onCompletion)
-                return Single.just(result)
-            })
-            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
-            .observe(on: MainScheduler.instance)
-            .subscribe(onSuccess: { _ in },
-                       onFailure: { error in PP.debug(error.localizedDescription)
+                self.mediaRepository
+                    .upload(message: message, conversation: conversation)
+                    .flatMap({ [weak self] request in
+                        guard let `self` = self else { throw NSError.selfIsNill }
+                        return self.messageSenderInteractor.executeSingle(params: request)
+                    })
+                    .flatMap({ [weak self] (response: MessageSendResponse) in
+                        guard let `self` = self else {
+                            throw NSError.selfIsNill
+                        }
+                        return self.messageRepository.update(message: message)
+                    })
+                    .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
+                    .observe(on: MainScheduler.instance)
+                    .subscribe(
+                        onSuccess: { [weak self] _ in
+                            self?.resendFiles(messages: messages, index: index + 1, onCompletion: onCompletion)
+                        },
+                        onFailure: { error in PP.debug(error.localizedDescription)
+                        }
+                    )
+                    .disposed(by: disposeBag)
+            }, onFailure: { error in
+                PP.error(error.localizedDescription)
             })
             .disposed(by: disposeBag)
     }
 
     private func resendMessages(messages: [Message], index: Int = 0, onCompletion:  @escaping () -> Void) {
         guard index < messages.count else {
+            PP.debug("[RESEND] Done resending text messages with index - \(index); count - \(messages.count)")
             onCompletion()
             return
         }
-        PP.debug("Attempt to resend message - \(messages.count) with index - \(index)")
+        PP.debug("[RESEND] Attempt to resend message - \(messages.count) with index - \(index)")
         var message = messages[index]
         var params = MessageSendRequest()
         params.peer.user = .with({ peer in
@@ -126,7 +145,7 @@ final class ResendingMessagesInteractor: UseCase<Void, Void> {
             .subscribe(onSuccess: { [weak self] _ in
                 self?.resendMessages(messages: messages, index: index + 1, onCompletion: onCompletion)
             }, onFailure: { error in 
-                PP.error("Failed to send message to user ID \(message.receiver.userID); error: \(error.localeError)")
+                PP.error("[RESEND] Failed to send message to user ID \(message.receiver.userID); error: \(error.localeError)")
             })
             .disposed(by: disposeBag)
     }
