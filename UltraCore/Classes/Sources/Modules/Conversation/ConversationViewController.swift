@@ -602,16 +602,12 @@ extension ConversationViewController: (UIImagePickerControllerDelegate & UINavig
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if info[UIImagePickerController.InfoKey.mediaType] as? String == "public.movie",
-           let url = info[.mediaURL]  as? URL,
-            let data = try? Data(contentsOf: url) {
+           let url = info[.mediaURL]  as? URL {
+            presenter?.upload(file: .video(url: url))
             picker.dismiss(animated: true)
-            self.presenter?.upload(file: .init(url: url, data: data, mime: "video/mp4", width: 300, height: 200), isVoice: false)
-        } else if let image = info[.originalImage] as? UIImage,
-                  let downsampled = image.fixedOrientation().downsample(reductionAmount: 0.5),
-                  let data = downsampled.pngData() {
-            picker.dismiss(animated: true, completion: {
-                self.presenter?.upload(file: .init(url: nil, data: data, mime: "image/png", width: image.size.width, height: image.size.height), isVoice: false)
-            })
+        } else if let image = info[.originalImage] as? UIImage {
+            presenter?.upload(file: .image(image: image))
+            picker.dismiss(animated: true)
         }
     }
 }
@@ -898,12 +894,8 @@ extension ConversationViewController: EditActionBottomBarDelegate {
 
 extension ConversationViewController: UIDocumentPickerDelegate {
         func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-            guard let selectedURL = urls.first,
-                  let data = try? Data(contentsOf: selectedURL) else {
-                return
-            }
-
-            self.presenter?.upload(file: .init(url: selectedURL, data: data, mime: selectedURL.mimeType().containsAudio ? "audio/mp3" : selectedURL.mimeType(), width: 300, height: 300), isVoice: false)
+            guard let selectedURL = urls.first else { return }
+            presenter?.upload(file: .file(url: selectedURL))
         }
         
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) { }
@@ -915,9 +907,8 @@ extension ConversationViewController: VoiceInputBarDelegate {
     }
     
     func recordedVoice(url: URL, in duration: TimeInterval) {
-        guard duration > 2,
-              let data = try? Data(contentsOf: url) else { return }
-        self.presenter?.upload(file: FileUpload(url: nil, data: data, mime: "audio/wav", width: 0, height: 0, duration: duration), isVoice: true)
+        guard duration > 2 else { return }
+        presenter?.upload(file: .audio(url: url, duration: duration))
     }
 }
 
