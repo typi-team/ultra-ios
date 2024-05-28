@@ -442,7 +442,7 @@ private extension UpdateRepositoryImpl {
                     .asObservable()
                     .flatMap { [weak self] chatsResponse -> Observable<[Void]> in
                         guard let self else { return Observable.empty() }
-                        PP.debug("Support manager response - \(chatsResponse.chats)")
+//                        PP.debug("Support manager response - \(chatsResponse.chats)")
                         let requests = chatsResponse.chats
                             .map { chat in
                                 self.chatToConversationInteractor.executeSingle(

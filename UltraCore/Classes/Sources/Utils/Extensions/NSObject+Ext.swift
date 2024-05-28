@@ -43,39 +43,39 @@ extension Date {
     
     func formattedTimeForConversationCell() -> String {
         let calendar = Calendar.current
+        let sevenDaysAgo = calendar.date(byAdding: .day, value: -7, to: Date())!
         let formatter = DateFormatter()
         formatter.locale = UltraCoreSettings.appLocale
         if calendar.isDateInToday(self) {
             formatter.dateFormat = "HH:mm"
             return formatter.string(from: self)
-        } else if calendar.isDateInWeekend(self) {
-            formatter.dateFormat = "EEE"
+        } else if self > sevenDaysAgo {
+            formatter.dateFormat = "E"
             return formatter.string(from: self)
         } else if calendar.isDate(Date(), equalTo: self, toGranularity: .year) {
-            formatter.dateFormat = "dd.MM"
+            formatter.dateFormat = "dd/MM"
             return formatter.string(from: self)
         }
        
-        formatter.dateFormat = "dd.MM.yyyy"
+        formatter.dateFormat = "dd/MM/yyyy"
         return formatter.string(from: self)
     }
     
     func formattedTimeToHeadline(format: String = "HH:mm") -> String {
         
         let calendar = Calendar.current
-            let now = Date()
-            let yesterday = calendar.date(byAdding: .day, value: -1, to: now)!
-            
-            if calendar.isDateInToday(self) {
-                return ConversationStrings.today.localized
-            } else if calendar.isDateInYesterday(self) {
-                return ConversationStrings.yesterday.localized
-            } else {
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = format
-                dateFormatter.locale = UltraCoreSettings.appLocale
-                return dateFormatter.string(from: self)
-            }
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = UltraCoreSettings.appLocale
+        
+        if calendar.isDateInToday(self) {
+            return ConversationStrings.today.localized
+        } else if calendar.isDate(Date(), equalTo: self, toGranularity: .year) {
+            dateFormatter.dateFormat = "LLLL d"
+            return dateFormatter.string(from: self)
+        } else {
+            dateFormatter.dateFormat = "LLLL d, yyyy"
+            return dateFormatter.string(from: self)
+        }
     }
 }
 

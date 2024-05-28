@@ -228,6 +228,7 @@ class MessageDBService {
     }
     
     func deleteMessages(in conversationID: String, ranges: [ClosedRange<Int64>]) -> Single<Void> {
+        PP.debug("Attempt to delete messages in conversationID - \(conversationID) - \(ranges)")
         return Single.create(subscribe: {[weak self] observer -> Disposable in
             guard let `self` = self else { return Disposables.create() }
             do {
@@ -236,6 +237,7 @@ class MessageDBService {
                     let messages = realm.objects(DBMessage.self)
                         .filter({ $0.receiver?.chatID == conversationID })
                         .filter({ self.isInRanges(number: Int64($0.seqNumber), ranges: ranges) })
+                    PP.debug("Messages to delete - \((messages.compactMap { $0 } as [DBMessage]).map { $0.seqNumber })")
                     let notReadMessagesCount = messages.filter { $0.isIncome && $0.state?.read == false }.count
                     self.decreaseUnreadMessagesCount(in: conversationID, on: realm, count: notReadMessagesCount)
                     messages.forEach({ realm.delete($0) })

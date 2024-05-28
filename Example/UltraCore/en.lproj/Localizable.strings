@@ -33,7 +33,7 @@
 "contacts.was.hours.2" = "was %d hours ago";
 "contacts.was.hours.5" = "was %d hours ago";
 
-"contacts.was.minutes.1" = "was %d hour ago";
+"contacts.was.minutes.1" = "was %d minute ago";
 "contacts.was.minutes.2" = "was %d minutes ago";
 "contacts.was.minutes.5" = "was %d minutes ago";
 
