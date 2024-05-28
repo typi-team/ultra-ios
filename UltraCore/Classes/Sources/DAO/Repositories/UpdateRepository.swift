@@ -18,6 +18,7 @@ protocol UpdateRepository: AnyObject {
     func stopSession()
     func retreiveContactStatuses()
     func readAll(in conversation: Conversation)
+    func triggerUnreadUpdate()
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> { get set }
     var updateSyncObservable: Observable<Void> { get }
     var supportOfficesObservable: Observable<SupportOfficesResponse?> { get }
@@ -34,6 +35,7 @@ class UpdateRepositoryImpl {
         supportOfficesSubject.asObservable().startWith(nil).share(replay: 1)
     }
     var isConnectedToListenStream: Bool = false
+    var updateUnreadTriggerSubject: PublishSubject<Void> = .init()
     
     fileprivate let disposeBag = DisposeBag()
     fileprivate let appStore: AppSettingsStore
@@ -127,8 +129,13 @@ extension UpdateRepositoryImpl: UpdateRepository {
         }
     }
     
+    func triggerUnreadUpdate() {
+        updateUnreadTriggerSubject.onNext(())
+    }
+    
     func setupSubscription() {
         _ = Realm.myRealm()
+        setupUnreadUpdates()
         if appStore.lastState == 0 {
             self.updateClient
                 .getInitialState(InitialStateRequest(), callOptions: .default())
@@ -193,7 +200,7 @@ private extension UpdateRepositoryImpl {
         for chat in chats {
             conversationService.setUnread(for: chat.chatID, count: Int(chat.unread))
         }
-        UnreadMessagesService.updateUnreadMessagesCount()
+        triggerUnreadUpdate()
     }
     
     func setupChangesSubscription(with state: UInt64) {
@@ -277,6 +284,63 @@ private extension UpdateRepositoryImpl {
         }
     }
     
+    func setupUnreadUpdates() {
+        Observable.combineLatest(updateUnreadTriggerSubject.asObservable(), supportOfficesObservable)
+            .subscribe(onNext: { _, officesResponse in
+                guard let officesResponse = officesResponse else {
+                    return
+                }
+                
+                let isAssistantEnabled = officesResponse.assistant != nil
+                let realm = Realm.myRealm()
+                
+                let allChats = realm.objects(DBConversation.self)
+                    .filter { conv in
+                        if !isAssistantEnabled {
+                            return !conv.isAssistant
+                        }
+                        
+                        return true
+                    }
+                let count = allChats.reduce(0, { $0 + $1.unreadMessageCount })
+                
+                
+                let supportChats = realm.objects(DBConversation.self)
+                    .map { ConversationImpl(dbConversation: $0) }
+                    .filter { conv in
+                        if conv.chatType == .support {
+                            return true
+                        } else if conv.chatType == .peerToPeer {
+                            guard let peer = conv.peers.first else {
+                                return false
+                            }
+                            return officesResponse.personalManagers.map { String($0.userId) }.contains(where: { $0 == peer.phone })
+                        } else {
+                            return false
+                        }
+                    }
+                let unreadSupportMessagesCount = supportChats.reduce(0, { $0 + $1.unreadCount })
+                
+                
+                let nonSupportChats = realm.objects(DBConversation.self)
+                    .map { ConversationImpl(dbConversation: $0) }
+                    .filter { $0.chatType != .support }
+                let unreadNonSupportMessagesCount = nonSupportChats.reduce(0, { $0 + $1.unreadCount })
+                
+                DispatchQueue.main.async {
+                    UltraCoreSettings.delegate?.unreadAllMessagesUpdated(count: count)
+                    UltraCoreSettings.delegate?.unreadSupportMessagesUpdated(
+                        count: unreadSupportMessagesCount
+                    )
+                    UltraCoreSettings.delegate?.unreadNonSupportMessagesUpdated(
+                        count: unreadNonSupportMessagesCount
+                    )
+                }
+                
+            })
+            .disposed(by: disposeBag)
+    }
+    
     func dissmissCall(in room: String) {
         DispatchQueue.main.async {
             UltraVoIPManager.shared.serverEndCall()
@@ -291,9 +355,9 @@ private extension UpdateRepositoryImpl {
                 return
             }
             let senderID = appStore.userID()
-            self.update(message: message, completion: {
+            self.update(message: message, completion: { [weak self] in
                 guard message.sender.userID != senderID else { return }
-                UnreadMessagesService.updateUnreadMessagesCount()
+                self?.triggerUnreadUpdate()
             })
         case let .contact(contact):
             self.update(contact: ContactDisplayableImpl(contact: contact))
@@ -391,8 +455,12 @@ private extension UpdateRepositoryImpl {
                             }
                         return Observable.zip(requests)
                     }
-                    .subscribe { _ in
+                    .subscribe { [weak self] _ in
+                        guard let assistant = response.assistant else {
+                            return
+                        }
                         
+                        self?.conversationService.updateAssistant(name: assistant.name, avatarURL: assistant.avatarUrl)
                     } onError: { error in
                         PP.error(error.localeError)
                     }

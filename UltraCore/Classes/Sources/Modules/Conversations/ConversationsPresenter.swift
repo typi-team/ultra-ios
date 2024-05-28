@@ -43,7 +43,7 @@ final class ConversationsPresenter: BasePresenter {
                     guard let self = self else {
                         return true
                     }
-                    PP.debug("Conversation peers are \(conversation.peers.map(\.phone)); type - \(conversation.chatType) - \(conversation.title), chat ID - \(conversation.idintification); personal managers - \(self.personalManagers); isSupport - \(isSupport)")
+//                    PP.debug("Conversation peers are \(conversation.peers.map(\.phone)); type - \(conversation.chatType) - \(conversation.title), chat ID - \(conversation.idintification); personal managers - \(self.personalManagers); isSupport - \(isSupport)")
                     if isSupport {
                         if conversation.chatType == .support {
                             return true
@@ -53,7 +53,7 @@ final class ConversationsPresenter: BasePresenter {
                             }
                             return managers.contains(where: { $0 == peer.phone })
                         } else if conversation.chatType == .support && conversation.isAssistant {
-                            return supportOffices?.assistantEnabled ?? true
+                            return supportOffices?.assistant != nil
                         } else {
                             return false
                         }
@@ -103,6 +103,10 @@ final class ConversationsPresenter: BasePresenter {
 // MARK: - Extensions -
 
 extension ConversationsPresenter: ConversationsPresenterInterface {
+    
+    var isSupportScreen: Bool {
+        self.isSupport
+    }
     
     func viewDidLoad() {
         startReachibilityNotifier()

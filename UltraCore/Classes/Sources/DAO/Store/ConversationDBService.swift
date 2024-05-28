@@ -43,7 +43,6 @@ class ConversationDBService {
             }
         }
         self.chatService = chatService
-        UnreadMessagesService.updateUnreadMessagesCount()
     }
     
     func createIfNotExist(from message: Message) -> Single<Void> {
@@ -97,6 +96,9 @@ class ConversationDBService {
                                             conversation.callAllowed = response.chat.settings.callAllowed
                                             conversation.addContact = response.chat.settings.addContact
                                             conversation.conversationType = response.chat.chatType.rawValue
+                                            if response.chat.properties["is_assistant"] == "true" {
+                                                conversation.isAssistant = true
+                                            }
                                             if message.sender.userID != self?.appStore.userID() ?? "" {
                                                 conversation.unreadMessageCount += 1
                                             }
@@ -212,7 +214,7 @@ class ConversationDBService {
                     realm.add(conversation, update: .all)
                 }
             }
-            UnreadMessagesService.updateUnreadMessagesCount()
+            AppSettingsImpl.shared.updateRepository.triggerUnreadUpdate()
             return true
         } catch {
             return false
@@ -301,7 +303,7 @@ class ConversationDBService {
                     let messages = realm.objects(DBMessage.self).where({$0.receiver.chatID == id })
                     messages.forEach({ realm.delete($0)})
                 })
-                UnreadMessagesService.updateUnreadMessagesCount()
+                AppSettingsImpl.shared.updateRepository.triggerUnreadUpdate()
             } catch {
                 observer(.failure(error))
             }
@@ -309,6 +311,22 @@ class ConversationDBService {
             
         })
     }
+    
+    func updateAssistant(name: String, avatarURL: String?) {
+        let realm = Realm.myRealm()
+        if let assistant = realm.objects(DBConversation.self).filter({ $0.isAssistant }).first {
+            do {
+                try realm.write {
+                    assistant.title = name
+                    assistant.imagePath = avatarURL ?? ""
+                }
+            }
+            catch {
+                PP.error("Error updating assistant title and image path")
+            }
+        }
+    }
+    
 }
 
 

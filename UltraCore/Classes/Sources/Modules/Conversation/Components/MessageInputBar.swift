@@ -22,6 +22,20 @@ class MessageInputBar: UIView {
         return audioRecordUtils.isRecording
     }
     
+    var canSendAttachments: Bool = true {
+        didSet {
+            self.textViewDidChange(self.messageTextView)
+        }
+    }
+    var canSendMoney: Bool = true {
+        didSet {
+            let isAvailable = futureDelegate?.availableToSendMoney() ?? true && canSendMoney
+            exchangesButton.snp.updateConstraints {
+                $0.width.equalTo(isAvailable ? kHeadlinePadding * 2 : 0)
+            }
+        }
+    }
+    
 //    MARK: Static properties
     
     fileprivate var lastTypingDate: Date = .init()
@@ -58,7 +72,9 @@ class MessageInputBar: UIView {
         button.addAction {
             guard let message = self.messageTextView.text?.trimmingCharacters(in: .whitespacesAndNewlines),
                     !message.isEmpty else {
-                self.delegate?.pressedPlus(in: self)
+                if self.canSendAttachments {
+                    self.delegate?.pressedPlus(in: self)
+                }
                 return
             }
             self.messageTextView.text = ""
@@ -156,7 +172,7 @@ class MessageInputBar: UIView {
     
     private func setupConstraints() {
         
-        let availableToSendMoney = self.futureDelegate?.availableToSendMoney() ?? true
+        let availableToSendMoney = self.futureDelegate?.availableToSendMoney() ?? true && canSendMoney
         
         self.exchangesButton.snp.makeConstraints { make in
             make.height.equalTo(36)
@@ -220,8 +236,13 @@ extension MessageInputBar: MessageInputTextViewDelegate {
             self.microButton.isHidden = true
             self.sendButton.setImage(self.kInputSendImage, for: .normal)
         } else {
-            self.microButton.isHidden = false
-            self.sendButton.setImage(self.kInputPlusImage, for: .normal)
+            if canSendAttachments {
+                self.microButton.isHidden = false
+                self.sendButton.setImage(self.kInputPlusImage, for: .normal)
+            } else {
+                self.microButton.isHidden = true
+                self.sendButton.setImage(self.kInputSendImage, for: .normal)
+            }
         }
 
         if Date().timeIntervalSince(lastTypingDate) > kTypingMinInterval {
@@ -239,6 +260,7 @@ extension MessageInputBar: MessageInputTextViewDelegate {
 }
 
 extension MessageInputBar {
+    
     func block(_ isBlocked: Bool) {
         self.blockView.snp.makeConstraints { make in
             if isBlocked {

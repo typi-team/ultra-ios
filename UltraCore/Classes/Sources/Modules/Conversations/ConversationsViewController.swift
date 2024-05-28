@@ -38,8 +38,10 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
             isManager: self.presenter?.isManager(conversation: model) ?? false
         )
         return cell
-    }, canEditRowAtIndexPath: { data, indexpath in
-        if let phone = data.sectionModels[indexpath.section].items[indexpath.row].peers.first?.phone {
+    }, canEditRowAtIndexPath: { [weak self] data, indexpath in
+        if self?.presenter?.isSupportScreen == true {
+            return false
+        } else if let phone = data.sectionModels[indexpath.section].items[indexpath.row].peers.first?.phone {
             return !phone.contains("+00000000000")
         } else {
             return true
@@ -80,7 +82,7 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
             .do(onNext: {[weak self] conversations in
                 guard let `self` = self else { return }
                 if conversations.isEmpty {
-                    self.tableView.backgroundView = UltraCoreSettings.delegate?.emptyConversationView() ?? self.backgroundView
+                    self.tableView.backgroundView = UltraCoreSettings.delegate?.emptyConversationView(isSupport: self.presenter?.isSupportScreen ?? false) ?? self.backgroundView
                 } else {
                     self.tableView.backgroundView = nil
                 }

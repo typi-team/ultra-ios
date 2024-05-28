@@ -22,6 +22,7 @@ protocol ConversationsViewInterface: ViewInterface {
 
 protocol ConversationsPresenterInterface: PresenterInterface {
     var conversation: Observable<[Conversation]> { get set }
+    var isSupportScreen: Bool { get }
     
     func isManager(conversation: Conversation) -> Bool
     func navigateToContacts()

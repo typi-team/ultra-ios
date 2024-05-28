@@ -123,6 +123,18 @@ final class ConversationPresenter {
 
 extension ConversationPresenter: ConversationPresenterInterface {
     
+    func canBlock() -> Bool {
+        conversation.chatType != .support
+    }
+    
+    func canTransfer() -> Bool {
+        conversation.chatType != .support
+    }
+    
+    func canAttach() -> Bool {
+        !conversation.isAssistant
+    }
+    
     var isManager: Bool {
         return self.isPersonalManager
     }
@@ -136,7 +148,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
     }
     
     func allowedToCall() -> Bool {
-        conversation.callAllowed
+        conversation.callAllowed && conversation.chatType != .support
     }
 
     func subscribeToVisibility() {

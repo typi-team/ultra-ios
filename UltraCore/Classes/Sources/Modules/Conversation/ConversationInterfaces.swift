@@ -55,4 +55,7 @@ protocol ConversationPresenterInterface: PresenterInterface {
     func didTapTransfer()
     func isGroupChat() -> Bool
     func getContact(for id: String) -> ContactDisplayable?
+    func canBlock() -> Bool
+    func canTransfer() -> Bool
+    func canAttach() -> Bool
 }

@@ -20,7 +20,7 @@ public protocol UltraCoreFutureDelegate: AnyObject {
 
 public protocol UltraCoreSettingsDelegate: AnyObject {
     var activeConversationID: String? { get set }
-    func emptyConversationView() -> UIView?
+    func emptyConversationView(isSupport: Bool) -> UIView?
     func emptyConversationDetailView(isManager: Bool) -> UIView?
     func info(from id: String) -> IContactInfo?
     func token(callback: @escaping (Result<String, Error>) -> Void)
@@ -32,7 +32,9 @@ public protocol UltraCoreSettingsDelegate: AnyObject {
     func callImage() -> UIImage?
     func disclaimerDescriptionFor(contact: String) -> String
     func tokenUpdated()
-    func unreadMessagesUpdated(count: Int)
+    func unreadAllMessagesUpdated(count: Int)
+    func unreadSupportMessagesUpdated(count: Int)
+    func unreadNonSupportMessagesUpdated(count: Int)
     func provideTransferScreen(
         for userID: String,
         viewController: UIViewController,
@@ -62,6 +64,8 @@ public extension UltraCoreSettings {
     
     private static var isUpdatingSession: Bool = false
     private static let disposeBag = DisposeBag()
+    
+    static var appLocale: Locale = .current
     
     static var isConnected: Bool {
         AppSettingsImpl.shared.updateRepository.isConnectedToListenStream
@@ -182,11 +186,11 @@ public extension UltraCoreSettings {
                     if shared.appStore.lastState == 0 {
                         DispatchQueue.main.asyncAfter(deadline: .now() + timeOut, execute: {
                             callback(nil)
-                            UnreadMessagesService.updateUnreadMessagesCount()
+                            AppSettingsImpl.shared.updateRepository.triggerUnreadUpdate()
                         })
                     } else {
                         callback(nil)
-                        UnreadMessagesService.updateUnreadMessagesCount()
+                        AppSettingsImpl.shared.updateRepository.triggerUnreadUpdate()
                     }
                 }
             }

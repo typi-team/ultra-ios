@@ -40,16 +40,11 @@ extension Date {
     var nanosec: Int64 { Int64(timeIntervalSince1970 * 1000 * 1000) }
 
     init(nanoseconds: Int64) { self = Date(timeIntervalSince1970: TimeInterval(nanoseconds / 1000 / 1000)) }
-
-    func formattedTime(format: String = "HH:mm") -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = format
-        return formatter.string(from: self)
-    }
     
     func formattedTimeForConversationCell() -> String {
         let calendar = Calendar.current
         let formatter = DateFormatter()
+        formatter.locale = UltraCoreSettings.appLocale
         if calendar.isDateInToday(self) {
             formatter.dateFormat = "HH:mm"
             return formatter.string(from: self)
@@ -78,6 +73,7 @@ extension Date {
             } else {
                 let dateFormatter = DateFormatter()
                 dateFormatter.dateFormat = format
+                dateFormatter.locale = UltraCoreSettings.appLocale
                 return dateFormatter.string(from: self)
             }
     }
@@ -95,5 +91,5 @@ extension TimeInterval {
 }
 
 let kDateFormatter = DateFormatter.init {
-    $0.locale = .current
+    $0.locale = UltraCoreSettings.appLocale
 }
