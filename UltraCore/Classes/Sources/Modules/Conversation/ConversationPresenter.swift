@@ -500,8 +500,8 @@ extension ConversationPresenter: ConversationPresenterInterface {
                     ),
                     isVoice: false
                 )
-            case .failure:
-                break
+            case let .failure(error):
+                PP.error("FYVideoCompressor compressVideo error \(error.localeError)")
             }
         }
     }
