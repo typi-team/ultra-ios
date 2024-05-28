@@ -54,7 +54,7 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
             style: .plain, target: self,
             action: #selector(self.openContacts)
         )
-        self.tableView.contentInset = UIEdgeInsets(top: 24, left: 0, bottom: 24, right: 0)
+        self.tableView.contentInset = UIEdgeInsets(top: 24, left: 0, bottom: 0, right: 0)
         self.tableView.separatorInset = UIEdgeInsets(top: 0, left: 92, bottom: 0, right: 0)
         self.tableView.tableHeaderView = UIView()    
         self.navigationItem.title = ConversationsStrings.chats.localized

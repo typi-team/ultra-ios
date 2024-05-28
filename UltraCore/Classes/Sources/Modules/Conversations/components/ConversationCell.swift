@@ -88,7 +88,7 @@ class ConversationCell: BaseCell {
         self.descriptionView.snp.makeConstraints { make in
             make.top.equalTo(titleView.snp.bottom)
             make.left.equalTo(avatarView.snp.right).offset(kMediumPadding)
-            make.right.equalTo(unreadView.snp.left).offset(-kMediumPadding)
+            make.right.equalToSuperview().offset(-3.5*kMediumPadding)
         }
 
         self.unreadView.snp.makeConstraints { make in
@@ -152,8 +152,8 @@ class ConversationCell: BaseCell {
     
     override func setupStyle() {
         super.setupStyle()
-        self.backgroundColor = .clear
         guard let style else { return }
+        self.backgroundColor = style.backgroundColor.color
         self.descriptionView.textColor = style.descriptionConfig.color
         self.descriptionView.font = style.descriptionConfig.font
         self.titleView.textColor = style.titleConfig.color
