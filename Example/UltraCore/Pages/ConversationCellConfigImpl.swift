@@ -13,7 +13,7 @@ class ConversationCellConfigImpl: ConversationCellConfig {
     
 
     var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white, darkColor: .gray700)
-    var titleConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularCallout)
-    var deliveryConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
-    var descriptionConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
+    var titleConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .default(of: 16, and: .semibold))
+    var deliveryConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray500, font: .defaultRegularSubHeadline)
+    var descriptionConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray500, font: .default(of: 14, and: .regular))
 }
