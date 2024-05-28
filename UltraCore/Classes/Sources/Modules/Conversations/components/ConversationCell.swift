@@ -12,9 +12,8 @@ class ConversationCell: BaseCell {
     fileprivate lazy var style: ConversationCellConfig? = UltraCoreStyle.conversationCell
     
     fileprivate let avatarView: UIImageView = .init({
-        $0.cornerRadius = 20
+        $0.cornerRadius = 30
         $0.contentMode = .scaleAspectFit
-        
     })
     
     fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
@@ -25,7 +24,7 @@ class ConversationCell: BaseCell {
     })
     
     fileprivate let descriptionView: UILabel = .init({
-        $0.numberOfLines = 1
+        $0.numberOfLines = 2
     })
     
     fileprivate let lastSeenView: UILabel = .init({
@@ -40,7 +39,6 @@ class ConversationCell: BaseCell {
         $0.backgroundColor = .green500
     })
     
-    
     override func setupView() {
         super.setupView()
         self.contentView.addSubview(self.avatarView)
@@ -49,21 +47,18 @@ class ConversationCell: BaseCell {
         self.contentView.addSubview(self.statusView)
         self.contentView.addSubview(self.lastSeenView)
         self.contentView.addSubview(self.unreadView)
-        
     }
     
     override func setupConstraints() {
         super.setupConstraints()
         
         self.avatarView.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(12)
-            make.left.equalToSuperview().offset(20)
-            make.width.equalTo(40)
-            make.bottom.equalToSuperview().offset(-12)
+            make.top.equalToSuperview().offset(4)
+            make.left.equalToSuperview().offset(kMediumPadding)
+            make.size.equalTo(60)
         }
-        
         self.titleView.snp.makeConstraints { make in
-            make.top.equalToSuperview().offset(10)
+            make.top.equalTo(avatarView)
             make.height.equalTo(kHeadlinePadding)
             make.left.equalTo(self.avatarView.snp.right).offset(kMediumPadding)
             make.right.lessThanOrEqualTo(self.statusView.snp.left).offset(-kLowPadding).priority(.high)
@@ -75,24 +70,23 @@ class ConversationCell: BaseCell {
         }
         
         self.lastSeenView.snp.makeConstraints { make in
-            make.top.equalTo(self.avatarView.snp.top)
+            make.top.centerY.equalTo(titleView)
             make.width.greaterThanOrEqualTo(kHeadlinePadding)
             make.left.equalTo(self.statusView.snp.right).offset(kLowPadding)
-            make.right.equalToSuperview().offset(-kMediumPadding)
+            make.right.equalToSuperview().inset(kMediumPadding)
         }
 
         self.descriptionView.snp.makeConstraints { make in
-            make.top.greaterThanOrEqualTo(titleView.snp.bottom).offset(2)
+            make.top.equalTo(titleView.snp.bottom)
             make.left.equalTo(avatarView.snp.right).offset(kMediumPadding)
-            make.bottom.equalToSuperview().offset(-10)
         }
 
         self.unreadView.snp.makeConstraints { make in
-            make.right.equalToSuperview().offset(-kMediumPadding)
+            make.right.equalToSuperview().inset(kMediumPadding)
             make.height.equalTo(18)
             make.width.equalTo(24)
             make.left.equalTo(descriptionView.snp.right).offset(kMediumPadding)
-            make.bottom.greaterThanOrEqualTo(self.descriptionView.snp.bottom)
+            make.bottom.equalTo(avatarView.snp.bottom).offset(-6)
         }
     }
     
@@ -153,7 +147,7 @@ class ConversationCell: BaseCell {
         super.setupStyle()
         self.descriptionView.textColor = style?.descriptionConfig.color
         self.descriptionView.font = style?.descriptionConfig.font
-        self.backgroundColor = style?.backgroundColor.color
+        self.backgroundColor = .clear
         self.titleView.textColor = style?.titleConfig.color
         self.titleView.font = style?.titleConfig.font
         self.lastSeenView.font = style?.deliveryConfig.font
