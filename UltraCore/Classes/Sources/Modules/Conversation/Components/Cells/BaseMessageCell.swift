@@ -42,7 +42,7 @@ class BaseMessageCell: BaseCell {
     })
     
     let container: UIView = .init({
-        $0.cornerRadius = 18
+        $0.cornerRadius = 12
         $0.backgroundColor = .clear
     })
     
@@ -91,16 +91,16 @@ class BaseMessageCell: BaseCell {
         }
 
         self.textView.snp.makeConstraints { make in
+            make.left.equalToSuperview().offset(8)
             make.top.equalToSuperview().offset(kLowPadding)
-            make.left.equalToSuperview().offset(kLowPadding + 2)
-            make.bottom.equalToSuperview().offset(-kLowPadding)
+            make.right.equalToSuperview().offset(-8)
         }
 
         self.deliveryDateLabel.snp.makeConstraints { make in
-            make.width.greaterThanOrEqualTo(38)
-            make.bottom.equalTo(textView.snp.bottom)
-            make.right.equalToSuperview().offset(-(kLowPadding + 1))
-            make.left.equalTo(textView.snp.right).offset(kMediumPadding - 5)
+            make.top.equalTo(textView.snp.bottom).offset(4)
+            make.right.equalToSuperview().offset(-4)
+            make.left.greaterThanOrEqualTo(container).offset(4)
+            make.bottom.equalToSuperview().offset(-8)
         }
     }
     

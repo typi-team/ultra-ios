@@ -27,21 +27,21 @@ class OutgoingMessageCell: BaseMessageCell {
         }
 
         self.textView.snp.makeConstraints { make in
-            make.left.equalToSuperview().offset(10)
+            make.left.equalToSuperview().offset(8)
             make.top.equalToSuperview().offset(kLowPadding)
-            make.bottom.equalToSuperview().offset(-kLowPadding)
+            make.right.equalToSuperview().offset(-8)
         }
 
         self.statusView.snp.makeConstraints { make in
-            make.left.equalTo(self.textView.snp.right).offset(kLowPadding / 2)
+            make.top.equalTo(textView.snp.bottom).offset(4)
             make.width.equalTo(15).priority(.high)
+            make.right.equalToSuperview().offset(-10)
+            make.bottom.equalToSuperview().offset(-8)
         }
 
         self.deliveryDateLabel.snp.makeConstraints { make in
-            make.left.equalTo(self.statusView.snp.right).offset(kLowPadding / 2)
-            make.right.equalToSuperview().offset(-10)
-            make.bottom.equalTo(textView.snp.bottom)
-            make.width.greaterThanOrEqualTo(35)
+            make.left.greaterThanOrEqualTo(container).offset(8)
+            make.right.equalTo(statusView.snp.left).offset(-4)
             make.centerY.equalTo(statusView.snp.centerY)
         }
     }

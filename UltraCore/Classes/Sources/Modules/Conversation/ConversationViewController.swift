@@ -64,6 +64,13 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.registerCell(type: OutgoingMessageCell.self)
         tableView.registerCell(type: SystemMessageCell.self)
         tableView.registerCell(type: GroupIncomeMessageCell.self)
+        tableView.registerCell(type: GroupIncomeContactCell.self)
+        tableView.registerCell(type: GroupIncomeFileCell.self)
+        tableView.registerCell(type: GroupIncomeLocationCell.self)
+        tableView.registerCell(type: GroupIncomeMoneyCell.self)
+        tableView.registerCell(type: GroupIncomeVoiceCell.self)
+        tableView.registerCell(type: GroupIncomePhotoCell.self)
+        tableView.registerCell(type: GroupIncomingVideoCell.self)
         tableView.addGestureRecognizer(dismissKeyboardGesture)
         tableView.contentInset = .zero
     }
@@ -102,13 +109,6 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             if message.type == .system {
                 let cell: SystemMessageCell = tableView.dequeueCell()
                 cell.setup(text: message.supportMessage)
-                return cell
-            }
-            if presenter?.isGroupChat() ?? false && message.isIncome {
-                let contact = presenter?.getContact(for: message.sender.userID)
-                let cell: GroupIncomeMessageCell = tableView.dequeueCell()
-                cell.setup(contact: contact)
-                cell.setup(message: message)
                 return cell
             }
             
@@ -527,13 +527,7 @@ private extension ConversationViewController {
     
     func openMedia(type: UIImagePickerController.SourceType) {
         if type == .savedPhotosAlbum {
-            let controller = UIImagePickerController()
-            controller.delegate = self
-            controller.sourceType = type
-            controller.videoQuality = .typeHigh
-            controller.mediaTypes = ["public.movie", "public.image"]
-            controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
-            self.present(controller, animated: true)
+            presentImagePicker(type: type)
             return
         }
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -542,32 +536,30 @@ private extension ConversationViewController {
         case .restricted:
             showAlert(from: ConversationStrings.cameraPermissionRestricted.localized)
         case .notDetermined:
-            AVCaptureDevice.requestAccess(for: .video) { isAuthorized in
+            AVCaptureDevice.requestAccess(for: .video) { [weak self] isAuthorized in
                 guard isAuthorized else {
                     return
                 }
                 DispatchQueue.main.async {
-                    let controller = UIImagePickerController()
-                    controller.delegate = self
-                    controller.sourceType = type
-                    controller.videoQuality = .typeHigh
-                    controller.mediaTypes = ["public.movie", "public.image"]
-                    controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
-                    self.present(controller, animated: true)
+                    self?.presentImagePicker(type: type)
                 }
             }
         case .authorized:
-            let controller = UIImagePickerController()
-            controller.delegate = self
-            controller.sourceType = type
-            controller.videoQuality = .typeHigh
-            controller.mediaTypes = ["public.movie", "public.image"]
-            controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
-            self.present(controller, animated: true)
+            presentImagePicker(type: type)
         default:
             break
         }
-
+    }
+    
+    private func presentImagePicker(type: UIImagePickerController.SourceType) {
+        let controller = UIImagePickerController()
+        controller.delegate = self
+        controller.sourceType = type
+        controller.videoQuality = .typeHigh
+        controller.mediaTypes = ["public.movie", "public.image"]
+        controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
+        controller.videoMaximumDuration = 300
+        present(controller, animated: true)
     }
     
     func openDocument() {
@@ -592,16 +584,15 @@ private extension ConversationViewController {
     }
 }
 
-
 extension ConversationViewController: (UIImagePickerControllerDelegate & UINavigationControllerDelegate){
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-            dismiss(animated: true, completion: nil)
+        dismiss(animated: true, completion: nil)
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if info[UIImagePickerController.InfoKey.mediaType] as? String == "public.movie",
-           let url = info[.mediaURL]  as? URL {
+           let url = info[.mediaURL] as? URL {
             presenter?.upload(file: .video(url: url))
             picker.dismiss(animated: true)
         } else if let image = info[.originalImage] as? UIImage {
@@ -701,6 +692,58 @@ extension ConversationViewController {
     }
     
     func cell(_ message: Message, in tableView: UITableView) -> BaseMessageCell {
+        
+        if presenter?.isGroupChat() ?? false && message.isIncome {
+            let contact = presenter?.getContact(for: message.sender.userID)
+            guard let content = message.content else {
+                let cell: GroupIncomeMessageCell = tableView.dequeueCell()
+                cell.setup(contact: contact)
+                cell.setup(message: message)
+                return cell
+            }
+            
+            switch content {
+            case .photo:
+                let cell: GroupIncomePhotoCell = tableView.dequeueCell()
+                cell.setup(contact: contact)
+                cell.setup(message: message)
+                return cell
+            case .video:
+                let cell: GroupIncomingVideoCell = tableView.dequeueCell()
+                cell.setup(contact: contact)
+                cell.setup(message: message)
+                return cell
+            case .money:
+                let cell: GroupIncomeMoneyCell = tableView.dequeueCell()
+                cell.setup(contact: contact)
+                cell.setup(message: message)
+                return cell
+            case .file:
+                let cell: GroupIncomeFileCell = tableView.dequeueCell()
+                cell.setup(contact: contact)
+                cell.setup(message: message)
+                return cell
+            case .location:
+                let cell: GroupIncomeLocationCell = tableView.dequeueCell()
+                cell.setup(contact: contact)
+                cell.setup(message: message)
+                return cell
+            case .contact:
+                let cell: GroupIncomeContactCell = tableView.dequeueCell()
+                cell.setup(contact: contact)
+                cell.setup(message: message)
+                return cell
+            case .voice:
+                let cell: GroupIncomeVoiceCell = tableView.dequeueCell()
+                cell.setup(contact: contact)
+                cell.setup(message: message)
+                return cell
+            default:
+                let cell: GroupIncomeMessageCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            }
+        }
         
         guard let content = message.content else {
             if message.isIncome {

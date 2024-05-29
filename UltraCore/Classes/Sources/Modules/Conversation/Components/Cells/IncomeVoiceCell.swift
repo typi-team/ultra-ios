@@ -243,21 +243,22 @@ class OutcomeVoiceCell: IncomeVoiceCell {
             make.top.equalToSuperview().offset(kLowPadding)
             make.height.equalTo(kHeadlinePadding)
         }
-        
-        self.deliveryDateLabel.snp.makeConstraints { make in
-            make.top.equalTo(slider.snp.bottom).offset(kLowPadding)
-            make.right.equalToSuperview().offset(-kLowPadding)
-        }
-        
+
         self.durationLabel.snp.makeConstraints { make in
             make.top.equalTo(slider.snp.bottom).offset(kLowPadding)
             make.leading.equalTo(slider.snp.leading)
             make.bottom.equalToSuperview().offset(-kLowPadding)
         }
-        
+
         self.statusView.snp.makeConstraints { make in
-            make.right.equalTo(deliveryDateLabel.snp.left).offset(-(kLowPadding / 2))
-            make.centerY.equalTo(self.deliveryDateLabel.snp.centerY)
+            make.right.equalToSuperview().offset(-kLowPadding)
+            make.left.equalTo(deliveryDateLabel.snp.right).offset((kLowPadding / 2))
+            make.centerY.equalTo(deliveryDateLabel)
+        }
+        
+        self.deliveryDateLabel.snp.makeConstraints { make in
+            make.top.equalTo(slider.snp.bottom).offset(kLowPadding)
+            make.bottom.equalToSuperview().offset(-kLowPadding)
         }
 
         self.spinner.snp.makeConstraints { make in

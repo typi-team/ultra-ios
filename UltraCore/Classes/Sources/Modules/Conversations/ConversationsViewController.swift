@@ -21,13 +21,7 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
                                                                   action: .init(title: ConversationsStrings.start.localized, callback: {[weak self] in self?.presenter?.navigateToContacts()}))
     fileprivate lazy var backgroundView: PermissionStateView = .init(data: permissionData)
     
-    fileprivate lazy var tableView: UITableView = {
-        if #available(iOS 13.0, *) {
-            return .init(frame: .zero, style: .insetGrouped)
-        } else {
-            return .init()
-        }
-    }()
+    fileprivate lazy var tableView = UITableView(frame: .zero, style: .plain)
     
     lazy var dataSource = RxTableViewSectionedReloadDataSource<SectionModel<String, Conversation>>(configureCell: {_, tableView, indexPath,
         model in
@@ -51,17 +45,18 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
         super.setupViews()
         
         self.view.addSubview(tableView)
-        self.tableView.rowHeight = 64
+        self.tableView.rowHeight = 78
         self.tableView.backgroundColor = nil
         self.tableView.sectionHeaderHeight = 0
         self.tableView.registerCell(type: ConversationCell.self)
-        self.tableView.separatorInset = .init(top: 0, left: kMediumPadding * 2, bottom: 0, right: kMediumPadding)
         self.navigationItem.rightBarButtonItem = .init(
             image: UltraCoreStyle.conversationScreenConfig.startConversationImage.image,
             style: .plain, target: self,
             action: #selector(self.openContacts)
         )
-        
+        self.tableView.contentInset = UIEdgeInsets(top: 24, left: 0, bottom: 0, right: 0)
+        self.tableView.separatorInset = UIEdgeInsets(top: 0, left: 92, bottom: 0, right: 0)
+        self.tableView.tableHeaderView = UIView()    
         self.navigationItem.title = ConversationsStrings.chats.localized
         self.hidesBottomBarWhenPushed = false
     }

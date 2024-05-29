@@ -14,12 +14,12 @@ class IncomeFileCell : BaseMessageCell {
     
     let mediaRepository: MediaRepository = AppSettingsImpl.shared.mediaRepository
     
-    fileprivate let fileLabel: RegularFootnote = .init({
+    let fileLabel: RegularFootnote = .init({
         $0.text = MessageStrings.fileWithoutSmile.localized
         $0.textColor = UltraCoreStyle.incomeMessageCell?.fileCellConfig.fileTextConfig.color
         $0.font = UltraCoreStyle.incomeMessageCell?.fileCellConfig.fileTextConfig.font
     })
-    fileprivate let fileIconView: UIImageView = .init({
+    let fileIconView: UIImageView = .init({
         $0.image = UltraCoreStyle.incomeMessageCell?.fileIconImage?.image
         $0.contentMode = .center
     })

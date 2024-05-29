@@ -11,9 +11,9 @@ class IncomeContactCell : BaseMessageCell {
     
     let mediaRepository: MediaRepository = AppSettingsImpl.shared.mediaRepository
     
-    fileprivate let displayNameLabel: RegularCallout = .init({ $0.text = "Kabanbai batyr" })
+    let displayNameLabel: RegularCallout = .init({ $0.text = "Kabanbai batyr" })
     fileprivate let phoneNumberLabel: RegularFootnote = .init({ $0.text = "+ 7 777 777 77 77" })
-    fileprivate let moneyAvatarView: UIImageView = .init({
+    let moneyAvatarView: UIImageView = .init({
         $0.contentMode = .center
         $0.image = UltraCoreStyle.incomeMessageCell?.fileIconImage?.image
     })

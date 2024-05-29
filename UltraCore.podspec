@@ -52,5 +52,6 @@ Pod::Spec.new do |s|
    s.dependency 'NVActivityIndicatorView'
    s.dependency 'LiveKitClient', '1.0.13'
    s.dependency 'CocoaLumberjack/Swift'
+   s.dependency 'FYVideoCompressor'
    
 end
