@@ -22,12 +22,14 @@ class BaseCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         self.setupView()
         self.setupConstraints()
+        self.setupStyle()
     }
     
     override func awakeFromNib() {
         super.awakeFromNib()
         self.setupView()
         self.setupConstraints()
+        self.setupStyle()
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
