@@ -30,8 +30,12 @@ class MessageInputBar: UIView {
     var canSendMoney: Bool = true {
         didSet {
             let isAvailable = futureDelegate?.availableToSendMoney() ?? true && canSendMoney
+            exchangesButton.isHidden = !isAvailable
             exchangesButton.snp.updateConstraints {
                 $0.width.equalTo(isAvailable ? kHeadlinePadding * 2 : 0)
+            }
+            containerStack.snp.updateConstraints { make in
+                make.leading.equalTo(exchangesButton.snp.trailing).offset(isAvailable ? 0 : kMediumPadding)
             }
         }
     }
@@ -168,7 +172,6 @@ class MessageInputBar: UIView {
         self.addSubview(exchangesButton)
         self.addSubview(recordView)
         self.containerStack.addSubview(messageTextView)
-//        self.containerStack.addSubview(microButton)
         insertSubview(microButton, aboveSubview: containerStack)
         
         self.backgroundColor = UltraCoreStyle.controllerBackground?.color
@@ -194,7 +197,7 @@ class MessageInputBar: UIView {
         self.containerStack.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(kMediumPadding - 4)
             make.bottom.equalToSuperview().offset(-(kMediumPadding - 4 + bottomInset))
-            make.leading.equalTo(exchangesButton.snp.trailing)
+            make.leading.equalTo(exchangesButton.snp.trailing).offset(0)
             make.height.greaterThanOrEqualTo(36)
         }
 
