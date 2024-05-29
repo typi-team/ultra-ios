@@ -52,23 +52,24 @@ class MessageInputBar: UIView {
     private lazy var divider: UIView = .init { $0.backgroundColor = style?.dividerColor.color }
     
     private let containerStack: UIView = .init {
-        $0.cornerRadius = kLowPadding
-        $0.clipsToBounds = false
+        $0.cornerRadius = 18
+        $0.clipsToBounds = true
     }
     
     private lazy var messageTextView: MessageInputTextView = MessageInputTextView.init {[weak self] textView in
         textView.delegate = self
         textView.inputAccessoryView = UIView()
-        textView.cornerRadius = kLowPadding
         textView.placeholderText = self?.style?.textConfig.placeholder ?? ""
         textView.textColor = .gray900
         textView.tintColor = .green500
-        textView.font = .defaultRegularSubHeadline
+        textView.font = .defaultRegularCallout
     }
     
     private lazy var sendButton: UIButton = .init {[weak self] button in
         guard let self else { return }
         button.setImage(self.kInputPlusImage, for: .normal)
+        button.imageView?.contentMode = .scaleAspectFit
+        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 18)
         button.addAction {
             guard let message = self.messageTextView.text?.trimmingCharacters(in: .whitespacesAndNewlines),
                     !message.isEmpty else {
@@ -86,6 +87,8 @@ class MessageInputBar: UIView {
     private lazy var exchangesButton: UIButton = .init { [weak self] button in
         guard let self else { return }
         button.setImage(style?.sendMoneyImage.image, for: .normal)
+        button.imageView?.contentMode = .scaleAspectFit
+        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: 18, bottom: 0, right: 10)
         button.addAction {
             self.delegate?.exchanges()
         }
@@ -165,7 +168,8 @@ class MessageInputBar: UIView {
         self.addSubview(exchangesButton)
         self.addSubview(recordView)
         self.containerStack.addSubview(messageTextView)
-        self.containerStack.addSubview(microButton)
+//        self.containerStack.addSubview(microButton)
+        insertSubview(microButton, aboveSubview: containerStack)
         
         self.backgroundColor = UltraCoreStyle.controllerBackground?.color
     }
@@ -177,9 +181,9 @@ class MessageInputBar: UIView {
         self.exchangesButton.snp.makeConstraints { make in
             make.height.equalTo(36)
             
-            make.leading.equalToSuperview().offset(kLowPadding)
+            make.leading.equalToSuperview()
             make.bottom.equalTo(messageTextView.snp.bottom)
-            make.width.equalTo(availableToSendMoney ? kHeadlinePadding * 2 : 0)
+            make.width.equalTo(availableToSendMoney ? 48 : 0)
         }
 
         self.divider.snp.makeConstraints { make in
@@ -190,27 +194,28 @@ class MessageInputBar: UIView {
         self.containerStack.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(kMediumPadding - 4)
             make.bottom.equalToSuperview().offset(-(kMediumPadding - 4 + bottomInset))
-            make.leading.equalTo(exchangesButton.snp.trailing).offset(kLowPadding)
+            make.leading.equalTo(exchangesButton.snp.trailing)
+            make.height.greaterThanOrEqualTo(36)
         }
 
         self.messageTextView.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(kLowPadding)
-            make.bottom.equalToSuperview().offset(-kLowPadding)
-            make.top.equalToSuperview().offset(kLowPadding)
+            make.bottom.equalToSuperview()
+            make.top.equalToSuperview()
             make.right.equalToSuperview().offset(-kLowPadding)
         }
 
         self.sendButton.snp.makeConstraints { make in
-            make.right.equalToSuperview().offset(-kLowPadding)
-            make.height.width.equalTo(36)
-            make.bottom.equalTo(messageTextView.snp.bottom)
-            make.left.equalTo(containerStack.snp.right).offset(kLowPadding)
+            make.right.equalToSuperview()
+            make.width.equalTo(48)
+            make.height.equalTo(36)
+            make.bottom.equalTo(containerStack)
+            make.left.equalTo(containerStack.snp.right)
         }
-        
         self.microButton.snp.makeConstraints { make in
-            make.width.height.equalTo(microButtonWidth)
-            make.bottom.equalToSuperview().offset(-kLowPadding)
-            make.right.equalToSuperview().offset(-kLowPadding)
+            make.size.equalTo(microButtonWidth)
+            make.bottom.equalTo(containerStack)
+            make.right.equalTo(containerStack).offset(-kLowPadding)
         }
         
         self.recordView.snp.makeConstraints { make in
