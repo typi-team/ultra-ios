@@ -116,7 +116,7 @@ class MessageInputTextView: UITextView {
         }
         
         // placeholder
-        let xVal = textContainerInset.left + textContainer.lineFragmentPadding
+        let xVal = textContainerInset.left + textContainer.lineFragmentPadding + 2
         let yVal = textContainerInset.top
         let width = rect.size.width - xVal - textContainerInset.right
         let height = rect.size.height - yVal - textContainerInset.bottom

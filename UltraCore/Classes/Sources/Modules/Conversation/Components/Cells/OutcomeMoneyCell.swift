@@ -64,15 +64,14 @@ class OutcomeMoneyCell : BaseMessageCell {
         }
 
         self.statusView.snp.makeConstraints { make in
-            make.left.greaterThanOrEqualTo(self.moneyCaptionlabel.snp.right).offset(kLowPadding / 2)
-            make.centerY.equalTo(moneyCaptionlabel.snp.centerY)
+            make.right.equalToSuperview().offset(-kMediumPadding)
+            make.centerY.equalTo(deliveryDateLabel.snp.centerY)
         }
         
         self.deliveryDateLabel.snp.makeConstraints { make in
-            make.left.equalTo(self.statusView.snp.right).offset(kLowPadding / 2)
-            make.right.equalToSuperview().offset(-kMediumPadding)
+            make.left.greaterThanOrEqualTo(self.moneyCaptionlabel.snp.right).offset(kLowPadding / 2)
+            make.right.equalTo(statusView.snp.left).offset(-kLowPadding / 2)
             make.bottom.equalTo(moneyCaptionlabel.snp.bottom)
-            make.centerY.equalTo(statusView.snp.centerY)
         }
     }
     

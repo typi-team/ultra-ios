@@ -48,14 +48,14 @@ class OutgoingPhotoCell: MediaCell {
         
         
         self.statusView.snp.makeConstraints { make in
-            make.left.equalToSuperview().offset(kLowPadding / 2)
-            make.centerY.equalToSuperview()
+            make.right.equalToSuperview().offset(-kLowPadding / 2)
+            make.left.equalTo(deliveryDateLabel.snp.right).offset((kLowPadding / 2))
+            make.centerY.equalTo(deliveryDateLabel)
         }
         
         self.deliveryDateLabel.snp.makeConstraints { make in
-            make.left.equalTo(statusView.snp.right).offset((kLowPadding / 2))
+            make.left.equalToSuperview().offset(kLowPadding / 2)
             make.top.equalToSuperview().offset(kLowPadding / 2)
-            make.right.equalToSuperview().offset(-(kLowPadding / 2))
             make.bottom.equalToSuperview().offset(-(kLowPadding / 2))
         }
         

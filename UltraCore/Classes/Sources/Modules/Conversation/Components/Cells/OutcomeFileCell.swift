@@ -83,15 +83,14 @@ class OutcomeFileCell : BaseMessageCell {
         }
 
         self.statusView.snp.makeConstraints { make in
-            make.left.greaterThanOrEqualTo(self.fileLabel.snp.right).offset(kLowPadding)
-            make.centerY.equalTo(fileLabel.snp.centerY)
+            make.right.equalTo(textView)
+            make.left.equalTo(deliveryDateLabel.snp.right).offset((kLowPadding / 2))
+            make.centerY.equalTo(deliveryDateLabel)
         }
         
         self.deliveryDateLabel.snp.makeConstraints { make in
-            make.left.equalTo(self.statusView.snp.right).offset(kLowPadding / 2)
-            make.right.equalToSuperview().offset(-kMediumPadding)
+            make.left.greaterThanOrEqualTo(self.fileLabel.snp.right).offset(kLowPadding)
             make.bottom.equalTo(fileLabel.snp.bottom)
-            make.centerY.equalTo(statusView.snp.centerY)
         }
 
         self.spinner.snp.makeConstraints { make in
