@@ -16,7 +16,7 @@
 		607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDC1AFB9204008FA782 /* Images.xcassets */; };
 		607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 607FACDE1AFB9204008FA782 /* LaunchScreen.xib */; };
 		607FACEC1AFB9204008FA782 /* Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACEB1AFB9204008FA782 /* Tests.swift */; };
-		6E00CE779982A069C2A28394 /* (null) in Frameworks */ = {isa = PBXBuildFile; };
+		6E00CE779982A069C2A28394 /* BuildFile in Frameworks */ = {isa = PBXBuildFile; };
 		75794F8D2A4EB6060035EE06 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 75794F8C2A4EB6060035EE06 /* GoogleService-Info.plist */; };
 		75C7BEEE2A80CF5300BB2A51 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 75C7BEF02A80CF5300BB2A51 /* Localizable.strings */; };
 		75F115002B219CBF00AA9260 /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75F114FF2B219CBF00AA9260 /* ViewModel.swift */; };
@@ -96,7 +96,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6E00CE779982A069C2A28394 /* (null) in Frameworks */,
+				6E00CE779982A069C2A28394 /* BuildFile in Frameworks */,
 				52F77E612B761BF2009EA144 /* CallKit.framework in Frameworks */,
 				F242C81311A5BC30615E0D5C /* Pods_UltraCore_Example.framework in Frameworks */,
 			);
@@ -381,6 +381,7 @@
 				"${BUILT_PRODUCTS_DIR}/CNIOWindows/CNIOWindows.framework",
 				"${BUILT_PRODUCTS_DIR}/CocoaLumberjack/CocoaLumberjack.framework",
 				"${BUILT_PRODUCTS_DIR}/Differentiator/Differentiator.framework",
+				"${BUILT_PRODUCTS_DIR}/FYVideoCompressor/FYVideoCompressor.framework",
 				"${BUILT_PRODUCTS_DIR}/FirebaseCore/FirebaseCore.framework",
 				"${BUILT_PRODUCTS_DIR}/FirebaseCoreInternal/FirebaseCoreInternal.framework",
 				"${BUILT_PRODUCTS_DIR}/FirebaseInstallations/FirebaseInstallations.framework",
@@ -436,6 +437,7 @@
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CNIOWindows.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CocoaLumberjack.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Differentiator.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FYVideoCompressor.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FirebaseCore.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FirebaseCoreInternal.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/FirebaseInstallations.framework",
