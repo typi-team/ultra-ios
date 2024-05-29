@@ -17,6 +17,7 @@ enum SystemActionType: Int {
     case photoDeleted
     case supportManagerAssigned
     case supportStatusChanged
+    case customTextSended
 }
 
 class DBSystemActionType: Object {
