@@ -19,7 +19,7 @@ class GroupIncomeFileCell: IncomeFileCell {
         super.setupView()
         
         contentView.addSubview(avatarImageView)
-        contentView.addSubview(titleLabel)
+        contentView.addSubview(groupContainer)
         groupContainer.addSubview(titleLabel)
         groupContainer.addSubview(container)
         avatarImageView.layer.cornerRadius = 14
