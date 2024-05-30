@@ -61,6 +61,11 @@ class GroupIncomeVoiceCell: IncomeVoiceCell {
         avatarImageView.set(contact: contact, placeholder: UltraCoreStyle.defaultPlaceholder?.image)
     }
     
+    func setup(conversation: Conversation) {
+        titleLabel.text = conversation.title
+        avatarImageView.sd_setImage(with: conversation.imagePath?.url, placeholderImage: UltraCoreStyle.defaultPlaceholder?.image)
+    }
+    
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         

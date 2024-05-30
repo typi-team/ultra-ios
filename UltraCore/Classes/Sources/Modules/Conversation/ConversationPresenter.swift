@@ -125,11 +125,11 @@ final class ConversationPresenter {
 extension ConversationPresenter: ConversationPresenterInterface {
     
     func canBlock() -> Bool {
-        conversation.chatType != .support
+        conversation.chatType != .support && !isManager
     }
     
     func canTransfer() -> Bool {
-        conversation.chatType != .support
+        conversation.chatType != .support && !isManager
     }
     
     func canAttach() -> Bool {
@@ -426,7 +426,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .disposed(by: disposeBag)
     }
     func navigateToContact() {
-        guard conversation.chatType == .peerToPeer else { return }
+        guard conversation.chatType == .peerToPeer, !isPersonalManager else { return }
         guard let contact = self.conversation.peers.first else { return }
         wireframe.navigateTo(contact: contact)
     }

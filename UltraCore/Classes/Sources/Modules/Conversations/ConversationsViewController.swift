@@ -35,6 +35,8 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
     }, canEditRowAtIndexPath: { [weak self] data, indexpath in
         if self?.presenter?.isSupportScreen == true {
             return false
+        } else if self?.presenter?.isManager(conversation: data.sectionModels[indexpath.section].items[indexpath.row]) == true {
+            return false
         } else if let phone = data.sectionModels[indexpath.section].items[indexpath.row].peers.first?.phone {
             return !phone.contains("+00000000000")
         } else {

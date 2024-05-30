@@ -59,6 +59,7 @@ enum ConversationStrings: String, StringLocalizable {
     case disclaimerClose
     
     case supportChat
+    case assistantChat
     case supportChatOpened
     case supportChatClosed
     case supportChatPostponed
