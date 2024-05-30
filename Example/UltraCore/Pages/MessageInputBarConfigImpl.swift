@@ -19,6 +19,7 @@ class MessageInputBarConfigImpl: MessageInputBarConfig {
     var sendMoneyImage: TwiceImage = TwiceImageImpl(dark: .init(named: "sendMoney")!, default: .init(named: "sendMoney")!)
     var recordViewTint: TwiceColor = TwiceColorImpl(defaultColor: .gray400, darkColor: .white)
     var messageContainerBackground: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray700)
+    var messageTextViewBorderColor: TwiceColor = TwiceColorImpl(defaultColor: .from(hex: "#DBDEE3"), darkColor: .from(hex: "#DBDEE3"))
     var sendImage: TwiceImage = TwiceImageImpl(
         dark: .init(named: "conversation_send")!.withRenderingMode(.alwaysTemplate),
         default: .init(named: "conversation_send")!.withRenderingMode(.alwaysTemplate)

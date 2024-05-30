@@ -15,6 +15,7 @@ public protocol MessageInputBarConfig {
     var sendMoneyImage: TwiceImage { get set }
     var recordViewTint: TwiceColor { get set }
     var messageContainerBackground: TwiceColor { get set }
+    var messageTextViewBorderColor: TwiceColor { get set }
     
     var sendImage: TwiceImage { get set }
     var plusImage: TwiceImage { get set }
