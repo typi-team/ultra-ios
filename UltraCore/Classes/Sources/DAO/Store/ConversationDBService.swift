@@ -61,7 +61,7 @@ class ConversationDBService {
 
                         conversation.lastSeen = message.meta.created
                         conversation.message = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm, user: self.userID)
-                        if message.sender.userID != self.appStore.userID() {
+                        if message.sender.userID != self.appStore.userID() && !message.state.read {
                             conversation.unreadMessageCount += 1
                         }
                         realm.create(DBConversation.self, value: conversation, update: .all)
@@ -99,7 +99,7 @@ class ConversationDBService {
                                             if response.chat.properties["is_assistant"] == "true" {
                                                 conversation.isAssistant = true
                                             }
-                                            if message.sender.userID != self?.appStore.userID() ?? "" {
+                                            if message.sender.userID != self?.appStore.userID() ?? "" && !message.state.read {
                                                 conversation.unreadMessageCount += 1
                                             }
                                             localRealm.create(DBConversation.self, value: conversation, update: .all)
@@ -127,7 +127,7 @@ class ConversationDBService {
                                             if let contact = contact, !conversation.contact.contains(where: { $0.userID == contact.userID }) {
                                                 conversation.contact.append(contact)
                                             }
-                                            if message.sender.userID != self?.appStore.userID() ?? "" {
+                                            if message.sender.userID != self?.appStore.userID() ?? "" && !message.state.read {
                                                 conversation.unreadMessageCount += 1
                                             }
                                             localRealm.add(conversation)
