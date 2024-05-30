@@ -55,9 +55,11 @@ class MessageInputBar: UIView {
     private var style: MessageInputBarConfig? { UltraCoreStyle.mesageInputBarConfig }
     private lazy var divider: UIView = .init { $0.backgroundColor = style?.dividerColor.color }
     
-    private let containerStack: UIView = .init {
+    private lazy var containerStack: UIView = .init {
         $0.cornerRadius = 18
         $0.clipsToBounds = true
+        $0.layer.borderWidth = 1
+        $0.layer.borderColor = style?.messageTextViewBorderColor.color.cgColor
     }
     
     private lazy var messageTextView: MessageInputTextView = MessageInputTextView.init {[weak self] textView in
