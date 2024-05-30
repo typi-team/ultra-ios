@@ -179,6 +179,7 @@ private class ConversationCellConfigImpl: ConversationCellConfig {
     var titleConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularCallout)
     var deliveryConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
     var descriptionConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
+    var onlineColor: TwiceColor = TwiceColorImpl(defaultColor: .from(hex: "#4ADE80"), darkColor: .from(hex: "#4ADE80"))
 }
 
 private class HeaderInSectionConfigImpl: HeaderInSectionConfig {

@@ -48,6 +48,20 @@ class ConversationCell: BaseCell {
         $0.setContentHuggingPriority(.defaultHigh, for: .horizontal)
     })
     
+    fileprivate lazy var onlineView: UIView = {
+        let view = UIView()
+        view.cornerRadius = 6
+        view.backgroundColor = style?.onlineColor.color
+        return view
+    }()
+    
+    fileprivate lazy var onlineContentView: UIView = {
+        let view = UIView()
+        view.backgroundColor = UltraCoreStyle.controllerBackground?.color
+        view.cornerRadius = 10
+        return view
+    }()
+    
     override func setupView() {
         super.setupView()
         self.contentView.addSubview(self.avatarView)
@@ -56,6 +70,8 @@ class ConversationCell: BaseCell {
         self.contentView.addSubview(self.statusView)
         self.contentView.addSubview(self.lastSeenView)
         self.contentView.addSubview(self.unreadView)
+        self.contentView.addSubview(self.onlineContentView)
+        self.onlineContentView.addSubview(onlineView)
     }
     
     override func setupConstraints() {
@@ -95,6 +111,14 @@ class ConversationCell: BaseCell {
             make.right.equalToSuperview().inset(kMediumPadding)
             make.top.equalTo(titleView.snp.bottom).offset(6)
         }
+        onlineContentView.snp.makeConstraints { make in
+            make.bottom.right.equalTo(avatarView)
+            make.size.equalTo(20)
+        }
+        onlineView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.size.equalTo(12)
+        }
     }
     
     func setup(conversation: Conversation, isManager: Bool) {
@@ -105,7 +129,7 @@ class ConversationCell: BaseCell {
         self.lastSeenView.text = conversation.timestamp.formattedTimeForConversationCell()
         self.setupTyping(conversation: conversation, isManager: isManager)
         self.setupAvatar(conversation: conversation)
-        
+        self.onlineContentView.isHidden = !(conversation.peers.first?.status.isOnline ?? false)
         if let message = conversation.lastMessage, !message.isIncome {
             self.statusView.image = message.statusImage
             self.statusView.snp.updateConstraints { make in
@@ -161,5 +185,7 @@ class ConversationCell: BaseCell {
         self.lastSeenView.font = style.deliveryConfig.font
         self.lastSeenView.textColor = style.deliveryConfig.color
         self.unreadView.backgroundColor = style.unreadBackgroundColor.color
+        self.onlineContentView.backgroundColor = UltraCoreStyle.controllerBackground?.color
+        self.onlineView.backgroundColor = style.onlineColor.color
     }
 }
