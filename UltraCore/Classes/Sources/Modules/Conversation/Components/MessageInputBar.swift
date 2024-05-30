@@ -157,6 +157,7 @@ class MessageInputBar: UIView {
         self.containerStack.backgroundColor = style?.messageContainerBackground.color
         self.messageTextView.backgroundColor = style?.messageContainerBackground.color
         self.messageTextView.tintColor = style?.textConfig.tintColor.color
+        self.messageTextView.layer.borderColor = style?.messageTextViewBorderColor.color.cgColor
     }
     
     private func hideOrShowAllViewInRecording(visibility: Bool) {
