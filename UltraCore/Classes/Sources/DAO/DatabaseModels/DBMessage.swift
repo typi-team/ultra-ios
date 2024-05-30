@@ -115,6 +115,8 @@ class DBMessage: Object {
                     message.supportStatusChanged = supportStatusChanged
                     message.systemAction = .supportStatusChanged(supportStatusChanged)
                 }
+            case .customTextSended:
+                message.systemAction = .customTextSended(.init())
             default:
                 break
             }
