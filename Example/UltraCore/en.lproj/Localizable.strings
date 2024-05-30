@@ -159,6 +159,7 @@
 "conversation.disclaimerDescription" = "The company's client wrote to you";
 
 "conversation.supportChat" = "Chat with a broker";
+"conversation.assistantChat" = "Chat with an assistant";
 "conversation.supportChatOpened" = "The operator will connect shortly";
 "conversation.supportChatClosed" = "The conversation with the operator has ended";
 "conversation.supportChatPostponed" = "It takes some more time to connect the operator";

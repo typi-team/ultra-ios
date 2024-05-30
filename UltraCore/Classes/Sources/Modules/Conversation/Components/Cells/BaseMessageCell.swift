@@ -27,7 +27,7 @@ class BaseMessageCell: BaseCell {
     
     var messagePrefix: String?
     var message: Message?
-    var chatType: ConversationType = .peerToPeer
+    var canDelete: Bool = true
     var cellActionCallback: (() -> Void)?
     var actionCallback: ((Message) -> Void)?
     var longTapCallback:((MessageMenuAction) -> Void)?
@@ -214,7 +214,7 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
                 })
             }
             
-            if chatType != .support {
+            if canDelete {
                 action.append(UIAction(title: MessageStrings.delete.localized, image: messageStyle.delete?.image, attributes: .destructive) { _ in
                     self.cellActionCallback?()
                     self.longTapCallback?(.delete(message))

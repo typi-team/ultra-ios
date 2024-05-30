@@ -32,7 +32,7 @@ class ContactsRepositoryImpl: ContactsRepository {
         return self.contactDBService.contacts()
     }
     
-    func contact(id: String) -> ContactDisplayable?{
+    func contact(id: String) -> ContactDisplayable? {
         return self.contactDBService.contact(id: id)
     }
     

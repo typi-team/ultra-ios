@@ -85,7 +85,7 @@ class ProfileNavigationView: UIView {
                 self.sublineText.textColor = contact.status.isOnline ? style.onlineColor.color : style.sublineConfig.color
             }
         } else {
-            sublineText.text = ConversationStrings.supportChat.localized
+            sublineText.text = conversation.isAssistant ? ConversationStrings.assistantChat.localized : ConversationStrings.supportChat.localized
             sublineText.textColor = style.sublineConfig.color
             avatarImageView.sd_setImage(with: conversation.imagePath?.url, placeholderImage: UltraCoreStyle.defaultPlaceholder?.image)
         }

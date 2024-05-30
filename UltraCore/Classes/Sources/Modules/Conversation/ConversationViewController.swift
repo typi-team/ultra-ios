@@ -25,13 +25,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     lazy var dismissKeyboardGesture = UITapGestureRecognizer.init(target: self, action: #selector(hideKeyboard))
     
     // MARK: - Views
-    fileprivate lazy var refreshControl = UIRefreshControl{
-        $0.addAction(for: .valueChanged, {[weak self] in
-            guard let `self` = self,
-                  let cell = self.tableView.visibleCells.first as? BaseMessageCell,
-                  let seqNumber = cell.message?.seqNumber else { return }
-            self.presenter?.loadMoreMessages(maxSeqNumber: seqNumber)
-        })
+    fileprivate lazy var refreshControl = UIRefreshControl {
+        $0.addTarget(self, action: #selector(didRefresh), for: .valueChanged)
     }
     
     fileprivate let navigationDivider: UIView = .init({
@@ -113,7 +108,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             }
             
             let cell = self.cell(message, in: tableView)
-            cell.chatType = presenter?.conversation.chatType ?? .peerToPeer
+            cell.canDelete = presenter?.canBlock() ?? true
             cell.longTapCallback = {[weak self] actionType in
                 guard let `self` = self else { return }
                 switch actionType {
@@ -356,6 +351,19 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         messageInputBar.endEditing(true)
     }
     
+    @objc func didRefresh() {
+        guard
+            let cell = self.tableView.visibleCells.first as? BaseMessageCell,
+            let seqNumber = cell.message?.seqNumber 
+        else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.refreshControl.endRefreshing()
+            }
+            return
+        }
+        self.presenter?.loadMoreMessages(maxSeqNumber: seqNumber)
+    }
+    
 }
 
     // MARK: - UITextViewDelegate
@@ -441,15 +449,18 @@ extension ConversationViewController: ConversationViewInterface {
     }
     
     func update(callAllowed: Bool) {
-        let items: [UIBarButtonItem]
+        let canBlock = UltraCoreSettings.futureDelegate?.availableToBlock(conversation: self) ?? false && presenter?.canBlock() ?? true
+        var items: [UIBarButtonItem] = []
+        if canBlock {
+            items.append(.init(
+                image: UltraCoreStyle.conversationScreenConfig.conversationOptionsImage.image,
+                style: .plain,
+                target: self,
+                action: #selector(self.more(_:))
+            ))
+        }
         if callAllowed && UltraCoreSettings.futureDelegate?.availableToCall() ?? false {
-            items = [
-                .init(
-                    image: UltraCoreStyle.conversationScreenConfig.conversationOptionsImage.image,
-                    style: .plain,
-                    target: self,
-                    action: #selector(self.more(_:))
-                ),
+            let callItems: [UIBarButtonItem] = [
                 .init(
                     image: UltraCoreStyle.conversationScreenConfig.conversationVideoCallImage.image,
                     style: .plain,
@@ -463,18 +474,9 @@ extension ConversationViewController: ConversationViewInterface {
                     action: #selector(self.callWithVoice)
                 )
             ]
-        } else {
-            items = [
-                .init(
-                    image: UltraCoreStyle.conversationScreenConfig.conversationOptionsImage.image,
-                    style: .plain,
-                    target: self,
-                    action: #selector(self.more(_:))
-                )
-            ]
+            items.append(contentsOf: callItems)
         }
-        let mustBeHidden = UltraCoreSettings.futureDelegate?.availableToBlock(conversation: self) ?? false
-        navigationItem.rightBarButtonItems = mustBeHidden ? items : nil
+        self.navigationItem.rightBarButtonItems = items
     }
     
     func showDisclaimer(show: Bool, delegate: DisclaimerViewDelegate) {
@@ -492,15 +494,16 @@ extension ConversationViewController: ConversationViewInterface {
 private extension ConversationViewController {
     
     func setupNavigationMore() {
-        let mustBeHide = UltraCoreSettings.futureDelegate?.availableToBlock(conversation: self) ?? false
-        var items: [UIBarButtonItem] = [
-            .init(
+        let canBlock = UltraCoreSettings.futureDelegate?.availableToBlock(conversation: self) ?? false && presenter?.canBlock() ?? true
+        var items: [UIBarButtonItem] = []
+        if canBlock {
+            items.append(.init(
                 image: UltraCoreStyle.conversationScreenConfig.conversationOptionsImage.image,
                 style: .plain,
                 target: self,
                 action: #selector(self.more(_:))
-            )
-        ]
+            ))
+        }
         if presenter?.allowedToCall() ?? false && UltraCoreSettings.futureDelegate?.availableToCall() ?? false {
             let callItems: [UIBarButtonItem] = [
                 .init(
@@ -518,7 +521,7 @@ private extension ConversationViewController {
             ]
             items.append(contentsOf: callItems)
         }
-        self.navigationItem.rightBarButtonItems = mustBeHide ? items : nil
+        self.navigationItem.rightBarButtonItems = items
     }
     
     func openMoneyTransfer() {
@@ -671,9 +674,7 @@ extension ConversationViewController {
     
     @objc func more(_ sender: UIBarButtonItem) {
         guard let blocked = self.presenter?.isBlock() else { return }
-        guard presenter?.canBlock() == true else {
-            return
-        }
+        messageInputBar.endEditing(true)
         let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         if blocked {
             alert.addAction(.init(title: ConversationStrings.unblock.localized.capitalized, style: .default, handler: { [weak self] _ in
@@ -697,7 +698,7 @@ extension ConversationViewController {
             let contact = presenter?.getContact(for: message.sender.userID)
             guard let content = message.content else {
                 let cell: GroupIncomeMessageCell = tableView.dequeueCell()
-                cell.setup(contact: contact)
+                cell.setup(conversation: presenter!.conversation)
                 cell.setup(message: message)
                 return cell
             }
@@ -705,42 +706,43 @@ extension ConversationViewController {
             switch content {
             case .photo:
                 let cell: GroupIncomePhotoCell = tableView.dequeueCell()
-                cell.setup(contact: contact)
+                cell.setup(conversation: presenter!.conversation)
                 cell.setup(message: message)
                 return cell
             case .video:
                 let cell: GroupIncomingVideoCell = tableView.dequeueCell()
-                cell.setup(contact: contact)
+                cell.setup(conversation: presenter!.conversation)
                 cell.setup(message: message)
                 return cell
             case .money:
                 let cell: GroupIncomeMoneyCell = tableView.dequeueCell()
-                cell.setup(contact: contact)
+                cell.setup(conversation: presenter!.conversation)
                 cell.setup(message: message)
                 return cell
             case .file:
                 let cell: GroupIncomeFileCell = tableView.dequeueCell()
-                cell.setup(contact: contact)
+                cell.setup(conversation: presenter!.conversation)
                 cell.setup(message: message)
                 return cell
             case .location:
                 let cell: GroupIncomeLocationCell = tableView.dequeueCell()
-                cell.setup(contact: contact)
+                cell.setup(conversation: presenter!.conversation)
                 cell.setup(message: message)
                 return cell
             case .contact:
                 let cell: GroupIncomeContactCell = tableView.dequeueCell()
-                cell.setup(contact: contact)
+                cell.setup(conversation: presenter!.conversation)
                 cell.setup(message: message)
                 return cell
             case .voice:
                 let cell: GroupIncomeVoiceCell = tableView.dequeueCell()
-                cell.setup(contact: contact)
+                cell.setup(conversation: presenter!.conversation)
                 cell.setup(message: message)
                 return cell
             default:
                 let cell: GroupIncomeMessageCell = tableView.dequeueCell()
                 cell.setup(message: message)
+                cell.setup(conversation: presenter!.conversation)
                 return cell
             }
         }
