@@ -30,7 +30,7 @@ class MessageInputBar: UIView {
     var canSendMoney: Bool = true {
         didSet {
             let isAvailable = futureDelegate?.availableToSendMoney() ?? true && canSendMoney
-            exchangesButton.isHidden = !isAvailable
+            exchangesButton.imageView?.isHidden = !isAvailable
             exchangesButton.snp.updateConstraints {
                 $0.width.equalTo(isAvailable ? kHeadlinePadding * 2 : 0)
             }
@@ -338,6 +338,7 @@ extension MessageInputBar: RecordViewDelegate {
         self.recordView.isUserInteractionEnabled = true
         self.hideOrShowAllViewInRecording(visibility: false)
         self.audioRecordUtils.requestRecordPermission()
+        self.containerStack.borderWidth = 0
     }
     
     func onCancel() {
@@ -345,6 +346,7 @@ extension MessageInputBar: RecordViewDelegate {
         self.recordView.isUserInteractionEnabled = false
         self.hideOrShowAllViewInRecording(visibility: true)
         self.audioRecordUtils.cancelRecording()
+        self.containerStack.borderWidth = 1
     }
     
     func onFinished(duration: CGFloat) {
@@ -353,5 +355,6 @@ extension MessageInputBar: RecordViewDelegate {
         self.recordView.sendSubviewToBack(self)
         self.hideOrShowAllViewInRecording(visibility: true)
         self.audioRecordUtils.stopRecording()
+        self.containerStack.borderWidth = 1
     }
 }
