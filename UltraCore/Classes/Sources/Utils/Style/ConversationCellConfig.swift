@@ -13,4 +13,5 @@ public protocol ConversationCellConfig {
     var backgroundColor: TwiceColor { get set }
     var descriptionConfig: LabelConfig { get set }
     var unreadBackgroundColor: TwiceColor { get set }
+    var onlineColor: TwiceColor { get set }
 }

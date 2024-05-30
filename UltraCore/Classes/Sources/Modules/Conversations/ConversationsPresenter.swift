@@ -61,6 +61,9 @@ final class ConversationsPresenter: BasePresenter {
                     
                     return conversation.chatType != .support
                 }
+                .sorted(by: { conv1, conv2 in
+                    return conv1.isAssistant
+                })
                 .map { conversation in
                     var mutable = conversation
                     if let typing = typingUsers[conversation.idintification] {
@@ -172,6 +175,7 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
     
     private func startReachibilityNotifier() {
         reachabilityInteractor.execute(params: ())
+            .debug("Reachability")
             .subscribe(onNext: { [weak self] _ in
                 guard let self else { return }
                 self.resendMessagesInteractor

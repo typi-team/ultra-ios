@@ -487,9 +487,14 @@ extension ConversationPresenter: ConversationPresenterInterface {
         guard let track = AVURLAsset(url: url).tracks(withMediaType: AVMediaType.video).first else {
             return
         }
-        var size = track.naturalSize.applying(track.preferredTransform)
-        if size.width > 640 || size.height > 640 {
-            size = CGSize(width: 640, height: 480)
+        var originalSize = track.naturalSize.applying(track.preferredTransform)
+        var size: CGSize?
+        if originalSize.width > 640 || originalSize.height > 640 {
+            if originalSize.width > originalSize.height {
+                size = CGSize(width: 640, height: -1)
+            } else {
+                size = CGSize(width: -1, height: 640)
+            }
         }
         let config = FYVideoCompressor.CompressionConfig(videoBitrate: 1000_000,
                                                         videomaxKeyFrameInterval: 10,

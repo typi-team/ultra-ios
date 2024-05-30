@@ -674,6 +674,7 @@ extension ConversationViewController {
     
     @objc func more(_ sender: UIBarButtonItem) {
         guard let blocked = self.presenter?.isBlock() else { return }
+        messageInputBar.endEditing(true)
         let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         if blocked {
             alert.addAction(.init(title: ConversationStrings.unblock.localized.capitalized, style: .default, handler: { [weak self] _ in
