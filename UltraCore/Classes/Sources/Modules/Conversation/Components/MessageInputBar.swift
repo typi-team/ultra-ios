@@ -30,12 +30,8 @@ class MessageInputBar: UIView {
     var canSendMoney: Bool = true {
         didSet {
             let isAvailable = futureDelegate?.availableToSendMoney() ?? true && canSendMoney
-            exchangesButton.imageView?.isHidden = !isAvailable
             exchangesButton.snp.updateConstraints {
-                $0.width.equalTo(isAvailable ? kHeadlinePadding * 2 : 0)
-            }
-            containerStack.snp.updateConstraints { make in
-                make.leading.equalTo(exchangesButton.snp.trailing).offset(isAvailable ? 0 : kMediumPadding)
+                $0.width.equalTo(isAvailable ? 40 : 0)
             }
         }
     }
@@ -93,8 +89,7 @@ class MessageInputBar: UIView {
     private lazy var exchangesButton: UIButton = .init { [weak self] button in
         guard let self else { return }
         button.setImage(style?.sendMoneyImage.image, for: .normal)
-        button.imageView?.contentMode = .scaleAspectFit
-        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: 18, bottom: 0, right: 10)
+        button.contentHorizontalAlignment = .left
         button.addAction {
             self.delegate?.exchanges()
         }
@@ -172,7 +167,7 @@ class MessageInputBar: UIView {
         self.addSubview(divider)
         self.addSubview(sendButton)
         self.addSubview(containerStack)
-        self.addSubview(exchangesButton)
+        insertSubview(exchangesButton, belowSubview: containerStack)
         self.addSubview(recordView)
         self.containerStack.addSubview(messageTextView)
         insertSubview(microButton, aboveSubview: containerStack)
@@ -187,9 +182,9 @@ class MessageInputBar: UIView {
         self.exchangesButton.snp.makeConstraints { make in
             make.height.equalTo(36)
             
-            make.leading.equalToSuperview()
+            make.leading.equalToSuperview().offset(18)
             make.bottom.equalTo(messageTextView.snp.bottom)
-            make.width.equalTo(availableToSendMoney ? 48 : 0)
+            make.width.equalTo(availableToSendMoney ? 40 : 0)
         }
 
         self.divider.snp.makeConstraints { make in
@@ -200,7 +195,7 @@ class MessageInputBar: UIView {
         self.containerStack.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(kMediumPadding - 4)
             make.bottom.equalToSuperview().offset(-(kMediumPadding - 4 + bottomInset))
-            make.leading.equalTo(exchangesButton.snp.trailing).offset(0)
+            make.leading.equalTo(exchangesButton.snp.trailing).offset(-4)
             make.height.greaterThanOrEqualTo(36)
         }
 
