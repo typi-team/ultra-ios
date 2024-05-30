@@ -16,4 +16,5 @@ class ConversationCellConfigImpl: ConversationCellConfig {
     var titleConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .default(of: 16, and: .semibold))
     var deliveryConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray500, font: .defaultRegularSubHeadline)
     var descriptionConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray500, font: .default(of: 14, and: .regular))
+    var onlineColor: TwiceColor = TwiceColorImpl(defaultColor: .from(hex: "#4ADE80"), darkColor: .from(hex: "#4ADE80"))
 }
