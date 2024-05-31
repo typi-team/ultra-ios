@@ -9,6 +9,23 @@
 import UltraCore
 
 class ConversationCellConfigImpl: ConversationCellConfig {
+    var loadingImage: UltraCore.TwiceImage? = TwiceImageImpl(
+        dark: .init(named: "conversation_status_loading")!,
+        default: .init(named: "conversation_status_loading")!
+    )
+    var sentImage: UltraCore.TwiceImage? = TwiceImageImpl(
+        dark: .init(named: "conversation_status_sent")!,
+        default: .init(named: "conversation_status_sent")!
+    )
+    var deliveredImage: UltraCore.TwiceImage? = TwiceImageImpl(
+        dark: .init(named: "conversation_status_delivered")!,
+        default: .init(named: "conversation_status_delivered")!
+    )
+    var readImage: UltraCore.TwiceImage? = TwiceImageImpl(
+        dark: .init(named: "conversation_status_read")!,
+        default: .init(named: "conversation_status_read")!
+    )
+    
     var unreadBackgroundColor: UltraCore.TwiceColor = TwiceColorImpl(defaultColor: .red500, darkColor: .gray700)
     
 
