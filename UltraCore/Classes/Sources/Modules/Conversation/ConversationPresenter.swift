@@ -489,11 +489,11 @@ extension ConversationPresenter: ConversationPresenterInterface {
         }
         var originalSize = track.naturalSize.applying(track.preferredTransform)
         var size: CGSize?
-        if originalSize.width > 640 || originalSize.height > 640 {
+        if originalSize.width > 1280 || originalSize.height > 1280 {
             if originalSize.width > originalSize.height {
-                size = CGSize(width: 640, height: -1)
+                size = CGSize(width: 1280, height: -1)
             } else {
-                size = CGSize(width: -1, height: 640)
+                size = CGSize(width: -1, height: 1280)
             }
         }
         let config = FYVideoCompressor.CompressionConfig(videoBitrate: 1000_000,

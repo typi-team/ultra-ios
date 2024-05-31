@@ -33,25 +33,21 @@ class OutgoingMessageCell: BaseMessageCell {
         }
 
         self.statusView.snp.makeConstraints { make in
-            make.top.equalTo(textView.snp.bottom).offset(4)
+            make.centerY.equalTo(deliveryDateLabel.snp.centerY)
             make.width.equalTo(15).priority(.high)
             make.right.equalToSuperview().offset(-10)
-            make.bottom.equalToSuperview().offset(-8)
         }
 
         self.deliveryDateLabel.snp.makeConstraints { make in
+            make.top.equalTo(textView.snp.bottom).offset(4)
             make.left.greaterThanOrEqualTo(container).offset(8)
             make.right.equalTo(statusView.snp.left).offset(-4)
-            make.centerY.equalTo(statusView.snp.centerY)
+            make.bottom.equalToSuperview().offset(-8)
         }
     }
     
     override func setup(message: Message) {
         super.setup(message: message)
         self.statusView.image = message.statusImage
-        
-        self.statusView.snp.updateConstraints { make in
-            make.width.equalTo(message.stateViewWidth).priority(.high)
-        }
     }
 }
