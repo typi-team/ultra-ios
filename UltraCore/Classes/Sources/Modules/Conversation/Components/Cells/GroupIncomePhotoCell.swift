@@ -20,7 +20,7 @@ class GroupIncomePhotoCell: IncomingPhotoCell {
         
         contentView.addSubview(avatarImageView)
         contentView.addSubview(groupContainer)
-        groupContainer.addSubview(titleLabel)
+//        groupContainer.addSubview(titleLabel)
         groupContainer.addSubview(container)
         avatarImageView.layer.cornerRadius = 14
         avatarImageView.clipsToBounds = true
@@ -42,14 +42,14 @@ class GroupIncomePhotoCell: IncomingPhotoCell {
             $0.left.equalTo(avatarImageView.snp.right).offset(kLowPadding)
         }
         container.snp.remakeConstraints {
-            $0.top.equalTo(titleLabel.snp.bottom).offset(4)
-            $0.bottom.left.right.equalToSuperview()
+//            $0.top.equalTo(titleLabel.snp.bottom).offset(4)
+            $0.top.bottom.left.right.equalToSuperview()
         }
-        titleLabel.snp.makeConstraints {
-            $0.top.equalToSuperview().offset(8)
-            $0.leading.equalToSuperview().offset(10)
-            $0.trailing.equalToSuperview().offset(-10)
-        }
+//        titleLabel.snp.makeConstraints {
+//            $0.top.equalToSuperview().offset(8)
+//            $0.leading.equalToSuperview().offset(10)
+//            $0.trailing.equalToSuperview().offset(-10)
+//        }
     }
     
     func setup(contact: ContactDisplayable?) {
@@ -62,7 +62,6 @@ class GroupIncomePhotoCell: IncomingPhotoCell {
     }
     
     func setup(conversation: Conversation) {
-        titleLabel.text = conversation.title
         avatarImageView.sd_setImage(with: conversation.imagePath?.url, placeholderImage: UltraCoreStyle.defaultPlaceholder?.image)
     }
     

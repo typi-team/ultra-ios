@@ -15,7 +15,7 @@ class GroupIncomeMoneyCell: IncomeMoneyCell {
         super.setupView()
         
         contentView.addSubview(avatarImageView)
-        contentView.addSubview(titleLabel)
+//        contentView.addSubview(titleLabel)
         avatarImageView.layer.cornerRadius = 14
         avatarImageView.clipsToBounds = true
         avatarImageView.image = UltraCoreStyle.defaultPlaceholder?.image
@@ -30,16 +30,16 @@ class GroupIncomeMoneyCell: IncomeMoneyCell {
             $0.size.equalTo(GroupIncomeMessageCell.Constants.avatarSize)
         }
         container.snp.remakeConstraints {
-            $0.top.equalTo(titleLabel.snp.bottom).offset(4)
+            $0.top.equalToSuperview()
             $0.bottom.equalToSuperview().offset(-(kMediumPadding - 2))
             $0.width.lessThanOrEqualTo(bubbleWidth - GroupIncomeMessageCell.Constants.avatarSize - kMediumPadding)
             $0.left.equalTo(avatarImageView.snp.right).offset(kLowPadding)
         }
-        titleLabel.snp.makeConstraints {
-            $0.top.equalToSuperview().offset(8)
-            $0.leading.equalToSuperview().offset(10)
-            $0.trailing.equalToSuperview().offset(-10)
-        }
+//        titleLabel.snp.makeConstraints {
+//            $0.top.equalToSuperview().offset(8)
+//            $0.leading.equalToSuperview().offset(10)
+//            $0.trailing.equalToSuperview().offset(-10)
+//        }
     }
     
     func setup(contact: ContactDisplayable?) {

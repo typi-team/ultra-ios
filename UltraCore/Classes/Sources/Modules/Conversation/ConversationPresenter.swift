@@ -12,7 +12,6 @@ import Foundation
 import RxSwift
 import RealmSwift
 import AVFoundation
-import FYVideoCompressor
 
 final class ConversationPresenter {
 
@@ -439,7 +438,17 @@ extension ConversationPresenter: ConversationPresenterInterface {
         DispatchQueue.global(qos: .background).async { [weak self] in
             switch file {
             case let .video(url):
-                self?.compressAndUploadVideo(url: url)
+                guard let data = try? Data(contentsOf: url) else { return }
+                self?.upload(
+                    file: .init(
+                        url: url,
+                        data: data,
+                        mime: "video/mp4",
+                        width: 300,
+                        height: 200
+                    ),
+                    isVoice: false
+                )
             case let .image(image):
                 guard let self else { return }
                 let downsampled = image.fixedOrientation()
@@ -479,46 +488,6 @@ extension ConversationPresenter: ConversationPresenterInterface {
                     ),
                     isVoice: true
                 )
-            }
-        }
-    }
-    
-    private func compressAndUploadVideo(url: URL) {
-        guard let track = AVURLAsset(url: url).tracks(withMediaType: AVMediaType.video).first else {
-            return
-        }
-        var originalSize = track.naturalSize.applying(track.preferredTransform)
-        var size: CGSize?
-        if originalSize.width > 1280 || originalSize.height > 1280 {
-            if originalSize.width > originalSize.height {
-                size = CGSize(width: 1280, height: -1)
-            } else {
-                size = CGSize(width: -1, height: 1280)
-            }
-        }
-        let config = FYVideoCompressor.CompressionConfig(videoBitrate: 1000_000,
-                                                        videomaxKeyFrameInterval: 10,
-                                                        fps: 24,
-                                                        audioSampleRate: 44100,
-                                                        audioBitrate: 128_000,
-                                                        fileType: .mp4,
-                                                        scale: size)
-        FYVideoCompressor().compressVideo(url, config: config) { [weak self] result in
-            switch result {
-            case let .success(compressedVideoURL):
-                guard let data = try? Data(contentsOf: compressedVideoURL) else { return }
-                self?.upload(
-                    file: .init(
-                        url: url,
-                        data: data,
-                        mime: "video/mp4",
-                        width: 300,
-                        height: 200
-                    ),
-                    isVoice: false
-                )
-            case let .failure(error):
-                PP.error("FYVideoCompressor compressVideo error \(error.localeError)")
             }
         }
     }

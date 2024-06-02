@@ -33,7 +33,6 @@ PODS:
     - GoogleUtilities/Reachability (~> 7.8)
     - GoogleUtilities/UserDefaults (~> 7.8)
     - nanopb (< 2.30911.0, >= 2.30908.0)
-  - FYVideoCompressor (0.0.9)
   - GoogleDataTransport (9.4.1):
     - GoogleUtilities/Environment (~> 7.7)
     - nanopb (< 2.30911.0, >= 2.30908.0)
@@ -246,7 +245,6 @@ PODS:
   - SwiftProtobuf (1.26.0)
   - UltraCore (0.1.4):
     - CocoaLumberjack/Swift
-    - FYVideoCompressor
     - gRPC-Swift
     - IGListKit
     - LiveKitClient (= 1.0.13)
@@ -282,7 +280,6 @@ SPEC REPOS:
     - FirebaseCoreInternal
     - FirebaseInstallations
     - FirebaseMessaging
-    - FYVideoCompressor
     - GoogleDataTransport
     - GoogleUtilities
     - gRPC-Swift
@@ -340,7 +337,6 @@ SPEC CHECKSUMS:
   FirebaseCoreInternal: 6a292e6f0bece1243a737e81556e56e5e19282e3
   FirebaseInstallations: 42d6ead4605d6eafb3b6683674e80e18eb6f2c35
   FirebaseMessaging: 1b2270e66c81bbf184f70184db1d6a736ad0def5
-  FYVideoCompressor: 80e2a90bbc118044038b37b8442f23084c5698bf
   GoogleDataTransport: 6c09b596d841063d76d4288cc2d2f42cc36e1e2a
   GoogleUtilities: d053d902a8edaa9904e1bd00c37535385b8ed152
   gRPC-Swift: 74adcaaa62ac5e0a018938840328cb1fdfb09e7b
@@ -376,7 +372,7 @@ SPEC CHECKSUMS:
   SwiftNIOTLS: 598af547490133e9aac52aed0c23c4a90c31dcfc
   SwiftNIOTransportServices: 0b2b407819d82eb63af558c5396e33c945759503
   SwiftProtobuf: 5e8349171e7c2f88f5b9e683cb3cb79d1dc780b3
-  UltraCore: 6a065ece73f27a5bc5fab838c26d62a8341b09af
+  UltraCore: 9492dc354862c5f556cdeecfa0f67b3fa1218964
   WebRTC-SDK: 082ae4893212534a779ca233f19a9df8efd5f3bd
 
 PODFILE CHECKSUM: 05a3927b15bbe6caf93b241464429054c7b34ff0

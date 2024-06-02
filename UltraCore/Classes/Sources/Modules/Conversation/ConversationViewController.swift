@@ -32,6 +32,33 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     fileprivate let navigationDivider: UIView = .init({
         $0.backgroundColor = UltraCoreStyle.divederColor?.color
     })
+    private lazy var spinnerView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        view.isHidden = true
+        return view
+    }()
+    private lazy var spinner: UIView = {
+        let bg = UIView()
+        bg.translatesAutoresizingMaskIntoConstraints = false
+        bg.backgroundColor = UltraCoreStyle.outcomeMessageCell?.fileCellConfig.loaderBackgroundColor.color
+        let spinner = NVActivityIndicatorView(
+            frame: .init(origin: .zero, size: .init(width: 40, height: 40)),
+            type: .circleStrokeSpin,
+            color: UltraCoreStyle.outcomeMessageCell?.fileCellConfig.loaderTintColor.color,
+            padding: 0
+        )
+        bg.layer.cornerRadius = 16
+        bg.addSubview(spinner)
+        spinner.snp.makeConstraints { make in
+            make.size.equalTo(40)
+            make.center.equalToSuperview()
+        }
+        spinner.startAnimating()
+        spinner.translatesAutoresizingMaskIntoConstraints = false
+        return bg
+    }()
     
     private lazy var tableView: UITableView = .init {[weak self] tableView in
         guard let `self` = self else { return }
@@ -164,6 +191,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     )
     
     deinit {
+        spinnerView.removeFromSuperview()
         NotificationCenter.default.removeObserver(self)
     }
     
@@ -179,6 +207,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.view.addSubview(navigationDivider)
         self.view.addSubview(editInputBar)
         self.view.addSubview(voiceInputBar)
+        UIApplication.shared.keyWindow?.addSubview(spinnerView)
+        spinnerView.addSubview(spinner)
         
         self.navigationItem.leftItemsSupplementBackButton = true
         self.navigationItem.leftBarButtonItem = .init(customView: headline)
@@ -204,6 +234,15 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.messageInputBar.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview()
             make.bottom.equalTo(view.snp.bottom)
+        }
+        
+        self.spinner.snp.makeConstraints {
+            $0.center.equalToSuperview()
+            $0.size.equalTo(80)
+        }
+        
+        self.spinnerView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
         }
     }
     
@@ -422,6 +461,13 @@ extension ConversationViewController: MessageInputBarDelegate {
 // MARK: - Extensions -
 
 extension ConversationViewController: ConversationViewInterface {
+    func showLoading(_ isLoading: Bool) {
+        DispatchQueue.main.async { [weak self] in
+            self?.view.isUserInteractionEnabled = !isLoading
+            self?.spinnerView.isHidden = !isLoading
+        }
+    }
+    
     func blocked(is blocked: Bool) {
         if blocked {
             self.view.endEditing(true)
