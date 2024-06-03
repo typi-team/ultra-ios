@@ -45,15 +45,15 @@ final class ConversationsPresenter: BasePresenter {
                     }
 //                    PP.debug("Conversation peers are \(conversation.peers.map(\.phone)); type - \(conversation.chatType) - \(conversation.title), chat ID - \(conversation.idintification); personal managers - \(self.personalManagers); isSupport - \(isSupport)")
                     if isSupport {
-                        if conversation.chatType == .support {
+                        if conversation.chatType == .support && conversation.isAssistant {
+                            return supportOffices?.assistant != nil
+                        } else if conversation.chatType == .support {
                             return true
                         } else if conversation.chatType == .peerToPeer {
                             guard let peer = conversation.peers.first else {
                                 return false
                             }
                             return managers.contains(where: { $0 == peer.phone })
-                        } else if conversation.chatType == .support && conversation.isAssistant {
-                            return supportOffices?.assistant != nil
                         } else {
                             return false
                         }
