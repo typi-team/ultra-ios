@@ -19,7 +19,6 @@ protocol ConversationWireframeInterface: WireframeInterface {
 }
 
 protocol ConversationViewInterface: ViewInterface {
-    func showLoading(_ isLoading: Bool)
     func setup(conversation: Conversation)
     func stopRefresh(removeController: Bool)
     func display(is typing: UserTypingWithDate)
