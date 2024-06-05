@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Differentiator
 
 extension Message {
     var shouldBeSaved: Bool {
@@ -90,4 +91,13 @@ extension Message {
             return text
         }
     }
+}
+
+extension Message: IdentifiableType, Equatable {
+    typealias Identity = String
+    
+    var identity: String {
+        self.id
+    }
+    
 }
