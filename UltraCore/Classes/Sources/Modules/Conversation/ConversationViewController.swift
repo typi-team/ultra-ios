@@ -445,6 +445,9 @@ extension ConversationViewController: ConversationViewInterface {
     }
     func display(is typing: UserTypingWithDate) {
         self.headline.setup(user: typing)
+        if presenter!.conversation.isAssistant {
+            messageInputBar.isEnabled = !typing.isTyping
+        }
     }
     
     func setup(conversation: Conversation) {

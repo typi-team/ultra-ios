@@ -35,6 +35,12 @@ class MessageInputBar: UIView {
             }
         }
     }
+    var isEnabled: Bool = true {
+        didSet {
+            sendButton.isEnabled = isEnabled
+            sendButton.alpha = isEnabled ? 1 : 0.25
+        }
+    }
     
 //    MARK: Static properties
     
