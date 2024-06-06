@@ -96,7 +96,11 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     }
     private var firstLoad: Bool = true
 
-   private lazy var dataSource = RxTableViewSectionedReloadDataSource<SectionModel<String, Message>>(
+    typealias CustomSectionDataType = AnimatableSectionModel<String, Message>
+    
+    private lazy var dataSource = RxTableViewSectionedAnimatedDataSource<CustomSectionDataType>(
+        animationConfiguration: AnimationConfiguration(insertAnimation: .none, reloadAnimation: .none, deleteAnimation: .none),
+        decideViewTransition: { _, _, _ in .reload },
         configureCell: { [weak self] _, tableView, indexPath,
             message in
             guard let `self` = self else {
@@ -212,33 +216,36 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     override func setupInitialData() {
         super.setupInitialData()
         NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground(_:)), name: UIApplication.didEnterBackgroundNotification, object: nil)
-        self.presenter?
-            .messages
+        let sharedMessages = presenter!.messages
             .distinctUntilChanged()
-            .subscribe(on: MainScheduler.instance)
-            .observe(on: MainScheduler.instance)
-            .do(onNext: {[weak self] messages in
+            .do { [weak self] messages in
+                if messages.isEmpty {
+                    self?.tableView.alpha = 1
+                }
                 self?.messages = messages
                 self?.tableView.backgroundView = messages.isEmpty ? ConversationEmptyViewContainer(emptyView: UltraCoreSettings.delegate?.emptyConversationDetailView(isManager: self?.presenter?.isManager ?? false) ?? .init()) : self?.backgroundImageView
-            })
-            .map({messages -> [SectionModel<String, Message>] in
+            }
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .utility))
+            .map { messages -> [CustomSectionDataType] in
                 if messages.isEmpty {return []}
                 return Dictionary(grouping: messages) { message in
                     return Calendar.current.startOfDay(for: message.meta.created.date)}
                     .sorted { $0.key < $1.key }
-                    .map({SectionModel<String, Message>.init(model: $0.key.formattedTimeToHeadline(format: "d MMMM yyyy"), items: $0.value)})
-            })
-            .bind(to: tableView.rx.items(dataSource: dataSource))
+                    .map({CustomSectionDataType.init(model: $0.key.formattedTimeToHeadline(format: "d MMMM yyyy"), items: $0.value)})
+            }
+            .debounce(.milliseconds(100), scheduler: MainScheduler.instance)
+            .observe(on: MainScheduler.instance)
+            .share()
+        
+        sharedMessages.bind(to: tableView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
                 
-            var prev: [Message] = []
-        self.presenter?
-            .messages
-            .debounce(.milliseconds(20), scheduler: MainScheduler.asyncInstance)
+        var prev: [Message] = []
+        sharedMessages
             .filter({ !$0.isEmpty })
-            .filter({$0.count != prev.count})
-            .do(onNext: {prev = $0})
-            .delay(.milliseconds(10), scheduler: MainScheduler.instance)
+            .filter({ $0.flatMap(\.items).count != prev.count })
+            .do(onNext: {prev = $0.flatMap(\.items)})
+//            .delay(.milliseconds(100), scheduler: MainScheduler.instance)
             .subscribe(onNext: { [weak self] _ in
                 guard let `self` = self else { return }
                 if self.tableView.isDecelerating {

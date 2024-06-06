@@ -102,7 +102,7 @@ class MessageDBService {
         return Observable.create { observer in
             let realm = Realm.myRealm()
             let messages = realm.objects(DBMessage.self).where { $0.receiver.chatID.equals(chatID) }
-            let notificationKey = messages.observe(keyPaths: []) { changes in
+            let notificationKey = messages.observe(keyPaths: ["id", "text", "systemActionType", "state.read", "state.delivered", "state.edited"]) { changes in
                 switch changes {
                 case let .initial(collection):
                     observer.on(.next(collection.map({$0.toProto()})))
