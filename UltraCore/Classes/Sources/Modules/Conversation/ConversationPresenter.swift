@@ -165,6 +165,12 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 self.view?.setup(conversation: self.conversation)
                 
             }
+            updateRepository.updateSyncObservable
+                .subscribe(onNext: { [weak self] in
+                    guard let self = self else { return }
+                    self.view?.setup(conversation: self.conversation)
+                })
+                .disposed(by: disposeBag)
             Observable.combineLatest(timerUpdate, contacts)
                 .compactMap { _, contacts -> ContactDisplayable? in
                     let selectedContact = contacts.filter { contact in contact.userID == userID }.first

@@ -19,6 +19,7 @@ protocol UpdateRepository: AnyObject {
     func retreiveContactStatuses()
     func readAll(in conversation: Conversation)
     func triggerUnreadUpdate()
+    func triggerViewRefresh()
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> { get set }
     var updateSyncObservable: Observable<Void> { get }
     var supportOfficesObservable: Observable<SupportOfficesResponse?> { get }
@@ -131,6 +132,10 @@ extension UpdateRepositoryImpl: UpdateRepository {
     
     func triggerUnreadUpdate() {
         updateUnreadTriggerSubject.onNext(())
+    }
+    
+    func triggerViewRefresh() {
+        updateSyncSubject.onNext(())
     }
     
     func setupSubscription() {
@@ -309,6 +314,9 @@ private extension UpdateRepositoryImpl {
                     .map { ConversationImpl(dbConversation: $0) }
                     .filter { conv in
                         if conv.chatType == .support {
+                            if conv.isAssistant && !isAssistantEnabled {
+                                return false
+                            }
                             return true
                         } else if conv.chatType == .peerToPeer {
                             guard let peer = conv.peers.first else {

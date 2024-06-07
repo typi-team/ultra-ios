@@ -221,6 +221,10 @@ public extension UltraCoreSettings {
             }
         })
     }
+    
+    static func triggerViewRefresh() {
+        AppSettingsImpl.shared.updateRepository.triggerViewRefresh()
+    }
 
     static func handleNotification(data: [AnyHashable: Any], callback: @escaping (UIViewController?) -> Void) {
         _ = AppSettingsImpl
