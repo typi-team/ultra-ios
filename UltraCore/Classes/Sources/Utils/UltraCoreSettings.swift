@@ -42,6 +42,7 @@ public protocol UltraCoreSettingsDelegate: AnyObject {
     )
     func realmEncryptionKeyData() -> Data?
     func didTapTransactionCell(transactionID: String, viewController: UIViewController)
+    func didOpenConversation(with peers: [String])
     func getSupportChatsAndManagers(callBack: @escaping (([String: Any]) -> Void))
     func getMessageMeta() -> Dictionary<String, String>
 }

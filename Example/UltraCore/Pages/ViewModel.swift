@@ -271,4 +271,6 @@ extension ViewModel: UltraCoreSettingsDelegate {
         return ["platform": "iOS"]
     }
 
+    func didOpenConversation(with peers: [String]) { }
+
 }

@@ -628,7 +628,11 @@ extension ConversationPresenter: ConversationPresenterInterface {
         } else if conversation.addContact {
             view?.showDisclaimer(show: true, delegate: self)
         }
-
+        
+        if conversation.chatType != .support {
+            UltraCoreSettings.delegate?.didOpenConversation(with: conversation.peers.map(\.phone))
+        }
+        
         updateRepository.typingUsers
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
