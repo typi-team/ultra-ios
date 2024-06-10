@@ -36,9 +36,22 @@ final class ConversationsPresenter: BasePresenter {
         updateRepository.supportOfficesObservable
     )
         .map({ conversations, typingUsers, _, supportOffices in
-            let managers = supportOffices?.personalManagers.map { String($0.userId) } ?? []
+            let personalManagers = supportOffices?.personalManagers ?? []
+            let managers = personalManagers.map { String($0.userId) }
+            let offices = supportOffices?.supportChats ?? []
             self.personalManagers = managers
             return conversations
+                .map ({ conv in
+                    var conversation = conv
+                    if conversation.chatType == .peerToPeer {
+                        if let peer = conversation.peers.first, let manager = personalManagers.first(where: { String($0.userId) == peer.phone }) {
+                            conversation.title = manager.nickname
+                        } else {
+                            conversation.title = conversation.peers.first?.displaName ?? ""
+                        }
+                    }
+                    return conversation
+                })
                 .filter { [weak self] conversation in
                     guard let self = self else {
                         return true

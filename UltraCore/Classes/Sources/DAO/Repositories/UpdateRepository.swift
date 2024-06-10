@@ -453,10 +453,14 @@ private extension UpdateRepositoryImpl {
 //                        PP.debug("Support manager response - \(chatsResponse.chats)")
                         let requests = chatsResponse.chats
                             .map { chat in
-                                self.chatToConversationInteractor.executeSingle(
+                                var imagePath: String? = response.supportChats.first(where: { $0.name == chat.title })?.avatarUrl
+                                if imagePath == nil {
+                                    imagePath = response.personalManagers.first(where: { $0.nickname == chat.title })?.avatarUrl
+                                }
+                                return self.chatToConversationInteractor.executeSingle(
                                     params: .init(
                                         chat: chat,
-                                        imagePath: response.supportChats.first(where: { $0.name == chat.title })?.avatarUrl
+                                        imagePath: imagePath
                                     )
                                 )
                                 .asObservable()
