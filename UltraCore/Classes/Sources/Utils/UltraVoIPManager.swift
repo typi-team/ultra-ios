@@ -9,7 +9,14 @@ public class UltraVoIPManager: NSObject {
     
     // MARK: - Properties
         
-    private var deviceToken: String?
+    private var deviceToken: String? {
+        didSet {
+            guard let deviceToken = deviceToken else {
+                return
+            }
+            UltraCoreSettings.delegate?.didUpdateVoipToken(deviceToken)
+        }
+    }
     
     private var callInfoMeta: CallMetadata? {
         didSet {

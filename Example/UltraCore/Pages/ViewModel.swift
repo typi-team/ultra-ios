@@ -272,5 +272,7 @@ extension ViewModel: UltraCoreSettingsDelegate {
     }
 
     func didOpenConversation(with peers: [String]) { }
+    
+    func didUpdateVoipToken(_ token: String) { }
 
 }

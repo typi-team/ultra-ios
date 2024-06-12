@@ -163,6 +163,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             return cell
         }, titleForHeaderInSection: { dataSource, sectionIndex in
             return dataSource[sectionIndex].model
+        }, canEditRowAtIndexPath: { _, _ in
+            return true
         }, canMoveRowAtIndexPath: { _, _  in
             return false
         }
