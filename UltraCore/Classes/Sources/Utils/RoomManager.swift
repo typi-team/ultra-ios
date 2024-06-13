@@ -5,9 +5,11 @@
 //  Created by Typi on 20.02.2024.
 //
 
+import AVFoundation
 import Foundation
 import LiveKitClient
 import RxSwift
+//import WebRTC
 
 protocol RoomManagerDelegate: AnyObject {
     func didConnectToRoom()
@@ -15,7 +17,11 @@ protocol RoomManagerDelegate: AnyObject {
     func didDisconnectFromRoom()
 }
 
-final class RoomManager {
+extension DispatchQueue {
+    static let roomManager = DispatchQueue(label: "RoomManager", qos: .default)
+}
+
+final class RoomManager: NSObject {
     
     private var callInfo: CallInformation?
     private var timerSubscription: Disposable?
@@ -36,6 +42,53 @@ final class RoomManager {
         return timerSubscription != nil
     }
     
+    override init() {
+        super.init()
+        
+        AudioManager.shared.customConfigureAudioSessionFunc = { newState, oldState in
+            DispatchQueue.roomManager.async { [weak self] in
+                // prepare config
+                var categoryOptions: AVAudioSession.CategoryOptions = []
+                var category: AVAudioSession.Category = .playAndRecord
+                var mode: AVAudioSession.Mode
+                
+                if newState.isSpeakerOutputPreferred {
+                    // use .videoChat if speakerOutput is preferred
+                    mode = .videoChat
+                } else {
+                    // use .voiceChat if speakerOutput is not preferred
+                    mode = .voiceChat
+                }
+                categoryOptions = [.allowBluetooth, .allowBluetoothA2DP, .duckOthers]
+
+                var setActive: Bool?
+
+                if newState.trackState != .none, oldState.trackState == .none {
+                    // activate audio session when there is any local/remote audio track
+                    setActive = true
+                } else if newState.trackState == .none, oldState.trackState != .none {
+                    // deactivate audio session when there are no more local/remote audio tracks
+                    setActive = false
+                }
+                
+                let session = AVAudioSession.sharedInstance()
+
+                do {
+                    if let setActive = setActive {
+                        try session.setCategory(category, mode: mode, options: categoryOptions)
+                        try session.setActive(setActive)
+                    } else {
+                        try session.setCategory(category, mode: mode, options: categoryOptions)
+                    }
+
+                } catch let error {
+                    PP.error("Failed to configure audio session with error: \(error)")
+                }
+                
+            }
+        }
+    }
+    
     func addRoomDelegate(_ delegate: RoomDelegate) {
         room.add(delegate: delegate)
     }
@@ -46,6 +99,7 @@ final class RoomManager {
     
     func connectRoom(with callInfo: CallInformation, completion: @escaping((Error?) -> Void)) {
         self.callInfo = callInfo
+        AudioManager.shared.isSpeakerOutputPreferred = callInfo.video
         Task {
             do {
                 try await room.connect(url: callInfo.host, token: callInfo.accessToken)

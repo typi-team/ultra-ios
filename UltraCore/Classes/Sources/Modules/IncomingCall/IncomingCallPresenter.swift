@@ -131,7 +131,7 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
             do {
                 try await RoomManager.shared.room.localParticipant.setMicrophone(enabled: enabled)
             } catch {
-                
+                PP.debug("[CALL] Set microphone enabled failed with error - \(error)")
             }
         }
     }
@@ -142,7 +142,7 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
             do {
                 try await RoomManager.shared.room.localParticipant.setCamera(enabled: enabled)
             } catch {
-                
+                PP.debug("[CALL] Set camera enabled failed with error - \(error)")
             }
         }
     }
