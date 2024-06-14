@@ -74,11 +74,11 @@ PODS:
   - IGListDiffKit (4.0.0)
   - IGListKit (4.0.0):
     - IGListDiffKit (= 4.0.0)
-  - LiveKitClient (2.0.5):
-    - LiveKitWebRTC (~> 114.5735.14)
+  - LiveKitClient (2.0.9):
+    - LiveKitWebRTC (~> 114.5735.18)
     - Logging
     - SwiftProtobuf
-  - LiveKitWebRTC (114.5735.14)
+  - LiveKitWebRTC (114.5735.18)
   - Logging (1.4.0)
   - nanopb (2.30910.0):
     - nanopb/decode (= 2.30910.0)
@@ -245,7 +245,7 @@ PODS:
     - CocoaLumberjack/Swift
     - gRPC-Swift
     - IGListKit
-    - LiveKitClient (= 2.0.5)
+    - LiveKitClient (= 2.0.9)
     - NVActivityIndicatorView
     - PodAsset
     - Protobuf
@@ -338,8 +338,8 @@ SPEC CHECKSUMS:
   gRPC-Swift: 74adcaaa62ac5e0a018938840328cb1fdfb09e7b
   IGListDiffKit: 665d6cf43ce726e676013db9c7d6c4294259b6b2
   IGListKit: fd5a5d21935298f5849fa49d426843cff97b77c7
-  LiveKitClient: a2f2683012821c77beb368476f26b69f44e81921
-  LiveKitWebRTC: 72ff71af984fd441b5bb26736c080fa66a11ebc6
+  LiveKitClient: 5d214effbc9cafe40728105d8fb5b7abfbc7cb45
+  LiveKitWebRTC: 2ece32ec8de2f15053a604886a2328a7f2c0ad66
   Logging: beeb016c9c80cf77042d62e83495816847ef108b
   nanopb: 438bc412db1928dac798aa6fd75726007be04262
   NVActivityIndicatorView: fe52a6a68664c2df8991d7d9e3d86d8d19453c53
@@ -368,7 +368,7 @@ SPEC CHECKSUMS:
   SwiftNIOTLS: 598af547490133e9aac52aed0c23c4a90c31dcfc
   SwiftNIOTransportServices: 0b2b407819d82eb63af558c5396e33c945759503
   SwiftProtobuf: 5e8349171e7c2f88f5b9e683cb3cb79d1dc780b3
-  UltraCore: 9c45b7710551cc8ad6d7b541570e9602b60cbbcd
+  UltraCore: c3272425b79b9c42fddf141716efff53c47db310
 
 PODFILE CHECKSUM: 05a3927b15bbe6caf93b241464429054c7b34ff0
 
