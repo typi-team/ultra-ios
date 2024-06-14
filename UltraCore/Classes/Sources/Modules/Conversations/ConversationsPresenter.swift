@@ -71,14 +71,7 @@ final class ConversationsPresenter: BasePresenter {
                             return false
                         }
                     } else if conversation.chatType == .peerToPeer {
-                        guard let peer = conversation.peers.first else {
-                            return false
-                        }
-                        if managers.contains(where: { $0 == peer.phone }) {
-                            return conversation.lastMessage != nil
-                        } else {
-                            return true
-                        }
+                        return conversation.lastMessage != nil
                     }
                     
                     return conversation.chatType != .support
