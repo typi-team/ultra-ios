@@ -72,6 +72,10 @@ public extension UltraCoreSettings {
     static var isConnected: Bool {
         AppSettingsImpl.shared.updateRepository.isConnectedToListenStream
     }
+    
+    static var deviceID: String {
+        AppSettingsImpl.shared.appStore.deviceID()
+    }
 
     static func update(contacts: [IContactInfo]) throws {
         try ContactDBService.update(contacts: contacts)

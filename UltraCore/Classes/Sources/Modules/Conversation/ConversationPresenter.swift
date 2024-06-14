@@ -132,7 +132,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
     }
     
     func canAttach() -> Bool {
-        !conversation.isAssistant
+        conversation.chatType != .support && !isManager
     }
     
     var isManager: Bool {

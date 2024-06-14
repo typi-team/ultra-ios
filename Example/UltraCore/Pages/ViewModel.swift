@@ -61,7 +61,7 @@ class ViewModel {
               let jsonData = try? JSONSerialization.data(withJSONObject: [
                   "app_version": appVersion,
                   "token": firebaseToken,
-                  "device_id": UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString,
+                  "device_id": UltraCoreSettings.deviceID,
                   "platform": "IOS",
                   "voip_push_token": UltraVoIPManager.shared.token ?? ""
               ]) else { return }
