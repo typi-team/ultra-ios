@@ -21,7 +21,11 @@ class MessageInputBar: UIView {
     var isRecording: Bool {
         return audioRecordUtils.isRecording
     }
-    
+    var canRecord: Bool = true {
+        didSet {
+            self.textViewDidChange(self.messageTextView)
+        }
+    }
     var canSendAttachments: Bool = true {
         didSet {
             self.textViewDidChange(self.messageTextView)
@@ -128,7 +132,7 @@ class MessageInputBar: UIView {
     }
 
     private var microButtonWidth: CGFloat {
-        (UltraCoreSettings.futureDelegate?.availableToRecordVoice() ?? true) ? 36 : 0
+        (UltraCoreSettings.futureDelegate?.availableToRecordVoice() ?? true) && canRecord ? 36 : 0
     }
     private var tempText: String?
 
@@ -249,11 +253,14 @@ extension MessageInputBar: MessageInputTextViewDelegate {
             self.sendButton.setImage(self.kInputSendImage, for: .normal)
         } else {
             if canSendAttachments {
-                self.microButton.isHidden = false
                 self.sendButton.setImage(self.kInputPlusImage, for: .normal)
             } else {
-                self.microButton.isHidden = true
                 self.sendButton.setImage(self.kInputSendImage, for: .normal)
+            }
+            if canRecord {
+                self.microButton.isHidden = false
+            } else {
+                self.microButton.isHidden = true
             }
         }
 

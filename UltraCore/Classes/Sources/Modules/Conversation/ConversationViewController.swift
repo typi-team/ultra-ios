@@ -264,6 +264,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.presenter?.viewDidLoad()
         messageInputBar.canSendAttachments = presenter?.canAttach() ?? true
         messageInputBar.canSendMoney = presenter?.canTransfer() ?? true
+        messageInputBar.canRecord = presenter?.canSendVoice() ?? true
         subscribeToInputBoundsChange()
     }
     
@@ -574,9 +575,12 @@ private extension ConversationViewController {
         controller.delegate = self
         controller.sourceType = type
         controller.videoQuality = .typeHigh
-        controller.mediaTypes = ["public.movie", "public.image"]
-        controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
-        controller.videoMaximumDuration = 300
+        if presenter!.canSendVideo() {
+            controller.mediaTypes = ["public.movie", "public.image"]
+            controller.videoMaximumDuration = 300
+        } else {
+            controller.mediaTypes = ["public.image"]
+        }
         present(controller, animated: true)
     }
     

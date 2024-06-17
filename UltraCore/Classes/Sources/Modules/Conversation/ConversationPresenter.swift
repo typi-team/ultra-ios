@@ -132,6 +132,14 @@ extension ConversationPresenter: ConversationPresenterInterface {
     }
     
     func canAttach() -> Bool {
+        !conversation.isAssistant
+    }
+    
+    func canSendVoice() -> Bool {
+        conversation.chatType != .support && !isManager
+    }
+    
+    func canSendVideo() -> Bool {
         conversation.chatType != .support && !isManager
     }
     

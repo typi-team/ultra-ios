@@ -58,4 +58,6 @@ protocol ConversationPresenterInterface: PresenterInterface {
     func canBlock() -> Bool
     func canTransfer() -> Bool
     func canAttach() -> Bool
+    func canSendVoice() -> Bool
+    func canSendVideo() -> Bool
 }
