@@ -435,6 +435,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { [weak self] message in
                 PP.debug("Finished loading messages for chat - \(self?.conversation.idintification ?? "")")
+                PP.debug("[Message] Loaded messages: - \(message)")
                 self?.view?.stopRefresh(removeController: message.isEmpty)
             })
             .disposed(by: disposeBag)
