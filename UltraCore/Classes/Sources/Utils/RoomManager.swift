@@ -46,7 +46,7 @@ final class RoomManager: NSObject {
         super.init()
         
         AudioManager.shared.customConfigureAudioSessionFunc = { newState, oldState in
-            DispatchQueue.roomManager.async { [weak self] in
+            DispatchQueue.roomManager.async {
                 // prepare config
                 var categoryOptions: AVAudioSession.CategoryOptions = []
                 var category: AVAudioSession.Category = .playAndRecord

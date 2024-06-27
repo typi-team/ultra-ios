@@ -47,11 +47,9 @@ struct MessageSendRequest {
   mutating func clearMessage() {self._message = nil}
 
   /// Optional parameter to set sender user. Can be used
-  /// to send message as another user. Message sending will be allowed only
-  /// if user has "impersonated" user access.
-  /// If not provided then will be taken from
-  /// session.
-  var fromUser: String = String()
+  /// to send message as another user only if such permission
+  /// is granted
+  var asUser: String = String()
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -172,6 +170,8 @@ struct MessagesDeliveredRequest {
 
   var maxSeqNumber: UInt64 = 0
 
+  var asUser: String = String()
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -199,6 +199,8 @@ struct MessagesReadRequest {
   var maxSeqNumber: UInt64 = 0
 
   var readTime: Int64 = 0
+
+  var asUser: String = String()
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -230,6 +232,8 @@ struct MessagesDeleteRequest {
 
   /// 'true' to delete message for everyone in chat
   var forEveryone: Bool = false
+
+  var asUser: String = String()
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -404,22 +408,9 @@ struct MessagesSearchRequest {
   /// Max characters: 500
   var text: String = String()
 
-  /// to search only in support chats provide this filter,
-  /// if not provided all search will include all support chats
-  var supportChatFilter: SupportChatFilter {
-    get {return _supportChatFilter ?? SupportChatFilter()}
-    set {_supportChatFilter = newValue}
-  }
-  /// Returns true if `supportChatFilter` has been explicitly set.
-  var hasSupportChatFilter: Bool {return self._supportChatFilter != nil}
-  /// Clears the value of `supportChatFilter`. Subsequent reads from it will return its default value.
-  mutating func clearSupportChatFilter() {self._supportChatFilter = nil}
-
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
-
-  fileprivate var _supportChatFilter: SupportChatFilter? = nil
 }
 
 struct MessagesSearchResponse {
@@ -468,7 +459,7 @@ extension MessageSendRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "peer"),
     2: .same(proto: "message"),
-    3: .standard(proto: "from_user"),
+    3: .standard(proto: "as_user"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -479,7 +470,7 @@ extension MessageSendRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularMessageField(value: &self._peer) }()
       case 2: try { try decoder.decodeSingularMessageField(value: &self._message) }()
-      case 3: try { try decoder.decodeSingularStringField(value: &self.fromUser) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.asUser) }()
       default: break
       }
     }
@@ -496,8 +487,8 @@ extension MessageSendRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
     try { if let v = self._message {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
     } }()
-    if !self.fromUser.isEmpty {
-      try visitor.visitSingularStringField(value: self.fromUser, fieldNumber: 3)
+    if !self.asUser.isEmpty {
+      try visitor.visitSingularStringField(value: self.asUser, fieldNumber: 3)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -505,7 +496,7 @@ extension MessageSendRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
   static func ==(lhs: MessageSendRequest, rhs: MessageSendRequest) -> Bool {
     if lhs._peer != rhs._peer {return false}
     if lhs._message != rhs._message {return false}
-    if lhs.fromUser != rhs.fromUser {return false}
+    if lhs.asUser != rhs.asUser {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -720,6 +711,7 @@ extension MessagesDeliveredRequest: SwiftProtobuf.Message, SwiftProtobuf._Messag
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .standard(proto: "chat_id"),
     2: .standard(proto: "max_seq_number"),
+    3: .standard(proto: "as_user"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -730,6 +722,7 @@ extension MessagesDeliveredRequest: SwiftProtobuf.Message, SwiftProtobuf._Messag
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularStringField(value: &self.chatID) }()
       case 2: try { try decoder.decodeSingularUInt64Field(value: &self.maxSeqNumber) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.asUser) }()
       default: break
       }
     }
@@ -742,12 +735,16 @@ extension MessagesDeliveredRequest: SwiftProtobuf.Message, SwiftProtobuf._Messag
     if self.maxSeqNumber != 0 {
       try visitor.visitSingularUInt64Field(value: self.maxSeqNumber, fieldNumber: 2)
     }
+    if !self.asUser.isEmpty {
+      try visitor.visitSingularStringField(value: self.asUser, fieldNumber: 3)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: MessagesDeliveredRequest, rhs: MessagesDeliveredRequest) -> Bool {
     if lhs.chatID != rhs.chatID {return false}
     if lhs.maxSeqNumber != rhs.maxSeqNumber {return false}
+    if lhs.asUser != rhs.asUser {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -791,6 +788,7 @@ extension MessagesReadRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     1: .standard(proto: "chat_id"),
     2: .standard(proto: "max_seq_number"),
     3: .standard(proto: "read_time"),
+    4: .standard(proto: "as_user"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -802,6 +800,7 @@ extension MessagesReadRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       case 1: try { try decoder.decodeSingularStringField(value: &self.chatID) }()
       case 2: try { try decoder.decodeSingularUInt64Field(value: &self.maxSeqNumber) }()
       case 3: try { try decoder.decodeSingularInt64Field(value: &self.readTime) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.asUser) }()
       default: break
       }
     }
@@ -817,6 +816,9 @@ extension MessagesReadRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if self.readTime != 0 {
       try visitor.visitSingularInt64Field(value: self.readTime, fieldNumber: 3)
     }
+    if !self.asUser.isEmpty {
+      try visitor.visitSingularStringField(value: self.asUser, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -824,6 +826,7 @@ extension MessagesReadRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     if lhs.chatID != rhs.chatID {return false}
     if lhs.maxSeqNumber != rhs.maxSeqNumber {return false}
     if lhs.readTime != rhs.readTime {return false}
+    if lhs.asUser != rhs.asUser {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -867,6 +870,7 @@ extension MessagesDeleteRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     1: .standard(proto: "chat_id"),
     2: .same(proto: "range"),
     3: .standard(proto: "for_everyone"),
+    4: .standard(proto: "as_user"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -878,6 +882,7 @@ extension MessagesDeleteRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
       case 1: try { try decoder.decodeSingularStringField(value: &self.chatID) }()
       case 2: try { try decoder.decodeRepeatedMessageField(value: &self.range) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.forEveryone) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.asUser) }()
       default: break
       }
     }
@@ -893,6 +898,9 @@ extension MessagesDeleteRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if self.forEveryone != false {
       try visitor.visitSingularBoolField(value: self.forEveryone, fieldNumber: 3)
     }
+    if !self.asUser.isEmpty {
+      try visitor.visitSingularStringField(value: self.asUser, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -900,6 +908,7 @@ extension MessagesDeleteRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     if lhs.chatID != rhs.chatID {return false}
     if lhs.range != rhs.range {return false}
     if lhs.forEveryone != rhs.forEveryone {return false}
+    if lhs.asUser != rhs.asUser {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -1255,7 +1264,6 @@ extension MessagesSearchRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "limit"),
     2: .same(proto: "text"),
-    3: .same(proto: "supportChatFilter"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1266,33 +1274,24 @@ extension MessagesSearchRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularInt64Field(value: &self.limit) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.text) }()
-      case 3: try { try decoder.decodeSingularMessageField(value: &self._supportChatFilter) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
     if self.limit != 0 {
       try visitor.visitSingularInt64Field(value: self.limit, fieldNumber: 1)
     }
     if !self.text.isEmpty {
       try visitor.visitSingularStringField(value: self.text, fieldNumber: 2)
     }
-    try { if let v = self._supportChatFilter {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: MessagesSearchRequest, rhs: MessagesSearchRequest) -> Bool {
     if lhs.limit != rhs.limit {return false}
     if lhs.text != rhs.text {return false}
-    if lhs._supportChatFilter != rhs._supportChatFilter {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

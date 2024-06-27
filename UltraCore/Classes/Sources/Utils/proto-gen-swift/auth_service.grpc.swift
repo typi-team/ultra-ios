@@ -16,10 +16,10 @@ internal protocol AuthServiceClientProtocol: GRPCClient {
   var serviceName: String { get }
   var interceptors: AuthServiceClientInterceptorFactoryProtocol? { get }
 
-  func getUserId(
-    _ request: GetUserIdRequest,
+  func createTestUser(
+    _ request: CreateTestUserRequest,
     callOptions: CallOptions?
-  ) -> UnaryCall<GetUserIdRequest, GetUserIdResponse>
+  ) -> UnaryCall<CreateTestUserRequest, CreateTestUserResponse>
 
   func issueJwt(
     _ request: IssueJwtRequest,
@@ -40,18 +40,18 @@ extension AuthServiceClientProtocol {
   /// enable it in production
   ///
   /// - Parameters:
-  ///   - request: Request to send to GetUserId.
+  ///   - request: Request to send to CreateTestUser.
   ///   - callOptions: Call options.
   /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
-  internal func getUserId(
-    _ request: GetUserIdRequest,
+  internal func createTestUser(
+    _ request: CreateTestUserRequest,
     callOptions: CallOptions? = nil
-  ) -> UnaryCall<GetUserIdRequest, GetUserIdResponse> {
+  ) -> UnaryCall<CreateTestUserRequest, CreateTestUserResponse> {
     return self.makeUnaryCall(
-      path: AuthServiceClientMetadata.Methods.getUserId.path,
+      path: AuthServiceClientMetadata.Methods.createTestUser.path,
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
-      interceptors: self.interceptors?.makeGetUserIdInterceptors() ?? []
+      interceptors: self.interceptors?.makeCreateTestUserInterceptors() ?? []
     )
   }
 
@@ -138,10 +138,10 @@ internal protocol AuthServiceAsyncClientProtocol: GRPCClient {
   static var serviceDescriptor: GRPCServiceDescriptor { get }
   var interceptors: AuthServiceClientInterceptorFactoryProtocol? { get }
 
-  func makeGetUserIDCall(
-    _ request: GetUserIdRequest,
+  func makeCreateTestUserCall(
+    _ request: CreateTestUserRequest,
     callOptions: CallOptions?
-  ) -> GRPCAsyncUnaryCall<GetUserIdRequest, GetUserIdResponse>
+  ) -> GRPCAsyncUnaryCall<CreateTestUserRequest, CreateTestUserResponse>
 
   func makeIssueJwtCall(
     _ request: IssueJwtRequest,
@@ -159,15 +159,15 @@ extension AuthServiceAsyncClientProtocol {
     return nil
   }
 
-  internal func makeGetUserIDCall(
-    _ request: GetUserIdRequest,
+  internal func makeCreateTestUserCall(
+    _ request: CreateTestUserRequest,
     callOptions: CallOptions? = nil
-  ) -> GRPCAsyncUnaryCall<GetUserIdRequest, GetUserIdResponse> {
+  ) -> GRPCAsyncUnaryCall<CreateTestUserRequest, CreateTestUserResponse> {
     return self.makeAsyncUnaryCall(
-      path: AuthServiceClientMetadata.Methods.getUserId.path,
+      path: AuthServiceClientMetadata.Methods.createTestUser.path,
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
-      interceptors: self.interceptors?.makeGetUserIdInterceptors() ?? []
+      interceptors: self.interceptors?.makeCreateTestUserInterceptors() ?? []
     )
   }
 
@@ -186,15 +186,15 @@ extension AuthServiceAsyncClientProtocol {
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 extension AuthServiceAsyncClientProtocol {
-  internal func getUserId(
-    _ request: GetUserIdRequest,
+  internal func createTestUser(
+    _ request: CreateTestUserRequest,
     callOptions: CallOptions? = nil
-  ) async throws -> GetUserIdResponse {
+  ) async throws -> CreateTestUserResponse {
     return try await self.performAsyncUnaryCall(
-      path: AuthServiceClientMetadata.Methods.getUserId.path,
+      path: AuthServiceClientMetadata.Methods.createTestUser.path,
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
-      interceptors: self.interceptors?.makeGetUserIdInterceptors() ?? []
+      interceptors: self.interceptors?.makeCreateTestUserInterceptors() ?? []
     )
   }
 
@@ -230,8 +230,8 @@ internal struct AuthServiceAsyncClient: AuthServiceAsyncClientProtocol {
 
 internal protocol AuthServiceClientInterceptorFactoryProtocol: Sendable {
 
-  /// - Returns: Interceptors to use when invoking 'getUserId'.
-  func makeGetUserIdInterceptors() -> [ClientInterceptor<GetUserIdRequest, GetUserIdResponse>]
+  /// - Returns: Interceptors to use when invoking 'createTestUser'.
+  func makeCreateTestUserInterceptors() -> [ClientInterceptor<CreateTestUserRequest, CreateTestUserResponse>]
 
   /// - Returns: Interceptors to use when invoking 'issueJwt'.
   func makeIssueJwtInterceptors() -> [ClientInterceptor<IssueJwtRequest, IssueJwtResponse>]
@@ -242,15 +242,15 @@ internal enum AuthServiceClientMetadata {
     name: "AuthService",
     fullName: "AuthService",
     methods: [
-      AuthServiceClientMetadata.Methods.getUserId,
+      AuthServiceClientMetadata.Methods.createTestUser,
       AuthServiceClientMetadata.Methods.issueJwt,
     ]
   )
 
   internal enum Methods {
-    internal static let getUserId = GRPCMethodDescriptor(
-      name: "GetUserId",
-      path: "/AuthService/GetUserId",
+    internal static let createTestUser = GRPCMethodDescriptor(
+      name: "CreateTestUser",
+      path: "/AuthService/CreateTestUser",
       type: GRPCCallType.unary
     )
 
@@ -272,7 +272,7 @@ internal protocol AuthServiceProvider: CallHandlerProvider {
   /// Important: enabled only in "DEV" mode, this method allows
   /// to get information about any user and very dangerous to
   /// enable it in production
-  func getUserId(request: GetUserIdRequest, context: StatusOnlyCallContext) -> EventLoopFuture<GetUserIdResponse>
+  func createTestUser(request: CreateTestUserRequest, context: StatusOnlyCallContext) -> EventLoopFuture<CreateTestUserResponse>
 
   /// Creates jwt token for user, in "DEV" mode
   /// method generates jwt without any verification,
@@ -292,13 +292,13 @@ extension AuthServiceProvider {
     context: CallHandlerContext
   ) -> GRPCServerHandlerProtocol? {
     switch name {
-    case "GetUserId":
+    case "CreateTestUser":
       return UnaryServerHandler(
         context: context,
-        requestDeserializer: ProtobufDeserializer<GetUserIdRequest>(),
-        responseSerializer: ProtobufSerializer<GetUserIdResponse>(),
-        interceptors: self.interceptors?.makeGetUserIdInterceptors() ?? [],
-        userFunction: self.getUserId(request:context:)
+        requestDeserializer: ProtobufDeserializer<CreateTestUserRequest>(),
+        responseSerializer: ProtobufSerializer<CreateTestUserResponse>(),
+        interceptors: self.interceptors?.makeCreateTestUserInterceptors() ?? [],
+        userFunction: self.createTestUser(request:context:)
       )
 
     case "IssueJwt":
@@ -328,10 +328,10 @@ internal protocol AuthServiceAsyncProvider: CallHandlerProvider, Sendable {
   /// Important: enabled only in "DEV" mode, this method allows
   /// to get information about any user and very dangerous to
   /// enable it in production
-  func getUserId(
-    request: GetUserIdRequest,
+  func createTestUser(
+    request: CreateTestUserRequest,
     context: GRPCAsyncServerCallContext
-  ) async throws -> GetUserIdResponse
+  ) async throws -> CreateTestUserResponse
 
   /// Creates jwt token for user, in "DEV" mode
   /// method generates jwt without any verification,
@@ -361,13 +361,13 @@ extension AuthServiceAsyncProvider {
     context: CallHandlerContext
   ) -> GRPCServerHandlerProtocol? {
     switch name {
-    case "GetUserId":
+    case "CreateTestUser":
       return GRPCAsyncServerHandler(
         context: context,
-        requestDeserializer: ProtobufDeserializer<GetUserIdRequest>(),
-        responseSerializer: ProtobufSerializer<GetUserIdResponse>(),
-        interceptors: self.interceptors?.makeGetUserIdInterceptors() ?? [],
-        wrapping: { try await self.getUserId(request: $0, context: $1) }
+        requestDeserializer: ProtobufDeserializer<CreateTestUserRequest>(),
+        responseSerializer: ProtobufSerializer<CreateTestUserResponse>(),
+        interceptors: self.interceptors?.makeCreateTestUserInterceptors() ?? [],
+        wrapping: { try await self.createTestUser(request: $0, context: $1) }
       )
 
     case "IssueJwt":
@@ -387,9 +387,9 @@ extension AuthServiceAsyncProvider {
 
 internal protocol AuthServiceServerInterceptorFactoryProtocol: Sendable {
 
-  /// - Returns: Interceptors to use when handling 'getUserId'.
+  /// - Returns: Interceptors to use when handling 'createTestUser'.
   ///   Defaults to calling `self.makeInterceptors()`.
-  func makeGetUserIdInterceptors() -> [ServerInterceptor<GetUserIdRequest, GetUserIdResponse>]
+  func makeCreateTestUserInterceptors() -> [ServerInterceptor<CreateTestUserRequest, CreateTestUserResponse>]
 
   /// - Returns: Interceptors to use when handling 'issueJwt'.
   ///   Defaults to calling `self.makeInterceptors()`.
@@ -401,15 +401,15 @@ internal enum AuthServiceServerMetadata {
     name: "AuthService",
     fullName: "AuthService",
     methods: [
-      AuthServiceServerMetadata.Methods.getUserId,
+      AuthServiceServerMetadata.Methods.createTestUser,
       AuthServiceServerMetadata.Methods.issueJwt,
     ]
   )
 
   internal enum Methods {
-    internal static let getUserId = GRPCMethodDescriptor(
-      name: "GetUserId",
-      path: "/AuthService/GetUserId",
+    internal static let createTestUser = GRPCMethodDescriptor(
+      name: "CreateTestUser",
+      path: "/AuthService/CreateTestUser",
       type: GRPCCallType.unary
     )
 

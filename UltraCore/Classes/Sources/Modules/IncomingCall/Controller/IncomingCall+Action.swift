@@ -57,12 +57,8 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
         setVideoCallIfPossible(enabled: cameraEnabled)
     }
     
-    func view(_ view: IncomingCallActionView, cancelButtonDidTap button: UIButton) {
+    func view(_ view: IncomingCallActionView, endCallButtonDidTap button: UIButton) {
         cancelCall()
-    }
-    
-    func view(_ view: IncomingCallActionView, rejectButtonDidTap button: UIButton) {
-        rejectCall()
     }
     
     func answerToCall() {
@@ -80,12 +76,6 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
         infoView.setDuration(text: CallStrings.cancel.localized)
         PP.debug("[CALL] cancell call")
         presenter?.cancel()
-    }
-    
-    func rejectCall() {
-        infoView.setDuration(text: CallStrings.reject.localized)
-        PP.debug("[CALL] reject call")
-        presenter?.reject()
     }
     
 }

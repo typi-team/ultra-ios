@@ -97,8 +97,3 @@ extension FFSignUpPresenter: SignUpPresenterInterface {
         task.resume()
     }
 }
-
-
-fileprivate extension SignUpPresenter {
-
-}

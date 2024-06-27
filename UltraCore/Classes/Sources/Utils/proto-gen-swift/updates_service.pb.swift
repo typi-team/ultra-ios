@@ -40,6 +40,11 @@ struct ListenRequest {
   /// if "true" then "local_state" will be ignored
   var onlyNewest: Bool = false
 
+  /// allows to listen other user's updates
+  /// in case user doesn't have access to do that then listen
+  /// will take user id from session
+  var userID: String = String()
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -152,6 +157,7 @@ extension ListenRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     1: .standard(proto: "local_state"),
     2: .standard(proto: "user_status"),
     3: .standard(proto: "only_newest"),
+    4: .standard(proto: "user_id"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -163,6 +169,7 @@ extension ListenRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       case 1: try { try decoder.decodeSingularMessageField(value: &self._localState) }()
       case 2: try { try decoder.decodeSingularEnumField(value: &self.userStatus) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.onlyNewest) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.userID) }()
       default: break
       }
     }
@@ -182,6 +189,9 @@ extension ListenRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if self.onlyNewest != false {
       try visitor.visitSingularBoolField(value: self.onlyNewest, fieldNumber: 3)
     }
+    if !self.userID.isEmpty {
+      try visitor.visitSingularStringField(value: self.userID, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -189,6 +199,7 @@ extension ListenRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if lhs._localState != rhs._localState {return false}
     if lhs.userStatus != rhs.userStatus {return false}
     if lhs.onlyNewest != rhs.onlyNewest {return false}
+    if lhs.userID != rhs.userID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

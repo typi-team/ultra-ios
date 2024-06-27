@@ -16,6 +16,11 @@ internal protocol CallServiceClientProtocol: GRPCClient {
   var serviceName: String { get }
   var interceptors: CallServiceClientInterceptorFactoryProtocol? { get }
 
+  func accessToken(
+    _ request: CallAccessTokenRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<CallAccessTokenRequest, CallAccessTokenResponse>
+
   func create(
     _ request: CreateCallRequest,
     callOptions: CallOptions?
@@ -30,11 +35,34 @@ internal protocol CallServiceClientProtocol: GRPCClient {
     _ request: CancelCallRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<CancelCallRequest, CancelCallResponse>
+
+  func end(
+    _ request: CallEndRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<CallEndRequest, CallEndResponse>
 }
 
 extension CallServiceClientProtocol {
   internal var serviceName: String {
     return "CallService"
+  }
+
+  /// Unary call to AccessToken
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to AccessToken.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  internal func accessToken(
+    _ request: CallAccessTokenRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<CallAccessTokenRequest, CallAccessTokenResponse> {
+    return self.makeUnaryCall(
+      path: CallServiceClientMetadata.Methods.accessToken.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeAccessTokenInterceptors() ?? []
+    )
   }
 
   /// Unary call to Create
@@ -88,6 +116,24 @@ extension CallServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeCancelInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to End
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to End.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  internal func end(
+    _ request: CallEndRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<CallEndRequest, CallEndResponse> {
+    return self.makeUnaryCall(
+      path: CallServiceClientMetadata.Methods.end.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeEndInterceptors() ?? []
     )
   }
 }
@@ -154,6 +200,11 @@ internal protocol CallServiceAsyncClientProtocol: GRPCClient {
   static var serviceDescriptor: GRPCServiceDescriptor { get }
   var interceptors: CallServiceClientInterceptorFactoryProtocol? { get }
 
+  func makeAccessTokenCall(
+    _ request: CallAccessTokenRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<CallAccessTokenRequest, CallAccessTokenResponse>
+
   func makeCreateCall(
     _ request: CreateCallRequest,
     callOptions: CallOptions?
@@ -168,6 +219,11 @@ internal protocol CallServiceAsyncClientProtocol: GRPCClient {
     _ request: CancelCallRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<CancelCallRequest, CancelCallResponse>
+
+  func makeEndCall(
+    _ request: CallEndRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<CallEndRequest, CallEndResponse>
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -178,6 +234,18 @@ extension CallServiceAsyncClientProtocol {
 
   internal var interceptors: CallServiceClientInterceptorFactoryProtocol? {
     return nil
+  }
+
+  internal func makeAccessTokenCall(
+    _ request: CallAccessTokenRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<CallAccessTokenRequest, CallAccessTokenResponse> {
+    return self.makeAsyncUnaryCall(
+      path: CallServiceClientMetadata.Methods.accessToken.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeAccessTokenInterceptors() ?? []
+    )
   }
 
   internal func makeCreateCall(
@@ -215,10 +283,34 @@ extension CallServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeCancelInterceptors() ?? []
     )
   }
+
+  internal func makeEndCall(
+    _ request: CallEndRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<CallEndRequest, CallEndResponse> {
+    return self.makeAsyncUnaryCall(
+      path: CallServiceClientMetadata.Methods.end.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeEndInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
 extension CallServiceAsyncClientProtocol {
+  internal func accessToken(
+    _ request: CallAccessTokenRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> CallAccessTokenResponse {
+    return try await self.performAsyncUnaryCall(
+      path: CallServiceClientMetadata.Methods.accessToken.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeAccessTokenInterceptors() ?? []
+    )
+  }
+
   internal func create(
     _ request: CreateCallRequest,
     callOptions: CallOptions? = nil
@@ -254,6 +346,18 @@ extension CallServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeCancelInterceptors() ?? []
     )
   }
+
+  internal func end(
+    _ request: CallEndRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> CallEndResponse {
+    return try await self.performAsyncUnaryCall(
+      path: CallServiceClientMetadata.Methods.end.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeEndInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -275,6 +379,9 @@ internal struct CallServiceAsyncClient: CallServiceAsyncClientProtocol {
 
 internal protocol CallServiceClientInterceptorFactoryProtocol: Sendable {
 
+  /// - Returns: Interceptors to use when invoking 'accessToken'.
+  func makeAccessTokenInterceptors() -> [ClientInterceptor<CallAccessTokenRequest, CallAccessTokenResponse>]
+
   /// - Returns: Interceptors to use when invoking 'create'.
   func makeCreateInterceptors() -> [ClientInterceptor<CreateCallRequest, CreateCallResponse>]
 
@@ -283,6 +390,9 @@ internal protocol CallServiceClientInterceptorFactoryProtocol: Sendable {
 
   /// - Returns: Interceptors to use when invoking 'cancel'.
   func makeCancelInterceptors() -> [ClientInterceptor<CancelCallRequest, CancelCallResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'end'.
+  func makeEndInterceptors() -> [ClientInterceptor<CallEndRequest, CallEndResponse>]
 }
 
 internal enum CallServiceClientMetadata {
@@ -290,13 +400,21 @@ internal enum CallServiceClientMetadata {
     name: "CallService",
     fullName: "CallService",
     methods: [
+      CallServiceClientMetadata.Methods.accessToken,
       CallServiceClientMetadata.Methods.create,
       CallServiceClientMetadata.Methods.reject,
       CallServiceClientMetadata.Methods.cancel,
+      CallServiceClientMetadata.Methods.end,
     ]
   )
 
   internal enum Methods {
+    internal static let accessToken = GRPCMethodDescriptor(
+      name: "AccessToken",
+      path: "/CallService/AccessToken",
+      type: GRPCCallType.unary
+    )
+
     internal static let create = GRPCMethodDescriptor(
       name: "Create",
       path: "/CallService/Create",
@@ -314,6 +432,12 @@ internal enum CallServiceClientMetadata {
       path: "/CallService/Cancel",
       type: GRPCCallType.unary
     )
+
+    internal static let end = GRPCMethodDescriptor(
+      name: "End",
+      path: "/CallService/End",
+      type: GRPCCallType.unary
+    )
   }
 }
 
@@ -321,11 +445,15 @@ internal enum CallServiceClientMetadata {
 internal protocol CallServiceProvider: CallHandlerProvider {
   var interceptors: CallServiceServerInterceptorFactoryProtocol? { get }
 
+  func accessToken(request: CallAccessTokenRequest, context: StatusOnlyCallContext) -> EventLoopFuture<CallAccessTokenResponse>
+
   func create(request: CreateCallRequest, context: StatusOnlyCallContext) -> EventLoopFuture<CreateCallResponse>
 
   func reject(request: RejectCallRequest, context: StatusOnlyCallContext) -> EventLoopFuture<RejectCallResponse>
 
   func cancel(request: CancelCallRequest, context: StatusOnlyCallContext) -> EventLoopFuture<CancelCallResponse>
+
+  func end(request: CallEndRequest, context: StatusOnlyCallContext) -> EventLoopFuture<CallEndResponse>
 }
 
 extension CallServiceProvider {
@@ -340,6 +468,15 @@ extension CallServiceProvider {
     context: CallHandlerContext
   ) -> GRPCServerHandlerProtocol? {
     switch name {
+    case "AccessToken":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<CallAccessTokenRequest>(),
+        responseSerializer: ProtobufSerializer<CallAccessTokenResponse>(),
+        interceptors: self.interceptors?.makeAccessTokenInterceptors() ?? [],
+        userFunction: self.accessToken(request:context:)
+      )
+
     case "Create":
       return UnaryServerHandler(
         context: context,
@@ -367,6 +504,15 @@ extension CallServiceProvider {
         userFunction: self.cancel(request:context:)
       )
 
+    case "End":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<CallEndRequest>(),
+        responseSerializer: ProtobufSerializer<CallEndResponse>(),
+        interceptors: self.interceptors?.makeEndInterceptors() ?? [],
+        userFunction: self.end(request:context:)
+      )
+
     default:
       return nil
     }
@@ -378,6 +524,11 @@ extension CallServiceProvider {
 internal protocol CallServiceAsyncProvider: CallHandlerProvider, Sendable {
   static var serviceDescriptor: GRPCServiceDescriptor { get }
   var interceptors: CallServiceServerInterceptorFactoryProtocol? { get }
+
+  func accessToken(
+    request: CallAccessTokenRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> CallAccessTokenResponse
 
   func create(
     request: CreateCallRequest,
@@ -393,6 +544,11 @@ internal protocol CallServiceAsyncProvider: CallHandlerProvider, Sendable {
     request: CancelCallRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> CancelCallResponse
+
+  func end(
+    request: CallEndRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> CallEndResponse
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -414,6 +570,15 @@ extension CallServiceAsyncProvider {
     context: CallHandlerContext
   ) -> GRPCServerHandlerProtocol? {
     switch name {
+    case "AccessToken":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<CallAccessTokenRequest>(),
+        responseSerializer: ProtobufSerializer<CallAccessTokenResponse>(),
+        interceptors: self.interceptors?.makeAccessTokenInterceptors() ?? [],
+        wrapping: { try await self.accessToken(request: $0, context: $1) }
+      )
+
     case "Create":
       return GRPCAsyncServerHandler(
         context: context,
@@ -441,6 +606,15 @@ extension CallServiceAsyncProvider {
         wrapping: { try await self.cancel(request: $0, context: $1) }
       )
 
+    case "End":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<CallEndRequest>(),
+        responseSerializer: ProtobufSerializer<CallEndResponse>(),
+        interceptors: self.interceptors?.makeEndInterceptors() ?? [],
+        wrapping: { try await self.end(request: $0, context: $1) }
+      )
+
     default:
       return nil
     }
@@ -448,6 +622,10 @@ extension CallServiceAsyncProvider {
 }
 
 internal protocol CallServiceServerInterceptorFactoryProtocol: Sendable {
+
+  /// - Returns: Interceptors to use when handling 'accessToken'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeAccessTokenInterceptors() -> [ServerInterceptor<CallAccessTokenRequest, CallAccessTokenResponse>]
 
   /// - Returns: Interceptors to use when handling 'create'.
   ///   Defaults to calling `self.makeInterceptors()`.
@@ -460,6 +638,10 @@ internal protocol CallServiceServerInterceptorFactoryProtocol: Sendable {
   /// - Returns: Interceptors to use when handling 'cancel'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeCancelInterceptors() -> [ServerInterceptor<CancelCallRequest, CancelCallResponse>]
+
+  /// - Returns: Interceptors to use when handling 'end'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeEndInterceptors() -> [ServerInterceptor<CallEndRequest, CallEndResponse>]
 }
 
 internal enum CallServiceServerMetadata {
@@ -467,13 +649,21 @@ internal enum CallServiceServerMetadata {
     name: "CallService",
     fullName: "CallService",
     methods: [
+      CallServiceServerMetadata.Methods.accessToken,
       CallServiceServerMetadata.Methods.create,
       CallServiceServerMetadata.Methods.reject,
       CallServiceServerMetadata.Methods.cancel,
+      CallServiceServerMetadata.Methods.end,
     ]
   )
 
   internal enum Methods {
+    internal static let accessToken = GRPCMethodDescriptor(
+      name: "AccessToken",
+      path: "/CallService/AccessToken",
+      type: GRPCCallType.unary
+    )
+
     internal static let create = GRPCMethodDescriptor(
       name: "Create",
       path: "/CallService/Create",
@@ -489,6 +679,12 @@ internal enum CallServiceServerMetadata {
     internal static let cancel = GRPCMethodDescriptor(
       name: "Cancel",
       path: "/CallService/Cancel",
+      type: GRPCCallType.unary
+    )
+
+    internal static let end = GRPCMethodDescriptor(
+      name: "End",
+      path: "/CallService/End",
       type: GRPCCallType.unary
     )
   }

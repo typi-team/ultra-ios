@@ -57,7 +57,7 @@ extension Realm {
 
         var config = Realm.Configuration(
             fileURL: realmURL,
-            schemaVersion: 6) { migration, oldSchemaVersion in
+            schemaVersion: 7) { migration, oldSchemaVersion in
                 if oldSchemaVersion < 4 {
                     AppSettingsImpl.shared.appStore.store(last: 0)
                     migration.deleteData(forType: DBContact.className())
@@ -77,7 +77,7 @@ extension Realm {
             DBVideoMessage.self, DBPhotoMessage.self,
             DBMoneyMessage.self, DBFileMessage.self, DBContactMessage.self, DBLocationMessage.self,
             DBPhoto.self, DBSystemActionSupportManagerAssigned.self, DBSystemActionSupportStatusChanged.self,
-            DBSystemActionType.self
+            DBSystemActionType.self, DBCallMessage.self
         ]
         
         if let encryptionKey = UltraCoreSettings.delegate?.realmEncryptionKeyData() {

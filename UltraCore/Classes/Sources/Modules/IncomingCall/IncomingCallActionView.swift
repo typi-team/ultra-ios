@@ -5,8 +5,7 @@ protocol IncomingCallActionViewDelegate: AnyObject {
     func view(_ view: IncomingCallActionView, mouthpieceButtonDidTap button: UIButton)
     func view(_ view: IncomingCallActionView, microButtonDidTap button: UIButton)
     func view(_ view: IncomingCallActionView, cameraButtonDidTap button: UIButton)
-    func view(_ view: IncomingCallActionView, cancelButtonDidTap button: UIButton)
-    func view(_ view: IncomingCallActionView, rejectButtonDidTap button: UIButton)
+    func view(_ view: IncomingCallActionView, endCallButtonDidTap button: UIButton)
     func view(_ view: IncomingCallActionView, switchCameraButtonDidTap button: UIButton)
 }
 
@@ -67,19 +66,11 @@ final class IncomingCallActionView: UIStackView {
         }
     }
 
-    fileprivate lazy var cancelButton: UIButton = .init {
+    fileprivate lazy var endCallButton: UIButton = .init {
         $0.setImage(style.declineImage.image, for: .normal)
         $0.addAction { [weak self] in
             guard let self else { return }
-            self.delegate?.view(self, cancelButtonDidTap: self.cancelButton)
-        }
-    }
-
-    fileprivate lazy var rejectButton: UIButton = .init {
-        $0.setImage(style.declineImage.image, for: .normal)
-        $0.addAction { [weak self] in
-            guard let self else { return }
-            self.delegate?.view(self, rejectButtonDidTap: self.rejectButton)
+            self.delegate?.view(self, endCallButtonDidTap: self.endCallButton)
         }
     }
 
@@ -113,7 +104,7 @@ final class IncomingCallActionView: UIStackView {
         addArrangedSubview(mouthpieceButton)
         addArrangedSubview(microButton)
         addArrangedSubview(cameraButton)
-        addArrangedSubview(cancelButton)
+        addArrangedSubview(endCallButton)
         cameraButton.isSelected = false
     }
     
@@ -122,7 +113,7 @@ final class IncomingCallActionView: UIStackView {
         addArrangedSubview(switchCameraButton)
         addArrangedSubview(microButton)
         addArrangedSubview(cameraButton)
-        addArrangedSubview(cancelButton)
+        addArrangedSubview(endCallButton)
         cameraButton.isSelected = true
         mouthpieceButton.isSelected = true
     }
