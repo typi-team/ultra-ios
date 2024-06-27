@@ -12,7 +12,6 @@ import Foundation
 import RxSwift
 import RealmSwift
 import AVFoundation
-import FYVideoCompressor
 
 final class ConversationPresenter {
 
@@ -136,6 +135,14 @@ extension ConversationPresenter: ConversationPresenterInterface {
         !conversation.isAssistant
     }
     
+    func canSendVoice() -> Bool {
+        conversation.chatType != .support && !isManager
+    }
+    
+    func canSendVideo() -> Bool {
+        conversation.chatType != .support && !isManager
+    }
+    
     var isManager: Bool {
         return self.isPersonalManager
     }
@@ -166,6 +173,12 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 self.view?.setup(conversation: self.conversation)
                 
             }
+            updateRepository.updateSyncObservable
+                .subscribe(onNext: { [weak self] in
+                    guard let self = self else { return }
+                    self.view?.setup(conversation: self.conversation)
+                })
+                .disposed(by: disposeBag)
             Observable.combineLatest(timerUpdate, contacts)
                 .compactMap { _, contacts -> ContactDisplayable? in
                     let selectedContact = contacts.filter { contact in contact.userID == userID }.first
@@ -240,6 +253,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 guard let `self` = self else { return }
                 switch result {
                 case let .success(response):
+                    PP.debug("[CALL] create call response - \(response.host), \(response.room), \(response.accessToken)")
                     DispatchQueue.main.async {
                         self.wireframe.navigateToCall(response: response, isVideo: video)
                     }
@@ -439,7 +453,17 @@ extension ConversationPresenter: ConversationPresenterInterface {
         DispatchQueue.global(qos: .background).async { [weak self] in
             switch file {
             case let .video(url):
-                self?.compressAndUploadVideo(url: url)
+                guard let data = try? Data(contentsOf: url) else { return }
+                self?.upload(
+                    file: .init(
+                        url: url,
+                        data: data,
+                        mime: "video/mp4",
+                        width: 300,
+                        height: 200
+                    ),
+                    isVoice: false
+                )
             case let .image(image):
                 guard let self else { return }
                 let downsampled = image.fixedOrientation()
@@ -479,46 +503,6 @@ extension ConversationPresenter: ConversationPresenterInterface {
                     ),
                     isVoice: true
                 )
-            }
-        }
-    }
-    
-    private func compressAndUploadVideo(url: URL) {
-        guard let track = AVURLAsset(url: url).tracks(withMediaType: AVMediaType.video).first else {
-            return
-        }
-        var originalSize = track.naturalSize.applying(track.preferredTransform)
-        var size: CGSize?
-        if originalSize.width > 640 || originalSize.height > 640 {
-            if originalSize.width > originalSize.height {
-                size = CGSize(width: 640, height: -1)
-            } else {
-                size = CGSize(width: -1, height: 640)
-            }
-        }
-        let config = FYVideoCompressor.CompressionConfig(videoBitrate: 1000_000,
-                                                        videomaxKeyFrameInterval: 10,
-                                                        fps: 24,
-                                                        audioSampleRate: 44100,
-                                                        audioBitrate: 128_000,
-                                                        fileType: .mp4,
-                                                        scale: size)
-        FYVideoCompressor().compressVideo(url, config: config) { [weak self] result in
-            switch result {
-            case let .success(compressedVideoURL):
-                guard let data = try? Data(contentsOf: compressedVideoURL) else { return }
-                self?.upload(
-                    file: .init(
-                        url: url,
-                        data: data,
-                        mime: "video/mp4",
-                        width: 300,
-                        height: 200
-                    ),
-                    isVoice: false
-                )
-            case let .failure(error):
-                PP.error("FYVideoCompressor compressVideo error \(error.localeError)")
             }
         }
     }
@@ -653,7 +637,11 @@ extension ConversationPresenter: ConversationPresenterInterface {
         } else if conversation.addContact {
             view?.showDisclaimer(show: true, delegate: self)
         }
-
+        
+        if conversation.chatType != .support {
+            UltraCoreSettings.delegate?.didOpenConversation(with: conversation.peers.map(\.phone))
+        }
+        
         updateRepository.typingUsers
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)

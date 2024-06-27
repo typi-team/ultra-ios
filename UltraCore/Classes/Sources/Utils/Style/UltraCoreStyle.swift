@@ -180,6 +180,22 @@ private class ConversationCellConfigImpl: ConversationCellConfig {
     var deliveryConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
     var descriptionConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularFootnote)
     var onlineColor: TwiceColor = TwiceColorImpl(defaultColor: .from(hex: "#4ADE80"), darkColor: .from(hex: "#4ADE80"))
+    var loadingImage: TwiceImage? = TwiceImageImpl(
+        dark: .named("conversation_status_loading")!,
+        default: .named("conversation_status_loading")!
+    )
+    var sentImage: TwiceImage? = TwiceImageImpl(
+        dark: .named("conversation_status_sent")!,
+        default: .named("conversation_status_sent")!
+    )
+    var deliveredImage: TwiceImage? = TwiceImageImpl(
+        dark: .named("conversation_status_delivered")!,
+        default: .named("conversation_status_delivered")!
+    )
+    var readImage: TwiceImage? = TwiceImageImpl(
+        dark: .named("conversation_status_read")!,
+        default: .named("conversation_status_read")!
+    )
 }
 
 private class HeaderInSectionConfigImpl: HeaderInSectionConfig {

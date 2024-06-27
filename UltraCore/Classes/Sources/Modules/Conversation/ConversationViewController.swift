@@ -94,8 +94,13 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         imageView.contentMode = .scaleAspectFill
         imageView.image = UltraCoreStyle.conversationBackgroundImage?.image
     }
+    private var firstLoad: Bool = true
 
-   private lazy var dataSource = RxTableViewSectionedReloadDataSource<SectionModel<String, Message>>(
+    typealias CustomSectionDataType = AnimatableSectionModel<String, Message>
+    
+    private lazy var dataSource = RxTableViewSectionedAnimatedDataSource<CustomSectionDataType>(
+        animationConfiguration: AnimationConfiguration(insertAnimation: .none, reloadAnimation: .none, deleteAnimation: .none),
+        decideViewTransition: { _, _, _ in .reload },
         configureCell: { [weak self] _, tableView, indexPath,
             message in
             guard let `self` = self else {
@@ -158,6 +163,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             return cell
         }, titleForHeaderInSection: { dataSource, sectionIndex in
             return dataSource[sectionIndex].model
+        }, canEditRowAtIndexPath: { _, _ in
+            return true
         }, canMoveRowAtIndexPath: { _, _  in
             return false
         }
@@ -174,6 +181,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         super.setupViews()
 //        MARK: Must be hide
         self.setupNavigationMore()
+        tableView.alpha = 0
         self.view.addSubview(tableView)
         self.view.addSubview(messageInputBar)
         self.view.addSubview(navigationDivider)
@@ -210,46 +218,53 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     override func setupInitialData() {
         super.setupInitialData()
         NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground(_:)), name: UIApplication.didEnterBackgroundNotification, object: nil)
-        self.presenter?
-            .messages
+        let sharedMessages = presenter!.messages
             .distinctUntilChanged()
-            .subscribe(on: MainScheduler.instance)
-            .observe(on: MainScheduler.instance)
-            .do(onNext: {[weak self] messages in
+            .do { [weak self] messages in
+                if messages.isEmpty {
+                    self?.tableView.alpha = 1
+                }
                 self?.messages = messages
                 self?.tableView.backgroundView = messages.isEmpty ? ConversationEmptyViewContainer(emptyView: UltraCoreSettings.delegate?.emptyConversationDetailView(isManager: self?.presenter?.isManager ?? false) ?? .init()) : self?.backgroundImageView
-            })
-            .map({messages -> [SectionModel<String, Message>] in
+            }
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .utility))
+            .map { messages -> [CustomSectionDataType] in
                 if messages.isEmpty {return []}
                 return Dictionary(grouping: messages) { message in
                     return Calendar.current.startOfDay(for: message.meta.created.date)}
                     .sorted { $0.key < $1.key }
-                    .map({SectionModel<String, Message>.init(model: $0.key.formattedTimeToHeadline(format: "d MMMM yyyy"), items: $0.value)})
-            })
-            .bind(to: tableView.rx.items(dataSource: dataSource))
+                    .map({CustomSectionDataType.init(model: $0.key.formattedTimeToHeadline(format: "d MMMM yyyy"), items: $0.value)})
+            }
+            .debounce(.milliseconds(100), scheduler: MainScheduler.instance)
+            .observe(on: MainScheduler.instance)
+            .share()
+        
+        sharedMessages.bind(to: tableView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
                 
-            var prev: [Message] = []
-        self.presenter?
-            .messages
-            .debounce(.milliseconds(20), scheduler: MainScheduler.asyncInstance)
+        var prev: [Message] = []
+        sharedMessages
             .filter({ !$0.isEmpty })
-            .filter({$0.count != prev.count})
-            .do(onNext: {prev = $0})
-            .delay(.milliseconds(10), scheduler: MainScheduler.instance)
+            .filter({ $0.flatMap(\.items).count != prev.count })
+            .do(onNext: {prev = $0.flatMap(\.items)})
+//            .delay(.milliseconds(100), scheduler: MainScheduler.instance)
             .subscribe(onNext: { [weak self] _ in
                 guard let `self` = self else { return }
                 if self.tableView.isDecelerating {
                     self.tableView.stopScrolling()
                 }
                 self.tableView.scrollToLastCell(animated: false)
-                
+                if self.firstLoad {
+                    self.tableView.alpha = 1
+                    self.firstLoad = false
+                }
             })
             .disposed(by: disposeBag)
         
         self.presenter?.viewDidLoad()
         messageInputBar.canSendAttachments = presenter?.canAttach() ?? true
         messageInputBar.canSendMoney = presenter?.canTransfer() ?? true
+        messageInputBar.canRecord = presenter?.canSendVoice() ?? true
         subscribeToInputBoundsChange()
     }
     
@@ -422,6 +437,7 @@ extension ConversationViewController: MessageInputBarDelegate {
 // MARK: - Extensions -
 
 extension ConversationViewController: ConversationViewInterface {
+    
     func blocked(is blocked: Bool) {
         if blocked {
             self.view.endEditing(true)
@@ -436,12 +452,12 @@ extension ConversationViewController: ConversationViewInterface {
     
     func stopRefresh(removeController: Bool) {
         self.refreshControl.endRefreshing()
-        if(removeController) {
-            self.refreshControl.removeFromSuperview()
-        }
     }
     func display(is typing: UserTypingWithDate) {
         self.headline.setup(user: typing)
+        if presenter!.conversation.isAssistant {
+            messageInputBar.isEnabled = !typing.isTyping
+        }
     }
     
     func setup(conversation: Conversation) {
@@ -559,9 +575,12 @@ private extension ConversationViewController {
         controller.delegate = self
         controller.sourceType = type
         controller.videoQuality = .typeHigh
-        controller.mediaTypes = ["public.movie", "public.image"]
-        controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
-        controller.videoMaximumDuration = 300
+        if presenter!.canSendVideo() {
+            controller.mediaTypes = ["public.movie", "public.image"]
+            controller.videoMaximumDuration = 300
+        } else {
+            controller.mediaTypes = ["public.image"]
+        }
         present(controller, animated: true)
     }
     

@@ -56,7 +56,7 @@ class UpdateTokenInteractorImpl: UseCase<Void, Void> {
             let call = self.authService.issueJwt(.with({
                 $0.device = .ios
                 $0.sessionID = params
-                $0.deviceID = UIDevice.current.identifierForVendor?.uuidString ?? "Ну указано"
+                $0.deviceID = self.appStore.deviceID()
             }), callOptions: .default())
 
             call.response.whenComplete { result in

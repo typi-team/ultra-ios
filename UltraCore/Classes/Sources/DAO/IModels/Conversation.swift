@@ -9,7 +9,7 @@ import Foundation
 
 protocol Conversation: Any {
     
-    var title: String { get }
+    var title: String { get set }
     var peers: [ContactDisplayable] { get set }
     var timestamp: Date { get set }
     var unreadCount: Int { get set }

@@ -21,7 +21,11 @@ class MessageInputBar: UIView {
     var isRecording: Bool {
         return audioRecordUtils.isRecording
     }
-    
+    var canRecord: Bool = true {
+        didSet {
+            self.textViewDidChange(self.messageTextView)
+        }
+    }
     var canSendAttachments: Bool = true {
         didSet {
             self.textViewDidChange(self.messageTextView)
@@ -30,13 +34,15 @@ class MessageInputBar: UIView {
     var canSendMoney: Bool = true {
         didSet {
             let isAvailable = futureDelegate?.availableToSendMoney() ?? true && canSendMoney
-            exchangesButton.isHidden = !isAvailable
             exchangesButton.snp.updateConstraints {
-                $0.width.equalTo(isAvailable ? kHeadlinePadding * 2 : 0)
+                $0.width.equalTo(isAvailable ? 40 : 0)
             }
-            containerStack.snp.updateConstraints { make in
-                make.leading.equalTo(exchangesButton.snp.trailing).offset(isAvailable ? 0 : kMediumPadding)
-            }
+        }
+    }
+    var isEnabled: Bool = true {
+        didSet {
+            sendButton.isEnabled = isEnabled
+            sendButton.alpha = isEnabled ? 1 : 0.25
         }
     }
     
@@ -93,8 +99,7 @@ class MessageInputBar: UIView {
     private lazy var exchangesButton: UIButton = .init { [weak self] button in
         guard let self else { return }
         button.setImage(style?.sendMoneyImage.image, for: .normal)
-        button.imageView?.contentMode = .scaleAspectFit
-        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: 18, bottom: 0, right: 10)
+        button.contentHorizontalAlignment = .left
         button.addAction {
             self.delegate?.exchanges()
         }
@@ -127,7 +132,7 @@ class MessageInputBar: UIView {
     }
 
     private var microButtonWidth: CGFloat {
-        (UltraCoreSettings.futureDelegate?.availableToRecordVoice() ?? true) ? 36 : 0
+        (UltraCoreSettings.futureDelegate?.availableToRecordVoice() ?? true) && canRecord ? 36 : 0
     }
     private var tempText: String?
 
@@ -172,7 +177,7 @@ class MessageInputBar: UIView {
         self.addSubview(divider)
         self.addSubview(sendButton)
         self.addSubview(containerStack)
-        self.addSubview(exchangesButton)
+        insertSubview(exchangesButton, belowSubview: containerStack)
         self.addSubview(recordView)
         self.containerStack.addSubview(messageTextView)
         insertSubview(microButton, aboveSubview: containerStack)
@@ -187,9 +192,9 @@ class MessageInputBar: UIView {
         self.exchangesButton.snp.makeConstraints { make in
             make.height.equalTo(36)
             
-            make.leading.equalToSuperview()
+            make.leading.equalToSuperview().offset(18)
             make.bottom.equalTo(messageTextView.snp.bottom)
-            make.width.equalTo(availableToSendMoney ? 48 : 0)
+            make.width.equalTo(availableToSendMoney ? 40 : 0)
         }
 
         self.divider.snp.makeConstraints { make in
@@ -200,7 +205,7 @@ class MessageInputBar: UIView {
         self.containerStack.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(kMediumPadding - 4)
             make.bottom.equalToSuperview().offset(-(kMediumPadding - 4 + bottomInset))
-            make.leading.equalTo(exchangesButton.snp.trailing).offset(0)
+            make.leading.equalTo(exchangesButton.snp.trailing).offset(-4)
             make.height.greaterThanOrEqualTo(36)
         }
 
@@ -248,11 +253,14 @@ extension MessageInputBar: MessageInputTextViewDelegate {
             self.sendButton.setImage(self.kInputSendImage, for: .normal)
         } else {
             if canSendAttachments {
-                self.microButton.isHidden = false
                 self.sendButton.setImage(self.kInputPlusImage, for: .normal)
             } else {
-                self.microButton.isHidden = true
                 self.sendButton.setImage(self.kInputSendImage, for: .normal)
+            }
+            if canRecord {
+                self.microButton.isHidden = false
+            } else {
+                self.microButton.isHidden = true
             }
         }
 
@@ -338,6 +346,7 @@ extension MessageInputBar: RecordViewDelegate {
         self.recordView.isUserInteractionEnabled = true
         self.hideOrShowAllViewInRecording(visibility: false)
         self.audioRecordUtils.requestRecordPermission()
+        self.containerStack.borderWidth = 0
     }
     
     func onCancel() {
@@ -345,6 +354,7 @@ extension MessageInputBar: RecordViewDelegate {
         self.recordView.isUserInteractionEnabled = false
         self.hideOrShowAllViewInRecording(visibility: true)
         self.audioRecordUtils.cancelRecording()
+        self.containerStack.borderWidth = 1
     }
     
     func onFinished(duration: CGFloat) {
@@ -353,5 +363,6 @@ extension MessageInputBar: RecordViewDelegate {
         self.recordView.sendSubviewToBack(self)
         self.hideOrShowAllViewInRecording(visibility: true)
         self.audioRecordUtils.stopRecording()
+        self.containerStack.borderWidth = 1
     }
 }

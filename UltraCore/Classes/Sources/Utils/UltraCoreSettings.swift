@@ -42,8 +42,10 @@ public protocol UltraCoreSettingsDelegate: AnyObject {
     )
     func realmEncryptionKeyData() -> Data?
     func didTapTransactionCell(transactionID: String, viewController: UIViewController)
+    func didOpenConversation(with peers: [String])
     func getSupportChatsAndManagers(callBack: @escaping (([String: Any]) -> Void))
     func getMessageMeta() -> Dictionary<String, String>
+    func didUpdateVoipToken(_ token: String)
 }
 
 extension UltraCoreSettingsDelegate {
@@ -69,6 +71,10 @@ public extension UltraCoreSettings {
     
     static var isConnected: Bool {
         AppSettingsImpl.shared.updateRepository.isConnectedToListenStream
+    }
+    
+    static var deviceID: String {
+        AppSettingsImpl.shared.appStore.deviceID()
     }
 
     static func update(contacts: [IContactInfo]) throws {
@@ -167,7 +173,7 @@ public extension UltraCoreSettings {
             .issueJwt(.with({
                 $0.device = .ios
                 $0.sessionID = token
-                $0.deviceID = UIDevice.current.identifierForVendor?.uuidString ?? "Ну указано"
+                $0.deviceID = AppSettingsImpl.shared.appStore.deviceID()
             }), callOptions: .default())
             .response
             .whenComplete { result in
@@ -206,7 +212,7 @@ public extension UltraCoreSettings {
             $0.device = .ios
             $0.token = token
             $0.appVersion = AppSettingsImpl.shared.version
-            $0.deviceID = UIDevice.current.identifierForVendor?.uuidString ?? "Ну указано"
+            $0.deviceID = AppSettingsImpl.shared.appStore.deviceID()
             if let voipToken {
                 $0.voipPushToken = voipToken
             }
@@ -220,6 +226,10 @@ public extension UltraCoreSettings {
                 PP.error("Error on updateDevice \(error.localeError)")
             }
         })
+    }
+    
+    static func triggerViewRefresh() {
+        AppSettingsImpl.shared.updateRepository.triggerViewRefresh()
     }
 
     static func handleNotification(data: [AnyHashable: Any], callback: @escaping (UIViewController?) -> Void) {

@@ -36,27 +36,42 @@ final class ConversationsPresenter: BasePresenter {
         updateRepository.supportOfficesObservable
     )
         .map({ conversations, typingUsers, _, supportOffices in
-            let managers = supportOffices?.personalManagers.map { String($0.userId) } ?? []
+            let personalManagers = supportOffices?.personalManagers ?? []
+            let managers = personalManagers.map { String($0.userId) }
+            let offices = supportOffices?.supportChats ?? []
             self.personalManagers = managers
             return conversations
+                .map ({ conv in
+                    var conversation = conv
+                    if conversation.chatType == .peerToPeer {
+                        if let peer = conversation.peers.first, let manager = personalManagers.first(where: { String($0.userId) == peer.phone }) {
+                            conversation.title = manager.nickname
+                        } else {
+                            conversation.title = conversation.peers.first?.displaName ?? ""
+                        }
+                    }
+                    return conversation
+                })
                 .filter { [weak self] conversation in
                     guard let self = self else {
                         return true
                     }
 //                    PP.debug("Conversation peers are \(conversation.peers.map(\.phone)); type - \(conversation.chatType) - \(conversation.title), chat ID - \(conversation.idintification); personal managers - \(self.personalManagers); isSupport - \(isSupport)")
                     if isSupport {
-                        if conversation.chatType == .support {
+                        if conversation.chatType == .support && conversation.isAssistant {
+                            return supportOffices?.assistant != nil
+                        } else if conversation.chatType == .support {
                             return true
                         } else if conversation.chatType == .peerToPeer {
                             guard let peer = conversation.peers.first else {
                                 return false
                             }
                             return managers.contains(where: { $0 == peer.phone })
-                        } else if conversation.chatType == .support && conversation.isAssistant {
-                            return supportOffices?.assistant != nil
                         } else {
                             return false
                         }
+                    } else if conversation.chatType == .peerToPeer {
+                        return conversation.lastMessage != nil
                     }
                     
                     return conversation.chatType != .support

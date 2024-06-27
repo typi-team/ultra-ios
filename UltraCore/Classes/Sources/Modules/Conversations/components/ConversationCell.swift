@@ -131,7 +131,7 @@ class ConversationCell: BaseCell {
         self.setupAvatar(conversation: conversation)
         self.onlineContentView.isHidden = !(conversation.peers.first?.status.isOnline ?? false)
         if let message = conversation.lastMessage, !message.isIncome {
-            self.statusView.image = message.statusImage
+            self.statusView.image = message.listStatusImage
             self.statusView.snp.updateConstraints { make in
                 make.width.equalTo(message.stateViewWidth)
             }

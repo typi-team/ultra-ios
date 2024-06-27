@@ -230,9 +230,17 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
             
             if message.isIncome,
                 (UltraCoreSettings.futureDelegate?.availableToReport(message: message) ?? true) {
-                return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), self.makeReportMenu(), select])
-            }else {
-                return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), select])
+                if canDelete {
+                    return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), self.makeReportMenu(), select])
+                } else {
+                    return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), self.makeReportMenu()])
+                }
+            } else {
+                if canDelete {
+                    return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), select])
+                } else {
+                    return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action)])
+                }
             }
             
             

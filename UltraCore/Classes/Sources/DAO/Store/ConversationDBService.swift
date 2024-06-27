@@ -354,6 +354,19 @@ extension Message {
         }
     }
     
+    var listStatusImage: UIImage? {
+        if self.seqNumber == 0 {
+            return UltraCoreStyle.conversationCell?.loadingImage?.image
+        } else if self.state.delivered == false && self.state.read == false {
+            return UltraCoreStyle.conversationCell?.sentImage?.image
+        } else if self.state.delivered == true && self.state.read == false {
+            return UltraCoreStyle.conversationCell?.deliveredImage?.image
+        } else {
+            return UltraCoreStyle.conversationCell?.readImage?.image
+            
+        }
+    }
+    
     var stateViewWidth: Double {
         if let size = UltraCoreStyle.outcomeMessageCell?.statusWidth {
           return size

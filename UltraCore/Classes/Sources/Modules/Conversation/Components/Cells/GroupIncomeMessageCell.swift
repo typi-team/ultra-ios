@@ -49,7 +49,6 @@ class GroupIncomeMessageCell: IncomeMessageCell {
     }
     
     func setup(conversation: Conversation) {
-        self.messagePrefix = conversation.title
         avatarImageView.sd_setImage(with: conversation.imagePath?.url, placeholderImage: UltraCoreStyle.defaultPlaceholder?.image)
     }
     

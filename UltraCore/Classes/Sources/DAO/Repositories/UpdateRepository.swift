@@ -19,6 +19,7 @@ protocol UpdateRepository: AnyObject {
     func retreiveContactStatuses()
     func readAll(in conversation: Conversation)
     func triggerUnreadUpdate()
+    func triggerViewRefresh()
     var typingUsers: BehaviorSubject<[String: UserTypingWithDate]> { get set }
     var updateSyncObservable: Observable<Void> { get }
     var supportOfficesObservable: Observable<SupportOfficesResponse?> { get }
@@ -98,6 +99,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
     func stopSession() {
         PP.info("❌ stopPintPong")
         self.pintPongTimer?.invalidate()
+        self.pintPongTimer = nil
         self.updateListenStream?.cancel(promise: nil)
         self.contactService.updateContact(status: .unknown)
         self.isConnectedToListenStream = false
@@ -131,6 +133,10 @@ extension UpdateRepositoryImpl: UpdateRepository {
     
     func triggerUnreadUpdate() {
         updateUnreadTriggerSubject.onNext(())
+    }
+    
+    func triggerViewRefresh() {
+        updateSyncSubject.onNext(())
     }
     
     func setupSubscription() {
@@ -309,6 +315,9 @@ private extension UpdateRepositoryImpl {
                     .map { ConversationImpl(dbConversation: $0) }
                     .filter { conv in
                         if conv.chatType == .support {
+                            if conv.isAssistant && !isAssistantEnabled {
+                                return false
+                            }
                             return true
                         } else if conv.chatType == .peerToPeer {
                             guard let peer = conv.peers.first else {
@@ -445,10 +454,14 @@ private extension UpdateRepositoryImpl {
 //                        PP.debug("Support manager response - \(chatsResponse.chats)")
                         let requests = chatsResponse.chats
                             .map { chat in
-                                self.chatToConversationInteractor.executeSingle(
+                                var imagePath: String? = response.supportChats.first(where: { $0.name == chat.title })?.avatarUrl
+                                if imagePath == nil {
+                                    imagePath = response.personalManagers.first(where: { $0.nickname == chat.title })?.avatarUrl
+                                }
+                                return self.chatToConversationInteractor.executeSingle(
                                     params: .init(
                                         chat: chat,
-                                        imagePath: response.supportChats.first(where: { $0.name == chat.title })?.avatarUrl
+                                        imagePath: imagePath
                                     )
                                 )
                                 .asObservable()

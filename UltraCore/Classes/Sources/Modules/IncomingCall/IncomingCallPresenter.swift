@@ -96,13 +96,13 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
         }
         guard RoomManager.shared.room.connectionState != .connected else {
             self.view.updateForStartCall()
-            self.view.setMicEnabled(RoomManager.shared.room.localParticipant?.isMicrophoneEnabled() ?? false)
-            self.view.setCameraEnabled(RoomManager.shared.room.localParticipant?.isCameraEnabled() ?? false)
-            self.view.setSpeakerButtonEnabled(AudioManager.shared.preferSpeakerOutput)
+            self.view.setMicEnabled(RoomManager.shared.room.localParticipant.isMicrophoneEnabled())
+            self.view.setCameraEnabled(RoomManager.shared.room.localParticipant.isCameraEnabled())
+            self.view.setSpeakerButtonEnabled(AudioManager.shared.isSpeakerOutputPreferred)
             self.updateParticipantTrack(for: RoomManager.shared.room)
             return
         }
-        AudioManager.shared.preferSpeakerOutput = callStatus.callInfo.video
+        AudioManager.shared.isSpeakerOutputPreferred = callStatus.callInfo.video
         if case .outcoming = callStatus {
             UltraVoIPManager.shared.startOutgoingCall(callInfo: callStatus.callInfo)
         }
@@ -127,20 +127,32 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
     
     func setMicrophone(enabled: Bool) {
         PP.debug("[CALL] Set microphone enabled - \(enabled)")
-        RoomManager.shared.room.localParticipant?.setMicrophone(enabled: enabled)
+        Task {
+            do {
+                try await RoomManager.shared.room.localParticipant.setMicrophone(enabled: enabled)
+            } catch {
+                PP.debug("[CALL] Set microphone enabled failed with error - \(error)")
+            }
+        }
     }
     
     func setCamera(enabled: Bool) {
         PP.debug("[CALL] Set camera enabled - \(enabled)")
-        RoomManager.shared.room.localParticipant?.setCamera(enabled: enabled)
+        Task {
+            do {
+                try await RoomManager.shared.room.localParticipant.setCamera(enabled: enabled)
+            } catch {
+                PP.debug("[CALL] Set camera enabled failed with error - \(error)")
+            }
+        }
     }
     
 }
 
 extension IncomingCallPresenter: RoomDelegate {
     
-    func room(_ room: Room, didUpdate connectionState: ConnectionState, oldValue: ConnectionState) {
-        PP.debug("[CALL] connection state - \(connectionState.desctiption) for room - \(room.sid ?? "")")
+    func room(_ room: Room, didUpdateConnectionState connectionState: ConnectionState, from oldValue: ConnectionState) {
+        PP.debug("[CALL] connection state - \(connectionState.desctiption) for room - \(room.sid?.stringValue ?? "")")
         switch connectionState {
         case .reconnecting, .connecting:
             DispatchQueue.main.async { [weak self] in
@@ -151,25 +163,25 @@ extension IncomingCallPresenter: RoomDelegate {
         }
     }
     
-    func room(_ room: Room, participantDidJoin participant: RemoteParticipant) {
-        PP.debug("[CALL] participant - \(participant.name) did join for room - \(room.sid ?? "")")
+    func room(_ room: Room, participantDidConnect participant: RemoteParticipant) {
+        PP.debug("[CALL] participant - \(participant.name ?? "") did connect for room - \(room.sid?.stringValue ?? "")")
         if case .outcoming = callStatus {
             RoomManager.shared.startCallTimer()
         }
         view.updateForStartCall()
     }
     
-    func room(_ room: Room, localParticipant: LocalParticipant, didPublish publication: LocalTrackPublication) {
+    func room(_ room: Room, participant localParticipant: LocalParticipant, didPublishTrack publication: LocalTrackPublication) {
         guard publication.track is VideoTrack else { return }
         updateParticipantTrack(for: room)
     }
- 
-    func room(_ room: Room, participant: RemoteParticipant, didSubscribe publication: RemoteTrackPublication, track: Track) {
-        guard track is VideoTrack else { return }
+    
+    func room(_ room: Room, participant: RemoteParticipant, didSubscribeTrack publication: RemoteTrackPublication) {
+        guard publication.track is VideoTrack else { return }
         updateParticipantTrack(for: room)
     }
     
-    func room(_ room: Room, participant: Participant, didUpdate publication: TrackPublication, muted: Bool) {
+    func room(_ room: Room, participant: Participant, trackPublication publication: TrackPublication, didUpdateIsMuted muted: Bool) {
         guard publication.track is VideoTrack else { return }
         updateParticipantTrack(for: room)
     }
