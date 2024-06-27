@@ -67,24 +67,18 @@ class IncomeCallCell: BaseMessageCell {
         let defaultString = message.isIncome ? MessageStrings.callIncoming.localized : MessageStrings.callOutgoing.localized
         
         switch message.call.status {
-        case .callStatusCreated:
-            titleLabel.text = defaultString
-            callImageView.image = style?.successIcon.image
-        case .callStatusStarted:
+        case .callStatusCreated, .callStatusStarted:
             titleLabel.text = defaultString
             callImageView.image = style?.successIcon.image
         case .callStatusCanceled:
-            titleLabel.text = MessageStrings.callCancelled.localized
+            titleLabel.text = message.isIncome ? MessageStrings.callMissed.localized : MessageStrings.callCancelled.localized
             callImageView.image = style?.failIcon.image
-        case .callStatusMissed:
-            titleLabel.text = MessageStrings.callMissed.localized
-            callImageView.image = style?.failIcon.image
-        case .callStatusRejected:
-            titleLabel.text = MessageStrings.callCancelled.localized
+        case .callStatusMissed, .callStatusRejected:
+            titleLabel.text = message.isIncome ? MessageStrings.callMissed.localized : MessageStrings.callNoAnswer.localized
             callImageView.image = style?.failIcon.image
         case .callStatusEnded:
             titleLabel.text = defaultString
-            let time = message.call.endTime - message.call.startTime
+            let time = (message.call.endTime - message.call.startTime) / 1_000_000
             let minutes = Int(time) / 60 % 60
             let seconds = Int(time) % 60
             subtitleLabel.text = String(format: "%02i:%02i", minutes, seconds)
