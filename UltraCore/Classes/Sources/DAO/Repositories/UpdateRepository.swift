@@ -188,7 +188,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
                             self.updateSyncSubject.onNext(())
                         }
                         self.appStore.store(last: Int64(response.state))
-                        self.setupChangesSubscription(with: 0)
+                        self.setupChangesSubscription(with: response.state)
                         self.retreiveContactStatuses()
                     }
                 }
