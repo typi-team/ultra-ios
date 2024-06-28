@@ -32,18 +32,18 @@ class MessageDBService {
                         messageInDB.state?.edited = message.state.edited
                         messageInDB.state?.delivered = message.state.delivered
                         messageInDB.seqNumber = Int64(message.seqNumber)
-                        PP.debug("[Message] [DB message update]: update \(message)")
+                        PP.debug("[Message] [DB message update]: update \(message.id)")
                     } else {
                         realm.create(DBMessage.self,
                                      value: DBMessage(from: message, user: self.userID), update: .all)
-                        PP.debug("[Message] [DB message update]: created & saved \(message)")
+                        PP.debug("[Message] [DB message update]: created & saved \(message.id)")
                     }
                     
                 }
 
                 completable(.success(true))
             } catch {
-                PP.error("[Message] [DB message update]: Failed to save message \(message)")
+                PP.error("[Message] [DB message update]: Failed to save message \(message.id)")
                 completable(.failure(error))
             }
             return Disposables.create()
