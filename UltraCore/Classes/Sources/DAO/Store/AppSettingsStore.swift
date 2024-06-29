@@ -45,10 +45,10 @@ extension AppSettingsStoreImpl: AppSettingsStore {
     }
     
     func userID() -> String {
-        guard let token = self.userDefault?.string(forKey: kUserID) else {
-            fatalError("call store(userID:) before call this function")
+        guard let userID = self.userDefault?.string(forKey: kUserID) else {
+            return ""
         }
-        return token
+        return userID
     }
     
     func deviceID() -> String {
