@@ -162,6 +162,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
                         // the unread counter is updated.
 
                         let group = DispatchGroup()
+                        PP.debug("[Message] Initial state messages - \(response.messages)")
                         response.messages.forEach { message in
                             if message.shouldBeSaved {
                                 group.enter()

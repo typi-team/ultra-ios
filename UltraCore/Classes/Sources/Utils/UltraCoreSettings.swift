@@ -324,6 +324,7 @@ public extension UltraCoreSettings {
     }
 
     static func logout() {
+        Self.stopSession()
         AppSettingsImpl.shared.logout()
     }
 }
