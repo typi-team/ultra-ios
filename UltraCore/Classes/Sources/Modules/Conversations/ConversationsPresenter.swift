@@ -52,30 +52,6 @@ final class ConversationsPresenter: BasePresenter {
                     }
                     return conversation
                 })
-                .filter { [weak self] conversation in
-                    guard let self = self else {
-                        return true
-                    }
-//                    PP.debug("Conversation peers are \(conversation.peers.map(\.phone)); type - \(conversation.chatType) - \(conversation.title), chat ID - \(conversation.idintification); personal managers - \(self.personalManagers); isSupport - \(isSupport)")
-                    if isSupport {
-                        if conversation.chatType == .support && conversation.isAssistant {
-                            return supportOffices?.assistant != nil
-                        } else if conversation.chatType == .support {
-                            return true
-                        } else if conversation.chatType == .peerToPeer {
-                            guard let peer = conversation.peers.first else {
-                                return false
-                            }
-                            return managers.contains(where: { $0 == peer.phone })
-                        } else {
-                            return false
-                        }
-                    } else if conversation.chatType == .peerToPeer {
-                        return conversation.lastMessage != nil
-                    }
-                    
-                    return conversation.chatType != .support
-                }
                 .sorted(by: { conv1, conv2 in
                     return conv1.isAssistant
                 })
