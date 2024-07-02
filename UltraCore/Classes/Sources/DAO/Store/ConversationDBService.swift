@@ -42,6 +42,17 @@ class ConversationDBService {
                 PP.error(error.localizedDescription)
             }
         }
+        if let realmOldURL = FileManager.default
+            .urls(for: .documentDirectory, in: .userDomainMask)
+            .first?.appendingPathComponent("Ultra-Core.realm"),
+           FileManager.default.fileExists(atPath: realmOldURL.path) {
+            do {
+                appStore.store(last: 0)
+                try FileManager.default.removeItem(at: realmOldURL)
+            } catch {
+                PP.error(error.localizedDescription)
+            }
+        }
         self.chatService = chatService
     }
     
