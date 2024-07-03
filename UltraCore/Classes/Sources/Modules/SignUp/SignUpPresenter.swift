@@ -47,10 +47,10 @@ extension SignUpPresenter: SignUpPresenterInterface {
         params.phone = number.trimNumber
 
         self.userIdInteractor.executeSingle(params: params)
-            .map({ response -> IssueJwtRequest in
+            .map({ [weak self] response -> IssueJwtRequest in
                 var request = IssueJwtRequest()
                 request.userID = response.userID
-                request.deviceID = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
+                request.deviceID = self?.appSettingsStore.deviceID() ?? ""
                 request.device = .ios
                 return request
             })

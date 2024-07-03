@@ -15,8 +15,8 @@ open class RecordButton: UIButton, UIGestureRecognizerDelegate {
 
     public var recordView: RecordView!
 
-    private let defaultImage = UIImage.named("message_input_micro")?.withRenderingMode(.alwaysTemplate)
-    private let recordingImage = UIImage.named("voice.recording")
+    private let defaultImage = UltraCoreStyle.voiceInputBarConfig?.recordButtonDefaultImage.image
+    private let recordingImage = UltraCoreStyle.voiceInputBarConfig?.recordButtonRecordingImage.image
 
     private var mTransform: CGAffineTransform?
     private var buttonCenter, slideCenter: CGPoint?
@@ -47,7 +47,6 @@ open class RecordButton: UIButton, UIGestureRecognizerDelegate {
         if image(for: .normal) == nil {
             setImage(defaultImage, for: .normal)
             self.imageView?.contentMode = .scaleAspectFit
-            tintColor = .green500
         }
 
         moveGesture = UIPanGestureRecognizer(target: self, action: #selector(touchMoved(_:)))

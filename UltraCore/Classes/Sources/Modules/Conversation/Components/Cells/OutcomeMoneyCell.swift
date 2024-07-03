@@ -11,7 +11,7 @@ class OutcomeMoneyCell : BaseMessageCell {
     
     fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
     fileprivate let moneyAvatarView: UIImageView = .init({
-        $0.image = UIImage.named("conversation_money_icon")
+        $0.image = UltraCoreStyle.outcomeMessageCell?.moneyImage?.image
         $0.contentMode = .center
     })
     
@@ -64,15 +64,14 @@ class OutcomeMoneyCell : BaseMessageCell {
         }
 
         self.statusView.snp.makeConstraints { make in
-            make.left.greaterThanOrEqualTo(self.moneyCaptionlabel.snp.right).offset(kLowPadding / 2)
-            make.centerY.equalTo(moneyCaptionlabel.snp.centerY)
+            make.right.equalToSuperview().offset(-kMediumPadding)
+            make.centerY.equalTo(deliveryDateLabel.snp.centerY)
         }
         
         self.deliveryDateLabel.snp.makeConstraints { make in
-            make.left.equalTo(self.statusView.snp.right).offset(kLowPadding / 2)
-            make.right.equalToSuperview().offset(-kMediumPadding)
+            make.left.greaterThanOrEqualTo(self.moneyCaptionlabel.snp.right).offset(kLowPadding / 2)
+            make.right.equalTo(statusView.snp.left).offset(-kLowPadding / 2)
             make.bottom.equalTo(moneyCaptionlabel.snp.bottom)
-            make.centerY.equalTo(statusView.snp.centerY)
         }
     }
     
@@ -80,6 +79,22 @@ class OutcomeMoneyCell : BaseMessageCell {
         super.setup(message: message)
         self.statusView.image = message.statusImage
         self.moneyAmountLabel.text = message.money.money.formattedPrice
+        self.moneyCaptionlabel.text = getStatusText(for: message)
+    }
+    
+    private func getStatusText(for message: Message) -> String {
+        switch message.money.status.status {
+        case .moneyStatusUnknown:
+            return ConversationStrings.transferStatusUnknown.localized
+        case .inProgress:
+            return ConversationStrings.transferStatusInProgress.localized
+        case .completed:
+            return ConversationStrings.transferStatusCompleted.localized
+        case .rejected:
+            return ConversationStrings.transferStatusRejected.localized
+        case .UNRECOGNIZED(let int):
+            return ""
+        }
     }
 }
 

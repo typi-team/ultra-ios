@@ -16,24 +16,17 @@ import QuickLook
 import ContactsUI
 import RxDataSources
 import AVFoundation
+import NVActivityIndicatorView
 
 final class ConversationViewController: BaseViewController<ConversationPresenterInterface> {
     // MARK: - Properties
-    
-    let reportTransitioningDelegate = SheetTransitioningDelegate()
-    let sheetTransitioningDelegate = SheetTransitioningDelegate()
     fileprivate var mediaItem: URL?
     fileprivate var isDrawingTable: Bool = false
     lazy var dismissKeyboardGesture = UITapGestureRecognizer.init(target: self, action: #selector(hideKeyboard))
     
     // MARK: - Views
-    fileprivate lazy var refreshControl = UIRefreshControl{
-        $0.addAction(for: .valueChanged, {[weak self] in
-            guard let `self` = self,
-                  let cell = self.tableView.visibleCells.first as? BaseMessageCell,
-                  let seqNumber = cell.message?.seqNumber else { return }
-            self.presenter?.loadMoreMessages(maxSeqNumber: seqNumber)
-        })
+    fileprivate lazy var refreshControl = UIRefreshControl {
+        $0.addTarget(self, action: #selector(didRefresh), for: .valueChanged)
     }
     
     fileprivate let navigationDivider: UIView = .init({
@@ -64,6 +57,15 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.registerCell(type: IncomeLocationCell.self)
         tableView.registerCell(type: OutcomeLocationCell.self)
         tableView.registerCell(type: OutgoingMessageCell.self)
+        tableView.registerCell(type: SystemMessageCell.self)
+        tableView.registerCell(type: GroupIncomeMessageCell.self)
+        tableView.registerCell(type: GroupIncomeContactCell.self)
+        tableView.registerCell(type: GroupIncomeFileCell.self)
+        tableView.registerCell(type: GroupIncomeLocationCell.self)
+        tableView.registerCell(type: GroupIncomeMoneyCell.self)
+        tableView.registerCell(type: GroupIncomeVoiceCell.self)
+        tableView.registerCell(type: GroupIncomePhotoCell.self)
+        tableView.registerCell(type: GroupIncomingVideoCell.self)
         tableView.addGestureRecognizer(dismissKeyboardGesture)
         tableView.contentInset = .zero
     }
@@ -92,14 +94,26 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         imageView.contentMode = .scaleAspectFill
         imageView.image = UltraCoreStyle.conversationBackgroundImage?.image
     }
+    private var firstLoad: Bool = true
 
-   private lazy var dataSource = RxTableViewSectionedReloadDataSource<SectionModel<String, Message>>(
+    typealias CustomSectionDataType = AnimatableSectionModel<String, Message>
+    
+    private lazy var dataSource = RxTableViewSectionedAnimatedDataSource<CustomSectionDataType>(
+        animationConfiguration: AnimationConfiguration(insertAnimation: .none, reloadAnimation: .none, deleteAnimation: .none),
+        decideViewTransition: { _, _, _ in .reload },
         configureCell: { [weak self] _, tableView, indexPath,
             message in
             guard let `self` = self else {
                 return UITableViewCell.init()
             }
+            if message.type == .system {
+                let cell: SystemMessageCell = tableView.dequeueCell()
+                cell.setup(text: message.supportMessage)
+                return cell
+            }
+            
             let cell = self.cell(message, in: tableView)
+            cell.canDelete = presenter?.canBlock() ?? true
             cell.longTapCallback = {[weak self] actionType in
                 guard let `self` = self else { return }
                 switch actionType {
@@ -131,6 +145,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
                        UIApplication.shared.canOpenURL(url) {
                         UIApplication.shared.open(url, options: [:], completionHandler: nil)
                     }
+                case .money(let moneyMessage):
+                    UltraCoreSettings.delegate?.didTapTransactionCell(transactionID: moneyMessage.transactionID, viewController: self)
                 case .voice:
                     break
                 default:
@@ -147,6 +163,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             return cell
         }, titleForHeaderInSection: { dataSource, sectionIndex in
             return dataSource[sectionIndex].model
+        }, canEditRowAtIndexPath: { _, _ in
+            return true
         }, canMoveRowAtIndexPath: { _, _  in
             return false
         }
@@ -163,6 +181,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         super.setupViews()
 //        MARK: Must be hide
         self.setupNavigationMore()
+        tableView.alpha = 0
         self.view.addSubview(tableView)
         self.view.addSubview(messageInputBar)
         self.view.addSubview(navigationDivider)
@@ -199,43 +218,53 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     override func setupInitialData() {
         super.setupInitialData()
         NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground(_:)), name: UIApplication.didEnterBackgroundNotification, object: nil)
-        self.presenter?
-            .messages
+        let sharedMessages = presenter!.messages
             .distinctUntilChanged()
-            .subscribe(on: MainScheduler.instance)
-            .observe(on: MainScheduler.instance)
-            .do(onNext: {[weak self] messages in
+            .do { [weak self] messages in
+                if messages.isEmpty {
+                    self?.tableView.alpha = 1
+                }
                 self?.messages = messages
-                self?.tableView.backgroundView = messages.isEmpty ? ConversationEmptyViewContainer(emptyView: UltraCoreSettings.delegate?.emptyConversationDetailView() ?? .init()) : self?.backgroundImageView
-            })
-            .map({messages -> [SectionModel<String, Message>] in
+                self?.tableView.backgroundView = messages.isEmpty ? ConversationEmptyViewContainer(emptyView: UltraCoreSettings.delegate?.emptyConversationDetailView(isManager: self?.presenter?.isManager ?? false) ?? .init()) : self?.backgroundImageView
+            }
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .utility))
+            .map { messages -> [CustomSectionDataType] in
                 if messages.isEmpty {return []}
                 return Dictionary(grouping: messages) { message in
                     return Calendar.current.startOfDay(for: message.meta.created.date)}
                     .sorted { $0.key < $1.key }
-                    .map({SectionModel<String, Message>.init(model: $0.key.formattedTimeToHeadline(format: "d MMMM yyyy"), items: $0.value)})
-            })
-            .bind(to: tableView.rx.items(dataSource: dataSource))
+                    .map({CustomSectionDataType.init(model: $0.key.formattedTimeToHeadline(format: "d MMMM yyyy"), items: $0.value)})
+            }
+            .debounce(.milliseconds(100), scheduler: MainScheduler.instance)
+            .observe(on: MainScheduler.instance)
+            .share()
+        
+        sharedMessages.bind(to: tableView.rx.items(dataSource: dataSource))
             .disposed(by: disposeBag)
                 
-            var prev: [Message] = []
-        self.presenter?
-            .messages
-            .debounce(.milliseconds(20), scheduler: MainScheduler.asyncInstance)
+        var prev: [Message] = []
+        sharedMessages
             .filter({ !$0.isEmpty })
-            .filter({$0.count != prev.count})
-            .do(onNext: {prev = $0})
+            .filter({ $0.flatMap(\.items).count != prev.count })
+            .do(onNext: {prev = $0.flatMap(\.items)})
+//            .delay(.milliseconds(100), scheduler: MainScheduler.instance)
             .subscribe(onNext: { [weak self] _ in
                 guard let `self` = self else { return }
                 if self.tableView.isDecelerating {
                     self.tableView.stopScrolling()
                 }
                 self.tableView.scrollToLastCell(animated: false)
-                
+                if self.firstLoad {
+                    self.tableView.alpha = 1
+                    self.firstLoad = false
+                }
             })
             .disposed(by: disposeBag)
         
         self.presenter?.viewDidLoad()
+        messageInputBar.canSendAttachments = presenter?.canAttach() ?? true
+        messageInputBar.canSendMoney = presenter?.canTransfer() ?? true
+        messageInputBar.canRecord = presenter?.canSendVoice() ?? true
         subscribeToInputBoundsChange()
         
         tableView.rx
@@ -258,11 +287,17 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         animationDuration: Double,
         animationOptions: UIView.AnimationOptions
     ) {
+        guard presentedViewController == nil else { return }
         var contentOffset = tableView.contentOffset
         
         let keyBoardHeight = UIScreen.main.bounds.height - frame.origin.y
         let bottomInset = keyBoardHeight > 0 ? keyBoardHeight - view.safeAreaInsets.bottom : 0
         let insets = UIEdgeInsets(top: 0, left: 0, bottom: bottomInset, right: 0)
+        
+        guard tableView.contentInset != insets else {
+            return
+        }
+        
         self.tableView.contentInset = insets
         self.tableView.scrollIndicatorInsets = insets
         
@@ -272,7 +307,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             )
         }
         
-        if tableView.contentSize.height > tableView.frame.height {
+        if tableView.contentSize.height + keyBoardHeight > tableView.frame.height {
             if keyBoardHeight > 0 {
                 contentOffset.y += (keyBoardHeight - self.view.safeAreaInsets.bottom)
             } else {
@@ -301,11 +336,24 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         self.messageInputBar.endEditing(true)
     }
     
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        UltraCoreSettings.delegate?.activeConversationID = nil
+    }
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        guard let cell = self.tableView.visibleCells.first as? BaseMessageCell,
-              let seqNumber = cell.message?.seqNumber else { return }
-        self.presenter?.loadMoreMessages(maxSeqNumber: seqNumber)
+        guard let chatID = presenter?.conversation.idintification else {
+            return
+        }
+        UltraCoreSettings.delegate?.activeConversationID = chatID
+        guard let message = messages.first else {
+            return
+        }
+        guard (presenter?.loadIfFirstTime(seqNumber: message.seqNumber) ?? false) && messages.count <= 1 else {
+            return
+        }
+        self.presenter?.loadMoreMessages(maxSeqNumber: message.seqNumber)
     }
     
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
@@ -332,6 +380,19 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         messageInputBar.endEditing(true)
     }
     
+    @objc func didRefresh() {
+        guard
+            let cell = self.tableView.visibleCells.first as? BaseMessageCell,
+            let seqNumber = cell.message?.seqNumber 
+        else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.refreshControl.endRefreshing()
+            }
+            return
+        }
+        self.presenter?.loadMoreMessages(maxSeqNumber: seqNumber)
+    }
+    
 }
 
     // MARK: - UITextViewDelegate
@@ -344,6 +405,8 @@ extension ConversationViewController: MessageInputBarDelegate {
     func pressedPlus(in view: MessageInputBar) {
         view.endEditing(true)
         let viewController = FilesController()
+        let sheetController = UltraSheetViewController(contentController: viewController)
+        sheetController.hasBlurBackground = true
         viewController.resultCallback = {[weak self] action in
             guard let `self` = self else { return }
             switch action {
@@ -354,9 +417,7 @@ extension ConversationViewController: MessageInputBarDelegate {
             case .location: self.openMap()
             }
         }
-        viewController.modalPresentationStyle = .custom
-        viewController.transitioningDelegate = sheetTransitioningDelegate
-        present(viewController, animated: true)
+        present(sheetController, animated: true)
     }
     
     func pressedDone(in view: MessageInputBar) {
@@ -390,6 +451,7 @@ extension ConversationViewController: MessageInputBarDelegate {
 // MARK: - Extensions -
 
 extension ConversationViewController: ConversationViewInterface {
+    
     func blocked(is blocked: Bool) {
         if blocked {
             self.view.endEditing(true)
@@ -404,12 +466,12 @@ extension ConversationViewController: ConversationViewInterface {
     
     func stopRefresh(removeController: Bool) {
         self.refreshControl.endRefreshing()
-        if(removeController) {
-            self.refreshControl.removeFromSuperview()
-        }
     }
     func display(is typing: UserTypingWithDate) {
         self.headline.setup(user: typing)
+        if presenter!.conversation.isAssistant {
+            messageInputBar.isEnabled = !typing.isTyping
+        }
     }
     
     func setup(conversation: Conversation) {
@@ -417,40 +479,34 @@ extension ConversationViewController: ConversationViewInterface {
     }
     
     func update(callAllowed: Bool) {
-        let items: [UIBarButtonItem]
+        let canBlock = UltraCoreSettings.futureDelegate?.availableToBlock(conversation: self) ?? false && presenter?.canBlock() ?? true
+        var items: [UIBarButtonItem] = []
+        if canBlock {
+            items.append(.init(
+                image: UltraCoreStyle.conversationScreenConfig.conversationOptionsImage.image,
+                style: .plain,
+                target: self,
+                action: #selector(self.more(_:))
+            ))
+        }
         if callAllowed && UltraCoreSettings.futureDelegate?.availableToCall() ?? false {
-            items = [
+            let callItems: [UIBarButtonItem] = [
                 .init(
-                    image: .named("conversation.dots"),
-                    style: .plain,
-                    target: self,
-                    action: #selector(self.more(_:))
-                ),
-                .init(
-                    image: .named("conversation_video_camera_icon"),
+                    image: UltraCoreStyle.conversationScreenConfig.conversationVideoCallImage.image,
                     style: .plain,
                     target: self,
                     action: #selector(self.callWithVideo)
                 ),
                 .init(
-                    image: .named("contact_phone_icon"),
+                    image: UltraCoreStyle.conversationScreenConfig.conversationVoiceCallImage.image,
                     style: .plain,
                     target: self,
                     action: #selector(self.callWithVoice)
                 )
             ]
-        } else {
-            items = [
-                .init(
-                    image: .named("conversation.dots"),
-                    style: .plain,
-                    target: self,
-                    action: #selector(self.more(_:))
-                )
-            ]
+            items.append(contentsOf: callItems)
         }
-        let mustBeHidden = UltraCoreSettings.futureDelegate?.availableToBlock(conversation: self) ?? false
-        navigationItem.rightBarButtonItems = mustBeHidden ? items : nil
+        self.navigationItem.rightBarButtonItems = items
     }
     
     func showDisclaimer(show: Bool, delegate: DisclaimerViewDelegate) {
@@ -468,25 +524,26 @@ extension ConversationViewController: ConversationViewInterface {
 private extension ConversationViewController {
     
     func setupNavigationMore() {
-        let mustBeHide = UltraCoreSettings.futureDelegate?.availableToBlock(conversation: self) ?? false
-        var items: [UIBarButtonItem] = [
-            .init(
-                image: .named("conversation.dots"),
+        let canBlock = UltraCoreSettings.futureDelegate?.availableToBlock(conversation: self) ?? false && presenter?.canBlock() ?? true
+        var items: [UIBarButtonItem] = []
+        if canBlock {
+            items.append(.init(
+                image: UltraCoreStyle.conversationScreenConfig.conversationOptionsImage.image,
                 style: .plain,
                 target: self,
                 action: #selector(self.more(_:))
-            )
-        ]
+            ))
+        }
         if presenter?.allowedToCall() ?? false && UltraCoreSettings.futureDelegate?.availableToCall() ?? false {
             let callItems: [UIBarButtonItem] = [
                 .init(
-                    image: .named("conversation_video_camera_icon"),
+                    image: UltraCoreStyle.conversationScreenConfig.conversationVideoCallImage.image,
                     style: .plain,
                     target: self,
                     action: #selector(self.callWithVideo)
                 ),
                 .init(
-                    image: .named("contact_phone_icon"),
+                    image: UltraCoreStyle.conversationScreenConfig.conversationVoiceCallImage.image,
                     style: .plain,
                     target: self,
                     action: #selector(self.callWithVoice)
@@ -494,7 +551,7 @@ private extension ConversationViewController {
             ]
             items.append(contentsOf: callItems)
         }
-        self.navigationItem.rightBarButtonItems = mustBeHide ? items : nil
+        self.navigationItem.rightBarButtonItems = items
     }
     
     func openMoneyTransfer() {
@@ -503,13 +560,7 @@ private extension ConversationViewController {
     
     func openMedia(type: UIImagePickerController.SourceType) {
         if type == .savedPhotosAlbum {
-            let controller = UIImagePickerController()
-            controller.delegate = self
-            controller.sourceType = type
-            controller.videoQuality = .typeMedium
-            controller.mediaTypes = ["public.movie", "public.image"]
-            controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
-            self.present(controller, animated: true)
+            presentImagePicker(type: type)
             return
         }
         switch AVCaptureDevice.authorizationStatus(for: .video) {
@@ -518,32 +569,33 @@ private extension ConversationViewController {
         case .restricted:
             showAlert(from: ConversationStrings.cameraPermissionRestricted.localized)
         case .notDetermined:
-            AVCaptureDevice.requestAccess(for: .video) { isAuthorized in
+            AVCaptureDevice.requestAccess(for: .video) { [weak self] isAuthorized in
                 guard isAuthorized else {
                     return
                 }
                 DispatchQueue.main.async {
-                    let controller = UIImagePickerController()
-                    controller.delegate = self
-                    controller.sourceType = type
-                    controller.videoQuality = .typeMedium
-                    controller.mediaTypes = ["public.movie", "public.image"]
-                    controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
-                    self.present(controller, animated: true)
+                    self?.presentImagePicker(type: type)
                 }
             }
         case .authorized:
-            let controller = UIImagePickerController()
-            controller.delegate = self
-            controller.sourceType = type
-            controller.videoQuality = .typeMedium
-            controller.mediaTypes = ["public.movie", "public.image"]
-            controller.mediaTypes = UIImagePickerController.availableMediaTypes(for: .photoLibrary) ?? []
-            self.present(controller, animated: true)
+            presentImagePicker(type: type)
         default:
             break
         }
-
+    }
+    
+    private func presentImagePicker(type: UIImagePickerController.SourceType) {
+        let controller = UIImagePickerController()
+        controller.delegate = self
+        controller.sourceType = type
+        controller.videoQuality = .typeHigh
+        if presenter!.canSendVideo() {
+            controller.mediaTypes = ["public.movie", "public.image"]
+            controller.videoMaximumDuration = 300
+        } else {
+            controller.mediaTypes = ["public.image"]
+        }
+        present(controller, animated: true)
     }
     
     func openDocument() {
@@ -568,25 +620,20 @@ private extension ConversationViewController {
     }
 }
 
-
 extension ConversationViewController: (UIImagePickerControllerDelegate & UINavigationControllerDelegate){
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-            dismiss(animated: true, completion: nil)
+        dismiss(animated: true, completion: nil)
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if info[UIImagePickerController.InfoKey.mediaType] as? String == "public.movie",
-           let url = info[.mediaURL]  as? URL,
-            let data = try? Data(contentsOf: url) {
+           let url = info[.mediaURL] as? URL {
+            presenter?.upload(file: .video(url: url))
             picker.dismiss(animated: true)
-            self.presenter?.upload(file: .init(url: url, data: data, mime: "video/mp4", width: 300, height: 200), isVoice: false)
-        } else if let image = info[.originalImage] as? UIImage,
-                  let downsampled = image.fixedOrientation().downsample(reductionAmount: 0.5),
-                  let data = downsampled.pngData() {
-            picker.dismiss(animated: true, completion: {
-                self.presenter?.upload(file: .init(url: nil, data: data, mime: "image/png", width: image.size.width, height: image.size.height), isVoice: false)
-            })
+        } else if let image = info[.originalImage] as? UIImage {
+            presenter?.upload(file: .image(image: image))
+            picker.dismiss(animated: true)
         }
     }
 }
@@ -660,6 +707,7 @@ extension ConversationViewController {
     
     @objc func more(_ sender: UIBarButtonItem) {
         guard let blocked = self.presenter?.isBlock() else { return }
+        messageInputBar.endEditing(true)
         let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         if blocked {
             alert.addAction(.init(title: ConversationStrings.unblock.localized.capitalized, style: .default, handler: { [weak self] _ in
@@ -678,6 +726,59 @@ extension ConversationViewController {
     }
     
     func cell(_ message: Message, in tableView: UITableView) -> BaseMessageCell {
+        
+        if presenter?.isGroupChat() ?? false && message.isIncome {
+            let contact = presenter?.getContact(for: message.sender.userID)
+            guard let content = message.content else {
+                let cell: GroupIncomeMessageCell = tableView.dequeueCell()
+                cell.setup(conversation: presenter!.conversation)
+                cell.setup(message: message)
+                return cell
+            }
+            
+            switch content {
+            case .photo:
+                let cell: GroupIncomePhotoCell = tableView.dequeueCell()
+                cell.setup(conversation: presenter!.conversation)
+                cell.setup(message: message)
+                return cell
+            case .video:
+                let cell: GroupIncomingVideoCell = tableView.dequeueCell()
+                cell.setup(conversation: presenter!.conversation)
+                cell.setup(message: message)
+                return cell
+            case .money:
+                let cell: GroupIncomeMoneyCell = tableView.dequeueCell()
+                cell.setup(conversation: presenter!.conversation)
+                cell.setup(message: message)
+                return cell
+            case .file:
+                let cell: GroupIncomeFileCell = tableView.dequeueCell()
+                cell.setup(conversation: presenter!.conversation)
+                cell.setup(message: message)
+                return cell
+            case .location:
+                let cell: GroupIncomeLocationCell = tableView.dequeueCell()
+                cell.setup(conversation: presenter!.conversation)
+                cell.setup(message: message)
+                return cell
+            case .contact:
+                let cell: GroupIncomeContactCell = tableView.dequeueCell()
+                cell.setup(conversation: presenter!.conversation)
+                cell.setup(message: message)
+                return cell
+            case .voice:
+                let cell: GroupIncomeVoiceCell = tableView.dequeueCell()
+                cell.setup(conversation: presenter!.conversation)
+                cell.setup(message: message)
+                return cell
+            default:
+                let cell: GroupIncomeMessageCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                cell.setup(conversation: presenter!.conversation)
+                return cell
+            }
+        }
         
         guard let content = message.content else {
             if message.isIncome {
@@ -775,12 +876,20 @@ extension ConversationViewController {
         case .coin(_):
             let cell: BaseMessageCell = tableView.dequeueCell()
              return cell
+        case .call(_):
+            let cell: BaseMessageCell = tableView.dequeueCell()
+            return cell
         }
     }
     
     func presentEditController(for message: Message, indexPath: IndexPath) {
         dismissKeyboardGesture.isEnabled = false
-        navigationItem.rightBarButtonItem = .init(image: .named("icon_close"), style: .done, target: self, action: #selector(self.cancel))
+        navigationItem.rightBarButtonItem = .init(
+            image: UltraCoreStyle.iconClose.image,
+            style: .done,
+            target: self,
+            action: #selector(self.cancel)
+        )
         tableView.allowsMultipleSelectionDuringEditing = true
         tableView.setEditing(!tableView.isEditing, animated: true)
         
@@ -806,6 +915,7 @@ extension ConversationViewController: EditActionBottomBarDelegate {
     }
     
     func presentReportMessageView(_ message: Message, with type: ComplainTypeEnum) {
+        messageInputBar.endEditing(true)
         let viewController = ReportCommentController({ controler in
             controler.saveAction = {[weak self] comment in
                 guard let `self` = self else { return }
@@ -814,10 +924,9 @@ extension ConversationViewController: EditActionBottomBarDelegate {
                 self.cancel()
             }
         })
-        
-        viewController.modalPresentationStyle = .custom
-        viewController.transitioningDelegate = reportTransitioningDelegate
-        present(viewController, animated: true)
+        let sheetController = UltraSheetViewController(contentController: viewController)
+        sheetController.hasBlurBackground = true
+        present(sheetController, animated: true)
     }
     
     @objc func cancel() {
@@ -862,12 +971,8 @@ extension ConversationViewController: EditActionBottomBarDelegate {
 
 extension ConversationViewController: UIDocumentPickerDelegate {
         func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-            guard let selectedURL = urls.first,
-                  let data = try? Data(contentsOf: selectedURL) else {
-                return
-            }
-
-            self.presenter?.upload(file: .init(url: selectedURL, data: data, mime: selectedURL.mimeType().containsAudio ? "audio/mp3" : selectedURL.mimeType(), width: 300, height: 300), isVoice: false)
+            guard let selectedURL = urls.first else { return }
+            presenter?.upload(file: .file(url: selectedURL))
         }
         
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) { }
@@ -879,9 +984,8 @@ extension ConversationViewController: VoiceInputBarDelegate {
     }
     
     func recordedVoice(url: URL, in duration: TimeInterval) {
-        guard duration > 2,
-              let data = try? Data(contentsOf: url) else { return }
-        self.presenter?.upload(file: FileUpload(url: nil, data: data, mime: "audio/wav", width: 0, height: 0, duration: duration), isVoice: true)
+        guard duration > 2 else { return }
+        presenter?.upload(file: .audio(url: url, duration: duration))
     }
 }
 

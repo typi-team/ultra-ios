@@ -8,6 +8,7 @@
 import Foundation
 
 public protocol FilesControllerConfig {
+    var backgroundColor: TwiceColor { get set }
     var takePhotoImage: TwiceImage { get set }
     var fromGalleryImage: TwiceImage { get set }
     var documentImage: TwiceImage { get set }

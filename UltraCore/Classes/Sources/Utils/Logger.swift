@@ -9,7 +9,7 @@ import CocoaLumberjack
 import Foundation
 import GRPC
 
-enum LogLevel: Int {
+public enum LogLevel: Int {
     case verbose = 0
     case debug = 1
     case info = 2
@@ -18,7 +18,22 @@ enum LogLevel: Int {
 }
 
 public class PP {
-    static var logLevel: LogLevel = .verbose
+    public static var logLevel: LogLevel = .verbose {
+        didSet {
+            switch logLevel {
+            case .verbose:
+                dynamicLogLevel = .verbose
+            case .debug:
+                dynamicLogLevel = .debug
+            case .info:
+                dynamicLogLevel = .info
+            case .warning:
+                dynamicLogLevel = .warning
+            case .error:
+                dynamicLogLevel = .error
+            }
+        }
+    }
     
     static func initialize() {
         let fileLogger = DDFileLogger()
@@ -26,7 +41,7 @@ public class PP {
         fileLogger.logFileManager.maximumNumberOfLogFiles = 5
         DDLog.add(DDOSLogger.sharedInstance)
         DDLog.add(fileLogger)
-        dynamicLogLevel = .error
+        dynamicLogLevel = .verbose
     }
 
     static func verbose(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {

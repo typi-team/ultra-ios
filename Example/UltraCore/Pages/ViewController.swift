@@ -19,13 +19,17 @@ class ViewController: UITabBarController {
         self.setupView()
         self.setupVCs()
         
+        NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground(_:)), name: UIApplication.didEnterBackgroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(didEnterForeground(_:)), name: UIApplication.willEnterForegroundNotification, object: nil)
+        
         self.viewModel.setupSID(callback: {[weak self] error in
             guard let `self` = self else { return }
             DispatchQueue.main.async {
                 if error != nil {
                     self.viewControllers?.append(self.createNavController(for: UltraCoreSettings.entrySignUpViewController(), title: NSLocalizedString("conversations.chats", comment: ""), image: UIImage(named: "chats")!))
                 } else {
-                    self.viewControllers?.append(self.createNavController(for: UltraCoreSettings.entryConversationsViewController(), title: NSLocalizedString("conversations.chats", comment: ""), image: UIImage(named: "chats")!))
+                    self.viewControllers?.append(self.createNavController(for: UltraCoreSettings.entryConversationsViewController(isSupport: false), title: "Все чаты", image: UIImage(named: "chats")!))
+                    self.viewControllers?.append(self.createNavController(for: UltraCoreSettings.entryConversationsViewController(isSupport: true), title: "Поддержка", image: UIImage(named: "chats")!))
                 }
                 self.selectedIndex = 3
             }
@@ -40,6 +44,18 @@ class ViewController: UITabBarController {
             }
         }
         
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    @objc func didEnterBackground(_ sender: Any) {
+        UltraCoreSettings.stopSession()
+    }
+
+    @objc func didEnterForeground(_ sender: Any) {
+        UltraCoreSettings.updateSession(callback: { _ in })
     }
     
 }

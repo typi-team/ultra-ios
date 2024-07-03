@@ -40,6 +40,18 @@ struct DeviceRequest {
   init() {}
 }
 
+struct DeleteDeviceRequest {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var deviceID: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 struct DeviceResponse {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -52,6 +64,7 @@ struct DeviceResponse {
 
 #if swift(>=5.5) && canImport(_Concurrency)
 extension DeviceRequest: @unchecked Sendable {}
+extension DeleteDeviceRequest: @unchecked Sendable {}
 extension DeviceResponse: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
@@ -108,6 +121,38 @@ extension DeviceRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if lhs.appVersion != rhs.appVersion {return false}
     if lhs.device != rhs.device {return false}
     if lhs.voipPushToken != rhs.voipPushToken {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension DeleteDeviceRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "DeleteDeviceRequest"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "device_id"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.deviceID) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.deviceID.isEmpty {
+      try visitor.visitSingularStringField(value: self.deviceID, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: DeleteDeviceRequest, rhs: DeleteDeviceRequest) -> Bool {
+    if lhs.deviceID != rhs.deviceID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

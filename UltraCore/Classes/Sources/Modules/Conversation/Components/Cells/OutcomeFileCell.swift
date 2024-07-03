@@ -14,14 +14,14 @@ class OutcomeFileCell : BaseMessageCell {
     
     fileprivate let statusView: UIImageView = .init(image: UIImage.named("conversation_status_read"))
     fileprivate let fileIconView: UIImageView = .init({
-        $0.image = UIImage.named("contact_file_icon")
+        $0.image = UltraCoreStyle.outcomeMessageCell?.fileIconImage?.image
         $0.contentMode = .center
     })
     fileprivate let spinner: NVActivityIndicatorView = {
         let spinner = NVActivityIndicatorView(
             frame: CGRect(origin: .zero, size: .init(width: 20, height: 20)),
             type: .circleStrokeSpin,
-            color: UltraCoreStyle.fileCellConfig.loaderTintColor.color,
+            color: UltraCoreStyle.outcomeMessageCell?.fileCellConfig.loaderTintColor.color,
             padding: 0
         )
         spinner.startAnimating()
@@ -31,8 +31,8 @@ class OutcomeFileCell : BaseMessageCell {
     }()
     fileprivate let fileLabel: RegularFootnote = .init({
         $0.text = MessageStrings.fileWithoutSmile.localized
-        $0.textColor = UltraCoreStyle.fileCellConfig.fileTextConfig.color
-        $0.font = UltraCoreStyle.fileCellConfig.fileTextConfig.font
+        $0.textColor = UltraCoreStyle.outcomeMessageCell?.fileCellConfig.fileTextConfig.color
+        $0.font = UltraCoreStyle.outcomeMessageCell?.fileCellConfig.fileTextConfig.font
     })
     fileprivate let mediaRepository: MediaRepository = AppSettingsImpl.shared.mediaRepository
     
@@ -83,15 +83,14 @@ class OutcomeFileCell : BaseMessageCell {
         }
 
         self.statusView.snp.makeConstraints { make in
-            make.left.greaterThanOrEqualTo(self.fileLabel.snp.right).offset(kLowPadding)
-            make.centerY.equalTo(fileLabel.snp.centerY)
+            make.right.equalTo(textView)
+            make.left.equalTo(deliveryDateLabel.snp.right).offset((kLowPadding / 2))
+            make.centerY.equalTo(deliveryDateLabel)
         }
         
         self.deliveryDateLabel.snp.makeConstraints { make in
-            make.left.equalTo(self.statusView.snp.right).offset(kLowPadding / 2)
-            make.right.equalToSuperview().offset(-kMediumPadding)
+            make.left.greaterThanOrEqualTo(self.fileLabel.snp.right).offset(kLowPadding)
             make.bottom.equalTo(fileLabel.snp.bottom)
-            make.centerY.equalTo(statusView.snp.centerY)
         }
 
         self.spinner.snp.makeConstraints { make in

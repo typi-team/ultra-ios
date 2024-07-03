@@ -9,9 +9,12 @@ import Foundation
 
 protocol AppSettingsStore {
     func userID() -> String
+    func deviceID() -> String
     func store(token: String)
     func store(userID: String)
     func store(last state: Int64)
+    func saveLoadState(for chatID: String)
+    func loadState(for chatID: String) -> Bool
     
     var token: String?  { get set }
     var lastState: Int64 { get }
@@ -23,6 +26,7 @@ class AppSettingsStoreImpl {
     fileprivate let kSID = "kSSID"
     fileprivate let kUserID = "kUserID"
     fileprivate let kLastState = "kLastState"
+    fileprivate let kDeviceID = "kDeviceID"
     fileprivate let userDefault = UserDefaults(suiteName: "com.ultaCore.messenger")
     
     var ssid: String?
@@ -32,6 +36,7 @@ class AppSettingsStoreImpl {
 extension AppSettingsStoreImpl: AppSettingsStore {
     
     func store(last state: Int64) {
+        PP.debug("Saved App Store state - \(state)")
         self.userDefault?.set(state, forKey: kLastState)
     }
     
@@ -40,10 +45,20 @@ extension AppSettingsStoreImpl: AppSettingsStore {
     }
     
     func userID() -> String {
-        guard let token = self.userDefault?.string(forKey: kUserID) else {
-            fatalError("call store(userID:) before call this function")
+        guard let userID = self.userDefault?.string(forKey: kUserID) else {
+            return ""
         }
-        return token
+        return userID
+    }
+    
+    func deviceID() -> String {
+        guard let deviceID = self.userDefault?.string(forKey: kDeviceID) else {
+            let deviceID = UUID().uuidString
+            self.userDefault?.set(deviceID, forKey: kDeviceID)
+            return deviceID
+        }
+        
+        return deviceID
     }
     
     func store(userID: String) {
@@ -52,6 +67,16 @@ extension AppSettingsStoreImpl: AppSettingsStore {
     
     func store(token: String) {
         self.token = token
+    }
+    
+    func saveLoadState(for chatID: String) {
+        let key = "chat_\(chatID)"
+        userDefault?.set(true, forKey: key)
+    }
+    
+    func loadState(for chatID: String) -> Bool {
+        let key = "chat_\(chatID)"
+        return userDefault?.bool(forKey: key) ?? false
     }
     
     func deleteAll() {

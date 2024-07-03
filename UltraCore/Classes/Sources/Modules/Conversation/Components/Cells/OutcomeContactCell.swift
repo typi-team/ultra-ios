@@ -14,7 +14,7 @@ class OutcomeContactCell : BaseMessageCell {
     fileprivate let displayNameLabel: RegularCallout = .init({ $0.text = "Кабанбай батыр" })
     fileprivate let phoneLabel: RegularFootnote = .init({ $0.text = "+ 7 777 777 77 77" })
     fileprivate let contactImageView: UIImageView = .init({
-        $0.image = UIImage.named("contact_file_icon")
+        $0.image = UltraCoreStyle.outcomeMessageCell?.fileIconImage?.image
         $0.contentMode = .center
     })
     

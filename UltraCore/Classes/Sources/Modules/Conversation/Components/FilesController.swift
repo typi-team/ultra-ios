@@ -19,13 +19,12 @@ class FilesController: BaseViewController<String> {
     
     var resultCallback: ((FilesAction) -> Void)?
 
-    fileprivate let headlineLabel: HeadlineBody = .init({
+    fileprivate let headlineLabel: Title3Label = .init({
         $0.textAlignment = .left
         $0.text = ConversationStrings.addAttachment.localized
     })
 
     fileprivate lazy var takePhoto: TextButton = .init({
-        $0.setImage(.named("conversation_camera"), for: .normal)
         $0.setTitle(ConversationStrings.toMakeAPhoto.localized, for: .normal)
         $0.addAction { [weak self] in
             guard let `self` = self else { return }
@@ -36,7 +35,6 @@ class FilesController: BaseViewController<String> {
     fileprivate var style: FilesControllerConfig? = UltraCoreStyle.filePageConfig
     
     fileprivate lazy var fromGallery: TextButton = .init({
-        $0.setImage(.named("conversation_photo"), for: .normal)
         $0.setTitle(ConversationStrings.selectionFromLibrary.localized, for: .normal)
         $0.addAction { [weak self] in
             guard let `self` = self else { return }
@@ -45,7 +43,6 @@ class FilesController: BaseViewController<String> {
     })
     
     fileprivate lazy var document: TextButton = .init({
-        $0.setImage(.named("contact_file_icon"), for: .normal)
         $0.setTitle(ConversationStrings.selectDocument.localized, for: .normal)
         $0.addAction { [weak self] in
             guard let `self` = self else { return }
@@ -54,7 +51,6 @@ class FilesController: BaseViewController<String> {
     })
     
     fileprivate lazy var contact: TextButton = .init({
-        $0.setImage(.named("conversation_user_contact"), for: .normal)
         $0.setTitle(ConversationStrings.contact.localized, for: .normal)
         $0.addAction { [weak self] in
             guard let `self` = self else { return }
@@ -63,7 +59,6 @@ class FilesController: BaseViewController<String> {
     })
     
     fileprivate lazy var location: TextButton = .init({
-        $0.setImage(.named("conversation_location"), for: .normal)
         $0.setTitle(ConversationStrings.location.localized, for: .normal)
         $0.addAction { [weak self] in
             guard let `self` = self else { return }
@@ -115,6 +110,7 @@ class FilesController: BaseViewController<String> {
         super.setupStyle()
         
         if let style = self.style {
+            self.view.backgroundColor = style.backgroundColor.color
             self.takePhoto.setImage(style.takePhotoImage.image, for: .normal)
             self.fromGallery.setImage(style.fromGalleryImage.image, for: .normal)
             self.document.setImage(style.documentImage.image, for: .normal)

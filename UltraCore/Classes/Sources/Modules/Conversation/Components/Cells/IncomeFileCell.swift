@@ -14,20 +14,20 @@ class IncomeFileCell : BaseMessageCell {
     
     let mediaRepository: MediaRepository = AppSettingsImpl.shared.mediaRepository
     
-    fileprivate let fileLabel: RegularFootnote = .init({
+    let fileLabel: RegularFootnote = .init({
         $0.text = MessageStrings.fileWithoutSmile.localized
-        $0.textColor = UltraCoreStyle.fileCellConfig.fileTextConfig.color
-        $0.font = UltraCoreStyle.fileCellConfig.fileTextConfig.font
+        $0.textColor = UltraCoreStyle.incomeMessageCell?.fileCellConfig.fileTextConfig.color
+        $0.font = UltraCoreStyle.incomeMessageCell?.fileCellConfig.fileTextConfig.font
     })
-    fileprivate let fileIconView: UIImageView = .init({
-        $0.image = UIImage.named("contact_file_icon")
+    let fileIconView: UIImageView = .init({
+        $0.image = UltraCoreStyle.incomeMessageCell?.fileIconImage?.image
         $0.contentMode = .center
     })
     fileprivate let spinner: NVActivityIndicatorView = {
         let spinner = NVActivityIndicatorView(
             frame: CGRect(origin: .zero, size: .init(width: 20, height: 20)),
             type: .circleStrokeSpin,
-            color: UltraCoreStyle.fileCellConfig.loaderTintColor.color,
+            color: UltraCoreStyle.incomeMessageCell?.fileCellConfig.loaderTintColor.color,
             padding: 0
         )
         spinner.startAnimating()

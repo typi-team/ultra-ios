@@ -30,11 +30,18 @@ class ViewModel {
     fileprivate var timerUpdate: Timer?
     private let disposeBag = DisposeBag()
     
+    var activeConversationID: String? {
+        didSet {
+            (UIApplication.shared.delegate as? AppDelegate)?.activeConversationID = activeConversationID
+        }
+    }
+    
     var onUnreadMessagesUpdated: ((Int) -> Void)?
 
     func viewDidLoad() {
         UltraCoreSettings.delegate = self
         UltraCoreSettings.futureDelegate = self
+        PP.logLevel = .verbose
     }
     
     var phone: String? {UserDefaults.standard.string(forKey: "phone") }
@@ -54,7 +61,7 @@ class ViewModel {
               let jsonData = try? JSONSerialization.data(withJSONObject: [
                   "app_version": appVersion,
                   "token": firebaseToken,
-                  "device_id": UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString,
+                  "device_id": UltraCoreSettings.deviceID,
                   "platform": "IOS",
                   "voip_push_token": UltraVoIPManager.shared.token ?? ""
               ]) else { return }
@@ -92,16 +99,21 @@ extension ViewModel: UltraCoreFutureDelegate {
     }
     
     func availableToSendMoney() -> Bool {
-        return false
+        return true
     }
 }
 
 extension ViewModel: UltraCoreSettingsDelegate {
-    func provideTransferScreen(for userID: String, viewController: UIViewController, transferCallback: (UltraCore.MoneyTransfer) -> Void) {
+
+    func emptyConversationDetailView(isManager: Bool) -> UIView? {
+        return nil
+    }
+
+    func provideTransferScreen(for userID: String, viewController: UIViewController, transferCallback: @escaping (UltraCore.MoneyTransfer) -> Void) {
         
     }
     
-    func unreadMessagesUpdated(count: Int) {
+    func unreadAllMessagesUpdated(count: Int) {
         onUnreadMessagesUpdated?(count)
         switch UIApplication.shared.applicationState {
             case .active:
@@ -110,6 +122,15 @@ extension ViewModel: UltraCoreSettingsDelegate {
                 break
         }
     }
+    
+    func unreadSupportMessagesUpdated(count: Int) {
+        
+    }
+    
+    func unreadNonSupportMessagesUpdated(count: Int) {
+        
+    }
+    
     
     func token(callback: @escaping (Result<String, Error>) -> Void) {
         let userDef = UserDefaults.standard
@@ -151,7 +172,7 @@ extension ViewModel: UltraCoreSettingsDelegate {
         didRegisterForRemoteNotifications()
     }
 
-    func emptyConversationView() -> UIView? {
+    func emptyConversationView(isSupport: Bool) -> UIView? {
         return nil
     }
     
@@ -194,5 +215,64 @@ extension ViewModel: UltraCoreSettingsDelegate {
     func disclaimerDescriptionFor(contact: String) -> String {
         return NSLocalizedString("conversation.disclaimerDescription", comment: "")
     }
+    
+    func realmEncryptionKeyData() -> Data? {
+        if let key = UserDefaults.standard.data(forKey: "encryption_key") {
+            return key
+        } else {
+            var key = Data(count: 64)
+            _ = key.withUnsafeMutableBytes { pointer in
+                SecRandomCopyBytes(kSecRandomDefault, 64, pointer.baseAddress!)
+            }
+            UserDefaults.standard.set(key, forKey: "encryption_key")
+            return key
+        }
+    }
+    
+    func didTapTransactionCell(transactionID: String, viewController: UIViewController) {
+        
+    }
+    
+    func getSupportChatsAndManagers(callBack: @escaping (([String : Any]) -> Void)) {
+        let dict: [String: Any] = [
+            "supportChats": [
+                [
+                  "reception": 32,
+                  "name": "Цифра Брокер",
+                  "avatarUrl": "https://tradernet.ru/data/images/receptions_settings/file-6645cb72a5d69.png"
+                ],
+                [
+                  "reception": 36,
+                  "name": "FF Казахстан",
+                  "avatarUrl": nil
+                ]
+              ],
+              "personalManagers": [
+                [
+                  "userId": 3016423,
+                  "nickname": "Денис Черепков",
+                  "avatarUrl": nil
+                ],
+                [
+                  "userId": 1880932,
+                  "nickname": "Вера Заколодяжная",
+                  "avatarUrl": nil
+                ]
+              ],
+              "assistant": [
+                "name": "AI Ассистент",
+                "avatarUrl": "https://tradernet.ru/data/images/receptions_settings/file-6645cb72a5d69.png"
+              ]
+        ]
+        callBack(dict)
+    }
+    
+    func getMessageMeta() -> Dictionary<String, String> {
+        return ["platform": "iOS"]
+    }
+
+    func didOpenConversation(with peers: [String]) { }
+    
+    func didUpdateVoipToken(_ token: String) { }
 
 }

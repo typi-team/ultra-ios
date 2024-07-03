@@ -32,15 +32,18 @@ class MessageDBService {
                         messageInDB.state?.edited = message.state.edited
                         messageInDB.state?.delivered = message.state.delivered
                         messageInDB.seqNumber = Int64(message.seqNumber)
+                        PP.debug("[Message] [DB message update]: update \(message.id)")
                     } else {
                         realm.create(DBMessage.self,
                                      value: DBMessage(from: message, user: self.userID), update: .all)
+                        PP.debug("[Message] [DB message update]: created & saved \(message.id)")
                     }
                     
                 }
 
                 completable(.success(true))
             } catch {
+                PP.error("[Message] [DB message update]: Failed to save message \(message.id)")
                 completable(.failure(error))
             }
             return Disposables.create()
@@ -99,7 +102,7 @@ class MessageDBService {
         return Observable.create { observer in
             let realm = Realm.myRealm()
             let messages = realm.objects(DBMessage.self).where { $0.receiver.chatID.equals(chatID) }
-            let notificationKey = messages.observe(keyPaths: []) { changes in
+            let notificationKey = messages.observe(keyPaths: ["id", "text", "systemActionType", "state.read", "state.delivered", "state.edited"]) { changes in
                 switch changes {
                 case let .initial(collection):
                     observer.on(.next(collection.map({$0.toProto()})))
@@ -164,8 +167,10 @@ class MessageDBService {
                                  value: DBMessage(from: message, user: self.userID), update: .all)
                     
                 }
+                PP.debug("[Message] [DB message save]: successfully saved \(message.id)")
                 completable(.success(()))
             } catch {
+                PP.debug("[Message] [DB message save]: Failed to save \(message.id) \(error)")
                 completable(.failure(error))
             }
             return Disposables.create()
@@ -219,10 +224,11 @@ class MessageDBService {
         } else {
             conversation.unreadMessageCount = 0
         }
-        UnreadMessagesService.updateUnreadMessagesCount()
+        AppSettingsImpl.shared.updateRepository.triggerUnreadUpdate()
     }
     
     func deleteMessages(in conversationID: String, ranges: [ClosedRange<Int64>]) -> Single<Void> {
+        PP.debug("Attempt to delete messages in conversationID - \(conversationID) - \(ranges)")
         return Single.create(subscribe: {[weak self] observer -> Disposable in
             guard let `self` = self else { return Disposables.create() }
             do {
@@ -231,6 +237,7 @@ class MessageDBService {
                     let messages = realm.objects(DBMessage.self)
                         .filter({ $0.receiver?.chatID == conversationID })
                         .filter({ self.isInRanges(number: Int64($0.seqNumber), ranges: ranges) })
+                    PP.debug("Messages to delete - \((messages.compactMap { $0 } as [DBMessage]).map { $0.seqNumber })")
                     let notReadMessagesCount = messages.filter { $0.isIncome && $0.state?.read == false }.count
                     self.decreaseUnreadMessagesCount(in: conversationID, on: realm, count: notReadMessagesCount)
                     messages.forEach({ realm.delete($0) })
@@ -246,6 +253,7 @@ class MessageDBService {
     }
     
     func save(messages: [Message]) -> Single<Void> {
+        let messages = messages.filter { $0.shouldBeSaved }
         PP.debug("[Message] [DB MESSAGES save]: \(messages)")
         return Single.create {[weak self] completable in
             guard let `self` = self else { return Disposables.create() }
@@ -258,8 +266,10 @@ class MessageDBService {
                     }
                     
                 }
+                PP.debug("[Message] [DB MESSAGES save] Messages \(messages.map(\.id)) were saved")
                 completable(.success(()))
             } catch {
+                PP.debug("[Message] [DB MESSAGES save] Messages \(messages.map(\.id)) weren't saved \(error)")
                 completable(.failure(error))
             }
             return Disposables.create()

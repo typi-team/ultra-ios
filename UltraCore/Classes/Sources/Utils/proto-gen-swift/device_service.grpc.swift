@@ -20,6 +20,11 @@ internal protocol DeviceServiceClientProtocol: GRPCClient {
     _ request: DeviceRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<DeviceRequest, DeviceResponse>
+
+  func deleteDevice(
+    _ request: DeleteDeviceRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<DeleteDeviceRequest, DeviceResponse>
 }
 
 extension DeviceServiceClientProtocol {
@@ -42,6 +47,24 @@ extension DeviceServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeUpdateDeviceInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to DeleteDevice
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to DeleteDevice.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  internal func deleteDevice(
+    _ request: DeleteDeviceRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<DeleteDeviceRequest, DeviceResponse> {
+    return self.makeUnaryCall(
+      path: DeviceServiceClientMetadata.Methods.deleteDevice.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeDeleteDeviceInterceptors() ?? []
     )
   }
 }
@@ -112,6 +135,11 @@ internal protocol DeviceServiceAsyncClientProtocol: GRPCClient {
     _ request: DeviceRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<DeviceRequest, DeviceResponse>
+
+  func makeDeleteDeviceCall(
+    _ request: DeleteDeviceRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<DeleteDeviceRequest, DeviceResponse>
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -135,6 +163,18 @@ extension DeviceServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeUpdateDeviceInterceptors() ?? []
     )
   }
+
+  internal func makeDeleteDeviceCall(
+    _ request: DeleteDeviceRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<DeleteDeviceRequest, DeviceResponse> {
+    return self.makeAsyncUnaryCall(
+      path: DeviceServiceClientMetadata.Methods.deleteDevice.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeDeleteDeviceInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -148,6 +188,18 @@ extension DeviceServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeUpdateDeviceInterceptors() ?? []
+    )
+  }
+
+  internal func deleteDevice(
+    _ request: DeleteDeviceRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> DeviceResponse {
+    return try await self.performAsyncUnaryCall(
+      path: DeviceServiceClientMetadata.Methods.deleteDevice.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeDeleteDeviceInterceptors() ?? []
     )
   }
 }
@@ -173,6 +225,9 @@ internal protocol DeviceServiceClientInterceptorFactoryProtocol: Sendable {
 
   /// - Returns: Interceptors to use when invoking 'updateDevice'.
   func makeUpdateDeviceInterceptors() -> [ClientInterceptor<DeviceRequest, DeviceResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'deleteDevice'.
+  func makeDeleteDeviceInterceptors() -> [ClientInterceptor<DeleteDeviceRequest, DeviceResponse>]
 }
 
 internal enum DeviceServiceClientMetadata {
@@ -181,6 +236,7 @@ internal enum DeviceServiceClientMetadata {
     fullName: "DeviceService",
     methods: [
       DeviceServiceClientMetadata.Methods.updateDevice,
+      DeviceServiceClientMetadata.Methods.deleteDevice,
     ]
   )
 
@@ -188,6 +244,12 @@ internal enum DeviceServiceClientMetadata {
     internal static let updateDevice = GRPCMethodDescriptor(
       name: "UpdateDevice",
       path: "/DeviceService/UpdateDevice",
+      type: GRPCCallType.unary
+    )
+
+    internal static let deleteDevice = GRPCMethodDescriptor(
+      name: "DeleteDevice",
+      path: "/DeviceService/DeleteDevice",
       type: GRPCCallType.unary
     )
   }
@@ -198,6 +260,8 @@ internal protocol DeviceServiceProvider: CallHandlerProvider {
   var interceptors: DeviceServiceServerInterceptorFactoryProtocol? { get }
 
   func updateDevice(request: DeviceRequest, context: StatusOnlyCallContext) -> EventLoopFuture<DeviceResponse>
+
+  func deleteDevice(request: DeleteDeviceRequest, context: StatusOnlyCallContext) -> EventLoopFuture<DeviceResponse>
 }
 
 extension DeviceServiceProvider {
@@ -221,6 +285,15 @@ extension DeviceServiceProvider {
         userFunction: self.updateDevice(request:context:)
       )
 
+    case "DeleteDevice":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<DeleteDeviceRequest>(),
+        responseSerializer: ProtobufSerializer<DeviceResponse>(),
+        interceptors: self.interceptors?.makeDeleteDeviceInterceptors() ?? [],
+        userFunction: self.deleteDevice(request:context:)
+      )
+
     default:
       return nil
     }
@@ -235,6 +308,11 @@ internal protocol DeviceServiceAsyncProvider: CallHandlerProvider, Sendable {
 
   func updateDevice(
     request: DeviceRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> DeviceResponse
+
+  func deleteDevice(
+    request: DeleteDeviceRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> DeviceResponse
 }
@@ -267,6 +345,15 @@ extension DeviceServiceAsyncProvider {
         wrapping: { try await self.updateDevice(request: $0, context: $1) }
       )
 
+    case "DeleteDevice":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<DeleteDeviceRequest>(),
+        responseSerializer: ProtobufSerializer<DeviceResponse>(),
+        interceptors: self.interceptors?.makeDeleteDeviceInterceptors() ?? [],
+        wrapping: { try await self.deleteDevice(request: $0, context: $1) }
+      )
+
     default:
       return nil
     }
@@ -278,6 +365,10 @@ internal protocol DeviceServiceServerInterceptorFactoryProtocol: Sendable {
   /// - Returns: Interceptors to use when handling 'updateDevice'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeUpdateDeviceInterceptors() -> [ServerInterceptor<DeviceRequest, DeviceResponse>]
+
+  /// - Returns: Interceptors to use when handling 'deleteDevice'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeDeleteDeviceInterceptors() -> [ServerInterceptor<DeleteDeviceRequest, DeviceResponse>]
 }
 
 internal enum DeviceServiceServerMetadata {
@@ -286,6 +377,7 @@ internal enum DeviceServiceServerMetadata {
     fullName: "DeviceService",
     methods: [
       DeviceServiceServerMetadata.Methods.updateDevice,
+      DeviceServiceServerMetadata.Methods.deleteDevice,
     ]
   )
 
@@ -293,6 +385,12 @@ internal enum DeviceServiceServerMetadata {
     internal static let updateDevice = GRPCMethodDescriptor(
       name: "UpdateDevice",
       path: "/DeviceService/UpdateDevice",
+      type: GRPCCallType.unary
+    )
+
+    internal static let deleteDevice = GRPCMethodDescriptor(
+      name: "DeleteDevice",
+      path: "/DeviceService/DeleteDevice",
       type: GRPCCallType.unary
     )
   }

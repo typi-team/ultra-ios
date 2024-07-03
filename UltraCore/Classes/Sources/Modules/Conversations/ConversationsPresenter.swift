@@ -26,32 +26,86 @@ final class ConversationsPresenter: BasePresenter {
     fileprivate let contactToConversationInteractor: ContactToConversationInteractor
     fileprivate let resendMessagesInteractor: ResendingMessagesInteractor
     fileprivate let reachabilityInteractor: ReachabilityInteractor
+    fileprivate let isSupport: Bool
+    fileprivate var personalManagers: [String] = []
     
-    lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(conversationRepository.conversations(), updateRepository.typingUsers)
-        .map({ conversations, typingUsers in
-            return conversations.map { conversation in
-                var mutable = conversation
-                if let typing = typingUsers[conversation.idintification] {
-                    mutable.typingData.removeAll(where: {$0.userId == typing.userId})
-                    mutable.typingData.append(typing)
+    lazy var conversation: Observable<[Conversation]> = Observable.combineLatest(
+        conversationRepository.conversations(),
+        updateRepository.typingUsers,
+        updateRepository.updateSyncObservable.debug("Updated Sync"),
+        updateRepository.supportOfficesObservable
+    )
+        .map({ conversations, typingUsers, _, supportOffices in
+            let personalManagers = supportOffices?.personalManagers ?? []
+            let managers = personalManagers.map { String($0.userId) }
+            let offices = supportOffices?.supportChats ?? []
+            self.personalManagers = managers
+            return conversations
+                .map ({ conv in
+                    var conversation = conv
+                    if conversation.chatType == .peerToPeer {
+                        if let peer = conversation.peers.first, let manager = personalManagers.first(where: { String($0.userId) == peer.phone }) {
+                            conversation.title = manager.nickname
+                        } else {
+                            conversation.title = conversation.peers.first?.displaName ?? ""
+                        }
+                    }
+                    return conversation
+                })
+                .filter { [weak self] conversation in
+                    guard let self = self else {
+                        return true
+                    }
+//                    PP.debug("Conversation peers are \(conversation.peers.map(\.phone)); type - \(conversation.chatType) - \(conversation.title), chat ID - \(conversation.idintification); personal managers - \(self.personalManagers); isSupport - \(isSupport)")
+                    if isSupport {
+                        if conversation.chatType == .support && conversation.isAssistant {
+                            return supportOffices?.assistant != nil
+                        } else if conversation.chatType == .support {
+                            return true
+                        } else if conversation.chatType == .peerToPeer {
+                            guard let peer = conversation.peers.first else {
+                                return false
+                            }
+                            return managers.contains(where: { $0 == peer.phone })
+                        } else {
+                            return false
+                        }
+                    } else if conversation.chatType == .peerToPeer {
+                        return conversation.lastMessage != nil
+                    }
+                    
+                    return conversation.chatType != .support
                 }
-                return mutable
-            }
+                .sorted(by: { conv1, conv2 in
+                    return conv1.isAssistant
+                })
+                .map { conversation in
+                    var mutable = conversation
+                    if let typing = typingUsers[conversation.idintification] {
+                        mutable.typingData.removeAll(where: {$0.userId == typing.userId})
+                        mutable.typingData.append(typing)
+                    }
+                    return mutable
+                }
         })
     
     // MARK: - Lifecycle -
 
-    init(view: ConversationsViewInterface,
-         updateRepository: UpdateRepository,
-         contactDBService: ContactDBService,
-         wireframe: ConversationsWireframeInterface,
-         conversationRepository: ConversationRepository,
-         contactByUserIdInteractor: ContactByUserIdInteractor,
-         deleteConversationInteractor: UseCase<(Conversation,Bool), Void>,
-         contactToConversationInteractor: ContactToConversationInteractor,
-         resendMessagesInteractor: ResendingMessagesInteractor,
-         reachabilityInteractor: ReachabilityInteractor) {
+    init(
+        view: ConversationsViewInterface,
+        isSupport: Bool,
+        updateRepository: UpdateRepository,
+        contactDBService: ContactDBService,
+        wireframe: ConversationsWireframeInterface,
+        conversationRepository: ConversationRepository,
+        contactByUserIdInteractor: ContactByUserIdInteractor,
+        deleteConversationInteractor: UseCase<(Conversation,Bool), Void>,
+        contactToConversationInteractor: ContactToConversationInteractor,
+        resendMessagesInteractor: ResendingMessagesInteractor,
+        reachabilityInteractor: ReachabilityInteractor
+    ) {
         self.view = view
+        self.isSupport = isSupport
         self.wireframe = wireframe
         self.updateRepository = updateRepository
         self.contactDBService = contactDBService
@@ -68,6 +122,10 @@ final class ConversationsPresenter: BasePresenter {
 
 extension ConversationsPresenter: ConversationsPresenterInterface {
     
+    var isSupportScreen: Bool {
+        self.isSupport
+    }
+    
     func viewDidLoad() {
         startReachibilityNotifier()
     }
@@ -79,20 +137,26 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
             .subscribe()
             .disposed(by: disposeBag)
     }
-
-    func startPingPong() {
-        UltraCoreSettings.updateSession { _ in }
-    }
-
-    func stopPingPong() {
-        self.updateRepository.stopSession()
-    }
     
     func navigate(to conversation: Conversation) {
         self.updateRepository.readAll(in: conversation)
-        self.wireframe.navigateToConversation(with: conversation)
+        if let peer = conversation.peers.first, personalManagers.contains(where: { $0 == peer.phone }) {
+            self.wireframe.navigateToConversation(with: conversation, isPersonalManager: true)
+        } else {
+            self.wireframe.navigateToConversation(with: conversation, isPersonalManager: false)
+        }
     }
     
+    func isManager(conversation: Conversation) -> Bool {
+        if conversation.chatType == .peerToPeer {
+            guard let peer = conversation.peers.first else {
+                return false
+            }
+            return personalManagers.contains(where: { $0 == peer.phone })
+        }
+        
+        return false
+    }
     
     func navigateToContacts() {
         self.wireframe.navigateToContacts(
@@ -112,8 +176,13 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { [weak self] conversation in
+                guard let self = self else { return }
                 if let conversation = conversation {
-                    self?.wireframe.navigateToConversation(with: conversation)
+                    if let peer = conversation.peers.first, personalManagers.contains(where: { $0 == peer.phone }) {
+                        self.wireframe.navigateToConversation(with: conversation, isPersonalManager: true)
+                    } else {
+                        self.wireframe.navigateToConversation(with: conversation, isPersonalManager: false)
+                    }
                 }
             })
             .disposed(by: disposeBag)
@@ -121,6 +190,7 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
     
     private func startReachibilityNotifier() {
         reachabilityInteractor.execute(params: ())
+            .debug("Reachability")
             .subscribe(onNext: { [weak self] _ in
                 guard let self else { return }
                 self.resendMessagesInteractor

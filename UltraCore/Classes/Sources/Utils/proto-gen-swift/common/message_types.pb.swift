@@ -475,6 +475,121 @@ struct Receiver {
   init() {}
 }
 
+struct SystemActionChatCreate {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var title: String = String()
+
+  var members: [String] = []
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct SystemActionChatEditTitle {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var title: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct SystemActionChatAddMember {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var members: [String] = []
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct SystemActionChatDeleteMember {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var member: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct SystemActionChatEditPhoto {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var photo: Photo {
+    get {return _photo ?? Photo()}
+    set {_photo = newValue}
+  }
+  /// Returns true if `photo` has been explicitly set.
+  var hasPhoto: Bool {return self._photo != nil}
+  /// Clears the value of `photo`. Subsequent reads from it will return its default value.
+  mutating func clearPhoto() {self._photo = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _photo: Photo? = nil
+}
+
+struct SystemActionChatDeletePhoto {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct SystemActionSupportManagerAssigned {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var userID: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct SystemActionCustom {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct SystemActionSupportStatusChanged {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var status: SupportChatStatusEnum = .supportChatStatusClosed
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 struct Message {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -626,6 +741,96 @@ struct Message {
     set {_uniqueStorage()._content = .coin(newValue)}
   }
 
+  var call: CallMessage {
+    get {
+      if case .call(let v)? = _storage._content {return v}
+      return CallMessage()
+    }
+    set {_uniqueStorage()._content = .call(newValue)}
+  }
+
+  var systemAction: OneOf_SystemAction? {
+    get {return _storage._systemAction}
+    set {_uniqueStorage()._systemAction = newValue}
+  }
+
+  var chatCreated: SystemActionChatCreate {
+    get {
+      if case .chatCreated(let v)? = _storage._systemAction {return v}
+      return SystemActionChatCreate()
+    }
+    set {_uniqueStorage()._systemAction = .chatCreated(newValue)}
+  }
+
+  var titleEdited: SystemActionChatEditTitle {
+    get {
+      if case .titleEdited(let v)? = _storage._systemAction {return v}
+      return SystemActionChatEditTitle()
+    }
+    set {_uniqueStorage()._systemAction = .titleEdited(newValue)}
+  }
+
+  var membersAdded: SystemActionChatAddMember {
+    get {
+      if case .membersAdded(let v)? = _storage._systemAction {return v}
+      return SystemActionChatAddMember()
+    }
+    set {_uniqueStorage()._systemAction = .membersAdded(newValue)}
+  }
+
+  var memberDeleted: SystemActionChatDeleteMember {
+    get {
+      if case .memberDeleted(let v)? = _storage._systemAction {return v}
+      return SystemActionChatDeleteMember()
+    }
+    set {_uniqueStorage()._systemAction = .memberDeleted(newValue)}
+  }
+
+  var photoEdited: SystemActionChatEditPhoto {
+    get {
+      if case .photoEdited(let v)? = _storage._systemAction {return v}
+      return SystemActionChatEditPhoto()
+    }
+    set {_uniqueStorage()._systemAction = .photoEdited(newValue)}
+  }
+
+  var photoDeleted: SystemActionChatDeletePhoto {
+    get {
+      if case .photoDeleted(let v)? = _storage._systemAction {return v}
+      return SystemActionChatDeletePhoto()
+    }
+    set {_uniqueStorage()._systemAction = .photoDeleted(newValue)}
+  }
+
+  var supportManagerAssigned: SystemActionSupportManagerAssigned {
+    get {
+      if case .supportManagerAssigned(let v)? = _storage._systemAction {return v}
+      return SystemActionSupportManagerAssigned()
+    }
+    set {_uniqueStorage()._systemAction = .supportManagerAssigned(newValue)}
+  }
+
+  var supportStatusChanged: SystemActionSupportStatusChanged {
+    get {
+      if case .supportStatusChanged(let v)? = _storage._systemAction {return v}
+      return SystemActionSupportStatusChanged()
+    }
+    set {_uniqueStorage()._systemAction = .supportStatusChanged(newValue)}
+  }
+
+  var customTextSended: SystemActionCustom {
+    get {
+      if case .customTextSended(let v)? = _storage._systemAction {return v}
+      return SystemActionCustom()
+    }
+    set {_uniqueStorage()._systemAction = .customTextSended(newValue)}
+  }
+
+  var properties: Dictionary<String,String> {
+    get {return _storage._properties}
+    set {_uniqueStorage()._properties = newValue}
+  }
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   enum OneOf_Content: Equatable {
@@ -639,6 +844,7 @@ struct Message {
     case contact(ContactMessage)
     case stock(StockMessage)
     case coin(CoinMessage)
+    case call(CallMessage)
 
   #if !swift(>=4.1)
     static func ==(lhs: Message.OneOf_Content, rhs: Message.OneOf_Content) -> Bool {
@@ -686,6 +892,69 @@ struct Message {
         guard case .coin(let l) = lhs, case .coin(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
+      case (.call, .call): return {
+        guard case .call(let l) = lhs, case .call(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      default: return false
+      }
+    }
+  #endif
+  }
+
+  enum OneOf_SystemAction: Equatable {
+    case chatCreated(SystemActionChatCreate)
+    case titleEdited(SystemActionChatEditTitle)
+    case membersAdded(SystemActionChatAddMember)
+    case memberDeleted(SystemActionChatDeleteMember)
+    case photoEdited(SystemActionChatEditPhoto)
+    case photoDeleted(SystemActionChatDeletePhoto)
+    case supportManagerAssigned(SystemActionSupportManagerAssigned)
+    case supportStatusChanged(SystemActionSupportStatusChanged)
+    case customTextSended(SystemActionCustom)
+
+  #if !swift(>=4.1)
+    static func ==(lhs: Message.OneOf_SystemAction, rhs: Message.OneOf_SystemAction) -> Bool {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch (lhs, rhs) {
+      case (.chatCreated, .chatCreated): return {
+        guard case .chatCreated(let l) = lhs, case .chatCreated(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.titleEdited, .titleEdited): return {
+        guard case .titleEdited(let l) = lhs, case .titleEdited(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.membersAdded, .membersAdded): return {
+        guard case .membersAdded(let l) = lhs, case .membersAdded(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.memberDeleted, .memberDeleted): return {
+        guard case .memberDeleted(let l) = lhs, case .memberDeleted(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.photoEdited, .photoEdited): return {
+        guard case .photoEdited(let l) = lhs, case .photoEdited(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.photoDeleted, .photoDeleted): return {
+        guard case .photoDeleted(let l) = lhs, case .photoDeleted(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.supportManagerAssigned, .supportManagerAssigned): return {
+        guard case .supportManagerAssigned(let l) = lhs, case .supportManagerAssigned(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.supportStatusChanged, .supportStatusChanged): return {
+        guard case .supportStatusChanged(let l) = lhs, case .supportStatusChanged(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.customTextSended, .customTextSended): return {
+        guard case .customTextSended(let l) = lhs, case .customTextSended(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
       default: return false
       }
     }
@@ -718,6 +987,27 @@ struct MessagesRange {
   init() {}
 }
 
+struct CallMessage {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var status: CallStatusEnum = .callStatusCreated
+
+  /// timestamp in unix micro
+  var startTime: Int64 = 0
+
+  /// timestamp in unix micro
+  var endTime: Int64 = 0
+
+  /// room id/name
+  var room: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 #if swift(>=5.5) && canImport(_Concurrency)
 extension MessageState: @unchecked Sendable {}
 extension Money: @unchecked Sendable {}
@@ -740,9 +1030,20 @@ extension CoinMessage: @unchecked Sendable {}
 extension VideoMessage: @unchecked Sendable {}
 extension Sender: @unchecked Sendable {}
 extension Receiver: @unchecked Sendable {}
+extension SystemActionChatCreate: @unchecked Sendable {}
+extension SystemActionChatEditTitle: @unchecked Sendable {}
+extension SystemActionChatAddMember: @unchecked Sendable {}
+extension SystemActionChatDeleteMember: @unchecked Sendable {}
+extension SystemActionChatEditPhoto: @unchecked Sendable {}
+extension SystemActionChatDeletePhoto: @unchecked Sendable {}
+extension SystemActionSupportManagerAssigned: @unchecked Sendable {}
+extension SystemActionCustom: @unchecked Sendable {}
+extension SystemActionSupportStatusChanged: @unchecked Sendable {}
 extension Message: @unchecked Sendable {}
 extension Message.OneOf_Content: @unchecked Sendable {}
+extension Message.OneOf_SystemAction: @unchecked Sendable {}
 extension MessagesRange: @unchecked Sendable {}
+extension CallMessage: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -1753,6 +2054,278 @@ extension Receiver: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationB
   }
 }
 
+extension SystemActionChatCreate: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "SystemActionChatCreate"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "title"),
+    3: .same(proto: "members"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.title) }()
+      case 3: try { try decoder.decodeRepeatedStringField(value: &self.members) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.title.isEmpty {
+      try visitor.visitSingularStringField(value: self.title, fieldNumber: 1)
+    }
+    if !self.members.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.members, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: SystemActionChatCreate, rhs: SystemActionChatCreate) -> Bool {
+    if lhs.title != rhs.title {return false}
+    if lhs.members != rhs.members {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SystemActionChatEditTitle: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "SystemActionChatEditTitle"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "title"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.title) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.title.isEmpty {
+      try visitor.visitSingularStringField(value: self.title, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: SystemActionChatEditTitle, rhs: SystemActionChatEditTitle) -> Bool {
+    if lhs.title != rhs.title {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SystemActionChatAddMember: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "SystemActionChatAddMember"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "members"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedStringField(value: &self.members) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.members.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.members, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: SystemActionChatAddMember, rhs: SystemActionChatAddMember) -> Bool {
+    if lhs.members != rhs.members {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SystemActionChatDeleteMember: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "SystemActionChatDeleteMember"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "member"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.member) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.member.isEmpty {
+      try visitor.visitSingularStringField(value: self.member, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: SystemActionChatDeleteMember, rhs: SystemActionChatDeleteMember) -> Bool {
+    if lhs.member != rhs.member {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SystemActionChatEditPhoto: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "SystemActionChatEditPhoto"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "photo"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._photo) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._photo {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: SystemActionChatEditPhoto, rhs: SystemActionChatEditPhoto) -> Bool {
+    if lhs._photo != rhs._photo {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SystemActionChatDeletePhoto: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "SystemActionChatDeletePhoto"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let _ = try decoder.nextFieldNumber() {
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: SystemActionChatDeletePhoto, rhs: SystemActionChatDeletePhoto) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SystemActionSupportManagerAssigned: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "SystemActionSupportManagerAssigned"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "user_id"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.userID) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.userID.isEmpty {
+      try visitor.visitSingularStringField(value: self.userID, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: SystemActionSupportManagerAssigned, rhs: SystemActionSupportManagerAssigned) -> Bool {
+    if lhs.userID != rhs.userID {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SystemActionCustom: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "SystemActionCustom"
+  static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let _ = try decoder.nextFieldNumber() {
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: SystemActionCustom, rhs: SystemActionCustom) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension SystemActionSupportStatusChanged: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "SystemActionSupportStatusChanged"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "status"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.status) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.status != .supportChatStatusClosed {
+      try visitor.visitSingularEnumField(value: self.status, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: SystemActionSupportStatusChanged, rhs: SystemActionSupportStatusChanged) -> Bool {
+    if lhs.status != rhs.status {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "Message"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -1775,6 +2348,17 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     17: .same(proto: "contact"),
     18: .same(proto: "stock"),
     19: .same(proto: "coin"),
+    20: .same(proto: "call"),
+    21: .same(proto: "chatCreated"),
+    22: .same(proto: "titleEdited"),
+    23: .same(proto: "membersAdded"),
+    24: .same(proto: "memberDeleted"),
+    25: .same(proto: "photoEdited"),
+    26: .same(proto: "photoDeleted"),
+    27: .same(proto: "supportManagerAssigned"),
+    28: .same(proto: "supportStatusChanged"),
+    30: .same(proto: "customTextSended"),
+    29: .same(proto: "properties"),
   ]
 
   fileprivate class _StorageClass {
@@ -1788,6 +2372,8 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     var _type: MessageTypeEnum = .text
     var _text: String = String()
     var _content: Message.OneOf_Content?
+    var _systemAction: Message.OneOf_SystemAction?
+    var _properties: Dictionary<String,String> = [:]
 
     static let defaultInstance = _StorageClass()
 
@@ -1804,6 +2390,8 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
       _type = source._type
       _text = source._text
       _content = source._content
+      _systemAction = source._systemAction
+      _properties = source._properties
     }
   }
 
@@ -1961,6 +2549,137 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
             _storage._content = .coin(v)
           }
         }()
+        case 20: try {
+          var v: CallMessage?
+          var hadOneofValue = false
+          if let current = _storage._content {
+            hadOneofValue = true
+            if case .call(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._content = .call(v)
+          }
+        }()
+        case 21: try {
+          var v: SystemActionChatCreate?
+          var hadOneofValue = false
+          if let current = _storage._systemAction {
+            hadOneofValue = true
+            if case .chatCreated(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._systemAction = .chatCreated(v)
+          }
+        }()
+        case 22: try {
+          var v: SystemActionChatEditTitle?
+          var hadOneofValue = false
+          if let current = _storage._systemAction {
+            hadOneofValue = true
+            if case .titleEdited(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._systemAction = .titleEdited(v)
+          }
+        }()
+        case 23: try {
+          var v: SystemActionChatAddMember?
+          var hadOneofValue = false
+          if let current = _storage._systemAction {
+            hadOneofValue = true
+            if case .membersAdded(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._systemAction = .membersAdded(v)
+          }
+        }()
+        case 24: try {
+          var v: SystemActionChatDeleteMember?
+          var hadOneofValue = false
+          if let current = _storage._systemAction {
+            hadOneofValue = true
+            if case .memberDeleted(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._systemAction = .memberDeleted(v)
+          }
+        }()
+        case 25: try {
+          var v: SystemActionChatEditPhoto?
+          var hadOneofValue = false
+          if let current = _storage._systemAction {
+            hadOneofValue = true
+            if case .photoEdited(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._systemAction = .photoEdited(v)
+          }
+        }()
+        case 26: try {
+          var v: SystemActionChatDeletePhoto?
+          var hadOneofValue = false
+          if let current = _storage._systemAction {
+            hadOneofValue = true
+            if case .photoDeleted(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._systemAction = .photoDeleted(v)
+          }
+        }()
+        case 27: try {
+          var v: SystemActionSupportManagerAssigned?
+          var hadOneofValue = false
+          if let current = _storage._systemAction {
+            hadOneofValue = true
+            if case .supportManagerAssigned(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._systemAction = .supportManagerAssigned(v)
+          }
+        }()
+        case 28: try {
+          var v: SystemActionSupportStatusChanged?
+          var hadOneofValue = false
+          if let current = _storage._systemAction {
+            hadOneofValue = true
+            if case .supportStatusChanged(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._systemAction = .supportStatusChanged(v)
+          }
+        }()
+        case 29: try { try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: &_storage._properties) }()
+        case 30: try {
+          var v: SystemActionCustom?
+          var hadOneofValue = false
+          if let current = _storage._systemAction {
+            hadOneofValue = true
+            if case .customTextSended(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {
+            if hadOneofValue {try decoder.handleConflictingOneOf()}
+            _storage._systemAction = .customTextSended(v)
+          }
+        }()
         default: break
         }
       }
@@ -2041,8 +2760,53 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
         guard case .coin(let v)? = _storage._content else { preconditionFailure() }
         try visitor.visitSingularMessageField(value: v, fieldNumber: 19)
       }()
+      case .call?: try {
+        guard case .call(let v)? = _storage._content else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 20)
+      }()
       case nil: break
       }
+      switch _storage._systemAction {
+      case .chatCreated?: try {
+        guard case .chatCreated(let v)? = _storage._systemAction else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 21)
+      }()
+      case .titleEdited?: try {
+        guard case .titleEdited(let v)? = _storage._systemAction else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 22)
+      }()
+      case .membersAdded?: try {
+        guard case .membersAdded(let v)? = _storage._systemAction else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 23)
+      }()
+      case .memberDeleted?: try {
+        guard case .memberDeleted(let v)? = _storage._systemAction else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 24)
+      }()
+      case .photoEdited?: try {
+        guard case .photoEdited(let v)? = _storage._systemAction else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 25)
+      }()
+      case .photoDeleted?: try {
+        guard case .photoDeleted(let v)? = _storage._systemAction else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 26)
+      }()
+      case .supportManagerAssigned?: try {
+        guard case .supportManagerAssigned(let v)? = _storage._systemAction else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 27)
+      }()
+      case .supportStatusChanged?: try {
+        guard case .supportStatusChanged(let v)? = _storage._systemAction else { preconditionFailure() }
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 28)
+      }()
+      default: break
+      }
+      if !_storage._properties.isEmpty {
+        try visitor.visitMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: _storage._properties, fieldNumber: 29)
+      }
+      try { if case .customTextSended(let v)? = _storage._systemAction {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 30)
+      } }()
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2062,6 +2826,8 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
         if _storage._type != rhs_storage._type {return false}
         if _storage._text != rhs_storage._text {return false}
         if _storage._content != rhs_storage._content {return false}
+        if _storage._systemAction != rhs_storage._systemAction {return false}
+        if _storage._properties != rhs_storage._properties {return false}
         return true
       }
       if !storagesAreEqual {return false}
@@ -2104,6 +2870,56 @@ extension MessagesRange: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   static func ==(lhs: MessagesRange, rhs: MessagesRange) -> Bool {
     if lhs.maxSeqNumber != rhs.maxSeqNumber {return false}
     if lhs.minSeqNumber != rhs.minSeqNumber {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension CallMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "CallMessage"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "status"),
+    2: .standard(proto: "start_time"),
+    3: .standard(proto: "end_time"),
+    4: .same(proto: "room"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.status) }()
+      case 2: try { try decoder.decodeSingularInt64Field(value: &self.startTime) }()
+      case 3: try { try decoder.decodeSingularInt64Field(value: &self.endTime) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.room) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.status != .callStatusCreated {
+      try visitor.visitSingularEnumField(value: self.status, fieldNumber: 1)
+    }
+    if self.startTime != 0 {
+      try visitor.visitSingularInt64Field(value: self.startTime, fieldNumber: 2)
+    }
+    if self.endTime != 0 {
+      try visitor.visitSingularInt64Field(value: self.endTime, fieldNumber: 3)
+    }
+    if !self.room.isEmpty {
+      try visitor.visitSingularStringField(value: self.room, fieldNumber: 4)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: CallMessage, rhs: CallMessage) -> Bool {
+    if lhs.status != rhs.status {return false}
+    if lhs.startTime != rhs.startTime {return false}
+    if lhs.endTime != rhs.endTime {return false}
+    if lhs.room != rhs.room {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

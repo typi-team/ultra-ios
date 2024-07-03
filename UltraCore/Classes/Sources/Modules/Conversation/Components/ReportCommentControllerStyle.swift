@@ -14,6 +14,7 @@ public protocol ReportCommentControllerStyle {
     var headlineConfig: LabelConfig { get set }
     var textFieldConfig: LabelConfig { get set }
     var textFieldBackgroundColor: TwiceColor { get set }
+    var textFieldEraseImage: TwiceImage { get set }
     var reportButtonConfig: ElevatedButtonStyle { get set }
     var cancelButtonConfig: ElevatedButtonStyle { get set }
 }
@@ -34,6 +35,8 @@ class ReportCommentControllerStyleImpl: ReportCommentControllerStyle {
                                                             tintColor: TwiceColorImpl(defaultColor: .black, darkColor: .white))
     
     var textFieldBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white, darkColor: .clear)
+    
+    var textFieldEraseImage: TwiceImage = TwiceImageImpl(dark: .named("conversation_erase")!, default: .named("conversation_erase")!)
     
     var reportButtonConfig: ElevatedButtonStyle = ElevatedButtonStyleImpl()
     

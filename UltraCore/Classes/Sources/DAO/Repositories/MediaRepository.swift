@@ -25,9 +25,9 @@ protocol MediaRepository {
         isVoice: Bool,
         onPreUploadingFile: (MessageSendRequest) -> Void
     ) -> Single<MessageSendRequest>
-    func upload(message: Message) -> Single<MessageSendRequest>
     func createAudioGraphImage(from path: String, image: UIImage, completion: @escaping (() -> Void))
     func audioGraphImage(from path: String) -> UIImage?
+    func upload(message: Message, conversation: Conversation) -> Single<MessageSendRequest>
 }
 
 class MediaRepositoryImpl {
@@ -59,6 +59,7 @@ class MediaRepositoryImpl {
 }
 
 extension MediaRepositoryImpl: MediaRepository {
+    
     func mediaURL(from message: Message) -> URL? {
         return mediaUtils.mediaURL(from: message)
     }
@@ -216,8 +217,11 @@ private extension MediaRepositoryImpl {
             photo.width = Int32(file.width)
             photo.fileID = UUID().uuidString
         })
+        if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+            message.properties = messageMeta
+        }
         preUploading(message: message, file: file, conversation: conversation, onCompletion: onPreUploadingFile)
-        return upload(message: message)
+        return upload(message: message, conversation: conversation)
     }
     
     func uploadFile(by file: FileUpload, in conversation: Conversation, onPreUploadingFile: (MessageSendRequest) -> Void) -> Single<MessageSendRequest> {
@@ -228,8 +232,11 @@ private extension MediaRepositoryImpl {
             photo.fileName = file.filename
             photo.fileID = UUID().uuidString
         })
+        if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+            message.properties = messageMeta
+        }
         preUploading(message: message, file: file, conversation: conversation, onCompletion: onPreUploadingFile)
-        return upload(message: message)
+        return upload(message: message, conversation: conversation)
     }
     
     func uploadVideo(by file: FileUpload, in conversation: Conversation, onPreUploadingFile: (MessageSendRequest) -> Void) -> Single<MessageSendRequest> {
@@ -242,8 +249,11 @@ private extension MediaRepositoryImpl {
             photo.width = Int32(file.width)
             photo.fileID = UUID().uuidString
         })
+        if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+            message.properties = messageMeta
+        }
         preUploading(message: message, file: file, conversation: conversation, onCompletion: onPreUploadingFile)
-        return uploadVideo(message: message)
+        return uploadVideo(message: message, conversation: conversation)
     }
     
     func uploadVoice(by file: FileUpload, in conversation: Conversation, onPreUploadingFile: (MessageSendRequest) -> Void) -> Single<MessageSendRequest> {
@@ -255,8 +265,11 @@ private extension MediaRepositoryImpl {
             photo.fileName = file.filename
             photo.fileID = UUID().uuidString
         })
+        if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+            message.properties = messageMeta
+        }
         preUploading(message: message, file: file, conversation: conversation, onCompletion: onPreUploadingFile)
-        return upload(message: message)
+        return upload(message: message, conversation: conversation)
     }
     
     private func preUploading(
@@ -287,9 +300,15 @@ private extension MediaRepositoryImpl {
             }
             try mediaUtils.write(file.data, file: originalFileId, and: extensions)
             let request = MessageSendRequest.with({ req in
-                req.peer.user = .with({ peer in
-                    peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
-                })
+                if conversation.chatType == .peerToPeer {
+                    req.peer.user = .with({ peer in
+                        peer.userID = conversation.peers.first?.userID ?? ""
+                    })
+                } else {
+                    req.peer.chat = .with({ chat in
+                        chat.chatID = conversation.idintification
+                    })
+                }
                 req.message = message
             })
             onCompletion(request)
@@ -299,16 +318,16 @@ private extension MediaRepositoryImpl {
 
 extension MediaRepositoryImpl {
     
-    func upload(message: Message) -> Single<MessageSendRequest> {
+    func upload(message: Message, conversation: Conversation) -> Single<MessageSendRequest> {
         switch message.content {
         case .video:
-            return uploadVideo(message: message)
+            return uploadVideo(message: message, conversation: conversation)
         default:
-            return uploadMedia(message: message)
+            return uploadMedia(message: message, conversation: conversation)
         }
     }
     
-    private func uploadMedia(message: Message) -> Single<MessageSendRequest> {
+    private func uploadMedia(message: Message, conversation: Conversation) -> Single<MessageSendRequest> {
         guard let url = mediaUtils.mediaURL(from: message),
                 let data = getDataFromURL(url: url) else {
             return Single.error(NSError.objectsIsNill)
@@ -384,9 +403,7 @@ extension MediaRepositoryImpl {
             })
             .map({ _ -> MessageSendRequest in
                 MessageSendRequest.with({ req in
-                    req.peer.user = .with({ peer in
-                        peer.userID = message.receiver.userID
-                    })
+                    req.updatePeer(with: conversation)
                     req.message = message
                 })
             })
@@ -402,7 +419,7 @@ extension MediaRepositoryImpl {
             })
     }
     
-    private func uploadVideo(message: Message) -> Single<MessageSendRequest>  {
+    private func uploadVideo(message: Message, conversation: Conversation) -> Single<MessageSendRequest>  {
         guard let url = mediaUtils.mediaURL(from: message),
                 let data = getDataFromURL(url: url) else {
             return Single.error(NSError.objectsIsNill)
@@ -480,9 +497,7 @@ extension MediaRepositoryImpl {
             })
             .map({ _ -> MessageSendRequest in
                 return MessageSendRequest.with({ req in
-                    req.peer.user = .with({ peer in
-                        peer.userID = message.receiver.userID
-                    })
+                    req.updatePeer(with: conversation)
                     req.message = message
                 })
             })

@@ -43,7 +43,7 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
     
     private lazy var backButton: UIButton = {
         let button = UIButton(type: .custom)
-        button.setImage(UIImage.named("icon_back_button")?.withRenderingMode(.alwaysTemplate), for: .normal)
+        button.setImage(UltraCoreStyle.backButton?.image, for: .normal)
         button.tintColor = style.backButtonTint.color
         button.imageView?.tintColor = style.backButtonTint.color
         button.addTarget(self, action: #selector(didTapBack), for: .touchUpInside)
@@ -153,7 +153,7 @@ final class IncomingCallViewController: BaseViewController<IncomingCallPresenter
     
     func setSpeaker(_ isEnabled: Bool) {
         PP.debug("[CALL] Set speaker enabled - \(isEnabled)")
-        AudioManager.shared.preferSpeakerOutput = isEnabled
+        AudioManager.shared.isSpeakerOutputPreferred = isEnabled
     }
     
     @objc private func didTapBack() {

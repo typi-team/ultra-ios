@@ -20,16 +20,26 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
+/// Represents chat member
 struct ChatMember {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
+  /// User id
   var id: String = String()
 
+  /// Determines is the member is currently authorized user
   var isCaller: Bool = false
 
   var type: UserTypeEnum = .userTypeUnknown
+
+  /// admin of the chat, can be assigned by owner or other
+  /// admin, owner user gets admin access as well
+  var isAdmin: Bool = false
+
+  /// creator of the chat, can't be assigned
+  var isOwner: Bool = false
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -51,6 +61,23 @@ struct ChatSettings {
   /// then call will not be allowed in case receiver is not
   /// added sender to contacts
   var callAllowed: Bool = false
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct SupportChatSettings {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var status: SupportChatStatusEnum = .supportChatStatusClosed
+
+  var assignedSupportManager: String = String()
+
+  /// Format: UnixMicro
+  var postponedTime: Int64 = 0
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -83,11 +110,23 @@ struct Chat {
   /// Clears the value of `settings`. Subsequent reads from it will return its default value.
   mutating func clearSettings() {self._settings = nil}
 
+  var supportSettings: SupportChatSettings {
+    get {return _supportSettings ?? SupportChatSettings()}
+    set {_supportSettings = newValue}
+  }
+  /// Returns true if `supportSettings` has been explicitly set.
+  var hasSupportSettings: Bool {return self._supportSettings != nil}
+  /// Clears the value of `supportSettings`. Subsequent reads from it will return its default value.
+  mutating func clearSupportSettings() {self._supportSettings = nil}
+
+  var properties: Dictionary<String,String> = [:]
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
   fileprivate var _settings: ChatSettings? = nil
+  fileprivate var _supportSettings: SupportChatSettings? = nil
 }
 
 struct PeerUser {
@@ -169,6 +208,7 @@ struct Peer {
 #if swift(>=5.5) && canImport(_Concurrency)
 extension ChatMember: @unchecked Sendable {}
 extension ChatSettings: @unchecked Sendable {}
+extension SupportChatSettings: @unchecked Sendable {}
 extension Chat: @unchecked Sendable {}
 extension PeerUser: @unchecked Sendable {}
 extension PeerChat: @unchecked Sendable {}
@@ -184,6 +224,8 @@ extension ChatMember: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     1: .same(proto: "id"),
     2: .standard(proto: "is_caller"),
     3: .same(proto: "type"),
+    4: .standard(proto: "is_admin"),
+    5: .standard(proto: "is_owner"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -195,6 +237,8 @@ extension ChatMember: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
       case 1: try { try decoder.decodeSingularStringField(value: &self.id) }()
       case 2: try { try decoder.decodeSingularBoolField(value: &self.isCaller) }()
       case 3: try { try decoder.decodeSingularEnumField(value: &self.type) }()
+      case 4: try { try decoder.decodeSingularBoolField(value: &self.isAdmin) }()
+      case 5: try { try decoder.decodeSingularBoolField(value: &self.isOwner) }()
       default: break
       }
     }
@@ -210,6 +254,12 @@ extension ChatMember: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     if self.type != .userTypeUnknown {
       try visitor.visitSingularEnumField(value: self.type, fieldNumber: 3)
     }
+    if self.isAdmin != false {
+      try visitor.visitSingularBoolField(value: self.isAdmin, fieldNumber: 4)
+    }
+    if self.isOwner != false {
+      try visitor.visitSingularBoolField(value: self.isOwner, fieldNumber: 5)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -217,6 +267,8 @@ extension ChatMember: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementatio
     if lhs.id != rhs.id {return false}
     if lhs.isCaller != rhs.isCaller {return false}
     if lhs.type != rhs.type {return false}
+    if lhs.isAdmin != rhs.isAdmin {return false}
+    if lhs.isOwner != rhs.isOwner {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -260,6 +312,50 @@ extension ChatSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
   }
 }
 
+extension SupportChatSettings: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "SupportChatSettings"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "status"),
+    2: .standard(proto: "assigned_support_manager"),
+    3: .standard(proto: "postponed_time"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.status) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.assignedSupportManager) }()
+      case 3: try { try decoder.decodeSingularInt64Field(value: &self.postponedTime) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.status != .supportChatStatusClosed {
+      try visitor.visitSingularEnumField(value: self.status, fieldNumber: 1)
+    }
+    if !self.assignedSupportManager.isEmpty {
+      try visitor.visitSingularStringField(value: self.assignedSupportManager, fieldNumber: 2)
+    }
+    if self.postponedTime != 0 {
+      try visitor.visitSingularInt64Field(value: self.postponedTime, fieldNumber: 3)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: SupportChatSettings, rhs: SupportChatSettings) -> Bool {
+    if lhs.status != rhs.status {return false}
+    if lhs.assignedSupportManager != rhs.assignedSupportManager {return false}
+    if lhs.postponedTime != rhs.postponedTime {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension Chat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "Chat"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -270,6 +366,8 @@ extension Chat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     5: .same(proto: "members"),
     6: .same(proto: "messageSeqNumber"),
     7: .same(proto: "settings"),
+    8: .same(proto: "supportSettings"),
+    9: .same(proto: "properties"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -285,6 +383,8 @@ extension Chat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
       case 5: try { try decoder.decodeRepeatedMessageField(value: &self.members) }()
       case 6: try { try decoder.decodeSingularUInt64Field(value: &self.messageSeqNumber) }()
       case 7: try { try decoder.decodeSingularMessageField(value: &self._settings) }()
+      case 8: try { try decoder.decodeSingularMessageField(value: &self._supportSettings) }()
+      case 9: try { try decoder.decodeMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: &self.properties) }()
       default: break
       }
     }
@@ -316,6 +416,12 @@ extension Chat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     try { if let v = self._settings {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 7)
     } }()
+    try { if let v = self._supportSettings {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
+    } }()
+    if !self.properties.isEmpty {
+      try visitor.visitMapField(fieldType: SwiftProtobuf._ProtobufMap<SwiftProtobuf.ProtobufString,SwiftProtobuf.ProtobufString>.self, value: self.properties, fieldNumber: 9)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -327,6 +433,8 @@ extension Chat: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     if lhs.members != rhs.members {return false}
     if lhs.messageSeqNumber != rhs.messageSeqNumber {return false}
     if lhs._settings != rhs._settings {return false}
+    if lhs._supportSettings != rhs._supportSettings {return false}
+    if lhs.properties != rhs.properties {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

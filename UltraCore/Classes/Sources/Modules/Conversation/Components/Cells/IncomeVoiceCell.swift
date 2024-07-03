@@ -13,6 +13,8 @@ import SDWebImage
 
 class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
     
+    fileprivate var style: VoiceMessageCellConfig? = UltraCoreStyle.incomeVoiceMessageCell
+    
     fileprivate let playImage: UIImage? = .named("conversation_play_sound_icon")
     fileprivate let pauseImage: UIImage? = .named("conversation_pause_sound_icon")
     
@@ -23,16 +25,20 @@ class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
     lazy var audioWaveView: WaveformView = {
         let view = WaveformView()
         view.backgroundColor = .clear
-        view.wavesColor = .from(hex: "#B7BCC5")
-        view.progressColor = .from(hex: "#3B82F6")
+        view.wavesColor = style?.waveColor.color ?? .red
+        view.progressColor = style?.waveProgressColor.color ?? .red
         view.delegate = self
         return view
     }()
   
-    fileprivate let durationLabel: RegularFootnote = .init({ $0.text = "10.00₸" })
+    fileprivate lazy var durationLabel: RegularFootnote = .init({
+        $0.textColor = style?.maximumTrackTintColor.color
+        $0.text = 0.0.description
+    })
     
     fileprivate lazy var controllerView: UIButton = .init({
         $0.setImage(playImage, for: .normal)
+        $0.tintColor = style?.minimumTrackTintColor.color
         $0.addAction {[weak self] in
             guard let `self` = self, let message = self.message else { return }
             let fileID = try? self.voiceRepository.currentVoice.value()?.voiceMessage.fileID
@@ -174,7 +180,6 @@ class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
     fileprivate func setupView(_ voice: VoiceItem, slider animated: Bool = true) {
         let duration = voice.voiceMessage.duration.timeInterval.rounded(.down)
         let remainder = voice.currentTime
-        PP.warning(remainder.description)
         self.durationLabel.text = remainder.formatSeconds
         let highlightedSamples = 0..<Int(Double(audioWaveView.totalSamples) * voice.currentTime / duration)
         audioWaveView.highlightedSamples = highlightedSamples
@@ -201,7 +206,7 @@ class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
         let spinner = NVActivityIndicatorView(
             frame: CGRect(origin: .zero, size: .init(width: 30, height: 30)),
             type: .circleStrokeSpin,
-            color: UltraCoreStyle.fileCellConfig.loaderTintColor.color,
+            color: UltraCoreStyle.incomeMessageCell?.fileCellConfig.loaderTintColor.color,
             padding: 0
         )
         spinner.translatesAutoresizingMaskIntoConstraints = false
@@ -263,9 +268,8 @@ class OutcomeVoiceCell: IncomeVoiceCell {
     
     
     override func setupView() {
+        self.style = UltraCoreStyle.outcomeVoiceMessageCell
         super.setupView()
-        audioWaveView.wavesColor = .from(hex: "#BFDBFE")
-        audioWaveView.progressColor = .from(hex: "#FFFFFF")
         self.container.addSubview(statusView)
     }
     
@@ -289,23 +293,24 @@ class OutcomeVoiceCell: IncomeVoiceCell {
             make.top.equalToSuperview().offset(kLowPadding)
             make.height.equalTo(kHeadlinePadding)
         }
-        
-        self.deliveryDateLabel.snp.makeConstraints { make in
-            make.top.equalTo(audioWaveView.snp.bottom).offset(kLowPadding)
-            make.right.equalToSuperview().offset(-kLowPadding)
-        }
-        
+
         self.durationLabel.snp.makeConstraints { make in
             make.top.equalTo(audioWaveView.snp.bottom).offset(kLowPadding)
             make.leading.equalTo(audioWaveView.snp.leading)
             make.bottom.equalToSuperview().offset(-kLowPadding)
         }
-        
+
         self.statusView.snp.makeConstraints { make in
-            make.right.equalTo(deliveryDateLabel.snp.left).offset(-(kLowPadding / 2))
-            make.centerY.equalTo(self.deliveryDateLabel.snp.centerY)
+            make.right.equalToSuperview().offset(-kLowPadding)
+            make.left.equalTo(deliveryDateLabel.snp.right).offset((kLowPadding / 2))
+            make.centerY.equalTo(deliveryDateLabel)
         }
         
+        self.deliveryDateLabel.snp.makeConstraints { make in
+            make.top.equalTo(audioWaveView.snp.bottom).offset(kLowPadding)
+            make.bottom.equalToSuperview().offset(-kLowPadding)
+        }
+
         self.spinner.snp.makeConstraints { make in
             make.center.equalTo(controllerView)
             make.size.equalTo(30)

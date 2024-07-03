@@ -125,12 +125,12 @@ class ContactDBService {
         }
     }
     
-    func save(contact interface: ContactDisplayable) -> Single<Void> {
+    func save(contact interface: ContactDisplayable) -> Single<DBContact> {
         return Single.create { completable in
             do {
                 let realm = Realm.myRealm()
+                let contact = realm.object(ofType: DBContact.self, forPrimaryKey: interface.userID) ?? DBContact(contact: interface)
                 try realm.write {
-                    let contact = realm.object(ofType: DBContact.self, forPrimaryKey: interface.userID) ?? DBContact(contact: interface)
                     if let contactInfo = UltraCoreSettings.delegate?.info(from: interface.phone) {
                         contact.lastname = contactInfo.lastname
                         contact.firstname = contactInfo.firstname
@@ -144,9 +144,8 @@ class ContactDBService {
                     }
                     
                     realm.add(contact, update: .all)
-                    
                 }
-                completable(.success(()))
+                completable(.success(contact))
             } catch {
                 completable(.failure(error))
             }

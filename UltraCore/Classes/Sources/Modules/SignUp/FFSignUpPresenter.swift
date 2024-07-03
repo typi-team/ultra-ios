@@ -67,7 +67,7 @@ extension FFSignUpPresenter: SignUpPresenterInterface {
                   "lastname": lastName,
                   "nickname": lastName,
                   "firstname": firstname,
-                  "device_id": UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
+                  "device_id": UltraCoreSettings.deviceID
               ]) else { return }
 
         var request = URLRequest(url: url)
@@ -87,7 +87,7 @@ extension FFSignUpPresenter: SignUpPresenterInterface {
                         PP.warning(error.localizedDescription)
                     } else if let `self` = self {
                         DispatchQueue.main.async {
-                            self.view?.open(view: UltraCoreSettings.entryConversationsViewController())
+                            self.view?.open(view: UltraCoreSettings.entryConversationsViewController(isSupport: false))
                         }
                     }
                 }
@@ -96,9 +96,4 @@ extension FFSignUpPresenter: SignUpPresenterInterface {
         
         task.resume()
     }
-}
-
-
-fileprivate extension SignUpPresenter {
-
 }

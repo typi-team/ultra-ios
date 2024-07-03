@@ -40,46 +40,42 @@ extension Date {
     var nanosec: Int64 { Int64(timeIntervalSince1970 * 1000 * 1000) }
 
     init(nanoseconds: Int64) { self = Date(timeIntervalSince1970: TimeInterval(nanoseconds / 1000 / 1000)) }
-
-    func formattedTime(format: String = "HH:mm") -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = format
-        return formatter.string(from: self)
-    }
     
     func formattedTimeForConversationCell() -> String {
         let calendar = Calendar.current
+        let sevenDaysAgo = calendar.date(byAdding: .day, value: -7, to: Date())!
         let formatter = DateFormatter()
+        formatter.locale = UltraCoreSettings.appLocale
         if calendar.isDateInToday(self) {
             formatter.dateFormat = "HH:mm"
             return formatter.string(from: self)
-        } else if calendar.isDateInWeekend(self) {
-            formatter.dateFormat = "EEE"
+        } else if self > sevenDaysAgo {
+            formatter.dateFormat = "E"
             return formatter.string(from: self)
         } else if calendar.isDate(Date(), equalTo: self, toGranularity: .year) {
-            formatter.dateFormat = "dd.MM"
+            formatter.dateFormat = "dd/MM"
             return formatter.string(from: self)
         }
        
-        formatter.dateFormat = "dd.MM.yyyy"
+        formatter.dateFormat = "dd/MM/yyyy"
         return formatter.string(from: self)
     }
     
     func formattedTimeToHeadline(format: String = "HH:mm") -> String {
         
         let calendar = Calendar.current
-            let now = Date()
-            let yesterday = calendar.date(byAdding: .day, value: -1, to: now)!
-            
-            if calendar.isDateInToday(self) {
-                return ConversationStrings.today.localized
-            } else if calendar.isDateInYesterday(self) {
-                return ConversationStrings.yesterday.localized
-            } else {
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = format
-                return dateFormatter.string(from: self)
-            }
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = UltraCoreSettings.appLocale
+        
+        if calendar.isDateInToday(self) {
+            return ConversationStrings.today.localized
+        } else if calendar.isDate(Date(), equalTo: self, toGranularity: .year) {
+            dateFormatter.dateFormat = "LLLL d"
+            return dateFormatter.string(from: self)
+        } else {
+            dateFormatter.dateFormat = "LLLL d, yyyy"
+            return dateFormatter.string(from: self)
+        }
     }
 }
 
@@ -95,5 +91,5 @@ extension TimeInterval {
 }
 
 let kDateFormatter = DateFormatter.init {
-    $0.locale = .current
+    $0.locale = UltraCoreSettings.appLocale
 }

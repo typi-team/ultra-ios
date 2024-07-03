@@ -40,7 +40,7 @@ class ElevatedButton: UIButton {
     }
     
     func setupView() {
-        self.cornerRadius = kMediumPadding
+        self.cornerRadius = kLowPadding
         self.setTitleColor(.white, for: .normal)
         self.titleLabel?.font = .defaultRegularCallout
     }

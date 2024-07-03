@@ -19,7 +19,7 @@ final class IncomingCallActionView: UIStackView {
     // MARK: - Views
     
     fileprivate lazy var answerButton: UIButton = .init {
-        $0.setImage(self.style.answerImage, for: .normal)
+        $0.setImage(self.style.answerImage.image, for: .normal)
         $0.addAction { [weak self] in
             guard let self else { return }
             self.delegate?.view(self, answerButtonDidTap: self.answerButton)
@@ -27,8 +27,8 @@ final class IncomingCallActionView: UIStackView {
     }
     
     lazy var mouthpieceButton: UIButton = .init {
-        $0.setImage(style.mouthpieceOffImage, for: .normal)
-        $0.setImage(style.mouthpieceOnImage, for: .selected)
+        $0.setImage(style.mouthpieceOffImage.image, for: .normal)
+        $0.setImage(style.mouthpieceOnImage.image, for: .selected)
         $0.addAction { [weak self] in
             guard let self else { return }
             self.mouthpieceButton.isSelected.toggle()
@@ -37,8 +37,8 @@ final class IncomingCallActionView: UIStackView {
     }
 
     lazy var microButton: UIButton = .init {
-        $0.setImage(style.micOnImage, for: .selected)
-        $0.setImage(style.micOffImage, for: .normal)
+        $0.setImage(style.micOnImage.image, for: .selected)
+        $0.setImage(style.micOffImage.image, for: .normal)
         $0.addAction { [weak self] in
             guard let self else { return }
             self.microButton.isSelected.toggle()
@@ -48,8 +48,8 @@ final class IncomingCallActionView: UIStackView {
     }
     
     fileprivate lazy var switchCameraButton: UIButton = .init {
-        $0.setImage(style.switchFrontCameraImage, for: .normal)
-        $0.setImage(style.switchBackCameraImage, for: .selected)
+        $0.setImage(style.switchFrontCameraImage.image, for: .normal)
+        $0.setImage(style.switchBackCameraImage.image, for: .selected)
         $0.addAction { [weak self] in
             guard let self else { return }
             self.switchCameraButton.isSelected.toggle()
@@ -58,8 +58,8 @@ final class IncomingCallActionView: UIStackView {
     }
 
     lazy var cameraButton: UIButton = .init {
-        $0.setImage(style.cameraOffImage, for: .normal)
-        $0.setImage(style.cameraOnImage, for: .selected)
+        $0.setImage(style.cameraOffImage.image, for: .normal)
+        $0.setImage(style.cameraOnImage.image, for: .selected)
         $0.addAction { [weak self] in
             guard let self else { return }
             self.cameraButton.isSelected.toggle()
@@ -68,7 +68,7 @@ final class IncomingCallActionView: UIStackView {
     }
 
     fileprivate lazy var cancelButton: UIButton = .init {
-        $0.setImage(style.declineImage, for: .normal)
+        $0.setImage(style.declineImage.image, for: .normal)
         $0.addAction { [weak self] in
             guard let self else { return }
             self.delegate?.view(self, cancelButtonDidTap: self.cancelButton)
@@ -76,7 +76,7 @@ final class IncomingCallActionView: UIStackView {
     }
 
     fileprivate lazy var rejectButton: UIButton = .init {
-        $0.setImage(style.declineImage, for: .normal)
+        $0.setImage(style.declineImage.image, for: .normal)
         $0.addAction { [weak self] in
             guard let self else { return }
             self.delegate?.view(self, rejectButtonDidTap: self.rejectButton)

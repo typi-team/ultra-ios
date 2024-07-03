@@ -152,6 +152,39 @@ struct AcceptContactResponse {
   init() {}
 }
 
+struct GetContactStatusRequest {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var userID: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
+struct GetContactStatusResponse {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var status: UserStatus {
+    get {return _status ?? UserStatus()}
+    set {_status = newValue}
+  }
+  /// Returns true if `status` has been explicitly set.
+  var hasStatus: Bool {return self._status != nil}
+  /// Clears the value of `status`. Subsequent reads from it will return its default value.
+  mutating func clearStatus() {self._status = nil}
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+
+  fileprivate var _status: UserStatus? = nil
+}
+
 #if swift(>=5.5) && canImport(_Concurrency)
 extension ContactsImportRequest: @unchecked Sendable {}
 extension ContactByUserIdRequest: @unchecked Sendable {}
@@ -163,6 +196,8 @@ extension GetContactsRequest: @unchecked Sendable {}
 extension GetContactsResponse: @unchecked Sendable {}
 extension AcceptContactRequest: @unchecked Sendable {}
 extension AcceptContactResponse: @unchecked Sendable {}
+extension GetContactStatusRequest: @unchecked Sendable {}
+extension GetContactStatusResponse: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -487,6 +522,74 @@ extension AcceptContactResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
   }
 
   static func ==(lhs: AcceptContactResponse, rhs: AcceptContactResponse) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension GetContactStatusRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "GetContactStatusRequest"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .standard(proto: "user_id"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.userID) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.userID.isEmpty {
+      try visitor.visitSingularStringField(value: self.userID, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: GetContactStatusRequest, rhs: GetContactStatusRequest) -> Bool {
+    if lhs.userID != rhs.userID {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension GetContactStatusResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "GetContactStatusResponse"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "status"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._status) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._status {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: GetContactStatusResponse, rhs: GetContactStatusResponse) -> Bool {
+    if lhs._status != rhs._status {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

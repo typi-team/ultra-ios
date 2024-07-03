@@ -37,12 +37,18 @@ class VoiceRepository: NSObject {
     
     var currentVoice: BehaviorSubject<VoiceItem?> = .init(value: nil)
 
-    func stop() {
+    var isPlaying: Bool {
+        audioPlayer?.isPlaying ?? false
+    }
+    
+    func stop(shouldReset: Bool = true) {
         self.audioPlayer?.stop()
         self.audioPlayer = nil
-        self.currentVoice.on(.next(nil))
         self.timer?.invalidate()
         try? AVAudioSession.sharedInstance().setActive(false)
+        if shouldReset {
+            self.currentVoice.on(.next(nil))
+        }
     }
 
     func playPause() {
@@ -61,10 +67,11 @@ class VoiceRepository: NSObject {
         )
     }
 
-    func play(message: Message, atTime: TimeInterval = .zero) {
+    func play(message: Message, atTime: TimeInterval = .zero, isNeedPause: Bool = false) {
         guard let soundURL = self.mediaUtils.mediaURL(from: message) else { return }
         do {
-            self.stop()
+            let shouldReset = atTime == .zero
+            self.stop(shouldReset: shouldReset)
             try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
             try AVAudioSession.sharedInstance().setActive(true)
             let audioPlayer = try AVAudioPlayer(contentsOf: soundURL)
@@ -76,6 +83,10 @@ class VoiceRepository: NSObject {
             self.timer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(updateTime), userInfo: nil, repeats: true)
             runTimerOnRunLoop()
             self.audioPlayer = audioPlayer
+            if isNeedPause {
+                self.audioPlayer?.pause()
+                self.timer?.invalidate()
+            }
             self.currentVoice.on(
                 .next(.init(voiceMessage: message.voice, currentTime: atTime, isPlaying: audioPlayer.isPlaying))
             )
@@ -83,6 +94,11 @@ class VoiceRepository: NSObject {
             self.stop()
             PP.error(error.localizedDescription)
         }
+    }
+    
+    func stopTimer() {
+        timer?.invalidate()
+        timer = nil
     }
     
     func mediaURL(message: Message) -> URL? {
@@ -111,8 +127,11 @@ extension VoiceRepository: AVAudioPlayerDelegate {
 private extension VoiceRepository {
     @objc func updateTime() {
         guard let currentTime = self.audioPlayer?.currentTime else { return }
-        try? self.currentVoice.value()?.currentTime = currentTime
-        self.currentVoice.on(.next(try? self.currentVoice.value()))
+        if let currentVoice = try? self.currentVoice.value() {
+            let newValue = currentVoice
+            newValue.currentTime = currentTime
+            self.currentVoice.onNext(newValue)
+        }
     }
 
 }

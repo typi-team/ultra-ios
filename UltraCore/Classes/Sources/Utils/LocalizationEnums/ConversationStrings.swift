@@ -13,6 +13,10 @@ enum ConversationStrings: String, StringLocalizable {
     case online
     case unknowNumber
     case moneyTransfer
+    case transferStatusUnknown
+    case transferStatusInProgress
+    case transferStatusCompleted
+    case transferStatusRejected
     case insertMoney
     case send
     case insideTheBank
@@ -53,6 +57,16 @@ enum ConversationStrings: String, StringLocalizable {
     case disclaimer
     case disclaimerAgree
     case disclaimerClose
+    
+    case supportChat
+    case assistantChat
+    case supportChatOpened
+    case supportChatClosed
+    case supportChatPostponed
+    case supportChatManagerAssigned
+    
+    case noMessages
+    case noMessagesManager
     
     var prefixOfTemplate: String { "conversation" }
     var localizableValue: String { rawValue }

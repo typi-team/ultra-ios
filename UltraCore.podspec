@@ -32,10 +32,10 @@ Pod::Spec.new do |s|
   s.source_files = 'UltraCore/Classes/Sources/**/*'
   
   s.resource_bundles = {
-      'UltraCore' => ['UltraCore/Assets/*.xcassets','UltraCore/Assets/*.lproj','UltraCore/Assets/*.pdf', 'UltraCore/Assets/Assets', 'UltraCore/Assets/*.wav']
+      'UltraCore' => ['UltraCore/Assets/*.xcassets', 'UltraCore/Assets/*.wav']
   }
   
-  s.resources = ['UltraCore/Assets/*.pdf', 'UltraCore/*.png', 'UltraCore/*']
+  s.resources = ['UltraCore/Assets/*.xcassets', 'UltraCore/Assets/*.wav']
 
   # s.public_header_files = 'Pod/Classes/**/*.h'
   # s.frameworks = 'UIKit', 'MapKit'
@@ -50,7 +50,8 @@ Pod::Spec.new do |s|
    s.dependency 'RealmSwift'
    s.dependency 'RxDataSources'
    s.dependency 'NVActivityIndicatorView'
-   s.dependency 'LiveKitClient'
+   s.dependency 'LiveKitClient', '2.0.9'
+
    s.dependency 'CocoaLumberjack/Swift'
    
 end

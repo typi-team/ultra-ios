@@ -180,6 +180,26 @@ struct GetChatSettingsResponse {
   fileprivate var _settings: ChatSettings? = nil
 }
 
+/// Support chats filter
+struct SupportChatFilter {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// Use to filter by status, provide SUPPORT_CHAT_STATUS_ANY
+  /// to list all support chats
+  var status: SupportChatStatusEnum = .supportChatStatusClosed
+
+  /// Assigned support manager user id. Provide
+  /// empty value to get all (assigned and non assigned) 
+  /// support chats
+  var assignedUserID: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 struct GetChatsListRequest {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -189,9 +209,22 @@ struct GetChatsListRequest {
 
   var skip: Int64 = 0
 
+  /// to filter only support chats provide this filter,
+  /// if not provided all available chats are provided (including support chats)
+  var supportChatFilter: SupportChatFilter {
+    get {return _supportChatFilter ?? SupportChatFilter()}
+    set {_supportChatFilter = newValue}
+  }
+  /// Returns true if `supportChatFilter` has been explicitly set.
+  var hasSupportChatFilter: Bool {return self._supportChatFilter != nil}
+  /// Clears the value of `supportChatFilter`. Subsequent reads from it will return its default value.
+  mutating func clearSupportChatFilter() {self._supportChatFilter = nil}
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
+
+  fileprivate var _supportChatFilter: SupportChatFilter? = nil
 }
 
 struct GetChatsListResponse {
@@ -206,6 +239,8 @@ struct GetChatsListResponse {
   var users: [User] = []
 
   var contacts: [Contact] = []
+
+  var state: UInt64 = 0
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -225,6 +260,7 @@ extension GetChatRequest: @unchecked Sendable {}
 extension GetChatResponse: @unchecked Sendable {}
 extension GetChatSettingsRequest: @unchecked Sendable {}
 extension GetChatSettingsResponse: @unchecked Sendable {}
+extension SupportChatFilter: @unchecked Sendable {}
 extension GetChatsListRequest: @unchecked Sendable {}
 extension GetChatsListResponse: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
@@ -589,11 +625,50 @@ extension GetChatSettingsResponse: SwiftProtobuf.Message, SwiftProtobuf._Message
   }
 }
 
+extension SupportChatFilter: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "SupportChatFilter"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "status"),
+    2: .standard(proto: "assigned_user_id"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularEnumField(value: &self.status) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.assignedUserID) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if self.status != .supportChatStatusClosed {
+      try visitor.visitSingularEnumField(value: self.status, fieldNumber: 1)
+    }
+    if !self.assignedUserID.isEmpty {
+      try visitor.visitSingularStringField(value: self.assignedUserID, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: SupportChatFilter, rhs: SupportChatFilter) -> Bool {
+    if lhs.status != rhs.status {return false}
+    if lhs.assignedUserID != rhs.assignedUserID {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension GetChatsListRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "GetChatsListRequest"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "limit"),
     2: .same(proto: "skip"),
+    3: .same(proto: "supportChatFilter"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -604,24 +679,33 @@ extension GetChatsListRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularInt64Field(value: &self.limit) }()
       case 2: try { try decoder.decodeSingularInt64Field(value: &self.skip) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._supportChatFilter) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.limit != 0 {
       try visitor.visitSingularInt64Field(value: self.limit, fieldNumber: 1)
     }
     if self.skip != 0 {
       try visitor.visitSingularInt64Field(value: self.skip, fieldNumber: 2)
     }
+    try { if let v = self._supportChatFilter {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: GetChatsListRequest, rhs: GetChatsListRequest) -> Bool {
     if lhs.limit != rhs.limit {return false}
     if lhs.skip != rhs.skip {return false}
+    if lhs._supportChatFilter != rhs._supportChatFilter {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -634,6 +718,7 @@ extension GetChatsListResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     2: .same(proto: "messages"),
     3: .same(proto: "users"),
     4: .same(proto: "contacts"),
+    5: .same(proto: "state"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -646,6 +731,7 @@ extension GetChatsListResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       case 2: try { try decoder.decodeRepeatedMessageField(value: &self.messages) }()
       case 3: try { try decoder.decodeRepeatedMessageField(value: &self.users) }()
       case 4: try { try decoder.decodeRepeatedMessageField(value: &self.contacts) }()
+      case 5: try { try decoder.decodeSingularUInt64Field(value: &self.state) }()
       default: break
       }
     }
@@ -664,6 +750,9 @@ extension GetChatsListResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if !self.contacts.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.contacts, fieldNumber: 4)
     }
+    if self.state != 0 {
+      try visitor.visitSingularUInt64Field(value: self.state, fieldNumber: 5)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -672,6 +761,7 @@ extension GetChatsListResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if lhs.messages != rhs.messages {return false}
     if lhs.users != rhs.users {return false}
     if lhs.contacts != rhs.contacts {return false}
+    if lhs.state != rhs.state {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

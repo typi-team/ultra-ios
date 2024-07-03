@@ -21,14 +21,38 @@ class MessageInputBar: UIView {
     var isRecording: Bool {
         return audioRecordUtils.isRecording
     }
+    var canRecord: Bool = true {
+        didSet {
+            self.textViewDidChange(self.messageTextView)
+        }
+    }
+    var canSendAttachments: Bool = true {
+        didSet {
+            self.textViewDidChange(self.messageTextView)
+        }
+    }
+    var canSendMoney: Bool = true {
+        didSet {
+            let isAvailable = futureDelegate?.availableToSendMoney() ?? true && canSendMoney
+            exchangesButton.snp.updateConstraints {
+                $0.width.equalTo(isAvailable ? 40 : 0)
+            }
+        }
+    }
+    var isEnabled: Bool = true {
+        didSet {
+            sendButton.isEnabled = isEnabled
+            sendButton.alpha = isEnabled ? 1 : 0.25
+        }
+    }
     
 //    MARK: Static properties
     
     fileprivate var lastTypingDate: Date = .init()
     fileprivate let kTextFieldMaxHeight: CGFloat = 120
-    fileprivate let kInputSendImage: UIImage? = .named("conversation_send")
-    fileprivate let kInputPlusImage: UIImage? = .named("conversation_plus")
-    fileprivate let kInputMicroImage: UIImage? = .named("message_input_micro")
+    fileprivate lazy var kInputSendImage: UIImage? = style?.sendImage.image
+    fileprivate lazy var kInputPlusImage: UIImage? = style?.plusImage.image
+    fileprivate lazy var kInputMicroImage: UIImage? = style?.microphoneImage.image
     
     fileprivate lazy var audioRecordUtils: AudioRecordUtils = .init({
         $0.delegate = self
@@ -37,28 +61,33 @@ class MessageInputBar: UIView {
     private var style: MessageInputBarConfig? { UltraCoreStyle.mesageInputBarConfig }
     private lazy var divider: UIView = .init { $0.backgroundColor = style?.dividerColor.color }
     
-    private let containerStack: UIView = .init {
-        $0.cornerRadius = kLowPadding
-        $0.clipsToBounds = false
+    private lazy var containerStack: UIView = .init {
+        $0.cornerRadius = 18
+        $0.clipsToBounds = true
+        $0.layer.borderWidth = 1
+        $0.layer.borderColor = style?.messageTextViewBorderColor.color.cgColor
     }
     
     private lazy var messageTextView: MessageInputTextView = MessageInputTextView.init {[weak self] textView in
         textView.delegate = self
         textView.inputAccessoryView = UIView()
-        textView.cornerRadius = kLowPadding
         textView.placeholderText = self?.style?.textConfig.placeholder ?? ""
         textView.textColor = .gray900
         textView.tintColor = .green500
-        textView.font = .defaultRegularSubHeadline
+        textView.font = .defaultRegularCallout
     }
     
     private lazy var sendButton: UIButton = .init {[weak self] button in
         guard let self else { return }
         button.setImage(self.kInputPlusImage, for: .normal)
+        button.imageView?.contentMode = .scaleAspectFit
+        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 18)
         button.addAction {
             guard let message = self.messageTextView.text?.trimmingCharacters(in: .whitespacesAndNewlines),
                     !message.isEmpty else {
-                self.delegate?.pressedPlus(in: self)
+                if self.canSendAttachments {
+                    self.delegate?.pressedPlus(in: self)
+                }
                 return
             }
             self.messageTextView.text = ""
@@ -70,6 +99,7 @@ class MessageInputBar: UIView {
     private lazy var exchangesButton: UIButton = .init { [weak self] button in
         guard let self else { return }
         button.setImage(style?.sendMoneyImage.image, for: .normal)
+        button.contentHorizontalAlignment = .left
         button.addAction {
             self.delegate?.exchanges()
         }
@@ -102,7 +132,7 @@ class MessageInputBar: UIView {
     }
 
     private var microButtonWidth: CGFloat {
-        (UltraCoreSettings.futureDelegate?.availableToRecordVoice() ?? true) ? 36 : 0
+        (UltraCoreSettings.futureDelegate?.availableToRecordVoice() ?? true) && canRecord ? 36 : 0
     }
     private var tempText: String?
 
@@ -132,6 +162,7 @@ class MessageInputBar: UIView {
         self.containerStack.backgroundColor = style?.messageContainerBackground.color
         self.messageTextView.backgroundColor = style?.messageContainerBackground.color
         self.messageTextView.tintColor = style?.textConfig.tintColor.color
+        self.messageTextView.layer.borderColor = style?.messageTextViewBorderColor.color.cgColor
     }
     
     private func hideOrShowAllViewInRecording(visibility: Bool) {
@@ -146,24 +177,24 @@ class MessageInputBar: UIView {
         self.addSubview(divider)
         self.addSubview(sendButton)
         self.addSubview(containerStack)
-        self.addSubview(exchangesButton)
+        insertSubview(exchangesButton, belowSubview: containerStack)
         self.addSubview(recordView)
         self.containerStack.addSubview(messageTextView)
-        self.containerStack.addSubview(microButton)
+        insertSubview(microButton, aboveSubview: containerStack)
         
         self.backgroundColor = UltraCoreStyle.controllerBackground?.color
     }
     
     private func setupConstraints() {
         
-        let availableToSendMoney = self.futureDelegate?.availableToSendMoney() ?? true
+        let availableToSendMoney = self.futureDelegate?.availableToSendMoney() ?? true && canSendMoney
         
         self.exchangesButton.snp.makeConstraints { make in
             make.height.equalTo(36)
             
-            make.leading.equalToSuperview().offset(kLowPadding)
+            make.leading.equalToSuperview().offset(18)
             make.bottom.equalTo(messageTextView.snp.bottom)
-            make.width.equalTo(availableToSendMoney ? kHeadlinePadding * 2 : 0)
+            make.width.equalTo(availableToSendMoney ? 40 : 0)
         }
 
         self.divider.snp.makeConstraints { make in
@@ -174,27 +205,28 @@ class MessageInputBar: UIView {
         self.containerStack.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(kMediumPadding - 4)
             make.bottom.equalToSuperview().offset(-(kMediumPadding - 4 + bottomInset))
-            make.leading.equalTo(exchangesButton.snp.trailing).offset(kLowPadding)
+            make.leading.equalTo(exchangesButton.snp.trailing).offset(-4)
+            make.height.greaterThanOrEqualTo(36)
         }
 
         self.messageTextView.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(kLowPadding)
-            make.bottom.equalToSuperview().offset(-kLowPadding)
-            make.top.equalToSuperview().offset(kLowPadding)
+            make.bottom.equalToSuperview()
+            make.top.equalToSuperview()
             make.right.equalToSuperview().offset(-kLowPadding)
         }
 
         self.sendButton.snp.makeConstraints { make in
-            make.right.equalToSuperview().offset(-kLowPadding)
-            make.height.width.equalTo(36)
-            make.bottom.equalTo(messageTextView.snp.bottom)
-            make.left.equalTo(containerStack.snp.right).offset(kLowPadding)
+            make.right.equalToSuperview()
+            make.width.equalTo(48)
+            make.height.equalTo(36)
+            make.bottom.equalTo(containerStack)
+            make.left.equalTo(containerStack.snp.right)
         }
-        
         self.microButton.snp.makeConstraints { make in
-            make.width.height.equalTo(microButtonWidth)
-            make.bottom.equalToSuperview().offset(-kLowPadding)
-            make.right.equalToSuperview().offset(-kLowPadding)
+            make.size.equalTo(microButtonWidth)
+            make.bottom.equalTo(containerStack)
+            make.right.equalTo(containerStack).offset(-kLowPadding)
         }
         
         self.recordView.snp.makeConstraints { make in
@@ -220,8 +252,16 @@ extension MessageInputBar: MessageInputTextViewDelegate {
             self.microButton.isHidden = true
             self.sendButton.setImage(self.kInputSendImage, for: .normal)
         } else {
-            self.microButton.isHidden = false
-            self.sendButton.setImage(self.kInputPlusImage, for: .normal)
+            if canSendAttachments {
+                self.sendButton.setImage(self.kInputPlusImage, for: .normal)
+            } else {
+                self.sendButton.setImage(self.kInputSendImage, for: .normal)
+            }
+            if canRecord {
+                self.microButton.isHidden = false
+            } else {
+                self.microButton.isHidden = true
+            }
         }
 
         if Date().timeIntervalSince(lastTypingDate) > kTypingMinInterval {
@@ -239,6 +279,7 @@ extension MessageInputBar: MessageInputTextViewDelegate {
 }
 
 extension MessageInputBar {
+    
     func block(_ isBlocked: Bool) {
         self.blockView.snp.makeConstraints { make in
             if isBlocked {
@@ -305,6 +346,7 @@ extension MessageInputBar: RecordViewDelegate {
         self.recordView.isUserInteractionEnabled = true
         self.hideOrShowAllViewInRecording(visibility: false)
         self.audioRecordUtils.requestRecordPermission()
+        self.containerStack.borderWidth = 0
     }
     
     func onCancel() {
@@ -312,6 +354,7 @@ extension MessageInputBar: RecordViewDelegate {
         self.recordView.isUserInteractionEnabled = false
         self.hideOrShowAllViewInRecording(visibility: true)
         self.audioRecordUtils.cancelRecording()
+        self.containerStack.borderWidth = 1
     }
     
     func onFinished(duration: CGFloat) {
@@ -320,5 +363,6 @@ extension MessageInputBar: RecordViewDelegate {
         self.recordView.sendSubviewToBack(self)
         self.hideOrShowAllViewInRecording(visibility: true)
         self.audioRecordUtils.stopRecording()
+        self.containerStack.borderWidth = 1
     }
 }

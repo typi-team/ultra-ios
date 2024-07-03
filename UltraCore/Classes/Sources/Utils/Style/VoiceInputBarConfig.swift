@@ -14,4 +14,9 @@ public protocol VoiceInputBarConfig {
     var recordBackground: TwiceColor { get set }
     var roundedViewBackground: TwiceColor { get set }
     var removeButtonBackground: TwiceColor { get set }
+    var recordButtonDefaultImage: TwiceImage { get set }
+    var recordButtonRecordingImage: TwiceImage { get set }
+    var smallMicImage: TwiceImage { get set }
+    var bucketLidImage: TwiceImage { get set }
+    var bucketBodyImage: TwiceImage { get set }
 }

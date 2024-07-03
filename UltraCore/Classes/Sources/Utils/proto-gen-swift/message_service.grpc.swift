@@ -70,6 +70,11 @@ internal protocol MessageServiceClientProtocol: GRPCClient {
     _ request: GetMessageRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<GetMessageRequest, GetMessageResponse>
+
+  func search(
+    _ request: MessagesSearchRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<MessagesSearchRequest, MessagesSearchResponse>
 }
 
 extension MessageServiceClientProtocol {
@@ -275,6 +280,24 @@ extension MessageServiceClientProtocol {
       interceptors: self.interceptors?.makeGetMessageInterceptors() ?? []
     )
   }
+
+  /// Search messages by text
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to Search.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  internal func search(
+    _ request: MessagesSearchRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<MessagesSearchRequest, MessagesSearchResponse> {
+    return self.makeUnaryCall(
+      path: MessageServiceClientMetadata.Methods.search.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSearchInterceptors() ?? []
+    )
+  }
 }
 
 @available(*, deprecated)
@@ -393,6 +416,11 @@ internal protocol MessageServiceAsyncClientProtocol: GRPCClient {
     _ request: GetMessageRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<GetMessageRequest, GetMessageResponse>
+
+  func makeSearchCall(
+    _ request: MessagesSearchRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<MessagesSearchRequest, MessagesSearchResponse>
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -536,6 +564,18 @@ extension MessageServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeGetMessageInterceptors() ?? []
     )
   }
+
+  internal func makeSearchCall(
+    _ request: MessagesSearchRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<MessagesSearchRequest, MessagesSearchResponse> {
+    return self.makeAsyncUnaryCall(
+      path: MessageServiceClientMetadata.Methods.search.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSearchInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -671,6 +711,18 @@ extension MessageServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeGetMessageInterceptors() ?? []
     )
   }
+
+  internal func search(
+    _ request: MessagesSearchRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> MessagesSearchResponse {
+    return try await self.performAsyncUnaryCall(
+      path: MessageServiceClientMetadata.Methods.search.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeSearchInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -724,6 +776,9 @@ internal protocol MessageServiceClientInterceptorFactoryProtocol: Sendable {
 
   /// - Returns: Interceptors to use when invoking 'getMessage'.
   func makeGetMessageInterceptors() -> [ClientInterceptor<GetMessageRequest, GetMessageResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'search'.
+  func makeSearchInterceptors() -> [ClientInterceptor<MessagesSearchRequest, MessagesSearchResponse>]
 }
 
 internal enum MessageServiceClientMetadata {
@@ -742,6 +797,7 @@ internal enum MessageServiceClientMetadata {
       MessageServiceClientMetadata.Methods.sendAudioRecording,
       MessageServiceClientMetadata.Methods.sendMediaUploading,
       MessageServiceClientMetadata.Methods.getMessage,
+      MessageServiceClientMetadata.Methods.search,
     ]
   )
 
@@ -811,6 +867,12 @@ internal enum MessageServiceClientMetadata {
       path: "/MessageService/GetMessage",
       type: GRPCCallType.unary
     )
+
+    internal static let search = GRPCMethodDescriptor(
+      name: "Search",
+      path: "/MessageService/Search",
+      type: GRPCCallType.unary
+    )
   }
 }
 
@@ -844,6 +906,9 @@ internal protocol MessageServiceProvider: CallHandlerProvider {
 
   /// Get message by id, if user has no access to message NotFound error will be returned
   func getMessage(request: GetMessageRequest, context: StatusOnlyCallContext) -> EventLoopFuture<GetMessageResponse>
+
+  /// Search messages by text
+  func search(request: MessagesSearchRequest, context: StatusOnlyCallContext) -> EventLoopFuture<MessagesSearchResponse>
 }
 
 extension MessageServiceProvider {
@@ -957,6 +1022,15 @@ extension MessageServiceProvider {
         userFunction: self.getMessage(request:context:)
       )
 
+    case "Search":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<MessagesSearchRequest>(),
+        responseSerializer: ProtobufSerializer<MessagesSearchResponse>(),
+        interceptors: self.interceptors?.makeSearchInterceptors() ?? [],
+        userFunction: self.search(request:context:)
+      )
+
     default:
       return nil
     }
@@ -1028,6 +1102,12 @@ internal protocol MessageServiceAsyncProvider: CallHandlerProvider, Sendable {
     request: GetMessageRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> GetMessageResponse
+
+  /// Search messages by text
+  func search(
+    request: MessagesSearchRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> MessagesSearchResponse
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -1148,6 +1228,15 @@ extension MessageServiceAsyncProvider {
         wrapping: { try await self.getMessage(request: $0, context: $1) }
       )
 
+    case "Search":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<MessagesSearchRequest>(),
+        responseSerializer: ProtobufSerializer<MessagesSearchResponse>(),
+        interceptors: self.interceptors?.makeSearchInterceptors() ?? [],
+        wrapping: { try await self.search(request: $0, context: $1) }
+      )
+
     default:
       return nil
     }
@@ -1199,6 +1288,10 @@ internal protocol MessageServiceServerInterceptorFactoryProtocol: Sendable {
   /// - Returns: Interceptors to use when handling 'getMessage'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeGetMessageInterceptors() -> [ServerInterceptor<GetMessageRequest, GetMessageResponse>]
+
+  /// - Returns: Interceptors to use when handling 'search'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeSearchInterceptors() -> [ServerInterceptor<MessagesSearchRequest, MessagesSearchResponse>]
 }
 
 internal enum MessageServiceServerMetadata {
@@ -1217,6 +1310,7 @@ internal enum MessageServiceServerMetadata {
       MessageServiceServerMetadata.Methods.sendAudioRecording,
       MessageServiceServerMetadata.Methods.sendMediaUploading,
       MessageServiceServerMetadata.Methods.getMessage,
+      MessageServiceServerMetadata.Methods.search,
     ]
   )
 
@@ -1284,6 +1378,12 @@ internal enum MessageServiceServerMetadata {
     internal static let getMessage = GRPCMethodDescriptor(
       name: "GetMessage",
       path: "/MessageService/GetMessage",
+      type: GRPCCallType.unary
+    )
+
+    internal static let search = GRPCMethodDescriptor(
+      name: "Search",
+      path: "/MessageService/Search",
       type: GRPCCallType.unary
     )
   }

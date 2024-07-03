@@ -21,22 +21,23 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
                                                                   action: .init(title: ConversationsStrings.start.localized, callback: {[weak self] in self?.presenter?.navigateToContacts()}))
     fileprivate lazy var backgroundView: PermissionStateView = .init(data: permissionData)
     
-    fileprivate lazy var tableView: UITableView = {
-        if #available(iOS 13.0, *) {
-            return .init(frame: .zero, style: .insetGrouped)
-        } else {
-            return .init()
-        }
-    }()
+    fileprivate lazy var tableView = UITableView(frame: .zero, style: .plain)
     
     lazy var dataSource = RxTableViewSectionedReloadDataSource<SectionModel<String, Conversation>>(configureCell: {_, tableView, indexPath,
         model in
         
         let cell: ConversationCell = tableView.dequeueCell()
-        cell.setup(conversation: model)
+        cell.setup(
+            conversation: model,
+            isManager: self.presenter?.isManager(conversation: model) ?? false
+        )
         return cell
-    }, canEditRowAtIndexPath: { data, indexpath in
-        if let phone = data.sectionModels[indexpath.section].items[indexpath.row].peer?.phone {
+    }, canEditRowAtIndexPath: { [weak self] data, indexpath in
+        if self?.presenter?.isSupportScreen == true {
+            return false
+        } else if self?.presenter?.isManager(conversation: data.sectionModels[indexpath.section].items[indexpath.row]) == true {
+            return false
+        } else if let phone = data.sectionModels[indexpath.section].items[indexpath.row].peers.first?.phone {
             return !phone.contains("+00000000000")
         } else {
             return true
@@ -46,15 +47,18 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
         super.setupViews()
         
         self.view.addSubview(tableView)
-        self.tableView.rowHeight = 64
+        self.tableView.rowHeight = 78
         self.tableView.backgroundColor = nil
         self.tableView.sectionHeaderHeight = 0
         self.tableView.registerCell(type: ConversationCell.self)
-        self.tableView.separatorInset = .init(top: 0, left: kMediumPadding * 2, bottom: 0, right: kMediumPadding)
-        self.navigationItem.rightBarButtonItem = .init(image: .named("conversation_new_icon"),
-                                                       style: .plain, target: self,
-                                                       action: #selector(self.openContacts))
-        
+        self.navigationItem.rightBarButtonItem = .init(
+            image: UltraCoreStyle.conversationScreenConfig.startConversationImage.image,
+            style: .plain, target: self,
+            action: #selector(self.openContacts)
+        )
+        self.tableView.contentInset = UIEdgeInsets(top: 24, left: 0, bottom: 0, right: 0)
+        self.tableView.separatorInset = UIEdgeInsets(top: 0, left: 92, bottom: 0, right: 0)
+        self.tableView.tableHeaderView = UIView()    
         self.navigationItem.title = ConversationsStrings.chats.localized
         self.hidesBottomBarWhenPushed = false
     }
@@ -68,8 +72,6 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
     
     override func setupInitialData() {
         
-        NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground(_:)), name: UIApplication.didEnterBackgroundNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(didEnterForeground(_:)), name: UIApplication.willEnterForegroundNotification, object: nil)
         self.presenter?.conversation
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
@@ -77,7 +79,7 @@ final class ConversationsViewController: BaseViewController<ConversationsPresent
             .do(onNext: {[weak self] conversations in
                 guard let `self` = self else { return }
                 if conversations.isEmpty {
-                    self.tableView.backgroundView = UltraCoreSettings.delegate?.emptyConversationView() ?? self.backgroundView
+                    self.tableView.backgroundView = UltraCoreSettings.delegate?.emptyConversationView(isSupport: self.presenter?.isSupportScreen ?? false) ?? self.backgroundView
                 } else {
                     self.tableView.backgroundView = nil
                 }
@@ -130,12 +132,3 @@ extension ConversationsViewController {
 }
 
 extension ConversationsViewController: ConversationsViewInterface {}
-extension ConversationsViewController {
-    @objc func didEnterBackground(_ sender: Any) {
-        self.presenter?.stopPingPong()
-    }
-
-    @objc func didEnterForeground(_ sender: Any) {
-        self.presenter?.startPingPong()
-    }
-}

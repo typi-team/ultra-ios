@@ -14,7 +14,7 @@ class MediaCell: BaseMessageCell {
     let playView: UIImageView = .init {
         $0.isHidden = true
         $0.isUserInteractionEnabled = false
-        $0.image = .named("conversation_media_play")
+        $0.image = UltraCoreStyle.incomeMessageCell?.mediaImage?.image
     }
 
     let deliveryWrapper: UIView = .init {
@@ -23,7 +23,7 @@ class MediaCell: BaseMessageCell {
     }
 
     let spinnerBackground: UIView = .init {
-        $0.backgroundColor = UltraCoreStyle.fileCellConfig.loaderBackgroundColor.color
+        $0.backgroundColor = UltraCoreStyle.incomeMessageCell?.fileCellConfig.loaderBackgroundColor.color
         $0.isHidden = true
         $0.cornerRadius = 24
     }
@@ -97,7 +97,7 @@ class MediaCell: BaseMessageCell {
         let spinner = NVActivityIndicatorView(
             frame: CGRect(origin: .zero, size: .init(width: 36, height: 36)),
             type: .circleStrokeSpin,
-            color: UltraCoreStyle.fileCellConfig.loaderTintColor.color,
+            color: UltraCoreStyle.incomeMessageCell?.fileCellConfig.loaderTintColor.color,
             padding: 0
         )
         spinner.translatesAutoresizingMaskIntoConstraints = false

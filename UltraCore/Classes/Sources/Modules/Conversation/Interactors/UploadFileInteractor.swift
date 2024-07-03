@@ -16,10 +16,11 @@ class UploadFileInteractor: GRPCErrorUseCase<[FileChunk], Void> {
      }
 
     override func job(params: [FileChunk]) -> Single<Void> {
-        Observable.from(params)
-            .concatMap({self.upload(chunk: $0)})
-            .toArray()
-            .map({_ in ()})
+        let requests = params.map { upload(chunk: $0).asObservable() }
+        let response = Observable.zip(requests)
+            .map { _ in () }
+            .asSingle()
+        return response
     }
     
     private func upload(chunk: FileChunk) -> Single<Void> {

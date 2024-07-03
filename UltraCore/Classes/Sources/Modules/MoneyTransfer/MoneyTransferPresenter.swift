@@ -16,6 +16,14 @@ public struct MoneyTransfer {
     let transactionID: String
     let reception: String
     let status: Int
+    
+    public init(amout: Int64, currency: String, transactionID: String, reception: String, status: Int) {
+        self.amout = amout
+        self.currency = currency
+        self.transactionID = transactionID
+        self.reception = reception
+        self.status = status
+    }
 }
 
 public typealias MoneyCallback = (MoneyTransfer) -> Void
@@ -57,7 +65,7 @@ final class MoneyTransferPresenter {
     fileprivate let currency: String = "USD"
     
     func send(money amount: Double, callback: @escaping VoidCallback) {
-        guard let receiver = self.conversation.peer?.userID else { return }
+        guard let receiver = self.conversation.peers.first?.userID else { return }
         let moneyParams = TransferPayload(sender: self.appStore.userID(),
                                           receiver: receiver,
                                           amount: amount,

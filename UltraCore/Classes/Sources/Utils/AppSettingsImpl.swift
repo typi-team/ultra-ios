@@ -56,6 +56,8 @@ open class AppSettingsImpl: AppSettings  {
     lazy var updateService: UpdatesServiceClientProtocol = UpdatesServiceNIOClient(channel: updateChannel)
     lazy var conversationService: ChatServiceClientProtocol = ChatServiceNIOClient.init(channel: channel)
     lazy var integrateService: IntegrationServiceClientProtocol = IntegrationServiceNIOClient.init(channel: channel)
+    lazy var chatService: ChatServiceClientProtocol = ChatServiceNIOClient(channel: channel)
+    lazy var supportService: SupportServiceClientProtocol = SupportServiceNIOClient(channel: channel)
 
 //    MARK: Services
 
@@ -73,17 +75,34 @@ open class AppSettingsImpl: AppSettings  {
                                                                     createFileSpaceInteractor: CreateFileInteractor(fileService: fileService))
     lazy var contactRepository: ContactsRepository = ContactsRepositoryImpl(contactDBService: contactDBService)
     lazy var messageRespository: MessageRepository = MessageRespositoryImpl(messageService: messageDBService)
-    lazy var updateRepository: UpdateRepository = UpdateRepositoryImpl.init(appStore: appStore,
-                                                                            messageService: messageDBService,
-                                                                            contactService: contactDBService,
-                                                                            updateClient: updateService,
-                                                                            conversationService: conversationDBService, 
-                                                                            pingPongInteractorImpl: PingPongInteractorImpl.init(updateClient: updateService),
-                                                                            userByIDInteractor: ContactByUserIdInteractor.init(delegate: UltraCoreSettings.delegate,
-                                                                                                                               contactsService: contactsService),
-                                                                            retrieveContactStatusesInteractorImpl: RetrieveContactStatusesInteractor(contactDBService: contactDBService,
-                                                                                                                                                    contactService: contactsService) ,
-                                                                            deliveredMessageInteractor: DeliveredMessageInteractor.init(messageService: messageService))
+    lazy var updateRepository: UpdateRepository = UpdateRepositoryImpl.init(
+        appStore: appStore,
+        messageService: messageDBService,
+        contactService: contactDBService,
+        updateClient: updateService,
+        conversationService: conversationDBService,
+        pingPongInteractorImpl: PingPongInteractorImpl.init(updateClient: updateService),
+        userByIDInteractor: ContactByUserIdInteractor.init(
+            delegate: UltraCoreSettings.delegate,
+            contactsService: contactsService
+        ),
+        retrieveContactStatusesInteractorImpl: RetrieveContactStatusesInteractor(
+            contactDBService: contactDBService,
+            contactService: contactsService), 
+        updateContactStatusInteractor: UpdateContactStatusInteractor(
+            contactDBService: contactDBService,
+            contactService: contactsService),
+        deliveredMessageInteractor: DeliveredMessageInteractor.init(messageService: messageService), 
+        chatInteractor: ConversationInteractor(chatService: chatService),
+        initSupportInteractor: InitSupportChatsInteractor(supportService: supportService), 
+        chatToConversationInteractor: ChatToConversationInteractor(
+            contactByUserIdInteractor: ContactByUserIdInteractor.init(
+                delegate: UltraCoreSettings.delegate,
+                contactsService: contactsService
+            ),
+            contactDBService: contactDBService
+        )
+    )
     lazy var conversationRespository: ConversationRepository = ConversationRepositoryImpl(conversationService: conversationDBService)
     
     //    MARK: App main interactors, must be create once

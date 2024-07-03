@@ -73,22 +73,22 @@ extension UIImage {
     func compress(_ jpegQuality: JPEGQuality) -> Data? { self.jpegData(compressionQuality: jpegQuality.rawValue) }
 
     static func named(_ name: String) -> UIImage? {
-        let bundle = Bundle(for: AppSettingsImpl.self)
-        if let resourceURL = bundle.url(forResource: "UltraCore", withExtension: "bundle"),
-           let resourceBundle = Bundle(url: resourceURL) {
-            let image = UIImage(named: name, in: resourceBundle, compatibleWith: nil)
-            return image?.withRenderingMode(.alwaysTemplate)
-        }
+//        let bundle = Bundle(for: AppSettingsImpl.self)
+//        if let resourceURL = bundle.url(forResource: "UltraCore", withExtension: "bundle"),
+//           let resourceBundle = Bundle(url: resourceURL) {
+//            let image = UIImage(named: name, in: resourceBundle, compatibleWith: nil)
+//            return image?.withRenderingMode(.alwaysTemplate)
+//        }
         return UIImage(named: name, in: AppSettingsImpl.shared.podAsset, compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
     }
 
     static func fromAssets(_ name: String) -> UIImage? {
-        let bundle = Bundle(for: AppSettingsImpl.self)
-        if let resourceURL = bundle.url(forResource: "UltraCore", withExtension: "bundle"),
-           let resourceBundle = Bundle(url: resourceURL) {
-            let image = UIImage(named: name, in: resourceBundle, compatibleWith: nil)
-            return image
-        }
+//        let bundle = Bundle(for: AppSettingsImpl.self)
+//        if let resourceURL = bundle.url(forResource: "UltraCore", withExtension: "bundle"),
+//           let resourceBundle = Bundle(url: resourceURL) {
+//            let image = UIImage(named: name, in: resourceBundle, compatibleWith: nil)
+//            return image
+//        }
         return UIImage(named: name, in: AppSettingsImpl.shared.podAsset, compatibleWith: nil)
     }
 

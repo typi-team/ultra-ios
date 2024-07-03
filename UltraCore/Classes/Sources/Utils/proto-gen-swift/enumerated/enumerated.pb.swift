@@ -70,6 +70,7 @@ enum ChatTypeEnum: SwiftProtobuf.Enum {
   case simpleGroup // = 1
   case group // = 2
   case channel // = 3
+  case support // = 4
   case UNRECOGNIZED(Int)
 
   init() {
@@ -82,6 +83,7 @@ enum ChatTypeEnum: SwiftProtobuf.Enum {
     case 1: self = .simpleGroup
     case 2: self = .group
     case 3: self = .channel
+    case 4: self = .support
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -92,6 +94,7 @@ enum ChatTypeEnum: SwiftProtobuf.Enum {
     case .simpleGroup: return 1
     case .group: return 2
     case .channel: return 3
+    case .support: return 4
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -107,6 +110,7 @@ extension ChatTypeEnum: CaseIterable {
     .simpleGroup,
     .group,
     .channel,
+    .support,
   ]
 }
 
@@ -125,6 +129,8 @@ enum MessageTypeEnum: SwiftProtobuf.Enum {
   case location // = 8
   case stock // = 9
   case coin // = 10
+  case call // = 11
+  case system // = 12
   case UNRECOGNIZED(Int)
 
   init() {
@@ -144,6 +150,8 @@ enum MessageTypeEnum: SwiftProtobuf.Enum {
     case 8: self = .location
     case 9: self = .stock
     case 10: self = .coin
+    case 11: self = .call
+    case 12: self = .system
     default: self = .UNRECOGNIZED(rawValue)
     }
   }
@@ -161,6 +169,8 @@ enum MessageTypeEnum: SwiftProtobuf.Enum {
     case .location: return 8
     case .stock: return 9
     case .coin: return 10
+    case .call: return 11
+    case .system: return 12
     case .UNRECOGNIZED(let i): return i
     }
   }
@@ -183,6 +193,8 @@ extension MessageTypeEnum: CaseIterable {
     .location,
     .stock,
     .coin,
+    .call,
+    .system,
   ]
 }
 
@@ -573,6 +585,62 @@ extension ComplainTypeEnum: CaseIterable {
 
 #endif  // swift(>=4.2)
 
+enum CallStatusEnum: SwiftProtobuf.Enum {
+  typealias RawValue = Int
+  case callStatusCreated // = 0
+  case callStatusStarted // = 1
+  case callStatusCanceled // = 2
+  case callStatusMissed // = 3
+  case callStatusRejected // = 4
+  case callStatusEnded // = 5
+  case UNRECOGNIZED(Int)
+
+  init() {
+    self = .callStatusCreated
+  }
+
+  init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .callStatusCreated
+    case 1: self = .callStatusStarted
+    case 2: self = .callStatusCanceled
+    case 3: self = .callStatusMissed
+    case 4: self = .callStatusRejected
+    case 5: self = .callStatusEnded
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  var rawValue: Int {
+    switch self {
+    case .callStatusCreated: return 0
+    case .callStatusStarted: return 1
+    case .callStatusCanceled: return 2
+    case .callStatusMissed: return 3
+    case .callStatusRejected: return 4
+    case .callStatusEnded: return 5
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+}
+
+#if swift(>=4.2)
+
+extension CallStatusEnum: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static let allCases: [CallStatusEnum] = [
+    .callStatusCreated,
+    .callStatusStarted,
+    .callStatusCanceled,
+    .callStatusMissed,
+    .callStatusRejected,
+    .callStatusEnded,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
 /// Available photo sizes
 enum PhotoSize: SwiftProtobuf.Enum {
   typealias RawValue = Int
@@ -644,6 +712,58 @@ extension PhotoSize: CaseIterable {
 
 #endif  // swift(>=4.2)
 
+enum SupportChatStatusEnum: SwiftProtobuf.Enum {
+  typealias RawValue = Int
+  case supportChatStatusClosed // = 0
+  case supportChatStatusPostponed // = 2
+  case supportChatStatusOpen // = 3
+  case supportChatStatusAny // = 4
+  case supportChatStatusCreated // = 5
+  case UNRECOGNIZED(Int)
+
+  init() {
+    self = .supportChatStatusClosed
+  }
+
+  init?(rawValue: Int) {
+    switch rawValue {
+    case 0: self = .supportChatStatusClosed
+    case 2: self = .supportChatStatusPostponed
+    case 3: self = .supportChatStatusOpen
+    case 4: self = .supportChatStatusAny
+    case 5: self = .supportChatStatusCreated
+    default: self = .UNRECOGNIZED(rawValue)
+    }
+  }
+
+  var rawValue: Int {
+    switch self {
+    case .supportChatStatusClosed: return 0
+    case .supportChatStatusPostponed: return 2
+    case .supportChatStatusOpen: return 3
+    case .supportChatStatusAny: return 4
+    case .supportChatStatusCreated: return 5
+    case .UNRECOGNIZED(let i): return i
+    }
+  }
+
+}
+
+#if swift(>=4.2)
+
+extension SupportChatStatusEnum: CaseIterable {
+  // The compiler won't synthesize support with the UNRECOGNIZED case.
+  static let allCases: [SupportChatStatusEnum] = [
+    .supportChatStatusClosed,
+    .supportChatStatusPostponed,
+    .supportChatStatusOpen,
+    .supportChatStatusAny,
+    .supportChatStatusCreated,
+  ]
+}
+
+#endif  // swift(>=4.2)
+
 #if swift(>=5.5) && canImport(_Concurrency)
 extension DeviceEnum: @unchecked Sendable {}
 extension ChatTypeEnum: @unchecked Sendable {}
@@ -656,7 +776,9 @@ extension StockStatusEnum: @unchecked Sendable {}
 extension CoinStatusEnum: @unchecked Sendable {}
 extension ComplainMessageEnum: @unchecked Sendable {}
 extension ComplainTypeEnum: @unchecked Sendable {}
+extension CallStatusEnum: @unchecked Sendable {}
 extension PhotoSize: @unchecked Sendable {}
+extension SupportChatStatusEnum: @unchecked Sendable {}
 #endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -675,6 +797,7 @@ extension ChatTypeEnum: SwiftProtobuf._ProtoNameProviding {
     1: .same(proto: "SIMPLE_GROUP"),
     2: .same(proto: "GROUP"),
     3: .same(proto: "CHANNEL"),
+    4: .same(proto: "SUPPORT"),
   ]
 }
 
@@ -691,6 +814,8 @@ extension MessageTypeEnum: SwiftProtobuf._ProtoNameProviding {
     8: .same(proto: "LOCATION"),
     9: .same(proto: "STOCK"),
     10: .same(proto: "COIN"),
+    11: .same(proto: "CALL"),
+    12: .same(proto: "SYSTEM"),
   ]
 }
 
@@ -766,6 +891,17 @@ extension ComplainTypeEnum: SwiftProtobuf._ProtoNameProviding {
   ]
 }
 
+extension CallStatusEnum: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "CALL_STATUS_CREATED"),
+    1: .same(proto: "CALL_STATUS_STARTED"),
+    2: .same(proto: "CALL_STATUS_CANCELED"),
+    3: .same(proto: "CALL_STATUS_MISSED"),
+    4: .same(proto: "CALL_STATUS_REJECTED"),
+    5: .same(proto: "CALL_STATUS_ENDED"),
+  ]
+}
+
 extension PhotoSize: SwiftProtobuf._ProtoNameProviding {
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     0: .same(proto: "BLUR"),
@@ -774,5 +910,15 @@ extension PhotoSize: SwiftProtobuf._ProtoNameProviding {
     3: .same(proto: "Y"),
     4: .same(proto: "X"),
     5: .same(proto: "M"),
+  ]
+}
+
+extension SupportChatStatusEnum: SwiftProtobuf._ProtoNameProviding {
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    0: .same(proto: "SUPPORT_CHAT_STATUS_CLOSED"),
+    2: .same(proto: "SUPPORT_CHAT_STATUS_POSTPONED"),
+    3: .same(proto: "SUPPORT_CHAT_STATUS_OPEN"),
+    4: .same(proto: "SUPPORT_CHAT_STATUS_ANY"),
+    5: .same(proto: "SUPPORT_CHAT_STATUS_CREATED"),
   ]
 }

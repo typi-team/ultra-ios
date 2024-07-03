@@ -85,6 +85,10 @@ extension UIColor {
         return UIColor(red: 107.0 / 255.0, green: 114.0 / 255.0, blue: 128.0 / 255.0, alpha: 1.0)
     }
     
+    @nonobjc class var textTertiary: UIColor {
+        return UIColor(red: 156.0 / 255.0, green: 163.0 / 255.0, blue: 175.0 / 255.0, alpha: 1.0)
+    }
+    
     @nonobjc class var gray400: UIColor { UIColor.from(hex: "#9CA3AF") }
     
     static func from(hex: String) -> UIColor {

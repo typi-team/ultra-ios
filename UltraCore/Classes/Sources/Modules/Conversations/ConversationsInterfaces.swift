@@ -13,7 +13,7 @@ import RealmSwift
 import RxSwift
 
 protocol ConversationsWireframeInterface: WireframeInterface {
-    func navigateToConversation(with data: Conversation)
+    func navigateToConversation(with data: Conversation, isPersonalManager: Bool)
     func navigateToContacts(contactsCallback: @escaping ContactsCallback, openConverationCallback: @escaping UserIDCallback)
 }
 
@@ -22,10 +22,10 @@ protocol ConversationsViewInterface: ViewInterface {
 
 protocol ConversationsPresenterInterface: PresenterInterface {
     var conversation: Observable<[Conversation]> { get set }
+    var isSupportScreen: Bool { get }
     
+    func isManager(conversation: Conversation) -> Bool
     func navigateToContacts()
-    func startPingPong()
-    func stopPingPong()
     func delete(_ conversation: Conversation, all: Bool)
     func navigate(to conversation: Conversation)
 }

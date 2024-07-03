@@ -33,7 +33,7 @@
 "contacts.was.hours.2" = "was %d hours ago";
 "contacts.was.hours.5" = "was %d hours ago";
 
-"contacts.was.minutes.1" = "was %d hour ago";
+"contacts.was.minutes.1" = "was %d minute ago";
 "contacts.was.minutes.2" = "was %d minutes ago";
 "contacts.was.minutes.5" = "was %d minutes ago";
 
@@ -68,6 +68,10 @@
 "conversation.unknowNumber" = "";
 "conversation.prints" = "prints...";
 "conversation.moneyTransfer" = "Transfer";
+"conversation.transferStatusUnknown" = "Unknown";
+"conversation.transferStatusInProgress" = "In Progress";
+"conversation.transferStatusCompleted" = "Completed";
+"conversation.transferStatusRejected" = "Rejected";
 "conversation.insertMoney" = "";
 "conversation.send" = "Send";
 "conversation.insideTheBank" = "Inside the Bank";
@@ -113,6 +117,7 @@
 "message.fileWithoutSmile" = "File";
 "message.contact" = "📇 Contact";
 "message.moneyTransfer" = "Transfer";
+"message.call" = "📞 Call";
 "message.uploadingInProgress" = "Uploading in progress";
 "message.reply" = "Reply";
 "message.copy" = "Copy";
@@ -152,3 +157,13 @@
 "conversation.disclaimerAgree" = "Agree";
 "conversation.disclaimerClose" = "Close";
 "conversation.disclaimerDescription" = "The company's client wrote to you";
+
+"conversation.supportChat" = "Chat with a broker";
+"conversation.assistantChat" = "Chat with an assistant";
+"conversation.supportChatOpened" = "The operator will connect shortly";
+"conversation.supportChatClosed" = "The conversation with the operator has ended";
+"conversation.supportChatPostponed" = "It takes some more time to connect the operator";
+"conversation.supportChatManagerAssigned" = "Operator %@ joined the conversation";
+
+"conversation.noMessages" = "No messages";
+"conversation.noMessagesManager" = "No messages from your manager";

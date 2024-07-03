@@ -13,7 +13,7 @@ class IncomeMoneyCell : BaseMessageCell {
     fileprivate let moneyHeadlineLabel: RegularCallout = .init({ $0.text = ConversationStrings.money.localized })
     fileprivate let moneyCaptionlabel: RegularFootnote = .init({ $0.text = MessageStrings.moneyTransfer.localized })
     fileprivate let moneyAvatarView: UIImageView = .init({
-        $0.image = UIImage.named("conversation_money_icon")
+        $0.image = UltraCoreStyle.incomeMessageCell?.moneyImage?.image
         $0.contentMode = .center
     })
     

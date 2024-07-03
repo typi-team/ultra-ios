@@ -70,6 +70,10 @@
 "conversation.unknowNumber" = "";
 "conversation.prints" = "печатает...";
 "conversation.moneyTransfer" = "Переводы";
+"conversation.transferStatusUnknown" = "Неизвестный";
+"conversation.transferStatusInProgress" = "В процессе";
+"conversation.transferStatusCompleted" = "Завершент";
+"conversation.transferStatusRejected" = "Отклонен";
 "conversation.insertMoney" = "";
 "conversation.send" = "Отправить";
 "conversation.insideTheBank" = "Внутри банка";
@@ -114,6 +118,7 @@
 "message.fileWithoutSmile" = "Файл";
 "message.contact" = "📇 Контакт";
 "message.moneyTransfer" = "Перевод";
+"message.call" = "📞 Call";
 "message.uploadingInProgress" = "Идет выгрузка";
 
 "message.reply" = "Ответить";
@@ -155,3 +160,13 @@
 "conversation.disclaimerAgree" = "Согласен";
 "conversation.disclaimerClose" = "Закрыть";
 "conversation.disclaimerDescription" = "Вам написал Клиент компании";
+
+"conversation.supportChat" = "Чат с брокером";
+"conversation.assistantChat" = "Чат с асистентом";
+"conversation.supportChatOpened" = "Оператор подключится в ближайшее время";
+"conversation.supportChatClosed" = "Диалог с оператором завершился";
+"conversation.supportChatPostponed" = "Для подключения оператора необходиио еще некоторое время";
+"conversation.supportChatManagerAssigned" = "Оператор %@ подключился к диалогу";
+
+"conversation.noMessages" = "Нет сообщений";
+"conversation.noMessagesManager" = "Нет сообщений от вашего мэнеджера";

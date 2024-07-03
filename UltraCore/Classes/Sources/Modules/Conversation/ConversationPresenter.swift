@@ -43,6 +43,7 @@ final class ConversationPresenter {
     private let messageSenderInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendResponse>
     private let messageSentSoundInteractor: UseCase<MakeSoundInteractor.Sound, Void>
     private let acceptContactInteractor: GRPCErrorUseCase<String, Void>
+    private let isPersonalManager: Bool
     
     // MARK: - Public properties -
 
@@ -69,6 +70,7 @@ final class ConversationPresenter {
 
     init(
         userID: String,
+        isPersonalManager: Bool,
         appStore: AppSettingsStore,
         conversation: Conversation,
         view: ConversationViewInterface,
@@ -93,6 +95,7 @@ final class ConversationPresenter {
     ) {
 
         self.view = view
+        self.isPersonalManager = isPersonalManager
         self.userID = userID
         self.appStore = appStore
         self.wireframe = wireframe
@@ -120,21 +123,62 @@ final class ConversationPresenter {
 
 extension ConversationPresenter: ConversationPresenterInterface {
     
+    func canBlock() -> Bool {
+        conversation.chatType != .support && !isManager
+    }
+    
+    func canTransfer() -> Bool {
+        conversation.chatType != .support && !isManager
+    }
+    
+    func canAttach() -> Bool {
+        !conversation.isAssistant
+    }
+    
+    func canSendVoice() -> Bool {
+        conversation.chatType != .support && !isManager
+    }
+    
+    func canSendVideo() -> Bool {
+        conversation.chatType != .support && !isManager
+    }
+    
+    var isManager: Bool {
+        return self.isPersonalManager
+    }
+    
+    func isGroupChat() -> Bool {
+        return conversation.chatType == .support || conversation.chatType == .group
+    }
+    
+    func getContact(for id: String) -> ContactDisplayable? {
+        contactRepository.contact(id: id)
+    }
+    
     func allowedToCall() -> Bool {
-        conversation.callAllowed
+        conversation.callAllowed && conversation.chatType != .support
     }
 
     func subscribeToVisibility() {
-        if let userID = self.conversation.peer?.userID {
+        guard conversation.chatType == .peerToPeer else {
+            return
+        }
+        if let userID = self.conversation.peers.first?.userID {
             let timerUpdate = Observable<Int>.interval(.seconds(30), scheduler: MainScheduler.instance)
             let contacts = self.contactRepository.contacts().do { [weak self] contacts in
-                guard let `self` = self, 
-                        let selectedContact = contacts.filter({ contact in contact.userID == userID }).first else { return }
-                    self.conversation.peer = selectedContact
-                    self.view?.blocked(is: selectedContact.isBlocked)
-                    self.view?.setup(conversation: self.conversation)
+                guard let `self` = self,
+                      let selectedContact = contacts.filter({ contact in contact.userID == userID }).first else { return }
+                self.conversation.peers = [selectedContact]
+                self.view?.blocked(is: selectedContact.isBlocked)
+                self.view?.setup(conversation: self.conversation)
                 
             }
+            updateRepository.updateSyncObservable
+                .subscribe(onNext: { [weak self] in
+                    guard let self = self else { return }
+                    self.view?.setup(conversation: self.conversation)
+                })
+                .disposed(by: disposeBag)
             Observable.combineLatest(timerUpdate, contacts)
                 .compactMap { _, contacts -> ContactDisplayable? in
                     let selectedContact = contacts.filter { contact in contact.userID == userID }.first
@@ -142,7 +186,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 }
                 .do(onNext: { [weak self] contact in
                     guard let `self` = self else { return }
-                    self.conversation.peer = contact
+                    self.conversation.peers = [contact]
                     self.view?.blocked(is: contact.isBlocked)
                     self.view?.setup(conversation: self.conversation)
                 })
@@ -152,11 +196,11 @@ extension ConversationPresenter: ConversationPresenterInterface {
     }
 
     func isBlock() -> Bool {
-        return self.conversation.peer?.isBlocked ?? false
+        return self.conversation.peers.first?.isBlocked ?? false
     }
     
     func block() {
-        guard let contact = self.conversation.peer else { return }
+        guard let contact = self.conversation.peers.first else { return }
         let userId = contact.userID
         self.blockContactInteractor
             .executeSingle(params: (userId, !contact.isBlocked))
@@ -199,7 +243,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
     }
     
     func createCall(with video: Bool = false) {
-        guard let user = self.conversation.peer?.userID else { return }
+        guard let user = self.conversation.peers.first?.userID else { return }
         self.callService.create(.with({
             $0.users = [user]
             $0.video = video
@@ -209,6 +253,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 guard let `self` = self else { return }
                 switch result {
                 case let .success(response):
+                    PP.debug("[CALL] create call response - \(response.host), \(response.room), \(response.accessToken)")
                     DispatchQueue.main.async {
                         self.wireframe.navigateToCall(response: response, isVideo: video)
                     }
@@ -220,26 +265,25 @@ extension ConversationPresenter: ConversationPresenterInterface {
     
     func send(location: LocationMessage) {
         var params = MessageSendRequest()
+        if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+            params.message.properties = messageMeta
+        }
         
-        params.peer.user = .with({ [weak self] peer in
-            guard let `self` = self else { return }
-            peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
-        })
+        params.updatePeer(with: conversation)
 
         var message = Message()
         message.id = UUID().uuidString
         message.meta.created = Date().nanosec
-        message.receiver = .with({[weak self] receiver in
-            guard let `self` = self else { return }
-            receiver.chatID = conversation.idintification
-            receiver.userID = self.conversation.peer?.userID ?? ""
-        })
+        message.receiver = .from(conversation: conversation)
         message.location = location
         
         message.sender = .with({ $0.userID = self.userID })
         message.meta = .with({
             $0.created = Date().nanosec
         })
+        if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+            message.properties = messageMeta
+        }
         
         params.message = message
         
@@ -272,19 +316,15 @@ extension ConversationPresenter: ConversationPresenterInterface {
     func send(contact: ContactMessage) {
         var params = MessageSendRequest()
         
-        params.peer.user = .with({ [weak self] peer in
-            guard let `self` = self else { return }
-            peer.userID = conversation.peer?.userID ?? "u1FNOmSc0DAwM"
-        })
+        params.updatePeer(with: conversation)
+        if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+            params.message.properties = messageMeta
+        }
 
         var message = Message()
         message.id = UUID().uuidString
         message.meta.created = Date().nanosec
-        message.receiver = .with({[weak self] receiver in
-            guard let `self` = self else { return }
-            receiver.chatID = conversation.idintification
-            receiver.userID = self.conversation.peer?.userID ?? ""
-        })
+        message.receiver = .from(conversation: conversation)
         message.contact = contact
         
         message.sender = .with({ $0.userID = self.userID })
@@ -324,7 +364,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
     
     func openMoneyController() {
         wireframe.openMoneyController(callback: { [weak self] value in
-            guard let self, let receiverID = self.conversation.peer?.userID else { return }
+            guard let self, let receiverID = self.conversation.peers.first?.userID else { return }
             var params = MessageSendRequest()
 
             params.peer.user = .with({ peer in
@@ -350,8 +390,11 @@ extension ConversationPresenter: ConversationPresenterInterface {
             })
             message.sender = .with({ $0.userID = self.userID })
             message.meta = .with({ $0.created = Date().nanosec })
-            
             params.message = message
+            
+            if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+                params.message.properties = messageMeta
+            }
             
             self.conversationRepository
                 .createIfNotExist(from: message)
@@ -381,6 +424,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
     }
     
     func loadMoreMessages(maxSeqNumber: UInt64 ) {
+        PP.debug("Loading more message for chat - \(conversation.idintification) seqNumber - \(maxSeqNumber)")
         messagesInteractor
             .executeSingle(params: .with({ [weak self] in
                 guard let self else { return }
@@ -390,12 +434,15 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { [weak self] message in
+                PP.debug("Finished loading messages for chat - \(self?.conversation.idintification ?? "")")
+                PP.debug("[Message] Loaded messages: - \(message)")
                 self?.view?.stopRefresh(removeController: message.isEmpty)
             })
             .disposed(by: disposeBag)
     }
     func navigateToContact() {
-        guard let contact = self.conversation.peer else { return }
+        guard conversation.chatType == .peerToPeer, !isPersonalManager else { return }
+        guard let contact = self.conversation.peers.first else { return }
         wireframe.navigateTo(contact: contact)
     }
     
@@ -403,7 +450,65 @@ extension ConversationPresenter: ConversationPresenterInterface {
         return mediaRepository.mediaURL(from: message)
     }
     
-    func upload(file: FileUpload, isVoice: Bool) {
+    func upload(file: File) {
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            switch file {
+            case let .video(url):
+                guard let data = try? Data(contentsOf: url) else { return }
+                self?.upload(
+                    file: .init(
+                        url: url,
+                        data: data,
+                        mime: "video/mp4",
+                        width: 300,
+                        height: 200
+                    ),
+                    isVoice: false
+                )
+            case let .image(image):
+                guard let self else { return }
+                let downsampled = image.fixedOrientation()
+                let resizedImage = resizeImage(image: downsampled)
+                upload(
+                    file: .init(
+                        url: nil,
+                        data: resizedImage.0,
+                        mime: "image/jpeg",
+                        width: resizedImage.1.width,
+                        height: resizedImage.1.height
+                    ),
+                    isVoice: false
+                )
+            case let .file(url):
+                guard let data = try? Data(contentsOf: url) else { return }
+                self?.upload(
+                    file: .init(
+                        url: url,
+                        data: data,
+                        mime: url.mimeType().containsAudio ? "audio/mp3" : url.mimeType(),
+                        width: 300,
+                        height: 300
+                    ),
+                    isVoice: false
+                )
+            case let .audio(url, duration):
+                guard let data = try? Data(contentsOf: url) else { return }
+                self?.upload(
+                    file: FileUpload(
+                        url: nil,
+                        data: data,
+                        mime: "audio/wav",
+                        width: 0,
+                        height: 0,
+                        duration: duration
+                    ),
+                    isVoice: true
+                )
+            }
+        }
+    }
+    
+    private func upload(file: FileUpload, isVoice: Bool) {
         mediaRepository
             .upload(
                 file: file,
@@ -441,6 +546,54 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .disposed(by: disposeBag)
     }
     
+    
+    private func resizeImage(image: UIImage, maxDimension: CGFloat = 1280) -> (Data, CGSize) {
+        let size = image.size
+        guard max(size.width, size.height) > maxDimension else {
+            return (image.jpegData(compressionQuality: 1) ?? Data(), size)
+        }
+        let widthRatio  = maxDimension / size.width
+        let heightRatio = maxDimension / size.height
+
+        let scaleFactor = min(widthRatio, heightRatio)
+
+        let newSize = CGSize(width: size.width * scaleFactor, height: size.height * scaleFactor)
+
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = image.scale
+        let renderer = UIGraphicsImageRenderer(size: newSize, format: format)
+        let newImage = renderer.image { (context) in
+            image.draw(in: CGRect(origin: .zero, size: newSize))
+        }
+        if let data = compressTo(0.512, image: newImage) {
+            return (data, size)
+        }
+        return (image.jpegData(compressionQuality: 1) ?? Data(), size)
+    }
+
+    private func compressTo(_ expectedSizeInMb: CGFloat, image: UIImage) -> Data? {
+        let sizeInBytes = expectedSizeInMb * 1024 * 1024
+        var needCompress: Bool = true
+        var imgData: Data?
+        var compressingValue: CGFloat = 1.0
+        while (needCompress && compressingValue > 0.0) {
+            if let data = image.jpegData(compressionQuality: compressingValue) {
+                if data.count < Int(sizeInBytes) {
+                    needCompress = false
+                    imgData = data
+                } else {
+                    compressingValue -= 0.1
+                }
+            }
+        }
+        if let data = imgData {
+            if (data.count < Int(sizeInBytes)) {
+                return data
+            }
+        }
+        return nil
+    }
+    
     private func playSentMessageSound() {
         messageSentSoundInteractor
             .executeSingle(params: .messageSent)
@@ -468,16 +621,28 @@ extension ConversationPresenter: ConversationPresenterInterface {
             .disposed(by: disposeBag)
     }
     
+    func loadIfFirstTime(seqNumber: UInt64) -> Bool {
+        guard !appStore.loadState(for: conversation.idintification) else {
+            return false
+        }
+        
+        appStore.saveLoadState(for: conversation.idintification)
+        return true
+    }
     
     func viewDidLoad() {
         subscribeToVisibility()
         view?.setup(conversation: conversation)
         if conversation.addContact && conversation.seqNumber > 0 {
-            view?.showOnReceiveDisclaimer(delegate: self, contact: conversation.peer)
+            view?.showOnReceiveDisclaimer(delegate: self, contact: conversation.peers.first)
         } else if conversation.addContact {
             view?.showDisclaimer(show: true, delegate: self)
         }
-
+        
+        if conversation.chatType != .support {
+            UltraCoreSettings.delegate?.didOpenConversation(with: conversation.peers.map(\.phone))
+        }
+        
         updateRepository.typingUsers
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
@@ -518,21 +683,19 @@ extension ConversationPresenter: ConversationPresenterInterface {
     func send(message text: String) {
         var params = MessageSendRequest()
         
-        params.peer.user = .with({ [weak self] peer in
-            peer.userID = self?.conversation.peer?.userID ?? "u1FNOmSc0DAwM"
-        })
+        params.updatePeer(with: conversation)
         params.message.text = text
         params.message.id = UUID().uuidString
         params.message.meta.created = Date().nanosec
         
+        if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+            params.message.properties = messageMeta
+        }
+        
         var message = Message()
         message.text = text
         message.id = params.message.id
-        message.receiver = .with({ [weak self] receiver in
-            guard let self else { return }
-            receiver.chatID = conversation.idintification
-            receiver.userID = conversation.peer?.userID ?? ""
-        })
+        message.receiver = .from(conversation: conversation)
         message.sender = .with({ [weak self] in
             guard let self else { return }
             $0.userID = userID
@@ -572,7 +735,8 @@ extension ConversationPresenter: ConversationPresenterInterface {
     }
     
     func didTapTransfer() {
-        guard let userID = conversation.peer?.phone,
+        guard conversation.chatType == .peerToPeer,
+              let userID = conversation.peers.first?.phone,
               let viewController = view as? UIViewController
         else {
             return
@@ -581,7 +745,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
             for: userID,
             viewController: viewController,
             transferCallback: { [weak self] moneyTransfer in
-                guard let self, let receiverID = self.conversation.peer?.userID else { return }
+                guard let self, let receiverID = self.conversation.peers.first?.userID else { return }
                 var params = MessageSendRequest()
 
                 params.peer.user = .with({ peer in
@@ -599,7 +763,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                         money.currencyCode = moneyTransfer.currency
                     })
                 })
-                message .text = params.textFormatString()
+                message.text = params.textFormatString()
                 message.id = params.message.id
                 message.receiver = .with({ receiver in
                     receiver.userID = receiverID
@@ -609,6 +773,10 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 message.meta = .with({ $0.created = Date().nanosec })
                 
                 params.message = message
+                
+                if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
+                    params.message.properties = messageMeta
+                }
                 
                 self.conversationRepository
                     .createIfNotExist(from: message)
@@ -642,7 +810,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
 
 extension ConversationPresenter: DisclaimerViewDelegate {
     func disclaimerDidTapAgree() {
-        guard let userID = self.conversation.peer?.userID else {
+        guard let userID = self.conversation.peers.first?.userID else {
             return
         }
         acceptContactInteractor
@@ -666,5 +834,14 @@ extension ConversationPresenter: DisclaimerViewDelegate {
     
     func disclaimerDidTapClose() {
         wireframe.closeChat()
+    }
+}
+
+extension ConversationPresenter {
+    enum File {
+        case audio(url: URL, duration: TimeInterval)
+        case video(url: URL)
+        case image(image: UIImage)
+        case file(url: URL)
     }
 }

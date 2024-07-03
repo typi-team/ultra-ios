@@ -25,7 +25,9 @@ enum MessageMenuAction {
 class BaseMessageCell: BaseCell {
     fileprivate lazy var cellAction = UITapGestureRecognizer.init(target: self, action: #selector(self.handleCellPress(_:)))
     
+    var messagePrefix: String?
     var message: Message?
+    var canDelete: Bool = true
     var cellActionCallback: (() -> Void)?
     var actionCallback: ((Message) -> Void)?
     var longTapCallback:((MessageMenuAction) -> Void)?
@@ -40,7 +42,7 @@ class BaseMessageCell: BaseCell {
     })
     
     let container: UIView = .init({
-        $0.cornerRadius = 18
+        $0.cornerRadius = 12
         $0.backgroundColor = .clear
     })
     
@@ -89,22 +91,26 @@ class BaseMessageCell: BaseCell {
         }
 
         self.textView.snp.makeConstraints { make in
+            make.left.equalToSuperview().offset(8)
             make.top.equalToSuperview().offset(kLowPadding)
-            make.left.equalToSuperview().offset(kLowPadding + 2)
-            make.bottom.equalToSuperview().offset(-kLowPadding)
+            make.right.equalToSuperview().offset(-8)
         }
 
         self.deliveryDateLabel.snp.makeConstraints { make in
-            make.width.greaterThanOrEqualTo(38)
-            make.bottom.equalTo(textView.snp.bottom)
-            make.right.equalToSuperview().offset(-(kLowPadding + 1))
-            make.left.equalTo(textView.snp.right).offset(kMediumPadding - 5)
+            make.top.equalTo(textView.snp.bottom).offset(4)
+            make.right.equalToSuperview().offset(-4)
+            make.left.greaterThanOrEqualTo(container).offset(4)
+            make.bottom.equalToSuperview().offset(-8)
         }
     }
     
     func setup(message: Message) {
         self.message = message
-        self.textView.attributedText = NSAttributedString(string: message.text)
+        if let messagePrefix = messagePrefix {
+            self.textView.attributedText = NSAttributedString(string: "\(messagePrefix)\n\(message.text)")
+        } else {
+            self.textView.attributedText = NSAttributedString(string: message.text)
+        }
         self.deliveryDateLabel.text = message.meta.created.dateBy(format: .hourAndMinute)
         self.traitCollectionDidChange(UIScreen.main.traitCollection)
         if #available(iOS 13.0, *) {
@@ -127,20 +133,39 @@ class BaseMessageCell: BaseCell {
         }
         if let message = message {
             if message.isIncome {
+                self.textView.hyperlinkAttributes = [
+                    .foregroundColor: UltraCoreStyle.incomeMessageCell?.linkColor.color ?? .systemBlue,
+                    .underlineStyle: NSUnderlineStyle.single.rawValue
+                ]
                 self.container.backgroundColor = UltraCoreStyle.incomeMessageCell?.backgroundColor.color
                 self.deliveryDateLabel.font = UltraCoreStyle.incomeMessageCell?.deliveryLabelConfig.font
                 self.deliveryDateLabel.textColor = UltraCoreStyle.incomeMessageCell?.deliveryLabelConfig.color
                 
                 self.textView.font = UltraCoreStyle.incomeMessageCell?.textLabelConfig.font
                 self.textView.textColor = UltraCoreStyle.incomeMessageCell?.textLabelConfig.color
-                self.textView.attributedText = NSAttributedString(
+                let attributedStr = NSMutableAttributedString(
                     string: self.textView.text ?? "",
                     attributes: attributes(
                         for: UltraCoreStyle.incomeMessageCell?.textLabelConfig.font,
                         textColor: UltraCoreStyle.incomeMessageCell?.textLabelConfig.color
                     )
                 )
+                if let messagePrefix = messagePrefix {
+                    let range = NSString(string: attributedStr.string).range(of: messagePrefix)
+                    attributedStr.setAttributes(
+                        attributes(
+                            for: UltraCoreStyle.incomeMessageCell?.contactLabelConfig.font,
+                            textColor: UltraCoreStyle.incomeMessageCell?.contactLabelConfig.color),
+                        range: range
+                    )
+                }
+                
+                self.textView.attributedText = attributedStr
             } else {
+                self.textView.hyperlinkAttributes = [
+                    .foregroundColor: UltraCoreStyle.outcomeMessageCell?.linkColor.color ?? .systemBlue,
+                    .underlineStyle: NSUnderlineStyle.single.rawValue
+                ]
                 self.container.backgroundColor = UltraCoreStyle.outcomeMessageCell?.backgroundColor.color
                 
                 self.deliveryDateLabel.font = UltraCoreStyle.outcomeMessageCell?.deliveryLabelConfig.font
@@ -184,15 +209,17 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
             guard let `self` = self else { return nil }
             var action: [UIAction] = []
             if  !message.hasAttachment {
-                action.append(UIAction(title: MessageStrings.copy.localized, image: .named("message.cell.copy")) { _ in
+                action.append(UIAction(title: MessageStrings.copy.localized, image: messageStyle.copy?.image) { _ in
                     self.longTapCallback?(.copy(message))
                 })
             }
             
-            action.append(UIAction(title: MessageStrings.delete.localized, image: messageStyle.delete?.image, attributes: .destructive) { _ in
-                self.cellActionCallback?()
-                self.longTapCallback?(.delete(message))
-            })
+            if canDelete {
+                action.append(UIAction(title: MessageStrings.delete.localized, image: messageStyle.delete?.image, attributes: .destructive) { _ in
+                    self.cellActionCallback?()
+                    self.longTapCallback?(.delete(message))
+                })
+            }
 
             let select = UIAction(title: MessageStrings.select.localized, image: messageStyle.select?.image) { _ in
                 self.cellActionCallback?()
@@ -203,9 +230,17 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
             
             if message.isIncome,
                 (UltraCoreSettings.futureDelegate?.availableToReport(message: message) ?? true) {
-                return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), self.makeReportMenu(), select])
-            }else {
-                return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), select])
+                if canDelete {
+                    return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), self.makeReportMenu(), select])
+                } else {
+                    return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), self.makeReportMenu()])
+                }
+            } else {
+                if canDelete {
+                    return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), select])
+                } else {
+                    return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action)])
+                }
             }
             
             

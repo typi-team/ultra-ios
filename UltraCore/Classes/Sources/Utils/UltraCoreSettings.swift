@@ -19,8 +19,9 @@ public protocol UltraCoreFutureDelegate: AnyObject {
 }
 
 public protocol UltraCoreSettingsDelegate: AnyObject {
-    func emptyConversationView() -> UIView?
-    func emptyConversationDetailView() -> UIView?
+    var activeConversationID: String? { get set }
+    func emptyConversationView(isSupport: Bool) -> UIView?
+    func emptyConversationDetailView(isManager: Bool) -> UIView?
     func info(from id: String) -> IContactInfo?
     func token(callback: @escaping (Result<String, Error>) -> Void)
     func serverConfig() -> ServerConfigurationProtocol?
@@ -31,8 +32,20 @@ public protocol UltraCoreSettingsDelegate: AnyObject {
     func callImage() -> UIImage?
     func disclaimerDescriptionFor(contact: String) -> String
     func tokenUpdated()
-    func unreadMessagesUpdated(count: Int)
-    func provideTransferScreen(for userID: String, viewController: UIViewController, transferCallback: MoneyCallback)
+    func unreadAllMessagesUpdated(count: Int)
+    func unreadSupportMessagesUpdated(count: Int)
+    func unreadNonSupportMessagesUpdated(count: Int)
+    func provideTransferScreen(
+        for userID: String,
+        viewController: UIViewController,
+        transferCallback: @escaping MoneyCallback
+    )
+    func realmEncryptionKeyData() -> Data?
+    func didTapTransactionCell(transactionID: String, viewController: UIViewController)
+    func didOpenConversation(with peers: [String])
+    func getSupportChatsAndManagers(callBack: @escaping (([String: Any]) -> Void))
+    func getMessageMeta() -> Dictionary<String, String>
+    func didUpdateVoipToken(_ token: String)
 }
 
 extension UltraCoreSettingsDelegate {
@@ -50,6 +63,19 @@ public class UltraCoreSettings {
 }
 
 public extension UltraCoreSettings {
+    
+    private static var isUpdatingSession: Bool = false
+    private static let disposeBag = DisposeBag()
+    
+    static var appLocale: Locale = .current
+    
+    static var isConnected: Bool {
+        AppSettingsImpl.shared.updateRepository.isConnectedToListenStream
+    }
+    
+    static var deviceID: String {
+        AppSettingsImpl.shared.appStore.deviceID()
+    }
 
     static func update(contacts: [IContactInfo]) throws {
         try ContactDBService.update(contacts: contacts)
@@ -63,7 +89,7 @@ public extension UltraCoreSettings {
             .flatMap { contactByUserIdInteractor.executeSingle(params: $0.identifier).retry(2) }
             .flatMap({ contactsDBService.save(contact: $0) })
             .subscribe(
-                onNext: {
+                onNext: { _ in
                     PP.info("Контакты успешно сохранены")
                 },
                 onError: { error in
@@ -90,11 +116,17 @@ public extension UltraCoreSettings {
         return SignUpWireframe().viewController
     }
 
-    static func entryConversationsViewController() -> UIViewController {
-        return ConversationsWireframe(appDelegate: UltraCoreSettings.delegate).viewController
+    static func entryConversationsViewController(isSupport: Bool) -> UIViewController {
+        return ConversationsWireframe(
+            appDelegate: UltraCoreSettings.delegate,
+            isSupport: isSupport
+        ).viewController
     }
 
     static func updateSession(callback: @escaping (Error?) -> Void) {
+        guard !isUpdatingSession else {
+            return
+        }
         let tokenWork = Observable<String>.create { observer in
             Self.delegate?.token(callback: { result in
                 switch result {
@@ -107,17 +139,20 @@ public extension UltraCoreSettings {
             })
             return Disposables.create()
         }
+        isUpdatingSession = true
         tokenWork
             .retry(when: { errors in
                 return errors.enumerated().flatMap { (attempt, error) -> Observable<Int> in
                     let maxAttempts = 20
                     if attempt > maxAttempts {
+                        isUpdatingSession = false
                         return Observable.error(error)
                     }
                     return Observable<Int>.timer(.seconds(5), scheduler: MainScheduler.instance)
                 }
             })
             .subscribe { token in
+                isUpdatingSession = false
                 Self.update(sid: token, with: callback)
             }
             .disposed(by: disposeBag)
@@ -138,7 +173,7 @@ public extension UltraCoreSettings {
             .issueJwt(.with({
                 $0.device = .ios
                 $0.sessionID = token
-                $0.deviceID = UIDevice.current.identifierForVendor?.uuidString ?? "Ну указано"
+                $0.deviceID = AppSettingsImpl.shared.appStore.deviceID()
             }), callOptions: .default())
             .response
             .whenComplete { result in
@@ -157,11 +192,11 @@ public extension UltraCoreSettings {
                     if shared.appStore.lastState == 0 {
                         DispatchQueue.main.asyncAfter(deadline: .now() + timeOut, execute: {
                             callback(nil)
-                            UnreadMessagesService.updateUnreadMessagesCount()
+                            AppSettingsImpl.shared.updateRepository.triggerUnreadUpdate()
                         })
                     } else {
                         callback(nil)
-                        UnreadMessagesService.updateUnreadMessagesCount()
+                        AppSettingsImpl.shared.updateRepository.triggerUnreadUpdate()
                     }
                 }
             }
@@ -177,7 +212,7 @@ public extension UltraCoreSettings {
             $0.device = .ios
             $0.token = token
             $0.appVersion = AppSettingsImpl.shared.version
-            $0.deviceID = UIDevice.current.identifierForVendor?.uuidString ?? "Ну указано"
+            $0.deviceID = AppSettingsImpl.shared.appStore.deviceID()
             if let voipToken {
                 $0.voipPushToken = voipToken
             }
@@ -192,6 +227,10 @@ public extension UltraCoreSettings {
             }
         })
     }
+    
+    static func triggerViewRefresh() {
+        AppSettingsImpl.shared.updateRepository.triggerViewRefresh()
+    }
 
     static func handleNotification(data: [AnyHashable: Any], callback: @escaping (UIViewController?) -> Void) {
         _ = AppSettingsImpl
@@ -202,7 +241,7 @@ public extension UltraCoreSettings {
             .observe(on: MainScheduler.instance)
             .subscribe(onSuccess: { conversation in
                 if let conversation = conversation {
-                    callback(ConversationWireframe(with: conversation).viewController)
+                    callback(ConversationWireframe(with: conversation, isPersonalManager: false).viewController)
                 } else {
                     callback(nil)
                 }
@@ -222,7 +261,7 @@ public extension UltraCoreSettings {
         .observe(on: MainScheduler.instance)
         .subscribe(onSuccess: { conversation in
             if let conversation = conversation {
-                callback(ConversationWireframe(with: conversation).viewController)
+                callback(ConversationWireframe(with: conversation, isPersonalManager: false).viewController)
             } else {
                 callback(nil)
             }
@@ -244,8 +283,48 @@ public extension UltraCoreSettings {
                             ContactInfo.displayableDate: $0.status.displayText] }))
             }
     }
+    
+    static func getSupportStatus(for chatID: String, completion: @escaping ((Result<Bool, Error>) -> Void)) {
+        let timer = Observable<Int>.interval(.seconds(10), scheduler: MainScheduler.instance)
+        let offices = AppSettingsImpl.shared.updateRepository.supportOfficesObservable.compactMap { $0 }.take(until: timer)
+        let chat = AppSettingsImpl.shared.conversationDBService.conversation(by: chatID).asObservable()
+        var result: Result<Bool, Error> = .success(false)
+        chat
+            .flatMap { conversation -> Observable<Bool> in
+                guard let conversation = conversation else {
+                    return Observable.error(NSError(domain: "No conversation Found", code: -1))
+                }
+                
+                if conversation.chatType == .support {
+                    return Observable.just(true)
+                } else if conversation.chatType == .peerToPeer {
+                    return Observable.zip(offices, Observable.just(conversation))
+                        .map { (officesResponse, conversation) in
+                            guard let peer = conversation.peers.first else {
+                                return false
+                            }
+                            let isManager = officesResponse.personalManagers
+                                .map { String($0.userId) }
+                                .contains(where: { $0 == peer.phone })
+                            return isManager
+                        }
+                } else {
+                    return Observable.just(false)
+                }
+            }
+            .take(1)
+            .subscribe { isSupport in
+                result = .success(isSupport)
+            } onError: { error in
+                result = .failure(error)
+            } onCompleted: {
+                completion(result)
+            }
+            .disposed(by: Self.disposeBag)
+    }
 
     static func logout() {
+        Self.stopSession()
         AppSettingsImpl.shared.logout()
     }
 }

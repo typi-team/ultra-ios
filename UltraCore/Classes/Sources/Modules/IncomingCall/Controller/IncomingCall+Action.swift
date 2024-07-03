@@ -18,7 +18,13 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
             videoView = remoteVideoView
         }
         videoView.applyBlurEffect()
-        cameraCapturer?.switchCameraPosition()
+        Task {
+            do {
+                try await cameraCapturer?.switchCameraPosition()
+            } catch {
+                
+            }
+        }
         button.isEnabled = false
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             videoView.removeBlurEffect()
@@ -44,8 +50,8 @@ extension IncomingCallViewController: IncomingCallActionViewDelegate {
             actionStackView.setAsActiveCamera()
             setSpeaker(true)
         } else {
-            setSpeaker(AudioManager.shared.preferSpeakerOutput)
-            setSpeakerButtonEnabled(AudioManager.shared.preferSpeakerOutput)
+            setSpeaker(AudioManager.shared.isSpeakerOutputPreferred)
+            setSpeakerButtonEnabled(AudioManager.shared.isSpeakerOutputPreferred)
             actionStackView.setAsActiveAudio()
         }
         setVideoCallIfPossible(enabled: cameraEnabled)
