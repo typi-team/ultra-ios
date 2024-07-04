@@ -163,9 +163,8 @@ open class WaveformView: UIView {
         }
     }
 
-    /// Desired scale of image based on window's screen scale
     private var desiredImageScale: CGFloat {
-        return window?.screen.scale ?? UIScreen.main.scale
+        return 2
     }
 
     /// Represents the status of the waveform renderings
