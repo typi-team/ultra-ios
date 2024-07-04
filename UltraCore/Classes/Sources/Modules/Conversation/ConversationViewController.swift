@@ -1006,7 +1006,7 @@ extension ConversationViewController: UITableViewDelegate {
     }
 }
 
-extension ConversationViewController: CNContactPickerDelegate {
+extension ConversationViewController: CNContactPickerDelegate, UIGestureRecognizerDelegate {
     func contactPicker(_ picker: CNContactPickerViewController, didSelect contact: CNContact) {
         for phoneNumber in contact.phoneNumbers {
             let phoneNumberValue = phoneNumber.value

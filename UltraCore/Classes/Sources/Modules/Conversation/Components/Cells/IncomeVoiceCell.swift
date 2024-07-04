@@ -10,6 +10,7 @@ import NVActivityIndicatorView
 import RxCocoa
 import RxSwift
 import SDWebImage
+import AVFoundation
 
 class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
     
@@ -71,12 +72,12 @@ class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
         self.controllerView.snp.makeConstraints { make in
             make.width.height.equalTo(30)
             make.centerY.equalToSuperview()
-            make.left.equalToSuperview().offset(kLowPadding)
+            make.left.equalToSuperview().offset(12)
         }
       
         audioWaveView.snp.makeConstraints { make in
-            make.left.equalTo(controllerView.snp.right).offset(kMediumPadding)
-            make.right.equalToSuperview().offset(-kMediumPadding)
+            make.left.equalTo(controllerView.snp.right).offset(12)
+            make.right.equalToSuperview().offset(-12)
             make.top.equalToSuperview().offset(kLowPadding)
             make.height.equalTo(kHeadlinePadding)
         }
@@ -284,12 +285,12 @@ class OutcomeVoiceCell: IncomeVoiceCell {
         self.controllerView.snp.makeConstraints { make in
             make.width.height.equalTo(30)
             make.centerY.equalToSuperview()
-            make.left.equalToSuperview().offset(kLowPadding)
+            make.left.equalToSuperview().offset(12)
         }
       
         audioWaveView.snp.makeConstraints { make in
-            make.left.equalTo(controllerView.snp.right).offset(kMediumPadding)
-            make.right.equalToSuperview().offset(-kMediumPadding)
+            make.left.equalTo(controllerView.snp.right).offset(12)
+            make.right.equalToSuperview().offset(-12)
             make.top.equalToSuperview().offset(kLowPadding)
             make.height.equalTo(kHeadlinePadding)
         }

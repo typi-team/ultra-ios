@@ -213,7 +213,7 @@ open class WaveformView: UIView {
     fileprivate var firstGesture = PressType.none
 
     /// Gesture recognizer
-    fileprivate var panRecognizer = UIPanGestureRecognizer()
+    var panRecognizer = UIPanGestureRecognizer()
 
     /// Whether rendering is happening asynchronously
     fileprivate var renderingInProgress = false
@@ -406,6 +406,9 @@ open class WaveformView: UIView {
 
 extension WaveformView: UIGestureRecognizerDelegate {
     public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        if gestureRecognizer == panRecognizer {
+            return false
+        }
         return true
     }
 

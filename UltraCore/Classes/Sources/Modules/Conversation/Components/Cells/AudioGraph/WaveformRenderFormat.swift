@@ -256,7 +256,7 @@ final public class WaveformRenderOperation: Operation {
         context.scaleBy(x: 1 / format.scale, y: 1 / format.scale) // Scale context to account for scaling applied to image
         context.setShouldAntialias(false)
         context.setAlpha(1.0)
-        context.setLineWidth(25.0 / format.scale)
+        context.setLineWidth(30 / format.scale)
         context.setStrokeColor(format.wavesColor.cgColor)
         
         let sampleDrawingScale: CGFloat
@@ -267,14 +267,26 @@ final public class WaveformRenderOperation: Operation {
         }
         let verticalMiddle = (imageSize.height * format.scale) / 2
         var index = 0
+        
         for (x, sample) in samples.enumerated() {
-            var height = (sample - min) * sampleDrawingScale
-            if x == 0 || index == 25 {
-                if height < 3 {
-                    height = 3
-                }
+            let height = (sample - min) * sampleDrawingScale
+            if x == 0 || index == 32 {
+                
                 context.move(to: CGPoint(x: CGFloat(x), y: verticalMiddle - height))
                 context.addLine(to: CGPoint(x: CGFloat(x), y: verticalMiddle + height))
+                context.strokePath()
+                
+                context.addArc(center: CGPoint(x: CGFloat(x), y: verticalMiddle - height),
+                               radius: 0.05,
+                               startAngle: CGFloat.pi,
+                               endAngle: 0,
+                               clockwise: false)
+                context.strokePath()
+                context.addArc(center: CGPoint(x: CGFloat(x), y: verticalMiddle + height),
+                               radius: 0.05,
+                               startAngle: 0,
+                               endAngle: CGFloat.pi,
+                               clockwise: false)
                 context.strokePath()
                 index = 1
             }
