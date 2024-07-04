@@ -280,8 +280,8 @@ private class IncomeVoiceMessageCellConfigImpl: VoiceMessageCellConfig {
         darkColor: .baseBlue
     )
     var maximumTrackTintColor: TwiceColor = TwiceColorImpl(
-        defaultColor: .from(hex: "#B7BCC5"),
-        darkColor: .from(hex: "#B7BCC5")
+        defaultColor: .gray700,
+        darkColor: .white
     )
     var waveColor: TwiceColor = TwiceColorImpl(
         defaultColor: .from(hex: "#CCD0D5"),

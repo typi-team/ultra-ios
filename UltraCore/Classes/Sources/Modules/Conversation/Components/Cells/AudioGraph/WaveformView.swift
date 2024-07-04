@@ -7,7 +7,7 @@ open class WaveformView: UIView {
     open weak var delegate: WaveformViewDelegate?
 
     private let mediaRepository: MediaRepository = AppSettingsImpl.shared.mediaRepository
-    
+        
     open var audioURL: URL? {
         didSet {
             guard let audioURL = audioURL else {
@@ -77,8 +77,8 @@ open class WaveformView: UIView {
             if zoomSamples.startIndex < 0{
                 print("rip")
             }
-            setNeedsDisplay()
-            setNeedsLayout()
+//            setNeedsDisplay()
+//            setNeedsLayout()
         }
     }
 
@@ -378,21 +378,22 @@ open class WaveformView: UIView {
         let renderFormat = WaveformRenderFormat(wavesColor: .black, scale: desiredImageScale)
 
         let waveformRenderOperation = WaveformRenderOperation(audioContext: audioContext, imageSize: imageSize, sampleRange: renderSamples, format: renderFormat) { [weak self] image in
-            DispatchQueue.main.async {
-                guard let strongSelf = self else { return }
-
+            DispatchQueue.main.async { [weak self] in
+                guard let self, let path = pathFile, mediaRepository.audioGraphImage(from: path) == nil else { return }
+                
                 if let image = image,
                    let fileID = audioContext.audioURL.lastPathComponent.split(separator: ".").first {
-                    strongSelf.mediaRepository.createAudioGraphImage(from: String(fileID), image: image) {
-                        strongSelf.delegate?.waveformViewDidRender?(strongSelf)
+                    mediaRepository.createAudioGraphImage(from: String(fileID), image: image) { [weak self] in
+                        guard let self else { return }
+                        delegate?.waveformViewDidRender?(self)
                     }
                 }
-                strongSelf.renderForCurrentAssetFailed = (image == nil)
-                strongSelf.waveformImage = image
-                strongSelf.renderingInProgress = false
-                strongSelf.cachedWaveformRenderOperation = self?.inProgressWaveformRenderOperation
-                strongSelf.inProgressWaveformRenderOperation = nil
-                strongSelf.setNeedsLayout()
+                renderForCurrentAssetFailed = (image == nil)
+                waveformImage = image
+                renderingInProgress = false
+                cachedWaveformRenderOperation = self.inProgressWaveformRenderOperation
+                inProgressWaveformRenderOperation = nil
+                setNeedsLayout()
             }
         }
         self.inProgressWaveformRenderOperation = waveformRenderOperation

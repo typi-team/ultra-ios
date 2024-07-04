@@ -279,7 +279,7 @@ extension VideoMessage {
 
 extension VoiceMessage {
     var extensions:String { "wav" }
-    var originalVoiceFileId: String { "original_voice\(fileID)" }
+    var originalVoiceFileId: String { "original_voice\(fileName)" }
     var originalFileIdWithExtension: String { "\(originalVoiceFileId).\(extensions)" }
 }
 

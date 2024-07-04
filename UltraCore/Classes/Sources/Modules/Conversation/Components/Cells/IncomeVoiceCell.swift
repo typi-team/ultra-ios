@@ -250,7 +250,7 @@ class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
     
     func waveformScrubbingEnabled(_ waveformView: WaveformView) -> Bool {
         if let voiceItem = try? voiceRepository.currentVoice.value(), voiceItem.isPlaying {
-            return voiceItem.voiceMessage.originalVoiceFileId == audioWaveView.audioURL?.lastPathComponent.split(separator: ".").first ?? ""
+            return voiceItem.voiceMessage.originalVoiceFileId.contains(audioWaveView.audioURL?.lastPathComponent.split(separator: ".").first ?? "")
         }
         return true
     }
