@@ -984,7 +984,7 @@ extension ConversationViewController: VoiceInputBarDelegate {
     }
     
     func recordedVoice(url: URL, in duration: TimeInterval) {
-        guard duration > 2 else { return }
+        guard duration >= 1 else { return }
         presenter?.upload(file: .audio(url: url, duration: duration))
     }
 }
