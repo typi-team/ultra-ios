@@ -29,7 +29,11 @@ class IncomeCallCell: BaseMessageCell {
         stack.spacing = 0
         return stack
     }()
-    fileprivate let callImageView = UIImageView()
+    fileprivate let callImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFit
+        return imageView
+    }()
     fileprivate lazy var contentStack: UIStackView = {
         let stack = UIStackView(arrangedSubviews: [callImageView, labelStack])
         stack.axis = .horizontal
@@ -43,6 +47,9 @@ class IncomeCallCell: BaseMessageCell {
     }
     
     override func setupConstraints() {
+        callImageView.snp.makeConstraints { make in
+            make.size.equalTo(40)
+        }
         container.snp.makeConstraints {
             $0.leading.equalTo(16)
             $0.top.equalToSuperview()
@@ -74,7 +81,12 @@ class IncomeCallCell: BaseMessageCell {
             titleLabel.text = message.isIncome ? MessageStrings.callMissed.localized : MessageStrings.callCancelled.localized
             callImageView.image = style?.failIcon.image
         case .callStatusMissed, .callStatusRejected:
-            titleLabel.text = message.isIncome ? MessageStrings.callMissed.localized : MessageStrings.callNoAnswer.localized
+            if message.isIncome {
+                titleLabel.text = MessageStrings.callMissed.localized
+            } else {
+                titleLabel.text = defaultString
+                subtitleLabel.text = MessageStrings.callNoAnswer.localized
+            }
             callImageView.image = style?.failIcon.image
         case .callStatusEnded:
             titleLabel.text = defaultString
@@ -83,18 +95,30 @@ class IncomeCallCell: BaseMessageCell {
             let seconds = Int(time) % 60
             subtitleLabel.text = String(format: "%02i:%02i", minutes, seconds)
             callImageView.image = style?.successIcon.image
-        case .UNRECOGNIZED(let int):
+        case .UNRECOGNIZED:
             titleLabel.text = defaultString
             callImageView.image = style?.successIcon.image
         }
+        subtitleLabel.isHidden = subtitleLabel.text?.isEmpty ?? false
     }
     
 }
 
 class OutcomeCallCell: IncomeCallCell {
+    
+    fileprivate let statusView: UIImageView = .init({
+        $0.contentMode = .scaleAspectFit
+    })
+    
     override func setupView() {
         self.style = UltraCoreStyle.outcomeCallCell
         super.setupView()
+        container.addSubview(statusView)
+    }
+    
+    override func setup(message: Message) {
+        super.setup(message: message)
+        statusView.image = message.statusImage
     }
     
     override func setupConstraints() {
@@ -105,7 +129,13 @@ class OutcomeCallCell: IncomeCallCell {
             $0.width.equalTo(230)
         }
         deliveryDateLabel.snp.makeConstraints {
-            $0.trailing.bottom.equalTo(-8)
+            $0.bottom.equalTo(-8)
+            $0.right.equalTo(statusView.snp.left).inset(-4)
+        }
+        statusView.snp.makeConstraints { make in
+            make.centerY.equalTo(deliveryDateLabel.snp.centerY)
+            make.width.equalTo(15).priority(.high)
+            make.right.equalToSuperview().offset(-10)
         }
         contentStack.snp.makeConstraints {
             $0.bottom.equalTo(deliveryDateLabel.snp.top)
