@@ -280,8 +280,16 @@ private class IncomeVoiceMessageCellConfigImpl: VoiceMessageCellConfig {
         darkColor: .baseBlue
     )
     var maximumTrackTintColor: TwiceColor = TwiceColorImpl(
-        defaultColor: .from(hex: "#B7BCC5"),
-        darkColor: .from(hex: "#B7BCC5")
+        defaultColor: .gray700,
+        darkColor: .white
+    )
+    var waveColor: TwiceColor = TwiceColorImpl(
+        defaultColor: .from(hex: "#CCD0D5"),
+        darkColor: .from(hex: "#CCD0D5")
+    )
+    var waveProgressColor: TwiceColor = TwiceColorImpl(
+        defaultColor: .from(hex: "#3B82F6"),
+        darkColor: .from(hex: "#3B82F6")
     )
 }
 
@@ -291,7 +299,15 @@ private class OutcomeVoiceMessageCellConfigImpl: VoiceMessageCellConfig {
         darkColor: .white
     )
     var maximumTrackTintColor: TwiceColor = TwiceColorImpl(
-        defaultColor: .from(hex: "#BFDBFE"),
-        darkColor: .from(hex: "#BFDBFE")
+        defaultColor: .gray700,
+        darkColor: .white
+    )
+    var waveColor: TwiceColor = TwiceColorImpl(
+        defaultColor: .white,
+        darkColor: .from(hex: "#CCD0D5")
+    )
+    var waveProgressColor: TwiceColor = TwiceColorImpl(
+        defaultColor: .from(hex: "#3B82F6"),
+        darkColor: .from(hex: "#3B82F6")
     )
 }

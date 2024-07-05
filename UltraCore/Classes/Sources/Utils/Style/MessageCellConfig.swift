@@ -45,6 +45,8 @@ public protocol VideoFotoCellConfig  {
 public protocol VoiceMessageCellConfig {
     var minimumTrackTintColor: TwiceColor { get set }
     var maximumTrackTintColor: TwiceColor { get set }
+    var waveColor: TwiceColor { get set }
+    var waveProgressColor: TwiceColor { get set }
 }
 
 public protocol HeaderInSectionConfig {

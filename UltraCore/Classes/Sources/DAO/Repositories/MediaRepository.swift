@@ -25,6 +25,8 @@ protocol MediaRepository {
         isVoice: Bool,
         onPreUploadingFile: (MessageSendRequest) -> Void
     ) -> Single<MessageSendRequest>
+    func createAudioGraphImage(from path: String, image: UIImage, completion: @escaping (() -> Void))
+    func audioGraphImage(from path: String) -> UIImage?
     func upload(message: Message, conversation: Conversation) -> Single<MessageSendRequest>
 }
 
@@ -57,6 +59,7 @@ class MediaRepositoryImpl {
 }
 
 extension MediaRepositoryImpl: MediaRepository {
+    
     func mediaURL(from message: Message) -> URL? {
         return mediaUtils.mediaURL(from: message)
     }
@@ -187,6 +190,18 @@ extension MediaRepositoryImpl: MediaRepository {
 
             return Disposables.create()
         }
+    }
+    
+    func createAudioGraphImage(from path: String, image: UIImage, completion: @escaping (() -> Void)) {
+        mediaUtils.createAudioGraphImage(from: path, image: image, completion: completion)
+    }
+    
+    func audioGraphImage(from path: String) -> UIImage? {
+        guard let data = try? mediaUtils.readFileWithName(fileName: path) else {
+            return nil
+        }
+        
+        return UIImage(data: data)
     }
 }
 

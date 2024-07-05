@@ -71,24 +71,28 @@ class ProfileNavigationView: UIView {
     
     func setup(conversation: Conversation) {
         self.conversation = conversation
-        self.titleText.text = conversation.title
-        self.sublineText.text = conversation.lastMessage?.message
-        if conversation.chatType == .peerToPeer {
-            if let contact = conversation.peers.first {
-                self.avatarImageView.set(contact: contact, placeholder: UltraCoreStyle.defaultPlaceholder?.image)
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.titleText.text = conversation.title
+            self.sublineText.text = conversation.lastMessage?.message
+            if conversation.chatType == .peerToPeer {
+                if let contact = conversation.peers.first {
+                    self.avatarImageView.set(contact: contact, placeholder: UltraCoreStyle.defaultPlaceholder?.image)
+                } else {
+                    self.avatarImageView.set(placeholder: .initial(text: conversation.title))
+                }
+                
+                if let contact = conversation.peers.first {
+                    self.sublineText.text = contact.status.displayText
+                    self.sublineText.textColor = contact.status.isOnline ? style.onlineColor.color : style.sublineConfig.color
+                }
             } else {
-                self.avatarImageView.set(placeholder: .initial(text: conversation.title))
+                sublineText.text = conversation.isAssistant ? ConversationStrings.assistantChat.localized : ConversationStrings.supportChat.localized
+                sublineText.textColor = style.sublineConfig.color
+                avatarImageView.sd_setImage(with: conversation.imagePath?.url, placeholderImage: UltraCoreStyle.defaultPlaceholder?.image)
             }
-            
-            if let contact = conversation.peers.first {
-                self.sublineText.text = contact.status.displayText
-                self.sublineText.textColor = contact.status.isOnline ? style.onlineColor.color : style.sublineConfig.color
-            }
-        } else {
-            sublineText.text = conversation.isAssistant ? ConversationStrings.assistantChat.localized : ConversationStrings.supportChat.localized
-            sublineText.textColor = style.sublineConfig.color
-            avatarImageView.sd_setImage(with: conversation.imagePath?.url, placeholderImage: UltraCoreStyle.defaultPlaceholder?.image)
         }
+        
     }
     
     func setup(user typing: UserTypingWithDate) {

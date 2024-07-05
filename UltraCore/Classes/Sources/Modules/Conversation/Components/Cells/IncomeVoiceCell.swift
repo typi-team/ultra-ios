@@ -10,29 +10,28 @@ import NVActivityIndicatorView
 import RxCocoa
 import RxSwift
 import SDWebImage
+import AVFoundation
 
-
-class IncomeVoiceCell: MediaCell {
+class IncomeVoiceCell: MediaCell, WaveformViewDelegate {
     
     fileprivate var style: VoiceMessageCellConfig? = UltraCoreStyle.incomeVoiceMessageCell
     
     fileprivate let playImage: UIImage? = .named("conversation_play_sound_icon")
     fileprivate let pauseImage: UIImage? = .named("conversation_pause_sound_icon")
-
-    fileprivate let voiceRepository = AppSettingsImpl.shared.voiceRepository
-
-    fileprivate var isInSeekMessage: Message?
     
-    fileprivate lazy var slider: UISlider = .init({
-        $0.addTarget(self, action: #selector(self.seekTo(_:)), for: [.touchUpInside, .touchUpOutside])
-        $0.addTarget(self, action: #selector(self.beginSeek(_:)), for: .touchDown)
-        $0.setThumbImage(.named("conversation.thumbImage"), for: .normal)
-        $0.tintColor = style?.minimumTrackTintColor.color
-        $0.minimumTrackTintColor = style?.minimumTrackTintColor.color
-        $0.maximumTrackTintColor = style?.maximumTrackTintColor.color
-        
-        
-    })
+    fileprivate let voiceRepository = AppSettingsImpl.shared.voiceRepository
+    
+    fileprivate var isInSeekMessage: Message?
+
+    lazy var audioWaveView: WaveformView = {
+        let view = WaveformView()
+        view.backgroundColor = .clear
+        view.wavesColor = style?.waveColor.color ?? .red
+        view.progressColor = style?.waveProgressColor.color ?? .red
+        view.delegate = self
+        return view
+    }()
+  
     fileprivate lazy var durationLabel: RegularFootnote = .init({
         $0.textColor = style?.maximumTrackTintColor.color
         $0.text = 0.0.description
@@ -51,7 +50,6 @@ class IncomeVoiceCell: MediaCell {
                 self.controllerView.setImage(self.pauseImage, for: .normal)
                 self.voiceRepository.play(message: message)
             }
-            
         }
     })
     
@@ -59,10 +57,10 @@ class IncomeVoiceCell: MediaCell {
         super.setupView()
         self.container.addSubview(controllerView)
         self.container.addSubview(durationLabel)
-        self.container.addSubview(slider)
+        self.container.addSubview(audioWaveView)
         self.container.addSubview(spinner)
     }
-
+    
     override func setupConstraints() {
         self.container.snp.makeConstraints { make in
             make.top.equalToSuperview()
@@ -74,24 +72,24 @@ class IncomeVoiceCell: MediaCell {
         self.controllerView.snp.makeConstraints { make in
             make.width.height.equalTo(30)
             make.centerY.equalToSuperview()
-            make.left.equalToSuperview().offset(kLowPadding)
+            make.left.equalToSuperview().offset(12)
         }
-        
-        self.slider.snp.makeConstraints { make in
-            make.left.equalTo(controllerView.snp.right).offset(kMediumPadding)
-            make.right.equalToSuperview().offset(-kMediumPadding)
+      
+        audioWaveView.snp.makeConstraints { make in
+            make.left.equalTo(controllerView.snp.right).offset(12)
+            make.right.equalToSuperview().offset(-12)
             make.top.equalToSuperview().offset(kLowPadding)
             make.height.equalTo(kHeadlinePadding)
         }
         
         self.deliveryDateLabel.snp.makeConstraints { make in
-            make.top.equalTo(slider.snp.bottom).offset(kLowPadding)
+            make.top.equalTo(audioWaveView.snp.bottom).offset(kLowPadding)
             make.right.equalToSuperview().offset(-kLowPadding)
             
         }
         self.durationLabel.snp.makeConstraints { make in
-            make.top.equalTo(slider.snp.bottom).offset(kLowPadding)
-            make.leading.equalTo(slider.snp.leading)
+            make.top.equalTo(audioWaveView.snp.bottom).offset(kLowPadding)
+            make.leading.equalTo(audioWaveView.snp.leading)
             make.bottom.equalToSuperview().offset(-kLowPadding)
         }
         self.spinner.snp.makeConstraints { make in
@@ -110,18 +108,31 @@ class IncomeVoiceCell: MediaCell {
             })
             .disposed(by: disposeBag)
     }
-
+    
+    private func displayAudioGraph() {
+        guard let message = self.message else { return }
+        
+        if audioWaveView.audioURL == nil,
+           let soundURL = voiceRepository.mediaURL(message: message) {
+            if let path = pathFile(from: soundURL),
+               let image = mediaRepository.audioGraphImage(from: path) {
+                audioWaveView.waveformImage = image
+            }
+            audioWaveView.audioURL = soundURL
+        }
+    }
+    
     override func setup(message: Message) {
         super.setup(message: message)
         self.durationLabel.text = message.voice.duration.timeInterval.formatSeconds
         bindLoader()
         if let currentVoice = try? voiceRepository.currentVoice.value(),
-           self.message?.voice.fileID == currentVoice.voiceMessage.fileID,
-           currentVoice.isPlaying {
+           self.message?.voice.fileID == currentVoice.voiceMessage.fileID {
             self.setupView(currentVoice, slider: false)
         }
+        displayAudioGraph()
     }
-
+    
     private func bindLoader() {
         let driver = self.mediaRepository
             .downloadingImages
@@ -142,6 +153,9 @@ class IncomeVoiceCell: MediaCell {
             .drive(onNext: { [weak self] isLoading in
                 self?.spinner.isHidden = !isLoading
                 isLoading ? self?.spinner.startAnimating() : self?.spinner.stopAnimating()
+                if !isLoading {
+                    self?.displayAudioGraph()
+                }
             })
             .disposed(by: disposeBag)
         driver
@@ -149,19 +163,6 @@ class IncomeVoiceCell: MediaCell {
             .disposed(by: disposeBag)
     }
 
-    @objc private func seekTo(_ sender: UISlider) {
-        guard let message = self.message else { return }
-        self.isInSeekMessage = nil
-        let value = TimeInterval(sender.value) * message.voice.duration.timeInterval
-        self.voiceRepository.play(message: message, atTime: value, isNeedPause: !self.voiceRepository.isPlaying)
-    }
-    
-    @objc private func beginSeek(_ sender: UISlider) {
-        guard let message = self.message else { return }
-        self.isInSeekMessage = message
-        voiceRepository.stopTimer()
-    }
-    
     deinit {
         self.voiceRepository.stop()
     }
@@ -169,7 +170,8 @@ class IncomeVoiceCell: MediaCell {
     override func prepareForReuse() {
         super.prepareForReuse()
         self.isInSeekMessage = nil
-        self.slider.setValue(0.0, animated: true)
+        audioWaveView.highlightedSamples = 0..<0
+        audioWaveView.audioURL = nil
         self.durationLabel.text = 0.0.description
         self.controllerView.isHidden = false
         self.controllerView.setImage(self.playImage, for: .normal)
@@ -178,29 +180,29 @@ class IncomeVoiceCell: MediaCell {
     
     fileprivate func setupView(_ voice: VoiceItem, slider animated: Bool = true) {
         let duration = voice.voiceMessage.duration.timeInterval.rounded(.down)
-        let value = (voice.currentTime / duration)
         let remainder = voice.currentTime
         self.durationLabel.text = remainder.formatSeconds
-        self.slider.setValue(Float(value), animated: animated)
+        let highlightedSamples = 0..<Int(Double(audioWaveView.totalSamples) * voice.currentTime / duration)
+        audioWaveView.highlightedSamples = highlightedSamples
         self.controllerView.setImage(!voice.isPlaying ? self.playImage : self.pauseImage, for: .normal)
     }
     
     private func setupVoiceMessageIntoView(voice: VoiceItem?) {
-       self.durationLabel.text = self.message?.voice.duration.timeInterval.formatSeconds
-       if let voice = voice,
-          self.message?.voice.fileID == voice.voiceMessage.fileID,
-          self.isInSeekMessage?.voice.fileID != voice.voiceMessage.fileID {
-           self.setupView(voice)
-       } else if voice?.voiceMessage.fileID == self.message?.voice.fileID {
-           //                IGNORE THIS CASE
-       } else if self.isInSeekMessage != nil {
-           //                IGNORE THIS CASE
-       } else {
-           self.slider.setValue(0.0, animated: true)
-           self.controllerView.setImage(self.playImage, for: .normal)
-       }
-   }
-
+        self.durationLabel.text = self.message?.voice.duration.timeInterval.formatSeconds
+        if let voice = voice,
+           self.message?.voice.fileID == voice.voiceMessage.fileID,
+           self.isInSeekMessage?.voice.fileID != voice.voiceMessage.fileID {
+            self.setupView(voice)
+        } else if voice?.voiceMessage.fileID == self.message?.voice.fileID {
+            //                IGNORE THIS CASE
+        } else if self.isInSeekMessage != nil {
+            //                IGNORE THIS CASE
+        } else {
+            audioWaveView.highlightedSamples = 0..<0
+            self.controllerView.setImage(self.playImage, for: .normal)
+        }
+    }
+    
     override func makeSpinner() -> NVActivityIndicatorView {
         let spinner = NVActivityIndicatorView(
             frame: CGRect(origin: .zero, size: .init(width: 30, height: 30)),
@@ -211,6 +213,55 @@ class IncomeVoiceCell: MediaCell {
         spinner.translatesAutoresizingMaskIntoConstraints = false
         return spinner
     }
+    
+    func waveformDidEndScrubbing(_ waveformView: WaveformView) {
+        let duration = message?.voice.duration.timeInterval ?? 0
+        let goToDuration = Double(waveformView.highlightedSamples?.last ?? 0) * Double(duration) / Double(waveformView.totalSamples)
+        
+        guard let message = self.message else { return }
+        self.isInSeekMessage = nil
+        self.voiceRepository.play(message: message, atTime: goToDuration)
+    }
+    
+    func waveformDidBeginScrubbing(_ waveformView: WaveformView) {
+        guard let message = self.message else { return }
+        self.isInSeekMessage = message
+    }
+    
+    func waveformViewWillLoad(_ waveformView: WaveformView) {
+        spinner.isHidden = false
+        spinner.startAnimating()
+    }
+    
+    func waveformViewDidRender(_ waveformView: WaveformView) {
+        spinner.isHidden = true
+        spinner.stopAnimating()
+    }
+    
+    func waveformViewDidLoad(_ waveformView: WaveformView) {
+        if let voiceItem = try? voiceRepository.currentVoice.value(),
+            message?.voice.fileID == voiceItem.voiceMessage.fileID {
+            let duration = voiceItem.voiceMessage.duration.timeInterval.rounded(.down)
+            let currentTime = voiceItem.currentTime
+            let highlightedSamples = 0..<Int(Double(audioWaveView.totalSamples) * currentTime / duration)
+            audioWaveView.highlightedSamples = highlightedSamples
+        }
+    }
+    
+    func waveformScrubbingEnabled(_ waveformView: WaveformView) -> Bool {
+        if let voiceItem = try? voiceRepository.currentVoice.value(), voiceItem.isPlaying {
+            return voiceItem.voiceMessage.originalVoiceFileId.contains(audioWaveView.audioURL?.lastPathComponent.split(separator: ".").first ?? "")
+        }
+        return true
+    }
+    
+    private func pathFile(from url: URL) -> String? {
+        if let path = url.lastPathComponent.split(separator: ".").first {
+            return path + ".png"
+        }
+        return nil
+    }
+
 }
 
 class OutcomeVoiceCell: IncomeVoiceCell {
@@ -234,19 +285,19 @@ class OutcomeVoiceCell: IncomeVoiceCell {
         self.controllerView.snp.makeConstraints { make in
             make.width.height.equalTo(30)
             make.centerY.equalToSuperview()
-            make.left.equalToSuperview().offset(kLowPadding)
+            make.left.equalToSuperview().offset(12)
         }
-        
-        self.slider.snp.makeConstraints { make in
-            make.left.equalTo(controllerView.snp.right).offset(kMediumPadding)
-            make.right.equalToSuperview().offset(-kMediumPadding)
+      
+        audioWaveView.snp.makeConstraints { make in
+            make.left.equalTo(controllerView.snp.right).offset(12)
+            make.right.equalToSuperview().offset(-12)
             make.top.equalToSuperview().offset(kLowPadding)
             make.height.equalTo(kHeadlinePadding)
         }
 
         self.durationLabel.snp.makeConstraints { make in
-            make.top.equalTo(slider.snp.bottom).offset(kLowPadding)
-            make.leading.equalTo(slider.snp.leading)
+            make.top.equalTo(audioWaveView.snp.bottom).offset(kLowPadding)
+            make.leading.equalTo(audioWaveView.snp.leading)
             make.bottom.equalToSuperview().offset(-kLowPadding)
         }
 
@@ -257,7 +308,7 @@ class OutcomeVoiceCell: IncomeVoiceCell {
         }
         
         self.deliveryDateLabel.snp.makeConstraints { make in
-            make.top.equalTo(slider.snp.bottom).offset(kLowPadding)
+            make.top.equalTo(audioWaveView.snp.bottom).offset(kLowPadding)
             make.bottom.equalToSuperview().offset(-kLowPadding)
         }
 
