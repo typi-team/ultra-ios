@@ -78,7 +78,7 @@ public extension UltraCoreSettings {
     }
 
     static func update(contacts: [IContactInfo]) throws {
-        try ContactDBService.update(contacts: contacts)
+        ContactDBService.update(contacts: contacts)
     }
     
     static func updateOrCreate(contacts: [IContactInfo]) throws {

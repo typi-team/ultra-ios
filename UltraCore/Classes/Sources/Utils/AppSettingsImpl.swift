@@ -120,10 +120,12 @@ open class AppSettingsImpl: AppSettings  {
     }
     
     func logout() {
-        let realm = Realm.myRealm()
-        try? realm.write({
-            realm.deleteAll()
-        })
+        Realm.realmQueue.async {
+            let realm = Realm.myRealm()
+            try? realm.write({
+                realm.deleteAll()
+            })
+        }
         self.appStore.deleteAll()
     }
     
