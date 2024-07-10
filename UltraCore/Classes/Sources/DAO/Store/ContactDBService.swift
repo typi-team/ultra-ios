@@ -40,18 +40,20 @@ class ContactDBService {
     
     func block(user id: String, blocked: Bool) -> Single<Void> {
         Single.create { observer in
-            do {
-                let realm = Realm.myRealm()
-                try realm.write({
-                    if let contact = realm.object(ofType: DBContact.self, forPrimaryKey: id) {
-                        contact.isBlocked = blocked
-                        realm.add(contact, update: .all)
-                    }
+            Realm.realmQueue.async {
+                do {
+                    let realm = Realm.myRealm()
+                    try realm.write({
+                        if let contact = realm.object(ofType: DBContact.self, forPrimaryKey: id) {
+                            contact.isBlocked = blocked
+                            realm.add(contact, update: .all)
+                        }
 
-                    observer(.success(()))
-                })
-            } catch {
-                observer(.failure(error))
+                        observer(.success(()))
+                    })
+                } catch {
+                    observer(.failure(error))
+                }
             }
             return Disposables.create()
         }
@@ -66,60 +68,66 @@ class ContactDBService {
     
     func update(contact status: UserStatus) -> Single<ContactDisplayable> {
         return Single.create { completable in
-            do {
-                let realm = Realm.myRealm()
-                try realm.write {
-                    if let contact = realm.object(ofType: DBContact.self, forPrimaryKey: status.userID) {
-                        contact.statusValue = status.status.rawValue
-                        contact.lastseen = status.lastSeen
+            Realm.realmQueue.async {
+                do {
+                    let realm = Realm.myRealm()
+                    try realm.write {
+                        if let contact = realm.object(ofType: DBContact.self, forPrimaryKey: status.userID) {
+                            contact.statusValue = status.status.rawValue
+                            contact.lastseen = status.lastSeen
 
-                        realm.add(contact, update: .all)
-                        completable(.success(contact.toInterface()))
-                    } else {
-                        completable(.failure(NSError.objectsIsNill))
+                            realm.add(contact, update: .all)
+                            completable(.success(contact.toInterface()))
+                        } else {
+                            completable(.failure(NSError.objectsIsNill))
+                        }
                     }
+                } catch {
+                    completable(.failure(error))
                 }
-            } catch {
-                completable(.failure(error))
             }
             return Disposables.create()
         }
     }
     
     func updateContact(status: UserStatusEnum) {
-        do {
-            let realm = Realm.myRealm()
-            try realm.write {
-                realm.objects(DBContact.self).forEach { contact in
-                    contact.statusValue = status.rawValue
-                    realm.add(contact, update: .all)
+        Realm.realmQueue.async {
+            do {
+                let realm = Realm.myRealm()
+                try realm.write {
+                    realm.objects(DBContact.self).forEach { contact in
+                        contact.statusValue = status.rawValue
+                        realm.add(contact, update: .all)
+                    }
                 }
+            } catch {
+                PP.error(error.localizedDescription)
             }
-        } catch {
-            PP.error(error.localizedDescription)
         }
     }
     
     func update(contacts statuses: [UserStatus]) -> Single<[ContactDisplayable]> {
         return Single.create { completable in
-            do {
-                let realm = Realm.myRealm()
-                try realm.write {
-                    var listContact: [ContactDisplayable] = []
-                    statuses.forEach { status in
-                        if let contact = realm.object(ofType: DBContact.self, forPrimaryKey: status.userID) {
-                            contact.statusValue = status.status.rawValue
-                            contact.lastseen = status.lastSeen
+            Realm.realmQueue.async {
+                do {
+                    let realm = Realm.myRealm()
+                    try realm.write {
+                        var listContact: [ContactDisplayable] = []
+                        statuses.forEach { status in
+                            if let contact = realm.object(ofType: DBContact.self, forPrimaryKey: status.userID) {
+                                contact.statusValue = status.status.rawValue
+                                contact.lastseen = status.lastSeen
 
-                            realm.add(contact, update: .all)
-                            listContact.append(contact.toInterface())
+                                realm.add(contact, update: .all)
+                                listContact.append(contact.toInterface())
+                            }
                         }
+                        
+                        completable(.success(listContact))
                     }
-                    
-                    completable(.success(listContact))
+                } catch {
+                    completable(.failure(error))
                 }
-            } catch {
-                completable(.failure(error))
             }
             return Disposables.create()
         }
@@ -127,27 +135,29 @@ class ContactDBService {
     
     func save(contact interface: ContactDisplayable) -> Single<DBContact> {
         return Single.create { completable in
-            do {
-                let realm = Realm.myRealm()
-                let contact = realm.object(ofType: DBContact.self, forPrimaryKey: interface.userID) ?? DBContact(contact: interface)
-                try realm.write {
-                    if let contactInfo = UltraCoreSettings.delegate?.info(from: interface.phone) {
-                        contact.lastname = contactInfo.lastname
-                        contact.firstname = contactInfo.firstname
-                        contact.imagePath = contactInfo.imagePath
+            Realm.realmQueue.async {
+                do {
+                    let realm = Realm.myRealm()
+                    let contact = realm.object(ofType: DBContact.self, forPrimaryKey: interface.userID) ?? DBContact(contact: interface)
+                    try realm.write {
+                        if let contactInfo = UltraCoreSettings.delegate?.info(from: interface.phone) {
+                            contact.lastname = contactInfo.lastname
+                            contact.firstname = contactInfo.firstname
+                            contact.imagePath = contactInfo.imagePath
+                        }
+                        
+                        contact.isBlocked = interface.isBlocked
+                        if interface.status.lastSeen > contact.lastseen {
+                            contact.lastseen = interface.status.lastSeen
+                            contact.statusValue = interface.status.status.rawValue
+                        }
+                        
+                        realm.add(contact, update: .all)
                     }
-                    
-                    contact.isBlocked = interface.isBlocked
-                    if interface.status.lastSeen > contact.lastseen {
-                        contact.lastseen = interface.status.lastSeen
-                        contact.statusValue = interface.status.status.rawValue
-                    }
-                    
-                    realm.add(contact, update: .all)
+                    completable(.success(contact))
+                } catch {
+                    completable(.failure(error))
                 }
-                completable(.success(contact))
-            } catch {
-                completable(.failure(error))
             }
             return Disposables.create()
         }
@@ -155,32 +165,40 @@ class ContactDBService {
     
     func delete( contact: ContactDisplayable) -> Single<Void> {
         return Single.create { completable in
-            do {
-                let realm = Realm.myRealm()
-                try realm.write {
-                    if let existContact = realm.object(ofType: DBContact.self, forPrimaryKey: contact.userID) {
-                        realm.delete(existContact)
+            Realm.realmQueue.async {
+                do {
+                    let realm = Realm.myRealm()
+                    try realm.write {
+                        if let existContact = realm.object(ofType: DBContact.self, forPrimaryKey: contact.userID) {
+                            realm.delete(existContact)
+                        }
+                        completable(.success(()))
                     }
-                    completable(.success(()))
+                    
+                } catch {
+                    completable(.failure(error))
                 }
-                
-            } catch {
-                completable(.failure(error))
             }
             return Disposables.create()
         }
     }
     
-    static func update(contacts: [IContactInfo]) throws {
-        let realm = Realm.myRealm()
-        try realm.write {
-            realm.objects(DBContact.self).forEach { storedContact in
-                if let contact = contacts.first(where: { $0.identifier == storedContact.phone }) {
-                    storedContact.firstname = contact.firstname
-                    storedContact.lastname = contact.lastname
-                    storedContact.imagePath = contact.imagePath
-                    realm.add(storedContact, update: .all)
+    static func update(contacts: [IContactInfo]) {
+        Realm.realmQueue.async {
+            do {
+                let realm = Realm.myRealm()
+                try realm.write {
+                    realm.objects(DBContact.self).forEach { storedContact in
+                        if let contact = contacts.first(where: { $0.identifier == storedContact.phone }) {
+                            storedContact.firstname = contact.firstname
+                            storedContact.lastname = contact.lastname
+                            storedContact.imagePath = contact.imagePath
+                            realm.add(storedContact, update: .all)
+                        }
+                    }
                 }
+            } catch {
+                PP.error("Error on updating contacts - \(error.localizedDescription)")
             }
         }
     }

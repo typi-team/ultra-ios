@@ -101,7 +101,9 @@ extension UpdateRepositoryImpl: UpdateRepository {
         self.pintPongTimer?.invalidate()
         self.pintPongTimer = nil
         self.updateListenStream?.cancel(promise: nil)
-        self.contactService.updateContact(status: .unknown)
+        if isConnectedToListenStream {
+            self.contactService.updateContact(status: .unknown)
+        }
         self.isConnectedToListenStream = false
     }
     
