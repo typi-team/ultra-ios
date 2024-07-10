@@ -20,6 +20,7 @@ class PaddingTextField: UITextField {
     
     func setupView() {
         self.tintColor = .green500
+        textColor = .black
     }
     
     var padding = UIEdgeInsets(top: kMediumPadding, left: kHeadlinePadding, bottom: kMediumPadding, right: kHeadlinePadding)

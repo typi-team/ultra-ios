@@ -76,10 +76,10 @@ private extension ViewController {
     func setupVCs() {
         viewControllers = [
             createNavController(for: UIViewController({
-                $0.view.backgroundColor = UIColor(red: 243.0 / 255.0, green: 244.0 / 255.0, blue: 246.0 / 255.0, alpha: 1.0)
+                $0.view.backgroundColor = TwiceColorImpl(defaultColor: .white, darkColor: .gray700).color
             }), title: NSLocalizedString("Продукты", comment: ""), image: UIImage(named: "cards")!),
             createNavController(for: UIViewController({
-                $0.view.backgroundColor = UIColor(red: 243.0 / 255.0, green: 244.0 / 255.0, blue: 246.0 / 255.0, alpha: 1.0)
+                $0.view.backgroundColor = TwiceColorImpl(defaultColor: .white, darkColor: .gray700).color
                 $0.view.addSubview(UIButton.init({
                     $0.setTitle("Логи", for: .normal)
                     $0.addTarget(self, action: #selector(self.exportLogs(_:)), for: .touchUpInside)
@@ -95,7 +95,7 @@ private extension ViewController {
                     $0.frame.origin = .init(x: 120, y: 120)
                     $0.frame.size = .init(width: 120, height: 52)
                 })
-               $0.view.backgroundColor = UIColor(red: 243.0 / 255.0, green: 244.0 / 255.0, blue: 246.0 / 255.0, alpha: 1.0)
+               $0.view.backgroundColor = TwiceColorImpl(defaultColor: .white, darkColor: .gray700).color
                $0.view.addSubview(UIButton.init({
                    $0.setTitle("Выйти", for: .normal)
                    $0.addTarget(self, action: #selector(self.logout(_:)), for: .touchUpInside)
