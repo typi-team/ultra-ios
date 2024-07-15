@@ -367,10 +367,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     }
     
     @objc func didRefresh() {
-        guard
-            let cell = self.tableView.visibleCells.first as? BaseMessageCell,
-            let seqNumber = cell.message?.seqNumber 
-        else {
+        guard let seqNumber = messages.first?.seqNumber else {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
                 self?.refreshControl.endRefreshing()
             }
