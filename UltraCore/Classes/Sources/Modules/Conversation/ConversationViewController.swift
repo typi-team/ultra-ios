@@ -336,7 +336,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         guard let message = messages.first else {
             return
         }
-        guard (presenter?.loadIfFirstTime(seqNumber: message.seqNumber) ?? false) && messages.count <= 1 else {
+        guard (presenter?.loadIfFirstTime(seqNumber: message.seqNumber) ?? false) else {
             return
         }
         self.presenter?.loadMoreMessages(maxSeqNumber: message.seqNumber)
