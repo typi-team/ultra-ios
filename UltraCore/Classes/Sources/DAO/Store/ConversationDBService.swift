@@ -353,7 +353,7 @@ class ConversationDBService {
 
 extension Message {
     func peerId(user id: String) -> String {
-        return sender.userID == id ? receiver.userID : sender.userID
+        return sender.userID == id ? AppSettingsImpl.shared.appStore.userID() : sender.userID
     }
     
     var isIncome: Bool { self.sender.userID != AppSettingsImpl.shared.appStore.userID() }

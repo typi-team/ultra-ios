@@ -91,6 +91,13 @@ class MessageDBService {
                             message.state?.read = true
                             message.state?.delivered = true
                         }
+                        if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: data.chatID) {
+                            conversation.unreadMessageCount = realm.objects(DBMessage.self)
+                                .where({ $0.receiver.chatID.equals(data.chatID) })
+                                .filter { $0.sender?.userID != self.appStore.userID() }
+                                .filter { $0.state?.read == false }
+                                .count
+                        }
                     }
                     PP.debug("Marking messages before \(data.maxSeqNumber) in chat \(data.chatID) as read")
                     completable(.success(true))
