@@ -46,6 +46,11 @@ public protocol UltraCoreSettingsDelegate: AnyObject {
     func getSupportChatsAndManagers(callBack: @escaping (([String: Any]) -> Void))
     func getMessageMeta() -> Dictionary<String, String>
     func didUpdateVoipToken(_ token: String)
+    func set<T>(_ value: T?, forKey key: String)
+    func removeObject(forKey key: String)
+    func int(forKey key: String) -> Int?
+    func string(forKey key: String) -> String?
+    func bool(forKey key: String) -> Bool?
 }
 
 extension UltraCoreSettingsDelegate {
