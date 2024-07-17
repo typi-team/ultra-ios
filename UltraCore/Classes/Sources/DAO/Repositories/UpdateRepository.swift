@@ -295,12 +295,11 @@ private extension UpdateRepositoryImpl {
     
     func setupUnreadUpdates() {
         Observable.combineLatest(updateUnreadTriggerSubject.asObservable(), supportOfficesObservable)
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .utility))
+            .debounce(.milliseconds(200), scheduler: ConcurrentDispatchQueueScheduler(qos: .utility))
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .utility))
             .subscribe(onNext: { _, officesResponse in
-                guard let officesResponse = officesResponse else {
-                    return
-                }
-                
-                let isAssistantEnabled = officesResponse.assistant != nil
+                let isAssistantEnabled = officesResponse?.assistant != nil
                 let realm = Realm.myRealm()
                 
                 let allChats = realm.objects(DBConversation.self)
@@ -326,7 +325,7 @@ private extension UpdateRepositoryImpl {
                             guard let peer = conv.peers.first else {
                                 return false
                             }
-                            return officesResponse.personalManagers.map { String($0.userId) }.contains(where: { $0 == peer.phone })
+                            return (officesResponse?.personalManagers ?? []).map { String($0.userId) }.contains(where: { $0 == peer.phone })
                         } else {
                             return false
                         }

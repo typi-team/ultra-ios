@@ -156,10 +156,12 @@ public extension UltraCoreSettings {
                     return Observable<Int>.timer(.seconds(5), scheduler: MainScheduler.instance)
                 }
             })
-            .subscribe { token in
-                isUpdatingSession = false
+            .subscribe(onNext: { token in
                 Self.update(sid: token, with: callback)
-            }
+            }, onError: { error in
+                isUpdatingSession = false
+                PP.error("Error on update session - \(error)")
+            })
             .disposed(by: disposeBag)
     }
     
