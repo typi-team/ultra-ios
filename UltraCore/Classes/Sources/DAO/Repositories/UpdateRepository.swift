@@ -117,6 +117,9 @@ extension UpdateRepositoryImpl: UpdateRepository {
     }
     
     func startPingPong() {
+        guard pintPongTimer == nil else {
+            return
+        }
         DispatchQueue.main.async {
             PP.info("🐢 startPintPong")
             self.pintPongTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] timer in
@@ -213,6 +216,9 @@ private extension UpdateRepositoryImpl {
     }
     
     func setupChangesSubscription(with state: UInt64) {
+        guard !isConnectedToListenStream else {
+            return
+        }
         PP.debug("Setting up change subscription with state - \(state)")
         let state: ListenRequest = .with { $0.localState = .with { $0.state = state } }
         self.isConnectedToListenStream = true
@@ -488,12 +494,6 @@ private extension UpdateRepositoryImpl {
 }
 
 extension UpdateRepositoryImpl {
-    
-    func handleNewMessageOnRead(message: Message) {
-        PP.debug("Handle new message on read")
-        guard message.sender.userID != self.appStore.userID() && !message.state.read else { return }
-        self.conversationService.incrementUnread(for: message.receiver.chatID)
-    }
     
     func update(message: Message, completion: @escaping (() -> Void)) {
         let contactID = message.peerId(user: self.appStore.userID())
