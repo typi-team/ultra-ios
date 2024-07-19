@@ -246,15 +246,18 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         sharedMessages
             .filter({ !$0.isEmpty })
             .filter({ $0.flatMap(\.items).count != prev.count })
-            .do(onNext: {prev = $0.flatMap(\.items)})
-//            .delay(.milliseconds(100), scheduler: MainScheduler.instance)
+            .do(onNext: { [weak self] in
+                prev = $0.flatMap(\.items)
+                self?.tableView.scrollToLastCell(animated: false)
+            })
+            .delay(.milliseconds(50), scheduler: MainScheduler.instance)
             .subscribe(onNext: { [weak self] _ in
                 guard let `self` = self else { return }
                 if self.tableView.isDecelerating {
                     self.tableView.stopScrolling()
                 }
-                self.tableView.scrollToLastCell(animated: false)
                 if self.firstLoad {
+                    self.tableView.scrollToLastCell(animated: false)
                     self.tableView.alpha = 1
                     self.firstLoad = false
                 }
