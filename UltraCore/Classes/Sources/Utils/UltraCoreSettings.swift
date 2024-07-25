@@ -157,6 +157,7 @@ public extension UltraCoreSettings {
                 }
             })
             .subscribe(onNext: { token in
+                isUpdatingSession = false
                 Self.update(sid: token, with: callback)
             }, onError: { error in
                 isUpdatingSession = false
