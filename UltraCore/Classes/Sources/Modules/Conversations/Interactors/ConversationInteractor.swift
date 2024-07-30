@@ -9,18 +9,12 @@ import RxSwift
 
 class ConversationInteractor: GRPCErrorUseCase<String, Chat> {
     
-    private let chatService: ChatServiceClientProtocol
-    
-    init(chatService: ChatServiceClientProtocol) {
-        self.chatService = chatService
-    }
-    
     override func executeSingle(params: String) -> Single<Chat> {
         return Single<Chat>.create { [unowned self] single in
             let request = GetChatRequest.with { req in
                 req.id = params
             }
-            self.chatService.getByID(request, callOptions: .default())
+            AppSettingsImpl.shared.conversationService.getByID(request, callOptions: .default())
                 .response
                 .whenComplete { result in
                     switch result {

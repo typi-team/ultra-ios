@@ -10,18 +10,15 @@ import RxSwift
 class MessagesInteractor: GRPCErrorUseCase<GetChatMessagesRequest, [Message]> {
     
     fileprivate let messageDBService: MessageDBService
-    fileprivate let messageService: MessageServiceClientProtocol
     
-    init(messageDBService: MessageDBService,
-         messageService: MessageServiceClientProtocol) {
-        self.messageService = messageService
+    init(messageDBService: MessageDBService) {
         self.messageDBService = messageDBService
     }
     
     override func job(params: GetChatMessagesRequest) -> Single<[Message]> {
         Single<[Message]>.create { [weak self] observer -> Disposable in
             guard let `self` = self else { return Disposables.create() }
-            self.messageService.getChatMessages(params, callOptions: .default())
+            AppSettingsImpl.shared.messageService.getChatMessages(params, callOptions: .default())
                 .response
                 .whenComplete { result in
                     switch result {

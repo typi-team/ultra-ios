@@ -11,21 +11,15 @@ import GRPC
 
 class JWTTokenInteractorImpl: UseCase<String, IssueJwtResponse> {
 
-    final let authService: AuthServiceClientProtocol
     final let appStore: AppSettingsStore
 
-    init(appStore: AppSettingsStore,
-         authService: AuthServiceClientProtocol) {
+    init(appStore: AppSettingsStore) {
         self.appStore = appStore
-        self.authService = authService
     }
 
     override func executeSingle(params: String) -> Single<IssueJwtResponse> {
-        return Single.create { [weak self] observer -> Disposable in
-            guard let `self` = self else {
-                return Disposables.create()
-            }
-            let call = self.authService.issueJwt(.with({
+        return Single.create { observer -> Disposable in
+            let call = AppSettingsImpl.shared.authService.issueJwt(.with({
                 $0.device = .ios
                 $0.sessionID = params
                 $0.deviceID = self.appStore.deviceID()
