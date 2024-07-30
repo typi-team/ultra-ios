@@ -353,6 +353,9 @@ class ConversationDBService {
 
 extension Message {
     func peerId(user id: String) -> String {
+        if chatType == .peerToPeer {
+            return sender.userID == id ? receiver.userID : sender.userID
+        }
         return sender.userID == id ? AppSettingsImpl.shared.appStore.userID() : sender.userID
     }
     
