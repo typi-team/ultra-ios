@@ -99,6 +99,15 @@ final class ResendingMessagesInteractor: UseCase<Void, Void> {
                         }
                         return self.messageRepository.update(message: message)
                     })
+                    .retry(when: { errors in
+                        return errors.enumerated().flatMap { (attempt, error) -> Observable<Int> in
+                            let maxAttempts = 50
+                            if attempt > maxAttempts {
+                                return Observable.error(error)
+                            }
+                            return Observable<Int>.timer(.seconds(5), scheduler: MainScheduler.instance)
+                        }
+                    })
                     .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
                     .observe(on: MainScheduler.instance)
                     .subscribe(
@@ -139,6 +148,15 @@ final class ResendingMessagesInteractor: UseCase<Void, Void> {
                 message.state.read = false
                 message.seqNumber = response.seqNumber
                 return self.messageRepository.update(message: message)
+            })
+            .retry(when: { errors in
+                return errors.enumerated().flatMap { (attempt, error) -> Observable<Int> in
+                    let maxAttempts = 50
+                    if attempt > maxAttempts {
+                        return Observable.error(error)
+                    }
+                    return Observable<Int>.timer(.seconds(5), scheduler: MainScheduler.instance)
+                }
             })
             .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .background))
             .observe(on: MainScheduler.instance)
