@@ -101,7 +101,7 @@ final class ResendingMessagesInteractor: UseCase<Void, Void> {
                     })
                     .retry(when: { errors in
                         return errors.enumerated().flatMap { (attempt, error) -> Observable<Int> in
-                            let maxAttempts = 50
+                            let maxAttempts = 20
                             if attempt > maxAttempts {
                                 return Observable.error(error)
                             }
@@ -151,7 +151,7 @@ final class ResendingMessagesInteractor: UseCase<Void, Void> {
             })
             .retry(when: { errors in
                 return errors.enumerated().flatMap { (attempt, error) -> Observable<Int> in
-                    let maxAttempts = 50
+                    let maxAttempts = 20
                     if attempt > maxAttempts {
                         return Observable.error(error)
                     }
