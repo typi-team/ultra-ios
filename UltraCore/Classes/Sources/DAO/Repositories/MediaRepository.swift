@@ -32,7 +32,6 @@ class MediaRepositoryImpl {
     fileprivate let mediaUtils: MediaUtils
     fileprivate let appStore: AppSettingsStore
     fileprivate let messageDBService: MessageDBService
-    fileprivate let fileService: FileServiceClientProtocol
     fileprivate let uploadFileInteractor: GRPCErrorUseCase<[FileChunk], Void>
     fileprivate let createFileSpaceInteractor: GRPCErrorUseCase<(data: Data, extens: String), [FileChunk]>
     
@@ -43,13 +42,11 @@ class MediaRepositoryImpl {
     init(mediaUtils: MediaUtils,
          uploadFileInteractor: GRPCErrorUseCase<[FileChunk], Void>,
          appStore: AppSettingsStore = AppSettingsImpl.shared.appStore,
-         fileService: FileServiceClientProtocol = AppSettingsImpl.shared.fileService,
          messageDBService: MessageDBService = AppSettingsImpl.shared.messageDBService,
          createFileSpaceInteractor: GRPCErrorUseCase<(data: Data, extens: String), [FileChunk]>) {
         
         self.appStore = appStore
         self.mediaUtils = mediaUtils
-        self.fileService = fileService
         self.messageDBService = messageDBService
         self.uploadFileInteractor = uploadFileInteractor
         self.createFileSpaceInteractor = createFileSpaceInteractor
@@ -118,7 +115,7 @@ extension MediaRepositoryImpl: MediaRepository {
             inProgressValues.append(params)
             self.downloadingImages.on(.next(inProgressValues))
 
-            self.fileService
+            AppSettingsImpl.shared.fileService
                 .download(params, callOptions: .default(include: false), handler: { chunk in
                     data.append(chunk.data)
                     params.fromChunkNumber = chunk.seqNum

@@ -14,19 +14,14 @@ struct CallerRequestParams {
 }
 
 final class CancelCallInteractor: GRPCErrorUseCase<CallerRequestParams, Void> {
-    private let callService: CallServiceClientProtocol
-    
-    init(callService: CallServiceClientProtocol) {
-        self.callService = callService
-    }
-    
+
     override func job(params: CallerRequestParams) -> Single<Void> {
-        Single.create { [unowned self] single -> Disposable in
+        Single.create { single -> Disposable in
             let request = CancelCallRequest.with({
                 $0.userID = params.userID
                 $0.room = params.room
             })
-            self.callService
+            AppSettingsImpl.shared.callService
                 .cancel(request, callOptions: .default())
                 .response
                 .whenComplete { result in

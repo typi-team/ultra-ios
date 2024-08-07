@@ -8,18 +8,13 @@ import RxSwift
 import Foundation
 
 class ContactToCreateChatByPhoneInteractor: GRPCErrorUseCase<IContact, CreateChatByPhoneResponse> {
-    final let integrateService: IntegrationServiceClientProtocol
-    
-     init(integrateService: IntegrationServiceClientProtocol) {
-         self.integrateService = integrateService
-    }
     
     override func job(params: IContact) -> Single<CreateChatByPhoneResponse> {
         PP.debug("Attempt to create chat by phone for \(params.identifier)")
         return Single.create(subscribe: { [weak self] observer in
             guard let `self` = self else { return Disposables.create() }
 
-            self.integrateService.createChatByPhone(.with({
+            AppSettingsImpl.shared.integrateService.createChatByPhone(.with({
                 $0.firstname = params.firstname
                 $0.phone = params.identifier
             }), callOptions: .default())
@@ -46,12 +41,10 @@ class ContactToConversationInteractor: GRPCErrorUseCase<IContact, Conversation?>
     final let contactByUserIdInteractor: ContactByUserIdInteractor
     final let contactDBService: ContactDBService
 
-    init(contactDBService: ContactDBService,
-         contactsService: ContactServiceClientProtocol,
-         integrateService: IntegrationServiceClientProtocol) {
-             self.contactDBService = contactDBService
-             self.contactByUserIdInteractor = ContactByUserIdInteractor(delegate: nil, contactsService: contactsService)
-        self.contactToCreateChatByPhoneInteractor = ContactToCreateChatByPhoneInteractor.init(integrateService: integrateService)
+    init(contactDBService: ContactDBService) {
+        self.contactDBService = contactDBService
+        self.contactByUserIdInteractor = ContactByUserIdInteractor(delegate: nil)
+        self.contactToCreateChatByPhoneInteractor = ContactToCreateChatByPhoneInteractor.init()
     }
 
     override func job(params: IContact) -> Single<Conversation?> {

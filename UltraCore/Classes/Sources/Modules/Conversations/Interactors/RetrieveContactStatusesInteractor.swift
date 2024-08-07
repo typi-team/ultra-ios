@@ -9,11 +9,8 @@ import RxSwift
 
 class RetrieveContactStatusesInteractor: GRPCErrorUseCase<Void, Void> {
     final let contactDBService: ContactDBService
-    final let contactService: ContactServiceClientProtocol
     
-     init(contactDBService: ContactDBService,
-          contactService: ContactServiceClientProtocol) {
-         self.contactService = contactService
+     init(contactDBService: ContactDBService) {
          self.contactDBService = contactDBService
     }
     
@@ -21,7 +18,7 @@ class RetrieveContactStatusesInteractor: GRPCErrorUseCase<Void, Void> {
         Single<GetStatusesResponse>
             .create { [weak self] observer -> Disposable in
                 guard let `self` = self else { return Disposables.create() }
-                self.contactService.getStatuses(.init(), callOptions: .default())
+                AppSettingsImpl.shared.contactsService.getStatuses(.init(), callOptions: .default())
                     .response
                     .whenComplete { result in
                         switch result {

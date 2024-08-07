@@ -13,31 +13,23 @@ class SuperMessageSaverInteractor: UseCase<MessageData, Conversation?> {
     
     fileprivate let appStore: AppSettingsStore
     fileprivate let messageDBService: MessageDBService
-    fileprivate let messageService: MessageServiceClientProtocol
-    
     fileprivate let contactDBService: ContactDBService
-    fileprivate let contactsService: ContactServiceClientProtocol
-    
     fileprivate let conversationDBService: ConversationDBService
-    
     
     fileprivate let contactByUserIdInteractor: ContactByUserIdInteractor
     
-    init(appStore: AppSettingsStore,
-         contactDBService: ContactDBService,
-         messageDBService: MessageDBService,
-         conversationDBService: ConversationDBService,
-         messageService: MessageServiceClientProtocol,
-         contactsService: ContactServiceClientProtocol) {
+    init(
+        appStore: AppSettingsStore,
+        contactDBService: ContactDBService,
+        messageDBService: MessageDBService,
+        conversationDBService: ConversationDBService
+    ) {
         self.appStore = appStore
-        self.messageService = messageService
-        self.contactsService = contactsService
         self.contactDBService = contactDBService
         self.messageDBService = messageDBService
         self.conversationDBService = conversationDBService
         
-        self.contactByUserIdInteractor = .init(delegate: UltraCoreSettings.delegate,
-                                               contactsService: contactsService)
+        self.contactByUserIdInteractor = .init(delegate: UltraCoreSettings.delegate)
     }
     
     override func executeSingle(params: MessageData) -> Single<Conversation?> {
@@ -49,7 +41,7 @@ class SuperMessageSaverInteractor: UseCase<MessageData, Conversation?> {
             return self.contactByUserIdInteractor
                 .executeSingle(params: peerID)
                 .flatMap({ self.contactDBService.save(contact: $0) })
-                .flatMap({_ in self.messageDBService.lastMessage(chatID: conversationID)})
+                .flatMap({ _ in self.messageDBService.lastMessage(chatID: conversationID)})
                 .flatMap({ message in self.conversationDBService.createIfNotExist(from: message).map({message}) })
                 .flatMap({ message in self.messageDBService.update(message: message) })
                 .flatMap({_ in self.conversationDBService.conversation(by: conversationID)})
