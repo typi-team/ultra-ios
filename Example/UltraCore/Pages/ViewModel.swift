@@ -29,6 +29,7 @@ struct UserResponse: Codable {
 class ViewModel {
     fileprivate var timerUpdate: Timer?
     private let disposeBag = DisposeBag()
+    private let userDefaults: UserDefaults? = UserDefaults(suiteName: "com.ultaCore.messenger")
     
     var activeConversationID: String? {
         didSet {
@@ -274,5 +275,25 @@ extension ViewModel: UltraCoreSettingsDelegate {
     func didOpenConversation(with peers: [String]) { }
     
     func didUpdateVoipToken(_ token: String) { }
+    
+    func set<T>(_ value: T?, forKey key: String) {
+        userDefaults?.set(value, forKey: key)
+    }
+    
+    func removeObject(forKey key: String) {
+        userDefaults?.set(nil, forKey: key)
+    }
+    
+    func int(forKey key: String) -> Int? {
+        userDefaults?.integer(forKey: key)
+    }
+    
+    func string(forKey key: String) -> String? {
+        userDefaults?.string(forKey: key)
+    }
+    
+    func bool(forKey key: String) -> Bool? {
+        userDefaults?.bool(forKey: key)
+    }
 
 }

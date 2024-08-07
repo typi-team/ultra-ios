@@ -246,15 +246,18 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         sharedMessages
             .filter({ !$0.isEmpty })
             .filter({ $0.flatMap(\.items).count != prev.count })
-            .do(onNext: {prev = $0.flatMap(\.items)})
-//            .delay(.milliseconds(100), scheduler: MainScheduler.instance)
+            .do(onNext: { [weak self] in
+                prev = $0.flatMap(\.items)
+                self?.tableView.scrollToLastCell(animated: false)
+            })
+            .delay(.milliseconds(50), scheduler: MainScheduler.instance)
             .subscribe(onNext: { [weak self] _ in
                 guard let `self` = self else { return }
                 if self.tableView.isDecelerating {
                     self.tableView.stopScrolling()
                 }
-                self.tableView.scrollToLastCell(animated: false)
                 if self.firstLoad {
+                    self.tableView.scrollToLastCell(animated: false)
                     self.tableView.alpha = 1
                     self.firstLoad = false
                 }
@@ -336,7 +339,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         guard let message = messages.first else {
             return
         }
-        guard (presenter?.loadIfFirstTime(seqNumber: message.seqNumber) ?? false) && messages.count <= 1 else {
+        guard (presenter?.loadIfFirstTime(seqNumber: message.seqNumber) ?? false) else {
             return
         }
         self.presenter?.loadMoreMessages(maxSeqNumber: message.seqNumber)
@@ -367,10 +370,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     }
     
     @objc func didRefresh() {
-        guard
-            let cell = self.tableView.visibleCells.first as? BaseMessageCell,
-            let seqNumber = cell.message?.seqNumber 
-        else {
+        guard let seqNumber = messages.first?.seqNumber else {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
                 self?.refreshControl.endRefreshing()
             }

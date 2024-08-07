@@ -101,7 +101,9 @@ extension UpdateRepositoryImpl: UpdateRepository {
         self.pintPongTimer?.invalidate()
         self.pintPongTimer = nil
         self.updateListenStream?.cancel(promise: nil)
-        self.contactService.updateContact(status: .unknown)
+        if isConnectedToListenStream {
+            self.contactService.updateContact(status: .unknown)
+        }
         self.isConnectedToListenStream = false
     }
     
@@ -115,6 +117,9 @@ extension UpdateRepositoryImpl: UpdateRepository {
     }
     
     func startPingPong() {
+        guard pintPongTimer == nil else {
+            return
+        }
         DispatchQueue.main.async {
             PP.info("🐢 startPintPong")
             self.pintPongTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] timer in
@@ -211,6 +216,9 @@ private extension UpdateRepositoryImpl {
     }
     
     func setupChangesSubscription(with state: UInt64) {
+        guard !isConnectedToListenStream else {
+            return
+        }
         PP.debug("Setting up change subscription with state - \(state)")
         let state: ListenRequest = .with { $0.localState = .with { $0.state = state } }
         self.isConnectedToListenStream = true
@@ -293,12 +301,11 @@ private extension UpdateRepositoryImpl {
     
     func setupUnreadUpdates() {
         Observable.combineLatest(updateUnreadTriggerSubject.asObservable(), supportOfficesObservable)
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .utility))
+            .debounce(.milliseconds(200), scheduler: ConcurrentDispatchQueueScheduler(qos: .utility))
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .utility))
             .subscribe(onNext: { _, officesResponse in
-                guard let officesResponse = officesResponse else {
-                    return
-                }
-                
-                let isAssistantEnabled = officesResponse.assistant != nil
+                let isAssistantEnabled = officesResponse?.assistant != nil
                 let realm = Realm.myRealm()
                 
                 let allChats = realm.objects(DBConversation.self)
@@ -324,7 +331,7 @@ private extension UpdateRepositoryImpl {
                             guard let peer = conv.peers.first else {
                                 return false
                             }
-                            return officesResponse.personalManagers.map { String($0.userId) }.contains(where: { $0 == peer.phone })
+                            return (officesResponse?.personalManagers ?? []).map { String($0.userId) }.contains(where: { $0 == peer.phone })
                         } else {
                             return false
                         }
@@ -487,12 +494,6 @@ private extension UpdateRepositoryImpl {
 }
 
 extension UpdateRepositoryImpl {
-    
-    func handleNewMessageOnRead(message: Message) {
-        PP.debug("Handle new message on read")
-        guard message.sender.userID != self.appStore.userID() && !message.state.read else { return }
-        self.conversationService.incrementUnread(for: message.receiver.chatID)
-    }
     
     func update(message: Message, completion: @escaping (() -> Void)) {
         let contactID = message.peerId(user: self.appStore.userID())

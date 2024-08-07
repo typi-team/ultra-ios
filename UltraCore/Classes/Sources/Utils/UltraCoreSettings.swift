@@ -46,6 +46,11 @@ public protocol UltraCoreSettingsDelegate: AnyObject {
     func getSupportChatsAndManagers(callBack: @escaping (([String: Any]) -> Void))
     func getMessageMeta() -> Dictionary<String, String>
     func didUpdateVoipToken(_ token: String)
+    func set<T>(_ value: T?, forKey key: String)
+    func removeObject(forKey key: String)
+    func int(forKey key: String) -> Int?
+    func string(forKey key: String) -> String?
+    func bool(forKey key: String) -> Bool?
 }
 
 extension UltraCoreSettingsDelegate {
@@ -78,7 +83,7 @@ public extension UltraCoreSettings {
     }
 
     static func update(contacts: [IContactInfo]) throws {
-        try ContactDBService.update(contacts: contacts)
+        ContactDBService.update(contacts: contacts)
     }
     
     static func updateOrCreate(contacts: [IContactInfo]) throws {
@@ -151,10 +156,13 @@ public extension UltraCoreSettings {
                     return Observable<Int>.timer(.seconds(5), scheduler: MainScheduler.instance)
                 }
             })
-            .subscribe { token in
+            .subscribe(onNext: { token in
                 isUpdatingSession = false
                 Self.update(sid: token, with: callback)
-            }
+            }, onError: { error in
+                isUpdatingSession = false
+                PP.error("Error on update session - \(error)")
+            })
             .disposed(by: disposeBag)
     }
     
