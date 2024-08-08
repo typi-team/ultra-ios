@@ -69,3 +69,10 @@ public protocol EditActionBottomBarConfig {
     var shareImage: TwiceImage? { get set }
     var replyImage: TwiceImage? { get set }
 }
+
+public protocol CallMessageCellConfig {
+    var titleConfig: LabelConfig { get set }
+    var subtitleConfig: LabelConfig { get set }
+    var failIcon: TwiceImage { get set }
+    var successIcon: TwiceImage { get set }
+}

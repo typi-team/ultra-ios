@@ -48,7 +48,7 @@ public class PP {
         DDLogVerbose(message)
     }
 
-    static func debug(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
+    public static func debug(_ message: String, file: String = #file, function: String = #function, line: Int = #line) {
         DDLogDebug(message)
     }
 

@@ -210,6 +210,8 @@ struct FileMessage {
 
   var fileName: String = String()
 
+  var preview: Data = Data()
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -829,6 +831,11 @@ struct Message {
   var properties: Dictionary<String,String> {
     get {return _storage._properties}
     set {_uniqueStorage()._properties = newValue}
+  }
+
+  var hidden: Bool {
+    get {return _storage._hidden}
+    set {_uniqueStorage()._hidden = newValue}
   }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -1519,6 +1526,7 @@ extension FileMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     2: .standard(proto: "file_size"),
     3: .standard(proto: "mime_type"),
     4: .standard(proto: "file_name"),
+    5: .same(proto: "preview"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -1531,6 +1539,7 @@ extension FileMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
       case 2: try { try decoder.decodeSingularInt64Field(value: &self.fileSize) }()
       case 3: try { try decoder.decodeSingularStringField(value: &self.mimeType) }()
       case 4: try { try decoder.decodeSingularStringField(value: &self.fileName) }()
+      case 5: try { try decoder.decodeSingularBytesField(value: &self.preview) }()
       default: break
       }
     }
@@ -1549,6 +1558,9 @@ extension FileMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if !self.fileName.isEmpty {
       try visitor.visitSingularStringField(value: self.fileName, fieldNumber: 4)
     }
+    if !self.preview.isEmpty {
+      try visitor.visitSingularBytesField(value: self.preview, fieldNumber: 5)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -1557,6 +1569,7 @@ extension FileMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     if lhs.fileSize != rhs.fileSize {return false}
     if lhs.mimeType != rhs.mimeType {return false}
     if lhs.fileName != rhs.fileName {return false}
+    if lhs.preview != rhs.preview {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -2359,6 +2372,7 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     28: .same(proto: "supportStatusChanged"),
     30: .same(proto: "customTextSended"),
     29: .same(proto: "properties"),
+    31: .same(proto: "hidden"),
   ]
 
   fileprivate class _StorageClass {
@@ -2374,6 +2388,7 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
     var _content: Message.OneOf_Content?
     var _systemAction: Message.OneOf_SystemAction?
     var _properties: Dictionary<String,String> = [:]
+    var _hidden: Bool = false
 
     static let defaultInstance = _StorageClass()
 
@@ -2392,6 +2407,7 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
       _content = source._content
       _systemAction = source._systemAction
       _properties = source._properties
+      _hidden = source._hidden
     }
   }
 
@@ -2680,6 +2696,7 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
             _storage._systemAction = .customTextSended(v)
           }
         }()
+        case 31: try { try decoder.decodeSingularBoolField(value: &_storage._hidden) }()
         default: break
         }
       }
@@ -2807,6 +2824,9 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
       try { if case .customTextSended(let v)? = _storage._systemAction {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 30)
       } }()
+      if _storage._hidden != false {
+        try visitor.visitSingularBoolField(value: _storage._hidden, fieldNumber: 31)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -2828,6 +2848,7 @@ extension Message: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBa
         if _storage._content != rhs_storage._content {return false}
         if _storage._systemAction != rhs_storage._systemAction {return false}
         if _storage._properties != rhs_storage._properties {return false}
+        if _storage._hidden != rhs_storage._hidden {return false}
         return true
       }
       if !storagesAreEqual {return false}

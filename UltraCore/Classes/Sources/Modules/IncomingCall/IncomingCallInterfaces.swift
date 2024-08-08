@@ -67,7 +67,6 @@ protocol IncomingCallPresenterInterface: PresenterInterface {
     func getRemoteParticipant() -> RemoteParticipant?
     func getCallStatus() -> CallStatus
     func getIsConnected() -> Bool
-    func reject()
     func cancel()
     func setMicrophone(enabled: Bool)
     func setCamera(enabled: Bool)

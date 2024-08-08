@@ -71,6 +71,7 @@ class ViewModel {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = jsonData
         request.setValue(sidToken, forHTTPHeaderField: "SID")
+        PP.debug("SID \(sidToken) voip - \(UltraVoIPManager.shared.token)")
         
         let task = URLSession.shared.dataTask(with: request) {(data, response, error) in }
         task.resume()

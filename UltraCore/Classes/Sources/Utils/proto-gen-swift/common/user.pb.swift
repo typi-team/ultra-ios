@@ -60,6 +60,12 @@ struct User {
 
   var isBlocked: Bool = false
 
+  var type: UserTypeEnum = .userTypeUnknown
+
+  var group: String = String()
+
+  var supportReceptions: [String] = []
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -137,6 +143,9 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     6: .same(proto: "photo"),
     7: .same(proto: "unread"),
     8: .standard(proto: "is_blocked"),
+    9: .same(proto: "type"),
+    10: .same(proto: "group"),
+    11: .same(proto: "supportReceptions"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -153,6 +162,9 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
       case 6: try { try decoder.decodeSingularMessageField(value: &self._photo) }()
       case 7: try { try decoder.decodeSingularUInt64Field(value: &self.unread) }()
       case 8: try { try decoder.decodeSingularBoolField(value: &self.isBlocked) }()
+      case 9: try { try decoder.decodeSingularEnumField(value: &self.type) }()
+      case 10: try { try decoder.decodeSingularStringField(value: &self.group) }()
+      case 11: try { try decoder.decodeRepeatedStringField(value: &self.supportReceptions) }()
       default: break
       }
     }
@@ -187,6 +199,15 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     if self.isBlocked != false {
       try visitor.visitSingularBoolField(value: self.isBlocked, fieldNumber: 8)
     }
+    if self.type != .userTypeUnknown {
+      try visitor.visitSingularEnumField(value: self.type, fieldNumber: 9)
+    }
+    if !self.group.isEmpty {
+      try visitor.visitSingularStringField(value: self.group, fieldNumber: 10)
+    }
+    if !self.supportReceptions.isEmpty {
+      try visitor.visitRepeatedStringField(value: self.supportReceptions, fieldNumber: 11)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -199,6 +220,9 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     if lhs._photo != rhs._photo {return false}
     if lhs.unread != rhs.unread {return false}
     if lhs.isBlocked != rhs.isBlocked {return false}
+    if lhs.type != rhs.type {return false}
+    if lhs.group != rhs.group {return false}
+    if lhs.supportReceptions != rhs.supportReceptions {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

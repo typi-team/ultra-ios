@@ -67,10 +67,6 @@ extension IncomingCallPresenter: IncomingCallPresenterInterface {
         callStatus
     }
     
-    func reject() {
-        UltraVoIPManager.shared.endCall()
-    }
-    
     func cancel() {
         UltraVoIPManager.shared.endCall()
     }

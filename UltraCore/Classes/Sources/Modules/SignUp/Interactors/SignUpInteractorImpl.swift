@@ -11,26 +11,6 @@ import GRPC
 import NIOCore
 import Logging
 
-class UserIdInteractorImpl: UseCase<GetUserIdRequest, GetUserIdResponse> {
-    
-    override func executeSingle(params: GetUserIdRequest) -> Single<GetUserIdResponse> {
-        return Single.create { observer -> Disposable in
-            let call = AppSettingsImpl.shared.authService.getUserId(params, callOptions: CallOptions.default() )
-            call.response.whenComplete { result in
-                switch result {
-                case let .failure(error):
-                    observer(.failure(error))
-                case let .success(value):
-                    observer(.success(value))
-                }
-            }
-            
-            return Disposables.create()
-        }
-    }
-}
-
-
 extension CallOptions {
     static func `default`(include timeout: Bool = true) -> CallOptions {
         var logger = Logger(label: "com.typi.ultra")

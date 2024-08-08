@@ -324,11 +324,11 @@ private extension UpdateRepositoryImpl {
         case let .mediaUploading(pres):
             PP.debug(pres.textFormatString())
         case let .callReject(reject):
-            PP.debug("[CALL] - Server Call reject - \(reject.room)")
-            self.dissmissCall(in: reject.room)
+//            PP.debug("[CALL] - Server Call reject - \(reject.room)")
+            break
         case let .callCancel(callrequest):
-            PP.debug("[CALL] - Server Call cancel - \(callrequest.room)")
-            self.dissmissCall(in: callrequest.room)
+//            PP.debug("[CALL] - Server Call cancel - \(callrequest.room)")
+            break
         case let .block(blockMessage):
             self.contactService
                 .block(user: blockMessage.user, blocked: true)
@@ -402,12 +402,6 @@ private extension UpdateRepositoryImpl {
             })
             .disposed(by: disposeBag)
     }
-    
-    func dissmissCall(in room: String) {
-        DispatchQueue.main.async {
-            UltraVoIPManager.shared.serverEndCall()
-        }
-    }
         
     func handle(of update: Update.OneOf_OfUpdate) {
         PP.debug("[UPDATE] - \(update)")
@@ -472,8 +466,9 @@ private extension UpdateRepositoryImpl {
                     .subscribe()
                     .disposed(by: disposeBag)
             }
-        case .call:
-            break
+        case .call(let call):
+            PP.debug("[UPDATE] [CALL] - \(call.room); status - \(call.status)")
+            messageService.updateCall(call)
         }
     }
     

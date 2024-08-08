@@ -717,7 +717,6 @@ enum SupportChatStatusEnum: SwiftProtobuf.Enum {
   case supportChatStatusClosed // = 0
   case supportChatStatusPostponed // = 2
   case supportChatStatusOpen // = 3
-  case supportChatStatusAny // = 4
   case supportChatStatusCreated // = 5
   case UNRECOGNIZED(Int)
 
@@ -730,7 +729,6 @@ enum SupportChatStatusEnum: SwiftProtobuf.Enum {
     case 0: self = .supportChatStatusClosed
     case 2: self = .supportChatStatusPostponed
     case 3: self = .supportChatStatusOpen
-    case 4: self = .supportChatStatusAny
     case 5: self = .supportChatStatusCreated
     default: self = .UNRECOGNIZED(rawValue)
     }
@@ -741,7 +739,6 @@ enum SupportChatStatusEnum: SwiftProtobuf.Enum {
     case .supportChatStatusClosed: return 0
     case .supportChatStatusPostponed: return 2
     case .supportChatStatusOpen: return 3
-    case .supportChatStatusAny: return 4
     case .supportChatStatusCreated: return 5
     case .UNRECOGNIZED(let i): return i
     }
@@ -757,7 +754,6 @@ extension SupportChatStatusEnum: CaseIterable {
     .supportChatStatusClosed,
     .supportChatStatusPostponed,
     .supportChatStatusOpen,
-    .supportChatStatusAny,
     .supportChatStatusCreated,
   ]
 }
@@ -918,7 +914,6 @@ extension SupportChatStatusEnum: SwiftProtobuf._ProtoNameProviding {
     0: .same(proto: "SUPPORT_CHAT_STATUS_CLOSED"),
     2: .same(proto: "SUPPORT_CHAT_STATUS_POSTPONED"),
     3: .same(proto: "SUPPORT_CHAT_STATUS_OPEN"),
-    4: .same(proto: "SUPPORT_CHAT_STATUS_ANY"),
     5: .same(proto: "SUPPORT_CHAT_STATUS_CREATED"),
   ]
 }

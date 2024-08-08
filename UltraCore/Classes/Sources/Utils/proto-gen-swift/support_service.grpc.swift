@@ -24,6 +24,11 @@ internal protocol SupportServiceClientProtocol: GRPCClient {
     callOptions: CallOptions?
   ) -> UnaryCall<SupportAssignManagerRequest, SupportAssignManagerResponse>
 
+  func unassignManager(
+    _ request: SupportUnassignManagerRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<SupportUnassignManagerRequest, SupportUnassignManagerResponse>
+
   func statusUpdate(
     _ request: SupportStatusUpdateRequest,
     callOptions: CallOptions?
@@ -33,6 +38,11 @@ internal protocol SupportServiceClientProtocol: GRPCClient {
     _ request: InitSupportChatsRequest,
     callOptions: CallOptions?
   ) -> UnaryCall<InitSupportChatsRequest, InitSupportChatsResponse>
+
+  func getSupportChats(
+    _ request: GetSupportChatsRequest,
+    callOptions: CallOptions?
+  ) -> UnaryCall<GetSupportChatsRequest, GetSupportChatsResponse>
 }
 
 extension SupportServiceClientProtocol {
@@ -56,6 +66,25 @@ extension SupportServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeAssignManagerInterceptors() ?? []
+    )
+  }
+
+  /// If there is assigned support manager, this method removes
+  /// assigned user from assigned user 
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to UnassignManager.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  internal func unassignManager(
+    _ request: SupportUnassignManagerRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<SupportUnassignManagerRequest, SupportUnassignManagerResponse> {
+    return self.makeUnaryCall(
+      path: SupportServiceClientMetadata.Methods.unassignManager.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnassignManagerInterceptors() ?? []
     )
   }
 
@@ -92,6 +121,24 @@ extension SupportServiceClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeInitSupportChatsInterceptors() ?? []
+    )
+  }
+
+  /// Unary call to GetSupportChats
+  ///
+  /// - Parameters:
+  ///   - request: Request to send to GetSupportChats.
+  ///   - callOptions: Call options.
+  /// - Returns: A `UnaryCall` with futures for the metadata, status and response.
+  internal func getSupportChats(
+    _ request: GetSupportChatsRequest,
+    callOptions: CallOptions? = nil
+  ) -> UnaryCall<GetSupportChatsRequest, GetSupportChatsResponse> {
+    return self.makeUnaryCall(
+      path: SupportServiceClientMetadata.Methods.getSupportChats.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetSupportChatsInterceptors() ?? []
     )
   }
 }
@@ -165,6 +212,11 @@ internal protocol SupportServiceAsyncClientProtocol: GRPCClient {
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<SupportAssignManagerRequest, SupportAssignManagerResponse>
 
+  func makeUnassignManagerCall(
+    _ request: SupportUnassignManagerRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<SupportUnassignManagerRequest, SupportUnassignManagerResponse>
+
   func makeStatusUpdateCall(
     _ request: SupportStatusUpdateRequest,
     callOptions: CallOptions?
@@ -174,6 +226,11 @@ internal protocol SupportServiceAsyncClientProtocol: GRPCClient {
     _ request: InitSupportChatsRequest,
     callOptions: CallOptions?
   ) -> GRPCAsyncUnaryCall<InitSupportChatsRequest, InitSupportChatsResponse>
+
+  func makeGetSupportChatsCall(
+    _ request: GetSupportChatsRequest,
+    callOptions: CallOptions?
+  ) -> GRPCAsyncUnaryCall<GetSupportChatsRequest, GetSupportChatsResponse>
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -195,6 +252,18 @@ extension SupportServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeAssignManagerInterceptors() ?? []
+    )
+  }
+
+  internal func makeUnassignManagerCall(
+    _ request: SupportUnassignManagerRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<SupportUnassignManagerRequest, SupportUnassignManagerResponse> {
+    return self.makeAsyncUnaryCall(
+      path: SupportServiceClientMetadata.Methods.unassignManager.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnassignManagerInterceptors() ?? []
     )
   }
 
@@ -221,6 +290,18 @@ extension SupportServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeInitSupportChatsInterceptors() ?? []
     )
   }
+
+  internal func makeGetSupportChatsCall(
+    _ request: GetSupportChatsRequest,
+    callOptions: CallOptions? = nil
+  ) -> GRPCAsyncUnaryCall<GetSupportChatsRequest, GetSupportChatsResponse> {
+    return self.makeAsyncUnaryCall(
+      path: SupportServiceClientMetadata.Methods.getSupportChats.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetSupportChatsInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -234,6 +315,18 @@ extension SupportServiceAsyncClientProtocol {
       request: request,
       callOptions: callOptions ?? self.defaultCallOptions,
       interceptors: self.interceptors?.makeAssignManagerInterceptors() ?? []
+    )
+  }
+
+  internal func unassignManager(
+    _ request: SupportUnassignManagerRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> SupportUnassignManagerResponse {
+    return try await self.performAsyncUnaryCall(
+      path: SupportServiceClientMetadata.Methods.unassignManager.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeUnassignManagerInterceptors() ?? []
     )
   }
 
@@ -260,6 +353,18 @@ extension SupportServiceAsyncClientProtocol {
       interceptors: self.interceptors?.makeInitSupportChatsInterceptors() ?? []
     )
   }
+
+  internal func getSupportChats(
+    _ request: GetSupportChatsRequest,
+    callOptions: CallOptions? = nil
+  ) async throws -> GetSupportChatsResponse {
+    return try await self.performAsyncUnaryCall(
+      path: SupportServiceClientMetadata.Methods.getSupportChats.path,
+      request: request,
+      callOptions: callOptions ?? self.defaultCallOptions,
+      interceptors: self.interceptors?.makeGetSupportChatsInterceptors() ?? []
+    )
+  }
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -284,11 +389,17 @@ internal protocol SupportServiceClientInterceptorFactoryProtocol: Sendable {
   /// - Returns: Interceptors to use when invoking 'assignManager'.
   func makeAssignManagerInterceptors() -> [ClientInterceptor<SupportAssignManagerRequest, SupportAssignManagerResponse>]
 
+  /// - Returns: Interceptors to use when invoking 'unassignManager'.
+  func makeUnassignManagerInterceptors() -> [ClientInterceptor<SupportUnassignManagerRequest, SupportUnassignManagerResponse>]
+
   /// - Returns: Interceptors to use when invoking 'statusUpdate'.
   func makeStatusUpdateInterceptors() -> [ClientInterceptor<SupportStatusUpdateRequest, SupportStatusUpdateResponse>]
 
   /// - Returns: Interceptors to use when invoking 'initSupportChats'.
   func makeInitSupportChatsInterceptors() -> [ClientInterceptor<InitSupportChatsRequest, InitSupportChatsResponse>]
+
+  /// - Returns: Interceptors to use when invoking 'getSupportChats'.
+  func makeGetSupportChatsInterceptors() -> [ClientInterceptor<GetSupportChatsRequest, GetSupportChatsResponse>]
 }
 
 internal enum SupportServiceClientMetadata {
@@ -297,8 +408,10 @@ internal enum SupportServiceClientMetadata {
     fullName: "SupportService",
     methods: [
       SupportServiceClientMetadata.Methods.assignManager,
+      SupportServiceClientMetadata.Methods.unassignManager,
       SupportServiceClientMetadata.Methods.statusUpdate,
       SupportServiceClientMetadata.Methods.initSupportChats,
+      SupportServiceClientMetadata.Methods.getSupportChats,
     ]
   )
 
@@ -306,6 +419,12 @@ internal enum SupportServiceClientMetadata {
     internal static let assignManager = GRPCMethodDescriptor(
       name: "AssignManager",
       path: "/SupportService/AssignManager",
+      type: GRPCCallType.unary
+    )
+
+    internal static let unassignManager = GRPCMethodDescriptor(
+      name: "UnassignManager",
+      path: "/SupportService/UnassignManager",
       type: GRPCCallType.unary
     )
 
@@ -318,6 +437,12 @@ internal enum SupportServiceClientMetadata {
     internal static let initSupportChats = GRPCMethodDescriptor(
       name: "InitSupportChats",
       path: "/SupportService/InitSupportChats",
+      type: GRPCCallType.unary
+    )
+
+    internal static let getSupportChats = GRPCMethodDescriptor(
+      name: "GetSupportChats",
+      path: "/SupportService/GetSupportChats",
       type: GRPCCallType.unary
     )
   }
@@ -334,11 +459,17 @@ internal protocol SupportServiceProvider: CallHandlerProvider {
   /// will be able to send messages to support chat
   func assignManager(request: SupportAssignManagerRequest, context: StatusOnlyCallContext) -> EventLoopFuture<SupportAssignManagerResponse>
 
+  /// If there is assigned support manager, this method removes
+  /// assigned user from assigned user 
+  func unassignManager(request: SupportUnassignManagerRequest, context: StatusOnlyCallContext) -> EventLoopFuture<SupportUnassignManagerResponse>
+
   /// Change status of support chat
   func statusUpdate(request: SupportStatusUpdateRequest, context: StatusOnlyCallContext) -> EventLoopFuture<SupportStatusUpdateResponse>
 
   /// Init support chats and chats with personal managers
   func initSupportChats(request: InitSupportChatsRequest, context: StatusOnlyCallContext) -> EventLoopFuture<InitSupportChatsResponse>
+
+  func getSupportChats(request: GetSupportChatsRequest, context: StatusOnlyCallContext) -> EventLoopFuture<GetSupportChatsResponse>
 }
 
 extension SupportServiceProvider {
@@ -362,6 +493,15 @@ extension SupportServiceProvider {
         userFunction: self.assignManager(request:context:)
       )
 
+    case "UnassignManager":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<SupportUnassignManagerRequest>(),
+        responseSerializer: ProtobufSerializer<SupportUnassignManagerResponse>(),
+        interceptors: self.interceptors?.makeUnassignManagerInterceptors() ?? [],
+        userFunction: self.unassignManager(request:context:)
+      )
+
     case "StatusUpdate":
       return UnaryServerHandler(
         context: context,
@@ -378,6 +518,15 @@ extension SupportServiceProvider {
         responseSerializer: ProtobufSerializer<InitSupportChatsResponse>(),
         interceptors: self.interceptors?.makeInitSupportChatsInterceptors() ?? [],
         userFunction: self.initSupportChats(request:context:)
+      )
+
+    case "GetSupportChats":
+      return UnaryServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<GetSupportChatsRequest>(),
+        responseSerializer: ProtobufSerializer<GetSupportChatsResponse>(),
+        interceptors: self.interceptors?.makeGetSupportChatsInterceptors() ?? [],
+        userFunction: self.getSupportChats(request:context:)
       )
 
     default:
@@ -402,6 +551,13 @@ internal protocol SupportServiceAsyncProvider: CallHandlerProvider, Sendable {
     context: GRPCAsyncServerCallContext
   ) async throws -> SupportAssignManagerResponse
 
+  /// If there is assigned support manager, this method removes
+  /// assigned user from assigned user 
+  func unassignManager(
+    request: SupportUnassignManagerRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> SupportUnassignManagerResponse
+
   /// Change status of support chat
   func statusUpdate(
     request: SupportStatusUpdateRequest,
@@ -413,6 +569,11 @@ internal protocol SupportServiceAsyncProvider: CallHandlerProvider, Sendable {
     request: InitSupportChatsRequest,
     context: GRPCAsyncServerCallContext
   ) async throws -> InitSupportChatsResponse
+
+  func getSupportChats(
+    request: GetSupportChatsRequest,
+    context: GRPCAsyncServerCallContext
+  ) async throws -> GetSupportChatsResponse
 }
 
 @available(macOS 10.15, iOS 13, tvOS 13, watchOS 6, *)
@@ -443,6 +604,15 @@ extension SupportServiceAsyncProvider {
         wrapping: { try await self.assignManager(request: $0, context: $1) }
       )
 
+    case "UnassignManager":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<SupportUnassignManagerRequest>(),
+        responseSerializer: ProtobufSerializer<SupportUnassignManagerResponse>(),
+        interceptors: self.interceptors?.makeUnassignManagerInterceptors() ?? [],
+        wrapping: { try await self.unassignManager(request: $0, context: $1) }
+      )
+
     case "StatusUpdate":
       return GRPCAsyncServerHandler(
         context: context,
@@ -461,6 +631,15 @@ extension SupportServiceAsyncProvider {
         wrapping: { try await self.initSupportChats(request: $0, context: $1) }
       )
 
+    case "GetSupportChats":
+      return GRPCAsyncServerHandler(
+        context: context,
+        requestDeserializer: ProtobufDeserializer<GetSupportChatsRequest>(),
+        responseSerializer: ProtobufSerializer<GetSupportChatsResponse>(),
+        interceptors: self.interceptors?.makeGetSupportChatsInterceptors() ?? [],
+        wrapping: { try await self.getSupportChats(request: $0, context: $1) }
+      )
+
     default:
       return nil
     }
@@ -473,6 +652,10 @@ internal protocol SupportServiceServerInterceptorFactoryProtocol: Sendable {
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeAssignManagerInterceptors() -> [ServerInterceptor<SupportAssignManagerRequest, SupportAssignManagerResponse>]
 
+  /// - Returns: Interceptors to use when handling 'unassignManager'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeUnassignManagerInterceptors() -> [ServerInterceptor<SupportUnassignManagerRequest, SupportUnassignManagerResponse>]
+
   /// - Returns: Interceptors to use when handling 'statusUpdate'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeStatusUpdateInterceptors() -> [ServerInterceptor<SupportStatusUpdateRequest, SupportStatusUpdateResponse>]
@@ -480,6 +663,10 @@ internal protocol SupportServiceServerInterceptorFactoryProtocol: Sendable {
   /// - Returns: Interceptors to use when handling 'initSupportChats'.
   ///   Defaults to calling `self.makeInterceptors()`.
   func makeInitSupportChatsInterceptors() -> [ServerInterceptor<InitSupportChatsRequest, InitSupportChatsResponse>]
+
+  /// - Returns: Interceptors to use when handling 'getSupportChats'.
+  ///   Defaults to calling `self.makeInterceptors()`.
+  func makeGetSupportChatsInterceptors() -> [ServerInterceptor<GetSupportChatsRequest, GetSupportChatsResponse>]
 }
 
 internal enum SupportServiceServerMetadata {
@@ -488,8 +675,10 @@ internal enum SupportServiceServerMetadata {
     fullName: "SupportService",
     methods: [
       SupportServiceServerMetadata.Methods.assignManager,
+      SupportServiceServerMetadata.Methods.unassignManager,
       SupportServiceServerMetadata.Methods.statusUpdate,
       SupportServiceServerMetadata.Methods.initSupportChats,
+      SupportServiceServerMetadata.Methods.getSupportChats,
     ]
   )
 
@@ -497,6 +686,12 @@ internal enum SupportServiceServerMetadata {
     internal static let assignManager = GRPCMethodDescriptor(
       name: "AssignManager",
       path: "/SupportService/AssignManager",
+      type: GRPCCallType.unary
+    )
+
+    internal static let unassignManager = GRPCMethodDescriptor(
+      name: "UnassignManager",
+      path: "/SupportService/UnassignManager",
       type: GRPCCallType.unary
     )
 
@@ -509,6 +704,12 @@ internal enum SupportServiceServerMetadata {
     internal static let initSupportChats = GRPCMethodDescriptor(
       name: "InitSupportChats",
       path: "/SupportService/InitSupportChats",
+      type: GRPCCallType.unary
+    )
+
+    internal static let getSupportChats = GRPCMethodDescriptor(
+      name: "GetSupportChats",
+      path: "/SupportService/GetSupportChats",
       type: GRPCCallType.unary
     )
   }
