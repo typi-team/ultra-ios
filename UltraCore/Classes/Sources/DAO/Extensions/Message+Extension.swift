@@ -37,8 +37,6 @@ extension Message {
                 return false
             case .supportChatStatusOpen:
                 return false
-            case .supportChatStatusAny:
-                return false
             case .supportChatStatusCreated:
                 return false
             case .UNRECOGNIZED:
@@ -80,8 +78,6 @@ extension Message {
                 return ConversationStrings.supportChatPostponed.localized
             case .supportChatStatusOpen:
                 return ConversationStrings.supportChatOpened.localized
-            case .supportChatStatusAny:
-                return ""
             case .supportChatStatusCreated:
                 return ""
             case .UNRECOGNIZED:
