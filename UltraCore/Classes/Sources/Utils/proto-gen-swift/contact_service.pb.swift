@@ -50,28 +50,29 @@ struct ContactByUserIdResponse {
   // methods supported on all messages.
 
   var contact: Contact {
-    get {return _storage._contact ?? Contact()}
-    set {_uniqueStorage()._contact = newValue}
+    get {return _contact ?? Contact()}
+    set {_contact = newValue}
   }
   /// Returns true if `contact` has been explicitly set.
-  var hasContact: Bool {return _storage._contact != nil}
+  var hasContact: Bool {return self._contact != nil}
   /// Clears the value of `contact`. Subsequent reads from it will return its default value.
-  mutating func clearContact() {_uniqueStorage()._contact = nil}
+  mutating func clearContact() {self._contact = nil}
 
   var user: User {
-    get {return _storage._user ?? User()}
-    set {_uniqueStorage()._user = newValue}
+    get {return _user ?? User()}
+    set {_user = newValue}
   }
   /// Returns true if `user` has been explicitly set.
-  var hasUser: Bool {return _storage._user != nil}
+  var hasUser: Bool {return self._user != nil}
   /// Clears the value of `user`. Subsequent reads from it will return its default value.
-  mutating func clearUser() {_uniqueStorage()._user = nil}
+  mutating func clearUser() {self._user = nil}
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
-  fileprivate var _storage = _StorageClass.defaultInstance
+  fileprivate var _contact: Contact? = nil
+  fileprivate var _user: User? = nil
 }
 
 struct ContactImportResponse {
@@ -273,70 +274,36 @@ extension ContactByUserIdResponse: SwiftProtobuf.Message, SwiftProtobuf._Message
     2: .same(proto: "user"),
   ]
 
-  fileprivate class _StorageClass {
-    var _contact: Contact? = nil
-    var _user: User? = nil
-
-    static let defaultInstance = _StorageClass()
-
-    private init() {}
-
-    init(copying source: _StorageClass) {
-      _contact = source._contact
-      _user = source._user
-    }
-  }
-
-  fileprivate mutating func _uniqueStorage() -> _StorageClass {
-    if !isKnownUniquelyReferenced(&_storage) {
-      _storage = _StorageClass(copying: _storage)
-    }
-    return _storage
-  }
-
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    _ = _uniqueStorage()
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      while let fieldNumber = try decoder.nextFieldNumber() {
-        // The use of inline closures is to circumvent an issue where the compiler
-        // allocates stack space for every case branch when no optimizations are
-        // enabled. https://github.com/apple/swift-protobuf/issues/1034
-        switch fieldNumber {
-        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._contact) }()
-        case 2: try { try decoder.decodeSingularMessageField(value: &_storage._user) }()
-        default: break
-        }
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._contact) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._user) }()
+      default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every if/case branch local when no optimizations
-      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-      // https://github.com/apple/swift-protobuf/issues/1182
-      try { if let v = _storage._contact {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-      } }()
-      try { if let v = _storage._user {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-      } }()
-    }
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._contact {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._user {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ContactByUserIdResponse, rhs: ContactByUserIdResponse) -> Bool {
-    if lhs._storage !== rhs._storage {
-      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
-        let _storage = _args.0
-        let rhs_storage = _args.1
-        if _storage._contact != rhs_storage._contact {return false}
-        if _storage._user != rhs_storage._user {return false}
-        return true
-      }
-      if !storagesAreEqual {return false}
-    }
+    if lhs._contact != rhs._contact {return false}
+    if lhs._user != rhs._user {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
