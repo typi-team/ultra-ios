@@ -9,6 +9,7 @@
 "app.name" = "Tradernet";
 
 // MARK: Conversations page
+"conversations.profile" = "Профиль";
 "conversations.chats" = "Чаты";
 "conversations.emptyMessages" = "Начните общаться с вашими контактами прямо сейчас";
 "conversations.startCommunicatingWithYourContactsNow" = "Start communicating with your contacts now";
@@ -41,7 +42,13 @@
 "contacts.was.justNow" = "был(а) только что";
 "contacts.was.yesterday" = "был(а) вчера";
 "contacts.was.longTimeAgo" = "был(а) очень давно";
+"contacts.was.shortTimeAgo" = "был(а) недавно";
 
+"contacts.newChat" = "Контакты";
+"contacts.was" = "был(а)";
+"contacts.justNow" = "только что";
+"contacts.backward" = "назад";
+"contacts.yesterday" = "вчера";
 "contacts.yourContactListIsEmpty" = "Ваш список контактов пуст";
 "contacts.unfortunately" = "К сожалению у вас нет контактов которые используют данное приложение.";
 "contacts.noAccessToContacts" = "Нет доступа к контактам";
