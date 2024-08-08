@@ -8,13 +8,7 @@
 import RxSwift
 
 class UploadFileInteractor: GRPCErrorUseCase<[FileChunk], Void> {
-
-     private let fileService: FileServiceClientProtocol
-
-     init(fileService: FileServiceClientProtocol) {
-         self.fileService = fileService
-     }
-
+    
     override func job(params: [FileChunk]) -> Single<Void> {
         let requests = params.map { upload(chunk: $0).asObservable() }
         let response = Observable.zip(requests)
@@ -29,21 +23,21 @@ class UploadFileInteractor: GRPCErrorUseCase<[FileChunk], Void> {
                 return Disposables.create()
             }
             
-            self.fileService.uploadChunks(.with({
+            AppSettingsImpl.shared.fileService.uploadChunks(.with({
                 $0.fileID = chunk.fileID
                 $0.chunks = [chunk]
             }), callOptions: .default())
-                .response
-                .whenComplete({ result in
-                    switch result {
-                    case .success:
-                        PP.debug("[Message]: Finished uploading chunk \(chunk.seqNum) for file \(chunk.fileID)")
-                        observer(.success(()))
-                    case let .failure(error):
-                        observer(.failure(error))
-                    }
-                })
-
+            .response
+            .whenComplete({ result in
+                switch result {
+                case .success:
+                    PP.debug("[Message]: Finished uploading chunk \(chunk.seqNum) for file \(chunk.fileID)")
+                    observer(.success(()))
+                case let .failure(error):
+                    observer(.failure(error))
+                }
+            })
+            
             return Disposables.create()
         }
     }

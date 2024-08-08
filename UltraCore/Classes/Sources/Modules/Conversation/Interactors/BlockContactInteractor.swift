@@ -11,13 +11,10 @@ import RxSwift
 typealias BlockParam = (userID: String, block: Bool)
 
 class BlockContactInteractor: GRPCErrorUseCase<BlockParam, Void> {
-    final let userService: UserServiceClientProtocol
     final let contactDBService: ContactDBService
     var isFirstCall = true
 
-    init(userService: UserServiceClientProtocol,
-         contactDBService: ContactDBService) {
-        self.userService = userService
+    init(contactDBService: ContactDBService) {
         self.contactDBService = contactDBService
     }
 
@@ -28,7 +25,7 @@ class BlockContactInteractor: GRPCErrorUseCase<BlockParam, Void> {
             }
 
             if !params.block {
-                self.userService.unblockUser(.with({
+                AppSettingsImpl.shared.userService.unblockUser(.with({
                     $0.userID = params.userID
                 }), callOptions: .default())
                     .response.whenComplete({ result in
@@ -41,7 +38,7 @@ class BlockContactInteractor: GRPCErrorUseCase<BlockParam, Void> {
                         }
                     })
             } else {
-                self.userService.blockUser(.with({
+                AppSettingsImpl.shared.userService.blockUser(.with({
                     $0.userID = params.userID
                 }), callOptions: .default())
                     .response.whenComplete({ result in

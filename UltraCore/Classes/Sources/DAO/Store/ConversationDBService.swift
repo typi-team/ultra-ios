@@ -15,7 +15,6 @@ class ConversationDBService {
     }
     
     fileprivate let appStore: AppSettingsStore
-    fileprivate lazy var chatService: ChatServiceClientProtocol = AppSettingsImpl.shared.conversationService
     fileprivate lazy var callAllowedSubject = PublishSubject<(String, Bool)>()
     
     var callAllowedObservable: Observable<(String, Bool)> {
@@ -53,7 +52,6 @@ class ConversationDBService {
                 PP.error(error.localizedDescription)
             }
         }
-        self.chatService = chatService
     }
     
     func createIfNotExist(from message: Message) -> Single<Void> {
@@ -86,7 +84,7 @@ class ConversationDBService {
                     let request = GetChatRequest.with {
                         $0.id = message.receiver.chatID
                     }
-                    self.chatService
+                    AppSettingsImpl.shared.conversationService
                         .getByID(request, callOptions: .default())
                         .response
                         .whenComplete { [weak self] result in

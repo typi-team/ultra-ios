@@ -31,24 +31,23 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
         let moduleViewController = ConversationViewController()
         super.init(viewController: moduleViewController)
         
-        let sendTypingInteractor = SendTypingInteractor.init(messageService: appSettings.messageService)
-        let readMessageInteractor = ReadMessageInteractor.init(messageService: appSettings.messageService)
-        let messageSenderInteractor = SendMessageInteractor.init(messageService: appSettings.messageService)
-        let archiveMessages = MessagesInteractor(messageDBService: appSettings.messageDBService, messageService: appSettings.messageService)
-        let deleteInteractor = DeleteMessageInteractor.init(messageDBService: appSettings.messageDBService,
-                                                            messageService: appSettings.messageService)
+        let sendTypingInteractor = SendTypingInteractor.init()
+        let readMessageInteractor = ReadMessageInteractor.init()
+        let messageSenderInteractor = SendMessageInteractor.init()
+        let archiveMessages = MessagesInteractor(messageDBService: appSettings.messageDBService)
+        let deleteInteractor = DeleteMessageInteractor.init(messageDBService: appSettings.messageDBService)
         let makeVibrationInteractor = MakeVibrationInteractor()
         let messageSentSoundInteractor = MakeSoundInteractor()
         
-        let blockContactInteractor = BlockContactInteractor(userService: appSettings.userService, contactDBService: appSettings.contactDBService)
-        let acceptContactInteractor = AcceptContactInteractor(contactService: appSettings.contactsService)
+        let blockContactInteractor = BlockContactInteractor(contactDBService: appSettings.contactDBService)
+        let acceptContactInteractor = AcceptContactInteractor()
         let presenter = ConversationPresenter(
             userID: appSettings.appStore.userID(),
             isPersonalManager: isPersonalManager,
             appStore: appSettings.appStore,
             conversation: conversation,
             view: moduleViewController,
-            mediaRepository: appSettings.mediaRepository, callService: appSettings.callService,
+            mediaRepository: appSettings.mediaRepository,
             updateRepository: appSettings.updateRepository,
             messageRepository: appSettings.messageRespository,
             contactRepository: appSettings.contactRepository,
