@@ -10,12 +10,6 @@ import RxSwift
 
 class CreateFileInteractor: GRPCErrorUseCase<(data: Data, extens: String), [FileChunk]> {
 
-     private let fileService: FileServiceClientProtocol
-
-     init(fileService: FileServiceClientProtocol) {
-         self.fileService = fileService
-     }
-
     override func job(params: (data: Data, extens: String)) -> Single<[FileChunk]> {
         Single.create { [weak self] observer -> Disposable in
 
@@ -26,7 +20,7 @@ class CreateFileInteractor: GRPCErrorUseCase<(data: Data, extens: String), [File
                 $0.mimeType =  params.extens
             })
             PP.debug("[Message]: Creating file with request - \(request)")
-            self.fileService
+            AppSettingsImpl.shared.fileService
                 .create(request, callOptions: .default())
                 .response
                 .whenComplete { [weak self] result in

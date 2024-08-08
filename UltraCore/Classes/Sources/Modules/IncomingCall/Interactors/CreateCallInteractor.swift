@@ -14,19 +14,14 @@ struct CreateCallRequestParams {
 }
 
 final class CreateCallInteractor: GRPCErrorUseCase<CreateCallRequestParams, CreateCallResponse> {
-    private let callService: CallServiceClientProtocol
-    
-    init(callService: CallServiceClientProtocol) {
-        self.callService = callService
-    }
     
     override func job(params: CreateCallRequestParams) -> Single<CreateCallResponse> {
-        return Single.create { [unowned self] single in
+        return Single.create { single in
             let request = CreateCallRequest.with {
                 $0.users = params.users
                 $0.video = params.video
             }
-            self.callService
+            AppSettingsImpl.shared.callService
                 .create(request, callOptions: .default())
                 .response
                 .whenComplete { result in

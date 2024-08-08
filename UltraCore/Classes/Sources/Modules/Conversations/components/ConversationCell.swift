@@ -126,10 +126,10 @@ class ConversationCell: BaseCell {
         self.descriptionView.text = conversation.lastMessage?.message ?? getNoMessagesText(isManager: isManager)
         self.unreadView.isHidden = conversation.unreadCount == 0
         self.unreadView.text = conversation.unreadCount.description
-        self.lastSeenView.text = conversation.timestamp.formattedTimeForConversationCell()
+        self.lastSeenView.text = conversation.lastMessage?.message == nil ? "" : conversation.timestamp.formattedTimeForConversationCell()
         self.setupTyping(conversation: conversation, isManager: isManager)
         self.setupAvatar(conversation: conversation)
-        self.onlineContentView.isHidden = !(conversation.peers.first?.status.isOnline ?? false)
+        self.onlineContentView.isHidden = !(conversation.peers.first?.status.isOnline ?? false) || conversation.chatType == .support
         if let message = conversation.lastMessage, !message.isIncome {
             self.statusView.image = message.listStatusImage
             self.statusView.snp.updateConstraints { make in

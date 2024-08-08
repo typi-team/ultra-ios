@@ -15,7 +15,6 @@ class ConversationDBService {
     }
     
     fileprivate let appStore: AppSettingsStore
-    fileprivate lazy var chatService: ChatServiceClientProtocol = AppSettingsImpl.shared.conversationService
     fileprivate lazy var callAllowedSubject = PublishSubject<(String, Bool)>()
     
     var callAllowedObservable: Observable<(String, Bool)> {
@@ -42,108 +41,120 @@ class ConversationDBService {
                 PP.error(error.localizedDescription)
             }
         }
-        self.chatService = chatService
+        if let realmOldURL = FileManager.default
+            .urls(for: .documentDirectory, in: .userDomainMask)
+            .first?.appendingPathComponent("Ultra-Core.realm"),
+           FileManager.default.fileExists(atPath: realmOldURL.path) {
+            do {
+                appStore.store(last: 0)
+                try FileManager.default.removeItem(at: realmOldURL)
+            } catch {
+                PP.error(error.localizedDescription)
+            }
+        }
     }
     
     func createIfNotExist(from message: Message) -> Single<Void> {
         return Single.create { [weak self] observer -> Disposable in
             guard let `self` = self else { return Disposables.create() }
-            let realm = Realm.myRealm()
-            let peerID = message.peerId(user: self.userID)
-            let contact = realm.object(ofType: DBContact.self, forPrimaryKey: peerID )
-            let existConversation = realm.object(ofType: DBConversation.self, forPrimaryKey: message.receiver.chatID)
-            if let conversation = existConversation {
-                do {
-                    try realm.write {
-                        if let contact = contact, !conversation.contact.contains(where: { $0.userID == contact.userID }) {
-                            conversation.contact.append(contact)
-                        }
+            Realm.realmQueue.async {
+                let realm = Realm.myRealm()
+                let peerID = message.peerId(user: self.userID)
+                let contact = realm.object(ofType: DBContact.self, forPrimaryKey: peerID )
+                let existConversation = realm.object(ofType: DBConversation.self, forPrimaryKey: message.receiver.chatID)
+                if let conversation = existConversation {
+                    do {
+                        try realm.write {
+                            if let contact = contact, !conversation.contact.contains(where: { $0.userID == contact.userID }) {
+                                conversation.contact.append(contact)
+                            }
 
-                        conversation.lastSeen = message.meta.created
-                        conversation.message = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm, user: self.userID)
-                        if message.sender.userID != self.appStore.userID() && !message.state.read {
-                            conversation.unreadMessageCount += 1
+                            conversation.lastSeen = message.meta.created
+                            conversation.message = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm, user: self.userID)
+                            if message.sender.userID != self.appStore.userID() && !message.state.read {
+                                conversation.unreadMessageCount += 1
+                            }
+                            realm.create(DBConversation.self, value: conversation, update: .all)
                         }
-                        realm.create(DBConversation.self, value: conversation, update: .all)
+                        observer(.success(()))
+                    } catch {
+                        observer(.failure(error))
                     }
-                    observer(.success(()))
-                } catch {
-                    observer(.failure(error))
-                }
-            } else {
-                let request = GetChatRequest.with {
-                    $0.id = message.receiver.chatID
-                }
-                self.chatService
-                    .getByID(request, callOptions: .default())
-                    .response
-                    .whenComplete { [weak self] result in
-                        switch result {
-                        case .success(let response):
-                            Realm.realmQueue.async {
-                                let localRealm = Realm.myRealm()
-                                let peerID = message.peerId(user: self?.userID ?? "")
-                                let contact = localRealm.object(ofType: DBContact.self, forPrimaryKey: peerID)
-                                let existConversation = localRealm.object(ofType: DBConversation.self, forPrimaryKey: message.receiver.chatID)
-                                if let conversation = existConversation {
-                                    do {
-                                        try localRealm.write {
-                                            if let contact = contact, !conversation.contact.contains(where: { $0.userID == contact.userID }) {
-                                                conversation.contact.append(contact)
+                } else {
+                    let request = GetChatRequest.with {
+                        $0.id = message.receiver.chatID
+                    }
+                    AppSettingsImpl.shared.conversationService
+                        .getByID(request, callOptions: .default())
+                        .response
+                        .whenComplete { [weak self] result in
+                            switch result {
+                            case .success(let response):
+                                Realm.realmQueue.async {
+                                    let localRealm = Realm.myRealm()
+                                    let peerID = message.peerId(user: self?.userID ?? "")
+                                    let contact = localRealm.object(ofType: DBContact.self, forPrimaryKey: peerID)
+                                    let existConversation = localRealm.object(ofType: DBConversation.self, forPrimaryKey: message.receiver.chatID)
+                                    if let conversation = existConversation {
+                                        do {
+                                            try localRealm.write {
+                                                if let contact = contact, !conversation.contact.contains(where: { $0.userID == contact.userID }) {
+                                                    conversation.contact.append(contact)
+                                                }
+                                                conversation.lastSeen = message.meta.created
+                                                conversation.message = localRealm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: localRealm, user: self?.userID ?? "")
+                                                conversation.callAllowed = response.chat.settings.callAllowed
+                                                conversation.addContact = response.chat.settings.addContact
+                                                conversation.conversationType = response.chat.chatType.rawValue
+                                                if response.chat.properties["is_assistant"] == "true" {
+                                                    conversation.isAssistant = true
+                                                }
+                                                if message.sender.userID != self?.appStore.userID() ?? "" && !message.state.read {
+                                                    conversation.unreadMessageCount += 1
+                                                }
+                                                localRealm.create(DBConversation.self, value: conversation, update: .all)
                                             }
-                                            conversation.lastSeen = message.meta.created
-                                            conversation.message = localRealm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: localRealm, user: self?.userID ?? "")
-                                            conversation.callAllowed = response.chat.settings.callAllowed
-                                            conversation.addContact = response.chat.settings.addContact
-                                            conversation.conversationType = response.chat.chatType.rawValue
-                                            if response.chat.properties["is_assistant"] == "true" {
-                                                conversation.isAssistant = true
-                                            }
-                                            if message.sender.userID != self?.appStore.userID() ?? "" && !message.state.read {
-                                                conversation.unreadMessageCount += 1
-                                            }
-                                            localRealm.create(DBConversation.self, value: conversation, update: .all)
+                                            observer(.success(()))
+                                        } catch {
+                                            observer(.failure(error))
                                         }
-                                        observer(.success(()))
-                                    } catch {
-                                        observer(.failure(error))
-                                    }
-                                } else {
-                                    do {
-                                        try localRealm.write {
-                                            let conversation = localRealm.create(
-                                                DBConversation.self,
-                                                value: DBConversation(
-                                                    message: message,
-                                                    user: self?.userID ?? "",
-                                                    addContact: response.chat.settings.addContact,
-                                                    callAllowed: response.chat.settings.callAllowed
+                                    } else {
+                                        do {
+                                            try localRealm.write {
+                                                let conversation = localRealm.create(
+                                                    DBConversation.self,
+                                                    value: DBConversation(
+                                                        message: message,
+                                                        user: self?.userID ?? "",
+                                                        addContact: response.chat.settings.addContact,
+                                                        callAllowed: response.chat.settings.callAllowed
+                                                    )
                                                 )
-                                            )
-                                            conversation.conversationType = response.chat.chatType.rawValue
-                                            if response.chat.properties["is_assistant"] == "true" {
-                                                conversation.isAssistant = true
+                                                conversation.conversationType = response.chat.chatType.rawValue
+                                                if response.chat.properties["is_assistant"] == "true" {
+                                                    conversation.isAssistant = true
+                                                }
+                                                if let contact = contact, !conversation.contact.contains(where: { $0.userID == contact.userID }) {
+                                                    conversation.contact.append(contact)
+                                                }
+                                                if message.sender.userID != self?.appStore.userID() ?? "" && !message.state.read {
+                                                    conversation.unreadMessageCount += 1
+                                                }
+                                                localRealm.add(conversation)
                                             }
-                                            if let contact = contact, !conversation.contact.contains(where: { $0.userID == contact.userID }) {
-                                                conversation.contact.append(contact)
-                                            }
-                                            if message.sender.userID != self?.appStore.userID() ?? "" && !message.state.read {
-                                                conversation.unreadMessageCount += 1
-                                            }
-                                            localRealm.add(conversation)
+                                            observer(.success(()))
                                         }
-                                        observer(.success(()))
-                                    }
-                                    catch {
-                                        observer(.failure(error))
+                                        catch {
+                                            observer(.failure(error))
+                                        }
                                     }
                                 }
+                                
+                            case .failure(let error):
+                                observer(.failure(error))
                             }
-                            
-                        case .failure(let error):
-                            observer(.failure(error))
                         }
-                    }
+                }
             }
             return Disposables.create()
         }
@@ -170,54 +181,56 @@ class ConversationDBService {
         }
     }
     
-    @discardableResult
-    func incrementUnread(for conversationID: String, count: Int = 1) -> Bool {
+    func incrementUnread(for conversationID: String, count: Int = 1) {
         PP.debug("Trying to increment unread for conversationID - \(conversationID)")
-        do {
-            let realm = Realm.myRealm()
-            try realm.write {
-                if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID) {
-                    PP.debug("Incremented unread for conversationID - \(conversationID)")
-                    conversation.unreadMessageCount += count
-                    realm.add(conversation, update: .all)
+        Realm.realmQueue.async {
+            do {
+                let realm = Realm.myRealm()
+                try realm.write {
+                    if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID) {
+                        PP.debug("Incremented unread for conversationID - \(conversationID)")
+                        conversation.unreadMessageCount += count
+                        realm.add(conversation, update: .all)
+                    }
                 }
+            } catch {
+                PP.error("Failed to increment unread - \(conversationID); error - \(error.localizedDescription)")
             }
-            return true
-        } catch {
-            return false
         }
     }
     
     func setUnread(for conversationID: String, count: Int) {
         PP.debug("Trying to set unread for conversationID - \(conversationID)")
-        do {
-            let realm = Realm.myRealm()
-            try realm.write {
-                if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID) {
-                    PP.debug("Set unread for conversationID - \(conversationID)")
-                    conversation.unreadMessageCount = count
-                    realm.add(conversation, update: .all)
+        Realm.realmQueue.async {
+            do {
+                let realm = Realm.myRealm()
+                try realm.write {
+                    if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID) {
+                        PP.debug("Set unread for conversationID - \(conversationID)")
+                        conversation.unreadMessageCount = count
+                        realm.add(conversation, update: .all)
+                    }
                 }
+            } catch {
+                PP.error("Error on setting unread - \(error)")
             }
-        } catch {
-            PP.debug("Error on setting unread - \(error)")
         }
     }
     
-    @discardableResult
-    func readAllMessage(for conversationID: String) -> Bool {
-        do {
-            let realm = Realm.myRealm()
-            try realm.write {
-                if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID) {
-                    conversation.unreadMessageCount = 0
-                    realm.add(conversation, update: .all)
+    func readAllMessage(for conversationID: String) {
+        Realm.realmQueue.async {
+            do {
+                let realm = Realm.myRealm()
+                try realm.write {
+                    if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID) {
+                        conversation.unreadMessageCount = 0
+                        realm.add(conversation, update: .all)
+                    }
                 }
+                AppSettingsImpl.shared.updateRepository.triggerUnreadUpdate()
+            } catch {
+                PP.error("Failed to read all messages for \(conversationID); error - \(error.localizedDescription)")
             }
-            AppSettingsImpl.shared.updateRepository.triggerUnreadUpdate()
-            return true
-        } catch {
-            return false
         }
     }
 
@@ -234,19 +247,19 @@ class ConversationDBService {
     
     func update(addContact: Bool, id: String) -> Single<Void> {
         return Single.create { single in
-            let realm = Realm.myRealm()
-            guard let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: id) else {
-                single(.failure(ConversationError.notFound))
-                return Disposables.create()
-            }
-            do {
-                try realm.write {
-                    conversation.addContact = addContact
-                    realm.add(conversation, update: .all)
+            Realm.realmQueue.async {
+                let realm = Realm.myRealm()
+                if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: id) {
+                    do {
+                        try realm.write {
+                            conversation.addContact = addContact
+                            realm.add(conversation, update: .all)
+                        }
+                        single(.success(()))
+                    } catch {
+                        single(.failure(error))
+                    }
                 }
-                single(.success(()))
-            } catch {
-                single(.failure(error))
             }
             return Disposables.create()
         }
@@ -255,57 +268,61 @@ class ConversationDBService {
     func update(callAllowed: Bool, id: String) -> Single<Void> {
         callAllowedSubject.onNext((id, callAllowed))
         return Single.create { single in
-            let realm = Realm.myRealm()
-            let conversations = realm.objects(DBConversation.self)
-            guard let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: id) else {
-                single(.failure(ConversationError.notFound))
-                return Disposables.create()
-            }
-            do {
-                try realm.write {
-                    conversation.callAllowed = callAllowed
-                    realm.add(conversation, update: .all)
+            Realm.realmQueue.async {
+                let realm = Realm.myRealm()
+                let conversations = realm.objects(DBConversation.self)
+                if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: id) {
+                    do {
+                        try realm.write {
+                            conversation.callAllowed = callAllowed
+                            realm.add(conversation, update: .all)
+                        }
+                        single(.success(()))
+                    } catch {
+                        single(.failure(error))
+                    }
                 }
-                single(.success(()))
-            } catch {
-                single(.failure(error))
             }
             return Disposables.create()
         }
     }
     
     func updateTransferStatus(_ status: MoneyTransferStatus) {
-        let realm = Realm.myRealm()
-        if let dbMessage = realm.object(ofType: DBMessage.self, forPrimaryKey: status.messageID) {
-            do {
-                try realm.write {
-                    dbMessage.moneyMessage?.status = status.status.status.rawValue
-                    realm.add(dbMessage, update: .all)
+        Realm.realmQueue.async {
+            let realm = Realm.myRealm()
+            if let dbMessage = realm.object(ofType: DBMessage.self, forPrimaryKey: status.messageID) {
+                do {
+                    try realm.write {
+                        dbMessage.moneyMessage?.status = status.status.status.rawValue
+                        realm.add(dbMessage, update: .all)
+                    }
                 }
+                catch {
+                    PP.error("Couldn't save DBMessage; reason - \(error)")
+                }
+            } else {
+                PP.error("Couldn't update transfer status for message id - \(status.messageID); Message doesn't exist")
             }
-            catch {
-                PP.error("Couldn't save DBMessage; reason - \(error)")
-            }
-        } else {
-            PP.error("Couldn't update transfer status for message id - \(status.messageID); Message doesn't exist")
         }
     }
     
     func delete(conversation id: String) -> Single<Void> {
         return Single.create(subscribe: {observer in
-            do {
-                let realm = Realm.myRealm()
-                try realm.write({
-                    if let dbConv = realm.object(ofType: DBConversation.self, forPrimaryKey: id) {
-                        realm.delete(dbConv)
-                    }
-                    
-                    let messages = realm.objects(DBMessage.self).where({$0.receiver.chatID == id })
-                    messages.forEach({ realm.delete($0)})
-                })
-                AppSettingsImpl.shared.updateRepository.triggerUnreadUpdate()
-            } catch {
-                observer(.failure(error))
+            Realm.realmQueue.async {
+                do {
+                    let realm = Realm.myRealm()
+                    try realm.write({
+                        if let dbConv = realm.object(ofType: DBConversation.self, forPrimaryKey: id) {
+                            realm.delete(dbConv)
+                        }
+                        
+                        let messages = realm.objects(DBMessage.self).where({$0.receiver.chatID == id })
+                        messages.forEach({ realm.delete($0)})
+                    })
+                    AppSettingsImpl.shared.updateRepository.triggerUnreadUpdate()
+                } catch {
+                    observer(.failure(error))
+                }
             }
             return Disposables.create()
             
@@ -313,16 +330,18 @@ class ConversationDBService {
     }
     
     func updateAssistant(name: String, avatarURL: String?) {
-        let realm = Realm.myRealm()
-        if let assistant = realm.objects(DBConversation.self).filter({ $0.isAssistant }).first {
-            do {
-                try realm.write {
-                    assistant.title = name
-                    assistant.imagePath = avatarURL ?? ""
+        Realm.realmQueue.async {
+            let realm = Realm.myRealm()
+            if let assistant = realm.objects(DBConversation.self).filter({ $0.isAssistant }).first {
+                do {
+                    try realm.write {
+                        assistant.title = name
+                        assistant.imagePath = avatarURL ?? ""
+                    }
                 }
-            }
-            catch {
-                PP.error("Error updating assistant title and image path")
+                catch {
+                    PP.error("Error updating assistant title and image path")
+                }
             }
         }
     }
@@ -332,7 +351,10 @@ class ConversationDBService {
 
 extension Message {
     func peerId(user id: String) -> String {
-        return sender.userID == id ? receiver.userID : sender.userID
+        if chatType == .peerToPeer {
+            return sender.userID == id ? receiver.userID : sender.userID
+        }
+        return sender.userID == id ? AppSettingsImpl.shared.appStore.userID() : sender.userID
     }
     
     var isIncome: Bool { self.sender.userID != AppSettingsImpl.shared.appStore.userID() }

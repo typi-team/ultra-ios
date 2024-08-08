@@ -9,24 +9,19 @@ import Foundation
 import RxSwift
 
 final class RejectCallInteractor: GRPCErrorUseCase<CallerRequestParams, Void> {
-    private let callService: CallServiceClientProtocol
-    
-    init(callService: CallServiceClientProtocol) {
-        self.callService = callService
-    }
     
     override func job(params: CallerRequestParams) -> Single<Void> {
-        Single.create { [unowned self] single in
+        Single.create { single in
             let request = RejectCallRequest.with {
                 $0.callerUserID = params.userID
                 $0.room = params.room
             }
-            self.callService
+            AppSettingsImpl.shared.callService
                 .reject(request, callOptions: .default())
                 .response
                 .whenComplete { result in
                     switch result {
-                    case .success(let response):
+                    case .success:
                         single(.success(()))
                     case .failure(let error):
                         single(.failure(error))

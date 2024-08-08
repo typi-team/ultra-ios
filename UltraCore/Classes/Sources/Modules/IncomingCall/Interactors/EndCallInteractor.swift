@@ -13,18 +13,13 @@ struct EndCallParams {
 }
 
 final class EndCallInteractor: GRPCErrorUseCase<EndCallParams, Void> {
-    private let callService: CallServiceClientProtocol
-    
-    init(callService: CallServiceClientProtocol) {
-        self.callService = callService
-    }
-    
+
     override func job(params: EndCallParams) -> Single<Void> {
-        Single.create { [unowned self] single in
+        Single.create { single in
             let request = CallEndRequest.with {
                 $0.room = params.room
             }
-            self.callService
+            AppSettingsImpl.shared.callService
                 .end(request, callOptions: .default())
                 .response
                 .whenComplete { result in

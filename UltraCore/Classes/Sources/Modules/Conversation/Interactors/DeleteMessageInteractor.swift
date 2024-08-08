@@ -10,12 +10,8 @@ import RxSwift
 class DeleteMessageInteractor: GRPCErrorUseCase<([Message], Bool), Void> {
     
     fileprivate let messageDBService: MessageDBService
-    fileprivate let messageService: MessageServiceClientProtocol
     
-    
-    init(messageDBService: MessageDBService,
-         messageService: MessageServiceClientProtocol) {
-        self.messageService = messageService
+    init(messageDBService: MessageDBService) {
         self.messageDBService = messageDBService
     }
     
@@ -31,7 +27,7 @@ class DeleteMessageInteractor: GRPCErrorUseCase<([Message], Bool), Void> {
                             $0.minSeqNumber = range.lowerBound
                         }) })
             })
-            self.messageService.delete(range, callOptions: .default())
+            AppSettingsImpl.shared.messageService.delete(range, callOptions: .default())
                 .response
                 .whenComplete({ result in
                     switch result {

@@ -53,23 +53,12 @@ extension Realm {
     static func myRealm() -> Realm {
         let realmURL = FileManager.default
             .urls(for: .documentDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("Ultra-Core.realm")
+            .appendingPathComponent("Ultra-Core2.realm")
 
         var config = Realm.Configuration(
             fileURL: realmURL,
-            schemaVersion: 7) { migration, oldSchemaVersion in
-                if oldSchemaVersion < 4 {
-                    AppSettingsImpl.shared.appStore.store(last: 0)
-                    migration.deleteData(forType: DBContact.className())
-                    
-                    migration.enumerateObjects(ofType: DBConversation.className()) { oldObject, newObject in
-                        let oldContactObj = oldObject!["contact"] as! MigrationObject
-                        let newContactObj = migration.create(DBContact.className(), value: oldContactObj)
-                        let list = newObject!["contact"] as! List<MigrationObject>
-                        list.append(newContactObj)
-                    }
-                }
-            }
+            schemaVersion: 1
+        )
         config.objectTypes = [
             DBContact.self, DBConversation.self, DBMessage.self, DBMessageState.self,
             DBReceiver.self, DBSender.self, DBMessageMeta.self,

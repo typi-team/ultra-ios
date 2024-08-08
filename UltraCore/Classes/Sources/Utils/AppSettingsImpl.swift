@@ -17,7 +17,7 @@ import RealmSwift
 
 open class AppSettingsImpl: AppSettings  {
     
-    static let shared = AppSettingsImpl()
+    static var shared = AppSettingsImpl()
 
 //    MARK: Public properties
 
@@ -34,16 +34,30 @@ open class AppSettingsImpl: AppSettings  {
     
     lazy var connectionBackoff = ConnectionBackoff()
 
-    lazy var channel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
-                                                                                port: serverConfig.portOfServer),
-                                                                  transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
-        lazy var fileChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
-                                                                                   port: serverConfig.portOfServer),
-                                                                     transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
-
-        lazy var updateChannel: GRPCChannel = try! GRPCChannelPool.with(target: .host(serverConfig.pathToServer,
-                                                                                      port: serverConfig.portOfServer),
-                                                                        transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), eventLoopGroup: PlatformSupport.makeEventLoopGroup(compatibleWith: .makeClientConfigurationBackedByNIOSSL(), loopCount: 1))
+    lazy var channel: GRPCChannel = try! GRPCChannelPool.with(
+        target: .host(
+            serverConfig.pathToServer,
+            port: serverConfig.portOfServer
+        ),
+        transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()), 
+        eventLoopGroup: PlatformSupport.makeEventLoopGroup(loopCount: 1)
+    )
+    lazy var fileChannel: GRPCChannel = try! GRPCChannelPool.with(
+        target: .host(
+            serverConfig.pathToServer,
+            port: serverConfig.portOfServer
+        ),
+        transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()),
+        eventLoopGroup: PlatformSupport.makeEventLoopGroup(loopCount: 1)
+    )
+    lazy var updateChannel: GRPCChannel = try! GRPCChannelPool.with(
+        target: .host(
+            serverConfig.pathToServer,
+            port: serverConfig.portOfServer
+        ),
+        transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()),
+        eventLoopGroup: PlatformSupport.makeEventLoopGroup(loopCount: 1)
+    )
 
 //    MARK: GRPC Services
     lazy var callService: CallServiceClientProtocol = CallServiceNIOClient(channel: channel)
@@ -56,7 +70,6 @@ open class AppSettingsImpl: AppSettings  {
     lazy var updateService: UpdatesServiceClientProtocol = UpdatesServiceNIOClient(channel: updateChannel)
     lazy var conversationService: ChatServiceClientProtocol = ChatServiceNIOClient.init(channel: channel)
     lazy var integrateService: IntegrationServiceClientProtocol = IntegrationServiceNIOClient.init(channel: channel)
-    lazy var chatService: ChatServiceClientProtocol = ChatServiceNIOClient(channel: channel)
     lazy var supportService: SupportServiceClientProtocol = SupportServiceNIOClient(channel: channel)
 
 //    MARK: Services
@@ -70,35 +83,29 @@ open class AppSettingsImpl: AppSettings  {
 
     lazy var voiceRepository: VoiceRepository = VoiceRepository.init(mediaUtils: mediaUtils)
     lazy var mediaRepository: MediaRepository = MediaRepositoryImpl(mediaUtils: mediaUtils,
-                                                                    uploadFileInteractor: UploadFileInteractor(fileService: fileService),
-                                                                    fileService: fileService,
-                                                                    createFileSpaceInteractor: CreateFileInteractor(fileService: fileService))
+                                                                    uploadFileInteractor: UploadFileInteractor(),
+                                                                    createFileSpaceInteractor: CreateFileInteractor())
     lazy var contactRepository: ContactsRepository = ContactsRepositoryImpl(contactDBService: contactDBService)
     lazy var messageRespository: MessageRepository = MessageRespositoryImpl(messageService: messageDBService)
     lazy var updateRepository: UpdateRepository = UpdateRepositoryImpl.init(
         appStore: appStore,
         messageService: messageDBService,
         contactService: contactDBService,
-        updateClient: updateService,
         conversationService: conversationDBService,
-        pingPongInteractorImpl: PingPongInteractorImpl.init(updateClient: updateService),
+        pingPongInteractorImpl: PingPongInteractorImpl.init(),
         userByIDInteractor: ContactByUserIdInteractor.init(
-            delegate: UltraCoreSettings.delegate,
-            contactsService: contactsService
+            delegate: UltraCoreSettings.delegate
         ),
         retrieveContactStatusesInteractorImpl: RetrieveContactStatusesInteractor(
-            contactDBService: contactDBService,
-            contactService: contactsService), 
+            contactDBService: contactDBService),
         updateContactStatusInteractor: UpdateContactStatusInteractor(
-            contactDBService: contactDBService,
-            contactService: contactsService),
-        deliveredMessageInteractor: DeliveredMessageInteractor.init(messageService: messageService), 
-        chatInteractor: ConversationInteractor(chatService: chatService),
-        initSupportInteractor: InitSupportChatsInteractor(supportService: supportService), 
+            contactDBService: contactDBService),
+        deliveredMessageInteractor: DeliveredMessageInteractor.init(),
+        chatInteractor: ConversationInteractor(),
+        initSupportInteractor: InitSupportChatsInteractor(),
         chatToConversationInteractor: ChatToConversationInteractor(
             contactByUserIdInteractor: ContactByUserIdInteractor.init(
-                delegate: UltraCoreSettings.delegate,
-                contactsService: contactsService
+                delegate: UltraCoreSettings.delegate
             ),
             contactDBService: contactDBService
         )
@@ -107,23 +114,63 @@ open class AppSettingsImpl: AppSettings  {
     
     //    MARK: App main interactors, must be create once
     
-    lazy var updateTokenInteractor: UseCase<Void, Void> = UpdateTokenInteractorImpl.init(appStore: appStore, authService: authService)
-    lazy var superMessageSaverInteractor: UseCase<MessageData, Conversation?> = SuperMessageSaverInteractor.init(appStore: appStore,
-                                                                                                                 contactDBService: contactDBService,
-                                                                                                                 messageDBService: messageDBService,
-                                                                                                                 conversationDBService: conversationDBService,
-                                                                                                                 messageService: messageService,
-                                                                                                                 contactsService: contactsService)
+    lazy var updateTokenInteractor: UseCase<Void, Void> = UpdateTokenInteractorImpl.init(appStore: appStore)
+    lazy var superMessageSaverInteractor: UseCase<MessageData, Conversation?> = SuperMessageSaverInteractor.init(
+        appStore: appStore,
+        contactDBService: contactDBService,
+        messageDBService: messageDBService,
+        conversationDBService: conversationDBService)
     
     init() {
         PP.initialize()
     }
     
+    func recreate() {
+        channel = try! GRPCChannelPool.with(
+            target: .host(
+                serverConfig.pathToServer,
+                port: serverConfig.portOfServer
+            ),
+            transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()),
+            eventLoopGroup: PlatformSupport.makeEventLoopGroup(loopCount: 1)
+        )
+        fileChannel = try! GRPCChannelPool.with(
+            target: .host(
+                serverConfig.pathToServer,
+                port: serverConfig.portOfServer
+            ),
+            transportSecurity: .tls(
+                .makeClientConfigurationBackedByNIOSSL()),
+            eventLoopGroup: PlatformSupport.makeEventLoopGroup(loopCount: 1)
+        )
+        updateChannel = try! GRPCChannelPool.with(
+            target: .host(
+                serverConfig.pathToServer,
+                port: serverConfig.portOfServer),
+            transportSecurity: .tls(.makeClientConfigurationBackedByNIOSSL()),
+            eventLoopGroup: PlatformSupport.makeEventLoopGroup(loopCount: 1)
+        )
+        callService = CallServiceNIOClient(channel: channel)
+        userService = UserServiceNIOClient(channel: channel)
+        authService = AuthServiceNIOClient(channel: channel)
+        fileService = FileServiceNIOClient(channel: fileChannel)
+        deviceService = DeviceServiceNIOClient(channel: channel)
+        messageService = MessageServiceNIOClient(channel: channel)
+        contactsService = ContactServiceNIOClient(channel: channel)
+        updateService = UpdatesServiceNIOClient(channel: updateChannel)
+        conversationService = ChatServiceNIOClient.init(channel: channel)
+        integrateService = IntegrationServiceNIOClient.init(channel: channel)
+        supportService = SupportServiceNIOClient(channel: channel)
+        UltraCoreSettings.updateSession(callback: { _ in })
+    }
+    
     func logout() {
-        let realm = Realm.myRealm()
-        try? realm.write({
-            realm.deleteAll()
-        })
+        Realm.realmQueue.async {
+            let realm = Realm.myRealm()
+            try? realm.write({
+                realm.deleteAll()
+            })
+        }
         self.appStore.deleteAll()
     }
     

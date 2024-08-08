@@ -8,19 +8,16 @@
 import RxSwift
 
 class DeleteConversationInteractor: UseCase<(Conversation, Bool), Void> {
-    fileprivate let conversationService: ChatServiceClientProtocol
     fileprivate let conversationDBService: ConversationDBService
     
-    init(conversationDBService: ConversationDBService,
-         conversationService: ChatServiceClientProtocol){
-        self.conversationService = conversationService
+    init(conversationDBService: ConversationDBService){
         self.conversationDBService = conversationDBService
     }
     
     override func executeSingle(params: (Conversation, Bool)) -> Single<Void> {
         return Single.create(subscribe: {[weak self] observer in
             guard let `self` = self else { return Disposables.create() }
-            self.conversationService.delete(.with({
+            AppSettingsImpl.shared.conversationService.delete(.with({
                 $0.forEveryone = params.1
                 $0.chatID = params.0.idintification
             }), callOptions: .default())

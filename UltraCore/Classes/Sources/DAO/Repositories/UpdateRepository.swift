@@ -42,7 +42,6 @@ class UpdateRepositoryImpl {
     fileprivate let appStore: AppSettingsStore
     fileprivate let contactService: ContactDBService
     fileprivate let messageService: MessageDBService
-    fileprivate let updateClient: UpdatesServiceClientProtocol
     fileprivate let conversationService: ConversationDBService
     fileprivate let pingPongInteractorImpl: GRPCErrorUseCase<Void, Void>
     fileprivate let retrieveContactStatusesInteractorImpl: GRPCErrorUseCase<Void, Void>
@@ -52,6 +51,7 @@ class UpdateRepositoryImpl {
     fileprivate let chatInteractor: GRPCErrorUseCase<String, Chat>
     fileprivate let initSupportInteractor: GRPCErrorUseCase<InitSupportChatsRequest, InitSupportChatsResponse>
     fileprivate let chatToConversationInteractor: GRPCErrorUseCase<ChatToConversationParams, Void>
+    fileprivate let reachabilityInteractor = ReachabilityInteractor()
     
     fileprivate var pintPongTimer: Timer?
     fileprivate var updateListenStream: ServerStreamingCall<ListenRequest, Updates>?
@@ -59,11 +59,11 @@ class UpdateRepositoryImpl {
     private let updateSyncSubject = ReplaySubject<Void>.create(bufferSize: 1)
     private let supportOfficesSubject = ReplaySubject<SupportOfficesResponse?>.create(bufferSize: 1)
     private let semaphore = DispatchSemaphore(value: 1)
+    private var changesSubscriptionDelay: TimeInterval = 0.0
     
     init(appStore: AppSettingsStore,
          messageService: MessageDBService,
          contactService: ContactDBService,
-         updateClient: UpdatesServiceClientProtocol,
          conversationService: ConversationDBService,
          pingPongInteractorImpl: GRPCErrorUseCase<Void, Void>,
          userByIDInteractor: GRPCErrorUseCase<String, ContactDisplayable>,
@@ -74,7 +74,6 @@ class UpdateRepositoryImpl {
          initSupportInteractor: GRPCErrorUseCase<InitSupportChatsRequest, InitSupportChatsResponse>,
          chatToConversationInteractor: GRPCErrorUseCase<ChatToConversationParams, Void>
     ) {
-        self.updateClient = updateClient
         self.appStore = appStore
         self.messageService = messageService
         self.contactService = contactService
@@ -101,7 +100,9 @@ extension UpdateRepositoryImpl: UpdateRepository {
         self.pintPongTimer?.invalidate()
         self.pintPongTimer = nil
         self.updateListenStream?.cancel(promise: nil)
-        self.contactService.updateContact(status: .unknown)
+        if isConnectedToListenStream {
+            self.contactService.updateContact(status: .unknown)
+        }
         self.isConnectedToListenStream = false
     }
     
@@ -115,6 +116,9 @@ extension UpdateRepositoryImpl: UpdateRepository {
     }
     
     func startPingPong() {
+        guard pintPongTimer == nil else {
+            return
+        }
         DispatchQueue.main.async {
             PP.info("🐢 startPintPong")
             self.pintPongTimer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] timer in
@@ -143,7 +147,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
         _ = Realm.myRealm()
         setupUnreadUpdates()
         if appStore.lastState == 0 {
-            self.updateClient
+            AppSettingsImpl.shared.updateService
                 .getInitialState(InitialStateRequest(), callOptions: .default())
                 .response
                 .whenComplete { [weak self] result in
@@ -162,6 +166,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
                         // the unread counter is updated.
 
                         let group = DispatchGroup()
+                        PP.debug("[Message] Initial state messages - \(response.messages)")
                         response.messages.forEach { message in
                             if message.shouldBeSaved {
                                 group.enter()
@@ -189,6 +194,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
                         self.appStore.store(last: Int64(response.state))
                         self.setupChangesSubscription(with: response.state)
                         self.retreiveContactStatuses()
+                        self.subscribeToReachability()
                     }
                 }
         } else {
@@ -196,6 +202,7 @@ extension UpdateRepositoryImpl: UpdateRepository {
             self.retreiveContactStatuses()
             self.initializeSupportChats()
             self.setupChangesSubscription(with: UInt64(appStore.lastState))
+            self.subscribeToReachability()
         }
     }
     
@@ -209,12 +216,32 @@ private extension UpdateRepositoryImpl {
         triggerUnreadUpdate()
     }
     
+    func subscribeToReachability() {
+        reachabilityInteractor.execute(params: ())
+            .skip(1)
+            .debounce(.seconds(5), scheduler: ConcurrentDispatchQueueScheduler(qos: .utility))
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .utility))
+            .delay(.milliseconds(500), scheduler: ConcurrentDispatchQueueScheduler(qos: .utility))
+            .subscribe { [weak self] _ in
+//                guard let self = self else {
+//                    return
+//                }
+                self?.stopSession()
+                AppSettingsImpl.shared.recreate()
+//                UltraCoreSettings.updateSession(callback: { _ in })
+            }
+            .disposed(by: disposeBag)
+    }
+    
     func setupChangesSubscription(with state: UInt64) {
+        guard !isConnectedToListenStream else {
+            return
+        }
         PP.debug("Setting up change subscription with state - \(state)")
         let state: ListenRequest = .with { $0.localState = .with { $0.state = state } }
-        self.isConnectedToListenStream = true
-        self.updateListenStream = updateClient.listen(state, callOptions: .default(include: false)) { [weak self] response in
+        self.updateListenStream = AppSettingsImpl.shared.updateService.listen(state, callOptions: .default(include: false)) { [weak self] response in
             guard let `self` = self else { return }
+            self.isConnectedToListenStream = true
             response.updates.forEach { update in
                 if let ofUpdate = update.ofUpdate {
                     self.handle(of: ofUpdate)
@@ -224,14 +251,41 @@ private extension UpdateRepositoryImpl {
             }
             PP.debug("Trying to save last state; Server last state - \(response.lastState); local last state - \(self.appStore.lastState)")
             self.appStore.store(last: max(Int64(response.lastState), self.appStore.lastState))
+            self.changesSubscriptionDelay = 0
         }
-        updateListenStream?.status.whenComplete { status in
+        updateListenStream?.status.whenComplete { [weak self] status in
+            guard let self = self else {
+                return
+            }
+            
             self.isConnectedToListenStream = false
             switch status {
             case .success(let response):
                 PP.debug("Update listen stream is completed with code - \(response.code); isOk - \(response.isOk); message - \(response.message); cause - \(response.cause)")
+                DispatchQueue.main.asyncAfter(deadline: .now() + self.changesSubscriptionDelay) {
+                    guard UIApplication.shared.applicationState == .active,
+                          response.code != .cancelled && response.code != .ok
+                    else {
+                        return
+                    }
+                    PP.debug("Resubscribing to the listen stream after a completion with code - \(response.code)")
+                    if response.code == .unauthenticated {
+                        self.stopSession()
+                        UltraCoreSettings.updateSession(callback: { _ in })
+                    } else {
+                        self.changesSubscriptionDelay += 5.0
+                        self.setupChangesSubscription(with: UInt64(self.appStore.lastState))
+                    }
+                }
             case .failure(let error):
                 PP.debug("Update listen stream is completed with error - \(error); localeError - \(error.localeError)")
+                DispatchQueue.main.asyncAfter(deadline: .now() + self.changesSubscriptionDelay) {
+                    if UIApplication.shared.applicationState == .active {
+                        PP.debug("Resubscribing to the listen stream after an error")
+                        self.changesSubscriptionDelay += 5.0
+                        self.setupChangesSubscription(with: UInt64(self.appStore.lastState))
+                    }
+                }
             }
             
         }
@@ -292,12 +346,11 @@ private extension UpdateRepositoryImpl {
     
     func setupUnreadUpdates() {
         Observable.combineLatest(updateUnreadTriggerSubject.asObservable(), supportOfficesObservable)
+            .subscribe(on: ConcurrentDispatchQueueScheduler(qos: .utility))
+            .debounce(.milliseconds(200), scheduler: ConcurrentDispatchQueueScheduler(qos: .utility))
+            .observe(on: ConcurrentDispatchQueueScheduler(qos: .utility))
             .subscribe(onNext: { _, officesResponse in
-                guard let officesResponse = officesResponse else {
-                    return
-                }
-                
-                let isAssistantEnabled = officesResponse.assistant != nil
+                let isAssistantEnabled = officesResponse?.assistant != nil
                 let realm = Realm.myRealm()
                 
                 let allChats = realm.objects(DBConversation.self)
@@ -323,7 +376,7 @@ private extension UpdateRepositoryImpl {
                             guard let peer = conv.peers.first else {
                                 return false
                             }
-                            return officesResponse.personalManagers.map { String($0.userId) }.contains(where: { $0 == peer.phone })
+                            return (officesResponse?.personalManagers ?? []).map { String($0.userId) }.contains(where: { $0 == peer.phone })
                         } else {
                             return false
                         }
@@ -481,12 +534,6 @@ private extension UpdateRepositoryImpl {
 }
 
 extension UpdateRepositoryImpl {
-    
-    func handleNewMessageOnRead(message: Message) {
-        PP.debug("Handle new message on read")
-        guard message.sender.userID != self.appStore.userID() && !message.state.read else { return }
-        self.conversationService.incrementUnread(for: message.receiver.chatID)
-    }
     
     func update(message: Message, completion: @escaping (() -> Void)) {
         let contactID = message.peerId(user: self.appStore.userID())

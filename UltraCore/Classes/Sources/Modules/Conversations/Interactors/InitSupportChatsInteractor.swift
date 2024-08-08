@@ -10,15 +10,9 @@ import RxSwift
 
 class InitSupportChatsInteractor: GRPCErrorUseCase<InitSupportChatsRequest, InitSupportChatsResponse> {
     
-    private let supportService: SupportServiceClientProtocol
-    
-    init(supportService: SupportServiceClientProtocol) {
-        self.supportService = supportService
-    }
-    
     override func executeSingle(params: InitSupportChatsRequest) -> Single<InitSupportChatsResponse> {
         return Single<InitSupportChatsResponse>.create { [unowned self] single in
-            self.supportService.initSupportChats(params, callOptions: .default())
+            AppSettingsImpl.shared.supportService.initSupportChats(params, callOptions: .default())
                 .response
                 .whenComplete { result in
                     switch result {

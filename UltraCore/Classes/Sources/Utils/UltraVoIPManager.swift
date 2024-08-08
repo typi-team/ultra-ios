@@ -28,9 +28,9 @@ public class UltraVoIPManager: NSObject {
     
     private var provider: CXProvider
     
-    private lazy var callRejectInteractor: GRPCErrorUseCase<CallerRequestParams, Void> = RejectCallInteractor(callService: AppSettingsImpl.shared.callService)
-    private lazy var callCancelInteractor: GRPCErrorUseCase<CallerRequestParams, Void> = CancelCallInteractor(callService: AppSettingsImpl.shared.callService)
-    private lazy var endCallInteractor: GRPCErrorUseCase<EndCallParams, Void> = EndCallInteractor(callService: AppSettingsImpl.shared.callService)
+    private lazy var callRejectInteractor: GRPCErrorUseCase<CallerRequestParams, Void> = RejectCallInteractor()
+    private lazy var callCancelInteractor: GRPCErrorUseCase<CallerRequestParams, Void> = CancelCallInteractor()
+    private lazy var endCallInteractor: GRPCErrorUseCase<EndCallParams, Void> = EndCallInteractor()
     private let callDBService = CallDBService()
     private let disposeBag = DisposeBag()
     private var callStatusSubscription: Disposable?
