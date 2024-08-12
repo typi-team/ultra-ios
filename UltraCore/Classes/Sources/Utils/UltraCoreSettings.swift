@@ -74,6 +74,8 @@ public extension UltraCoreSettings {
     
     static var appLocale: Locale = .current
     
+    static var realmError: Error?
+    
     static var isConnected: Bool {
         AppSettingsImpl.shared.updateRepository.isConnectedToListenStream
     }

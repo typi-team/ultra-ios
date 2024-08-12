@@ -28,8 +28,14 @@ class ChatToConversationInteractor: GRPCErrorUseCase<ChatToConversationParams, V
     override func executeSingle(params: ChatToConversationParams) -> Single<Void> {
         return Single<Void>.create { single in
             Realm.realmQueue.async { [weak self] in
-                guard let self = self else { return }
-                let realm = Realm.myRealm()
+                guard let self = self else {
+                    single(.failure(NSError.objectsIsNill))
+                    return
+                }
+                guard let realm = Realm.myRealm() else {
+                    single(.failure(UltraCoreSettings.realmError ?? NSError.objectsIsNill))
+                    return
+                }
                 if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: params.chat.chatID) {
                     do {
                         try realm.write {
@@ -69,7 +75,10 @@ class ChatToConversationInteractor: GRPCErrorUseCase<ChatToConversationParams, V
                     .flatMap { contacts -> Observable<Void> in
                         return Observable.create { observer in
                             Realm.realmQueue.async {
-                                let localRealm = Realm.myRealm()
+                                guard let localRealm = Realm.myRealm() else {
+                                    observer.onError(UltraCoreSettings.realmError ?? NSError.objectsIsNill)
+                                    return
+                                }
                                 if let conversation = localRealm.object(ofType: DBConversation.self, forPrimaryKey: params.chat.chatID) {
                                     do {
                                         try localRealm.write {

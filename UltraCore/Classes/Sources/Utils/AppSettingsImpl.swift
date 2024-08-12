@@ -167,8 +167,8 @@ open class AppSettingsImpl: AppSettings  {
     func logout() {
         Realm.realmQueue.async {
             let realm = Realm.myRealm()
-            try? realm.write({
-                realm.deleteAll()
+            try? realm?.write({
+                realm?.deleteAll()
             })
         }
         self.appStore.deleteAll()

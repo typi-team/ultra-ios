@@ -58,7 +58,10 @@ class ConversationDBService {
         return Single.create { [weak self] observer -> Disposable in
             guard let `self` = self else { return Disposables.create() }
             Realm.realmQueue.async {
-                let realm = Realm.myRealm()
+                guard let realm = Realm.myRealm() else {
+                    observer(.failure(UltraCoreSettings.realmError ?? NSError.objectsIsNill))
+                    return
+                }
                 let peerID = message.peerId(user: self.userID)
                 let contact = realm.object(ofType: DBContact.self, forPrimaryKey: peerID )
                 let existConversation = realm.object(ofType: DBConversation.self, forPrimaryKey: message.receiver.chatID)
@@ -91,7 +94,10 @@ class ConversationDBService {
                             switch result {
                             case .success(let response):
                                 Realm.realmQueue.async {
-                                    let localRealm = Realm.myRealm()
+                                    guard let localRealm = Realm.myRealm() else {
+                                        observer(.failure(UltraCoreSettings.realmError ?? NSError.objectsIsNill))
+                                        return
+                                    }
                                     let peerID = message.peerId(user: self?.userID ?? "")
                                     let contact = localRealm.object(ofType: DBContact.self, forPrimaryKey: peerID)
                                     let existConversation = localRealm.object(ofType: DBConversation.self, forPrimaryKey: message.receiver.chatID)
@@ -162,7 +168,10 @@ class ConversationDBService {
     
     func conversations() -> Observable<[Conversation]> {
         return Observable.create { observer -> Disposable in
-            let realm = Realm.myRealm()
+            guard let realm = Realm.myRealm() else {
+                observer.onError(UltraCoreSettings.realmError ?? NSError.objectsIsNill)
+                return Disposables.create()
+            }
             let messages = realm.objects(DBConversation.self)
             let results = messages
                 .sorted(byKeyPath: "lastSeen", ascending: false)
@@ -185,7 +194,9 @@ class ConversationDBService {
         PP.debug("Trying to increment unread for conversationID - \(conversationID)")
         Realm.realmQueue.async {
             do {
-                let realm = Realm.myRealm()
+                guard let realm = Realm.myRealm() else {
+                    return
+                }
                 try realm.write {
                     if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID) {
                         PP.debug("Incremented unread for conversationID - \(conversationID)")
@@ -203,7 +214,9 @@ class ConversationDBService {
         PP.debug("Trying to set unread for conversationID - \(conversationID)")
         Realm.realmQueue.async {
             do {
-                let realm = Realm.myRealm()
+                guard let realm = Realm.myRealm() else {
+                    return
+                }
                 try realm.write {
                     if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID) {
                         PP.debug("Set unread for conversationID - \(conversationID)")
@@ -220,7 +233,9 @@ class ConversationDBService {
     func readAllMessage(for conversationID: String) {
         Realm.realmQueue.async {
             do {
-                let realm = Realm.myRealm()
+                guard let realm = Realm.myRealm() else {
+                    return
+                }
                 try realm.write {
                     if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: conversationID) {
                         conversation.unreadMessageCount = 0
@@ -236,7 +251,9 @@ class ConversationDBService {
 
     func conversation(by id: String) -> Single<Conversation?> {
         return Single.deferred {
-            let realm = Realm.myRealm()
+            guard let realm = Realm.myRealm() else {
+                return .error(UltraCoreSettings.realmError ?? NSError.objectsIsNill)
+            }
             if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: id) {
                 return Single.just(conversation.toConversation())
             } else {
@@ -248,7 +265,10 @@ class ConversationDBService {
     func update(addContact: Bool, id: String) -> Single<Void> {
         return Single.create { single in
             Realm.realmQueue.async {
-                let realm = Realm.myRealm()
+                guard let realm = Realm.myRealm() else {
+                    single(.failure(UltraCoreSettings.realmError ?? NSError.objectsIsNill))
+                    return
+                }
                 if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: id) {
                     do {
                         try realm.write {
@@ -269,7 +289,10 @@ class ConversationDBService {
         callAllowedSubject.onNext((id, callAllowed))
         return Single.create { single in
             Realm.realmQueue.async {
-                let realm = Realm.myRealm()
+                guard let realm = Realm.myRealm() else {
+                    single(.failure(UltraCoreSettings.realmError ?? NSError.objectsIsNill))
+                    return
+                }
                 let conversations = realm.objects(DBConversation.self)
                 if let conversation = realm.object(ofType: DBConversation.self, forPrimaryKey: id) {
                     do {
@@ -289,7 +312,9 @@ class ConversationDBService {
     
     func updateTransferStatus(_ status: MoneyTransferStatus) {
         Realm.realmQueue.async {
-            let realm = Realm.myRealm()
+            guard let realm = Realm.myRealm() else {
+                return
+            }
             if let dbMessage = realm.object(ofType: DBMessage.self, forPrimaryKey: status.messageID) {
                 do {
                     try realm.write {
@@ -310,7 +335,10 @@ class ConversationDBService {
         return Single.create(subscribe: {observer in
             Realm.realmQueue.async {
                 do {
-                    let realm = Realm.myRealm()
+                    guard let realm = Realm.myRealm() else {
+                        observer(.failure(UltraCoreSettings.realmError ?? NSError.objectsIsNill))
+                        return
+                    }
                     try realm.write({
                         if let dbConv = realm.object(ofType: DBConversation.self, forPrimaryKey: id) {
                             realm.delete(dbConv)
@@ -331,7 +359,9 @@ class ConversationDBService {
     
     func updateAssistant(name: String, avatarURL: String?) {
         Realm.realmQueue.async {
-            let realm = Realm.myRealm()
+            guard let realm = Realm.myRealm() else {
+                return
+            }
             if let assistant = realm.objects(DBConversation.self).filter({ $0.isAssistant }).first {
                 do {
                     try realm.write {

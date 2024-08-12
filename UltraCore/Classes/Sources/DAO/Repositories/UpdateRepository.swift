@@ -144,7 +144,9 @@ extension UpdateRepositoryImpl: UpdateRepository {
     }
     
     func setupSubscription() {
-        _ = Realm.myRealm()
+        guard Realm.myRealm() != nil else {
+            return
+        }
         setupUnreadUpdates()
         if appStore.lastState == 0 {
             AppSettingsImpl.shared.updateService
@@ -351,7 +353,9 @@ private extension UpdateRepositoryImpl {
             .observe(on: ConcurrentDispatchQueueScheduler(qos: .utility))
             .subscribe(onNext: { _, officesResponse in
                 let isAssistantEnabled = officesResponse?.assistant != nil
-                let realm = Realm.myRealm()
+                guard let realm = Realm.myRealm() else {
+                    return
+                }
                 
                 let allChats = realm.objects(DBConversation.self)
                     .filter { conv in

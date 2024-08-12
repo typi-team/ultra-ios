@@ -23,7 +23,7 @@ class ConversationRepositoryImpl {
         self.conversationService = conversationService
         
         let realm = Realm.myRealm()
-        print(realm.configuration.fileURL?.absoluteString)
+        print(realm?.configuration.fileURL?.absoluteString)
 //        try! realm.write({ realm.deleteAll() })
     }
 }
