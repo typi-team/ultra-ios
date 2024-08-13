@@ -20,7 +20,10 @@ class ContactDBService {
     
     func contacts() -> Observable<[ContactDisplayable]> {
         return Observable.create { observer in
-            let realm = Realm.myRealm()
+            guard let realm = Realm.myRealm() else {
+                observer.onNext([])
+                return Disposables.create()
+            }
             let contacts = realm.objects(DBContact.self)
             let notificationKey = contacts.observe(keyPaths: []) { changes in
                 switch changes {
@@ -42,7 +45,10 @@ class ContactDBService {
         Single.create { observer in
             Realm.realmQueue.async {
                 do {
-                    let realm = Realm.myRealm()
+                    guard let realm = Realm.myRealm() else {
+                        observer(.failure(UltraCoreSettings.realmError ?? NSError.objectsIsNill))
+                        return
+                    }
                     try realm.write({
                         if let contact = realm.object(ofType: DBContact.self, forPrimaryKey: id) {
                             contact.isBlocked = blocked
@@ -60,7 +66,7 @@ class ContactDBService {
     }
     
     func contact(id: String) -> ContactDisplayable? {
-        if let contact = Realm.myRealm().object(ofType: DBContact.self, forPrimaryKey: id) {
+        if let contact = Realm.myRealm()?.object(ofType: DBContact.self, forPrimaryKey: id) {
             return DBContact(value: contact).toInterface()
         }
         return nil
@@ -70,7 +76,10 @@ class ContactDBService {
         return Single.create { completable in
             Realm.realmQueue.async {
                 do {
-                    let realm = Realm.myRealm()
+                    guard let realm = Realm.myRealm() else {
+                        completable(.failure(UltraCoreSettings.realmError ?? NSError.objectsIsNill))
+                        return
+                    }
                     try realm.write {
                         if let contact = realm.object(ofType: DBContact.self, forPrimaryKey: status.userID) {
                             contact.statusValue = status.status.rawValue
@@ -93,7 +102,9 @@ class ContactDBService {
     func updateContact(status: UserStatusEnum) {
         Realm.realmQueue.async {
             do {
-                let realm = Realm.myRealm()
+                guard let realm = Realm.myRealm() else {
+                    return
+                }
                 try realm.write {
                     realm.objects(DBContact.self).forEach { contact in
                         contact.statusValue = status.rawValue
@@ -110,7 +121,10 @@ class ContactDBService {
         return Single.create { completable in
             Realm.realmQueue.async {
                 do {
-                    let realm = Realm.myRealm()
+                    guard let realm = Realm.myRealm() else {
+                        completable(.failure(UltraCoreSettings.realmError ?? NSError.objectsIsNill))
+                        return
+                    }
                     try realm.write {
                         var listContact: [ContactDisplayable] = []
                         statuses.forEach { status in
@@ -137,7 +151,10 @@ class ContactDBService {
         return Single.create { completable in
             Realm.realmQueue.async {
                 do {
-                    let realm = Realm.myRealm()
+                    guard let realm = Realm.myRealm() else {
+                        completable(.failure(UltraCoreSettings.realmError ?? NSError.objectsIsNill))
+                        return
+                    }
                     let contact = realm.object(ofType: DBContact.self, forPrimaryKey: interface.userID) ?? DBContact(contact: interface)
                     try realm.write {
                         if let contactInfo = UltraCoreSettings.delegate?.info(from: interface.phone) {
@@ -167,7 +184,10 @@ class ContactDBService {
         return Single.create { completable in
             Realm.realmQueue.async {
                 do {
-                    let realm = Realm.myRealm()
+                    guard let realm = Realm.myRealm() else {
+                        completable(.failure(UltraCoreSettings.realmError ?? NSError.objectsIsNill))
+                        return
+                    }
                     try realm.write {
                         if let existContact = realm.object(ofType: DBContact.self, forPrimaryKey: contact.userID) {
                             realm.delete(existContact)
@@ -186,7 +206,9 @@ class ContactDBService {
     static func update(contacts: [IContactInfo]) {
         Realm.realmQueue.async {
             do {
-                let realm = Realm.myRealm()
+                guard let realm = Realm.myRealm() else {
+                    return
+                }
                 try realm.write {
                     realm.objects(DBContact.self).forEach { storedContact in
                         if let contact = contacts.first(where: { $0.identifier == storedContact.phone }) {

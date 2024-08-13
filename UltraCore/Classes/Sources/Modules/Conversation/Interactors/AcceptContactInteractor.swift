@@ -9,11 +9,6 @@ import Foundation
 import RxSwift
 
 class AcceptContactInteractor: GRPCErrorUseCase<String, Void> {
-    private let contactService: ContactServiceClientProtocol
-    
-    init(contactService: ContactServiceClientProtocol) {
-        self.contactService = contactService
-    }
     
     override func job(params: String) -> Single<Void> {
         PP.debug("Attempt to accept contact - \(params)")
@@ -21,7 +16,7 @@ class AcceptContactInteractor: GRPCErrorUseCase<String, Void> {
             let request = AcceptContactRequest.with {
                 $0.userID = params
             }
-            self.contactService.acceptContact(request, callOptions: .default())
+            AppSettingsImpl.shared.contactsService.acceptContact(request, callOptions: .default())
                 .response
                 .whenComplete { result in
                     switch result {

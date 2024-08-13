@@ -23,8 +23,6 @@ final class ConversationPresenter {
     fileprivate let disposeBag = DisposeBag()
     fileprivate let appStore: AppSettingsStore
     
-    fileprivate let callService: CallServiceClientProtocol
-    
     fileprivate let mediaRepository: MediaRepository
     fileprivate let updateRepository: UpdateRepository
     private weak var view: ConversationViewInterface?
@@ -75,7 +73,6 @@ final class ConversationPresenter {
         conversation: Conversation,
         view: ConversationViewInterface,
         mediaRepository: MediaRepository,
-        callService: CallServiceClientProtocol,
         updateRepository: UpdateRepository,
         messageRepository: MessageRepository,
         contactRepository: ContactsRepository,
@@ -99,7 +96,6 @@ final class ConversationPresenter {
         self.userID = userID
         self.appStore = appStore
         self.wireframe = wireframe
-        self.callService = callService
         self.conversation = conversation
         self.mediaRepository = mediaRepository
         self.updateRepository = updateRepository
@@ -165,7 +161,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
         }
         if let userID = self.conversation.peers.first?.userID {
             let timerUpdate = Observable<Int>.interval(.seconds(30), scheduler: MainScheduler.instance)
-            let contacts = self.contactRepository.contacts().do { [weak self] contacts in
+            let contacts = self.contactRepository.contacts().observe(on: MainScheduler.instance).do { [weak self] contacts in
                 guard let `self` = self,
                       let selectedContact = contacts.filter({ contact in contact.userID == userID }).first else { return }
                 self.conversation.peers = [selectedContact]
@@ -174,6 +170,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
                 
             }
             updateRepository.updateSyncObservable
+                .observe(on: MainScheduler.instance)
                 .subscribe(onNext: { [weak self] in
                     guard let self = self else { return }
                     self.view?.setup(conversation: self.conversation)
@@ -184,13 +181,13 @@ extension ConversationPresenter: ConversationPresenterInterface {
                     let selectedContact = contacts.filter { contact in contact.userID == userID }.first
                     return selectedContact
                 }
-                .do(onNext: { [weak self] contact in
+                .observe(on: MainScheduler.instance)
+                .subscribe(onNext: { [weak self] contact in
                     guard let `self` = self else { return }
                     self.conversation.peers = [contact]
                     self.view?.blocked(is: contact.isBlocked)
                     self.view?.setup(conversation: self.conversation)
                 })
-                .subscribe()
                 .disposed(by: disposeBag)
         }
     }
@@ -244,7 +241,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
     
     func createCall(with video: Bool = false) {
         guard let user = self.conversation.peers.first?.userID else { return }
-        self.callService.create(.with({
+        AppSettingsImpl.shared.callService.create(.with({
             $0.users = [user]
             $0.video = video
         }), callOptions: .default())

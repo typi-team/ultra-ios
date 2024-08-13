@@ -9,12 +9,7 @@ import Foundation
 import RxSwift
 
 class SendMessageInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendResponse> {
-    final let messageService: MessageServiceClientProtocol
     static var messageQueue = DispatchQueue(label: "com.ultra.sendMessageQueue")
-
-    init(messageService: MessageServiceClientProtocol) {
-        self.messageService = messageService
-    }
 
     override func job(params: MessageSendRequest) -> Single<MessageSendResponse> {
         PP.debug("[Message] [Send]: Sending message with params \(params)")
@@ -22,7 +17,7 @@ class SendMessageInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendRes
             guard let `self` = self else { return Disposables.create() }
 
             Self.messageQueue.sync {
-                self.messageService.send(params, callOptions: .default()).response.whenComplete { result in
+                AppSettingsImpl.shared.messageService.send(params, callOptions: .default()).response.whenComplete { result in
                     switch result {
                     case let .success(response):
                         observer(.success(response))
@@ -40,17 +35,12 @@ class SendMessageInteractor: GRPCErrorUseCase<MessageSendRequest, MessageSendRes
 
 
 class ReadMessageInteractor: GRPCErrorUseCase<Message, MessagesReadResponse> {
-    final let messageService: MessageServiceClientProtocol
-
-    init(messageService: MessageServiceClientProtocol) {
-        self.messageService = messageService
-    }
 
     override func job(params: Message) -> Single<MessagesReadResponse> {
         Single.create { [weak self] observer -> Disposable in
             
             guard let `self` = self else { return Disposables.create() }
-            self.messageService.read(params.readRequest, callOptions: .default()).response.whenComplete { result in
+            AppSettingsImpl.shared.messageService.read(params.readRequest, callOptions: .default()).response.whenComplete { result in
                 switch result {
                 case let .success(response):
                     observer(.success(response))
@@ -64,17 +54,12 @@ class ReadMessageInteractor: GRPCErrorUseCase<Message, MessagesReadResponse> {
 }
 
 class DeliveredMessageInteractor: GRPCErrorUseCase<Message, MessagesDeliveredResponse> {
-    final let messageService: MessageServiceClientProtocol
-
-    init(messageService: MessageServiceClientProtocol) {
-        self.messageService = messageService
-    }
 
     override func job(params: Message) -> Single<MessagesDeliveredResponse> {
         Single.create { [weak self] observer -> Disposable in
             
             guard let `self` = self else { return Disposables.create() }
-            self.messageService.delivered(params.deliveredRequest, callOptions: .default())
+            AppSettingsImpl.shared.messageService.delivered(params.deliveredRequest, callOptions: .default())
                 .response
                 .whenComplete { result in
                     switch result {

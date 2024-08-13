@@ -74,6 +74,8 @@ public extension UltraCoreSettings {
     
     static var appLocale: Locale = .current
     
+    static var realmError: Error?
+    
     static var isConnected: Bool {
         AppSettingsImpl.shared.updateRepository.isConnectedToListenStream
     }
@@ -88,7 +90,7 @@ public extension UltraCoreSettings {
     
     static func updateOrCreate(contacts: [IContactInfo]) throws {
         let contactsDBService = AppSettingsImpl.shared.contactDBService
-        let contactByUserIdInteractor = ContactByUserIdInteractor(delegate: nil, contactsService: AppSettingsImpl.shared.contactsService)
+        let contactByUserIdInteractor = ContactByUserIdInteractor(delegate: nil)
 
         Observable.from(contacts)
             .flatMap { contactByUserIdInteractor.executeSingle(params: $0.identifier).retry(2) }
@@ -261,9 +263,7 @@ public extension UltraCoreSettings {
 
     static func conversation(by contact: IContact, callback: @escaping (UIViewController?) -> Void){
         let shared = AppSettingsImpl.shared
-        _ = ContactToConversationInteractor(contactDBService: shared.contactDBService,
-                                            contactsService: shared.contactsService,
-                                            integrateService: shared.integrateService)
+        _ = ContactToConversationInteractor(contactDBService: shared.contactDBService)
         .executeSingle(params: contact)
         .subscribe(on: MainScheduler.instance)
         .observe(on: MainScheduler.instance)

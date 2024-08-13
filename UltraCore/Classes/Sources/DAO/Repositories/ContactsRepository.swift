@@ -50,7 +50,7 @@ class ContactsRepositoryImpl: ContactsRepository {
 }
 
 extension Realm {
-    static func myRealm() -> Realm {
+    static func myRealm() -> Realm? {
         let realmURL = FileManager.default
             .urls(for: .documentDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("Ultra-Core2.realm")
@@ -75,10 +75,12 @@ extension Realm {
 
         do {
             let realm = try Realm(configuration: config)
+            UltraCoreSettings.realmError = nil
             return realm
         } catch let error as NSError {
+            UltraCoreSettings.realmError = error
             print("Error opening realm: \(error.localizedDescription)")
-            return try! Realm() // если ошибка, то создаем объект Realm с настройками по умолчанию
+            return try? Realm() // если ошибка, то создаем объект Realm с настройками по умолчанию
         }
     }
     

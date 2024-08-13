@@ -44,13 +44,13 @@ class DBConversation: Object {
         self.title = conversation.title
     }
     
-    convenience init(message: Message, realm: Realm = .myRealm(), user id: String?, addContact: Bool, callAllowed: Bool) {
+    convenience init(message: Message, realm: Realm? = .myRealm(), user id: String?, addContact: Bool, callAllowed: Bool) {
         self.init()
         
         self.lastSeen = message.meta.created
-        self.message = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm, user: id)
+        self.message = realm?.object(ofType: DBMessage.self, forPrimaryKey: message.id) ?? DBMessage.init(from: message, realm: realm, user: id)
         self.idintification = message.receiver.chatID
-        if let dbContact = realm.object(ofType: DBContact.self, forPrimaryKey: message.sender.userID == id ? message.receiver.userID : message.sender.userID),
+        if let dbContact = realm?.object(ofType: DBContact.self, forPrimaryKey: message.sender.userID == id ? message.receiver.userID : message.sender.userID),
             !contact.contains(where: { $0.userID == dbContact.userID })
         {
             self.contact.append(dbContact)

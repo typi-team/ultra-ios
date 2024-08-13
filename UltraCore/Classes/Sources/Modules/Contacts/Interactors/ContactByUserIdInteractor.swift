@@ -11,12 +11,7 @@ class ContactByUserIdInteractor: GRPCErrorUseCase<String, ContactDisplayable> {
     
     fileprivate weak var  delegate: UltraCoreSettingsDelegate?
     
-    fileprivate let contactsService: ContactServiceClientProtocol
-    
-    
-    init(delegate: UltraCoreSettingsDelegate?,
-         contactsService: ContactServiceClientProtocol) {
-        self.contactsService = contactsService
+    init(delegate: UltraCoreSettingsDelegate?) {
         self.delegate = delegate
     }
         
@@ -25,7 +20,7 @@ class ContactByUserIdInteractor: GRPCErrorUseCase<String, ContactDisplayable> {
         return Single<ContactDisplayable>.create { [weak self] observer -> Disposable in
             guard let `self` = self else { return Disposables.create() }
             let requestParam = ContactByUserIdRequest.with({ $0.userID = params })
-            self.contactsService.getContactByUserId(requestParam, callOptions: .default())
+            AppSettingsImpl.shared.contactsService.getContactByUserId(requestParam, callOptions: .default())
                 .response
                 .whenComplete { result in
                     switch result {

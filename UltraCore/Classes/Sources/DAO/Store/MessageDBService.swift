@@ -26,7 +26,10 @@ class MessageDBService {
             guard let `self` = self else { return Disposables.create() }
             Realm.realmQueue.async {
                 do {
-                    let realm = Realm.myRealm()
+                    guard let realm = Realm.myRealm() else {
+                        completable(.failure(UltraCoreSettings.realmError ?? NSError.objectsIsNill))
+                        return
+                    }
                     try realm.write {
                         if let messageInDB = realm.object(ofType: DBMessage.self, forPrimaryKey: message.id) {
                             messageInDB.state?.read = message.state.read
@@ -57,7 +60,10 @@ class MessageDBService {
         return Single.create { completable in
             Realm.realmQueue.async {
                 do {
-                    let realm = Realm.myRealm()
+                    guard let realm = Realm.myRealm() else {
+                        completable(.failure(UltraCoreSettings.realmError ?? NSError.objectsIsNill))
+                        return
+                    }
                     try realm.write {
                         let messagesInDB = realm.objects(DBMessage.self)
                             .where({ $0.receiver.chatID.equals(data.chatID) })
@@ -82,7 +88,10 @@ class MessageDBService {
         return Single.create { completable in
             Realm.realmQueue.async {
                 do {
-                    let realm = Realm.myRealm()
+                    guard let realm = Realm.myRealm() else {
+                        completable(.failure(UltraCoreSettings.realmError ?? NSError.objectsIsNill))
+                        return
+                    }
                     try realm.write {
                         let messagesInDB = realm.objects(DBMessage.self)
                             .where({ $0.receiver.chatID.equals(data.chatID) })
@@ -113,7 +122,10 @@ class MessageDBService {
 //   MARK: Получение всех сообщений в чате
     func messages(chatID: String) -> Observable<[Message]> {
         return Observable.create { observer in
-            let realm = Realm.myRealm()
+            guard let realm = Realm.myRealm() else {
+                observer.onError(UltraCoreSettings.realmError ?? NSError.objectsIsNill)
+                return Disposables.create()
+            }
             let messages = realm.objects(DBMessage.self).where { $0.receiver.chatID.equals(chatID) }
             let notificationKey = messages.observe(keyPaths: ["id", "text", "systemActionType", "state.read", "state.delivered", "state.edited"]) { changes in
                 switch changes {
@@ -135,7 +147,10 @@ class MessageDBService {
     
     func lastMessage(chatID: String) -> Single<Message> {
         return Single.create { completable in
-            let realm = Realm.myRealm()
+            guard let realm = Realm.myRealm() else {
+                completable(.failure(UltraCoreSettings.realmError ?? NSError.objectsIsNill))
+                return Disposables.create()
+            }
             let messages = (realm.objects(DBMessage.self).where { $0.receiver.chatID.equals(chatID) })
                                         .compactMap { $0.toProto() }.sorted(by: { m1, m2 in m1.meta.created < m2.meta.created })
             if let lastMessage = messages.last {
@@ -150,7 +165,10 @@ class MessageDBService {
     //   MARK: Получение всех сообщений в базе
     func messages() -> Observable<[Message]> {
         return Observable.create { observer in
-            let realm = Realm.myRealm()
+            guard let realm = Realm.myRealm() else {
+                observer.onError(UltraCoreSettings.realmError ?? NSError.objectsIsNill)
+                return Disposables.create()
+            }
             let messages = realm.objects(DBMessage.self)
             observer.onNext(messages.map({$0.toProto()}))
             return Disposables.create()
@@ -158,7 +176,9 @@ class MessageDBService {
     }
     
     func message(id: String) -> Message? {
-        let realm = Realm.myRealm()
+        guard let realm = Realm.myRealm() else {
+            return nil
+        }
         guard let message = realm.objects(DBMessage.self)
             .map({ $0.toProto() })
             .first(where: { $0.id == id }) else {
@@ -172,10 +192,16 @@ class MessageDBService {
     func save(message: Message) -> Single<Void> {
         PP.debug("[Message] [DB message save]: \(message)")
         return Single.create {[weak self] completable in
-            guard let `self` = self else { return Disposables.create() }
+            guard let `self` = self else {
+                completable(.failure(NSError.objectsIsNill))
+                return Disposables.create()
+            }
             Realm.realmQueue.async {
                 do {
-                    let realm = Realm.myRealm()
+                    guard let realm = Realm.myRealm() else {
+                        completable(.failure(UltraCoreSettings.realmError ?? NSError.objectsIsNill))
+                        return
+                    }
                     try realm.write {
                         realm.create(DBMessage.self,
                                      value: DBMessage(from: message, user: self.userID), update: .all)
@@ -199,7 +225,10 @@ class MessageDBService {
         return Single.create(subscribe: { observer -> Disposable in
             Realm.realmQueue.async {
                 do {
-                    let realm = Realm.myRealm()
+                    guard let realm = Realm.myRealm() else {
+                        observer(.failure(UltraCoreSettings.realmError ?? NSError.objectsIsNill))
+                        return
+                    }
                     try realm.write {
                         let notReadMessagesCount = messages.filter { $0.isIncome && $0.state.read == false }.count
                         self.decreaseUnreadMessagesCount(in: conversationID, on: realm, count: notReadMessagesCount)
@@ -250,7 +279,10 @@ class MessageDBService {
             guard let `self` = self else { return Disposables.create() }
             Realm.realmQueue.async {
                 do {
-                    let realm = Realm.myRealm()
+                    guard let realm = Realm.myRealm() else {
+                        observer(.failure(UltraCoreSettings.realmError ?? NSError.objectsIsNill))
+                        return
+                    }
                     try realm.write {
                         let messages = realm.objects(DBMessage.self)
                             .filter({ $0.receiver?.chatID == conversationID })
@@ -278,7 +310,10 @@ class MessageDBService {
             guard let `self` = self else { return Disposables.create() }
             Realm.realmQueue.async {
                 do {
-                    let realm = Realm.myRealm()
+                    guard let realm = Realm.myRealm() else {
+                        completable(.failure(UltraCoreSettings.realmError ?? NSError.objectsIsNill))
+                        return
+                    }
                     try realm.write {
                         messages.forEach { message in
                             realm.create(DBMessage.self,

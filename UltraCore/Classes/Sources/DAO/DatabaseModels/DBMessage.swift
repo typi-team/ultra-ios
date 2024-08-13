@@ -37,15 +37,15 @@ class DBMessage: Object {
         return "id"
     }
     
-    convenience init(from message: Message, realm: Realm = .myRealm(), user id: String?) {
+    convenience init(from message: Message, realm: Realm? = .myRealm(), user id: String?) {
         self.init()
         self.id = message.id
         self.state = DBMessageState.init(messageState: message.state)
         self.chatType = message.chatType.rawValue
         self.seqNumber = Int64(message.seqNumber)
         self.type = message.type.rawValue
-        self.receiver = realm.object(ofType: DBReceiver.self, forPrimaryKey: message.receiver.id) ?? DBReceiver.init(message.receiver)
-        self.sender = realm.object(ofType: DBSender.self, forPrimaryKey: message.sender.userID) ?? DBSender.init(from: message.sender)
+        self.receiver = realm?.object(ofType: DBReceiver.self, forPrimaryKey: message.receiver.id) ?? DBReceiver.init(message.receiver)
+        self.sender = realm?.object(ofType: DBSender.self, forPrimaryKey: message.sender.userID) ?? DBSender.init(from: message.sender)
         self.meta = DBMessageMeta.init(proto: message.meta)
         self.text = message.text
         if let systemAction = message.systemAction {
@@ -68,19 +68,19 @@ class DBMessage: Object {
         case .audio(let audioMessage):
             self.audioMessage = .init(fromProto: audioMessage)
         case .voice(let voiceMessage):
-            self.voiceMessage = realm.object(ofType: DBVoiceMessage.self, forPrimaryKey: voiceMessage.fileID) ?? .init(fromProto: voiceMessage)
+            self.voiceMessage = realm?.object(ofType: DBVoiceMessage.self, forPrimaryKey: voiceMessage.fileID) ?? .init(fromProto: voiceMessage)
         case .photo(let photoMessage):
-            self.photoMessage = realm.object(ofType: DBPhotoMessage.self, forPrimaryKey: photoMessage.fileID) ?? .init(fromProto: photoMessage)
+            self.photoMessage = realm?.object(ofType: DBPhotoMessage.self, forPrimaryKey: photoMessage.fileID) ?? .init(fromProto: photoMessage)
         case .video(let videoMessage):
-            self.videoMessage = realm.object(ofType: DBVideoMessage.self, forPrimaryKey: videoMessage.fileID) ?? .init(videoMessage: videoMessage)
+            self.videoMessage = realm?.object(ofType: DBVideoMessage.self, forPrimaryKey: videoMessage.fileID) ?? .init(videoMessage: videoMessage)
         case .money(let moneyMessage):
-            self.moneyMessage = realm.object(ofType: DBMoneyMessage.self, forPrimaryKey: moneyMessage.transactionID) ?? .init(message: moneyMessage)
+            self.moneyMessage = realm?.object(ofType: DBMoneyMessage.self, forPrimaryKey: moneyMessage.transactionID) ?? .init(message: moneyMessage)
         case .file(let fileMessage) :
-            self.fileMessage = realm.object(ofType: DBFileMessage.self, forPrimaryKey: fileMessage.fileID) ?? DBFileMessage(fileMessage: fileMessage)
+            self.fileMessage = realm?.object(ofType: DBFileMessage.self, forPrimaryKey: fileMessage.fileID) ?? DBFileMessage(fileMessage: fileMessage)
         case .contact(let contactMessage):
-            self.contactMessage = realm.object(ofType: DBContactMessage.self, forPrimaryKey: contactMessage.phone) ?? DBContactMessage(contact: contactMessage, in: realm)
+            self.contactMessage = realm?.object(ofType: DBContactMessage.self, forPrimaryKey: contactMessage.phone) ?? DBContactMessage(contact: contactMessage, in: realm)
         case .location(let locationMessage):
-            self.locationMessage = realm.object(ofType: DBLocationMessage.self, forPrimaryKey: locationMessage.desc) ?? DBLocationMessage.init(location: locationMessage)
+            self.locationMessage = realm?.object(ofType: DBLocationMessage.self, forPrimaryKey: locationMessage.desc) ?? DBLocationMessage.init(location: locationMessage)
         default: break
         }
         
@@ -449,11 +449,11 @@ class DBContactMessage: Object {
         return "phone"
     }
 
-    convenience init(contact message: ContactMessage, in realm: Realm) {
+    convenience init(contact message: ContactMessage, in realm: Realm?) {
         self.init()
         self.phone = message.phone
         self.userID = message.userID
-        self.photo = realm.object(ofType: DBPhoto.self, forPrimaryKey: message.photo.fileID) ?? DBPhoto(from: message.photo)
+        self.photo = realm?.object(ofType: DBPhoto.self, forPrimaryKey: message.photo.fileID) ?? DBPhoto(from: message.photo)
         self.lastname = message.lastname
         self.firstname = message.firstname
     }

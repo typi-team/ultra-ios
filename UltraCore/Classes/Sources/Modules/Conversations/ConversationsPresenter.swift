@@ -190,6 +190,26 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
     
     private func startReachibilityNotifier() {
         reachabilityInteractor.execute(params: ())
+            .debounce(.seconds(10), scheduler: ConcurrentDispatchQueueScheduler(qos: .utility))
+//            .flatMap({ [weak self] _ -> Observable<Void> in
+//                guard let self = self else {
+//                    return Observable.error(NSError.selfIsNill)
+//                }
+//                if !self.updateRepository.isConnectedToListenStream {
+//                    return Observable.error(CustomError.notConnected)
+//                }
+//                
+//                return Observable.just(())
+//            })
+//            .retry(when: { errors in
+//                return errors.enumerated().flatMap { attempt, error in
+//                    if error == CustomError.notConnected {
+//                        return Observable<Int>.timer(.seconds(5), scheduler: MainScheduler.instance)
+//                    }
+//                    
+//                    return Observable.error(error)
+//                }
+//            })
             .debug("Reachability")
             .subscribe(onNext: { [weak self] _ in
                 guard let self else { return }
@@ -202,4 +222,8 @@ extension ConversationsPresenter: ConversationsPresenterInterface {
             })
             .disposed(by: disposeBag)
     }
+}
+
+private enum CustomError: Error {
+    case notConnected
 }

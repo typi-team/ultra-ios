@@ -22,17 +22,13 @@ final class ConversationsWireframe: BaseWireframe<ConversationsViewController> {
         let moduleViewController = ConversationsViewController()
         super.init(viewController: moduleViewController)
 
-        let deleteConversationInteractor = DeleteConversationInteractor(conversationDBService: appSettings.conversationDBService,
-                                                                        conversationService: appSettings.conversationService)
+        let deleteConversationInteractor = DeleteConversationInteractor(conversationDBService: appSettings.conversationDBService)
         
-        let contactByUserIdInteractor = ContactByUserIdInteractor.init(delegate: UltraCoreSettings.delegate,
-                                                                       contactsService: appSettings.contactsService)
+        let contactByUserIdInteractor = ContactByUserIdInteractor.init(delegate: UltraCoreSettings.delegate)
         
-        let contactToConversationInteractor = ContactToConversationInteractor.init(contactDBService: appSettings.contactDBService,
-                                                                                   contactsService: appSettings.contactsService,
-                                                                                   integrateService: appSettings.integrateService)
+        let contactToConversationInteractor = ContactToConversationInteractor.init(contactDBService: appSettings.contactDBService)
         
-        let messageSenderInteractor = SendMessageInteractor.init(messageService: appSettings.messageService)
+        let messageSenderInteractor = SendMessageInteractor.init()
 
         let resendMessagesInteractor = ResendingMessagesInteractor(messageRepository: appSettings.messageRespository, mediaRepository: appSettings.mediaRepository, messageSenderInteractor: messageSenderInteractor)
         let reachabilityInteractor = ReachabilityInteractor()
