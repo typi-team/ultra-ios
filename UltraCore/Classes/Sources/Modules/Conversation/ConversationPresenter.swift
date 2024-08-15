@@ -13,6 +13,8 @@ import RxSwift
 import RealmSwift
 import AVFoundation
 
+fileprivate typealias TextLink = (link: URL, range: NSRange)
+
 final class ConversationPresenter {
 
     // MARK: - Private properties -
@@ -684,15 +686,19 @@ extension ConversationPresenter: ConversationPresenterInterface {
         params.message.text = text
         params.message.id = UUID().uuidString
         params.message.meta.created = Date().nanosec
-//        let entities: [MessageEntity] = [
-//            MessageEntity.with({ entity in
-//                entity.entity = .code(.with {
-//                    $0.offset = 0
-//                    $0.length = Int32(text.count)
-//                })
-//            })
-//        ]
-//        params.message.entities = entities
+        
+        let entities: [MessageEntity] = getLinks(text: text).map { (link, range) in
+            MessageEntity.with({ entity in
+                entity.entity = .url(.with {
+                    $0.offset = Int32(range.location)
+                    $0.length = Int32(range.length)
+                })
+            })
+        }
+        
+        if !entities.isEmpty {
+            params.message.entities = entities
+        }
         
         if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
             params.message.properties = messageMeta
@@ -706,7 +712,11 @@ extension ConversationPresenter: ConversationPresenterInterface {
             guard let self else { return }
             $0.userID = userID
         })
-//        message.entities = entities
+
+        if !entities.isEmpty {
+            message.entities = entities
+        }
+
         message.meta = .with({
             $0.created = Date().nanosec
         })
@@ -813,6 +823,30 @@ extension ConversationPresenter: ConversationPresenterInterface {
         )
     }
 
+}
+
+private extension ConversationPresenter {
+    func getLinks(text: String) -> [TextLink] {
+        let checkTypes: NSTextCheckingTypes = NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue
+        guard let detector = try? NSDataDetector(types: checkTypes) else {
+            return []
+        }
+        
+        let matches = detector.matches(in: text, options: [], range: NSRange(location: 0, length: text.count))
+        var ranges: [TextLink] = []
+        for match in matches {
+            if let url = match.url {
+                ranges.append((link: url, range: match.range))
+            }
+            if
+                let phone = match.phoneNumber,
+                let phoneURL = URL(string: "tel://\(phone.components(separatedBy: .whitespaces).joined())")
+            {
+                ranges.append((link: phoneURL, range: match.range))
+            }
+        }
+        return ranges
+    }
 }
 
 extension ConversationPresenter: DisclaimerViewDelegate {
