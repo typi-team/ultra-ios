@@ -31,11 +31,11 @@ class OutcomeMessageCellConfigImpl: OutcomingMessageCellConfig {
         dark: .init(named: "conversation_status_read")!,
         default: .init(named: "conversation_status_read")!
     )
-
-   var textLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularCallout)
+    
+    var textLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultRegularCallout)
     var deliveryLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .default(of: 12, and: .regular))
-   var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray900)
-   var sildirBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
+    var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .gray200, darkColor: .gray900)
+    var sildirBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .green500, darkColor: .white)
     var locationMediaImage: TwiceImage? = TwiceImageImpl(
         dark: .init(named: "ff_logo_text")!.withRenderingMode(.alwaysTemplate),
         default: .init(named: "ff_logo_text")!.withRenderingMode(.alwaysTemplate)
@@ -55,4 +55,11 @@ class OutcomeMessageCellConfigImpl: OutcomingMessageCellConfig {
         default: .init(named: "conversation_media_play")!.withRenderingMode(.alwaysTemplate)
     )
     var contactLabelConfig: UltraCore.LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultBoldBody)
+    var textBoldFont: UIFont = UIFont.defaultBoldBody
+    var textItalicFont: UIFont = UIFont.italicSystemFont(ofSize: 17.0)
+    var codeSnippetConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .systemFont(ofSize: 16.0, weight: .light))
+    var codeSnippetBackgroundColor: TwiceColor = TwiceColorImpl(
+        defaultColor: .gray,
+        darkColor: .gray600
+    )
 }

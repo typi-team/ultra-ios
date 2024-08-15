@@ -20,6 +20,10 @@ public protocol MessageCellConfig {
     var linkColor: TwiceColor { get set }
     var fileCellConfig: FileCellConfig { get set }
     var contactLabelConfig: LabelConfig { get set }
+    var textBoldFont: UIFont { get set }
+    var textItalicFont: UIFont { get set }
+    var codeSnippetConfig: LabelConfig { get set }
+    var codeSnippetBackgroundColor: TwiceColor { get set }
 }
 
 public protocol OutcomingMessageCellConfig: MessageCellConfig {

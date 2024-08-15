@@ -107,38 +107,8 @@ class BaseMessageCell: BaseCell {
     func setup(message: Message) {
         self.message = message
         message.isIncome ? stylizeForIncome() : stylizeForOutcome()
-        if let data = message.text.data(using: .utf8) {
-            do {
-                let attr = try NSMutableAttributedString(
-                    data: data,
-                    options: [.documentType: NSAttributedString.DocumentType.html, .characterEncoding: String.Encoding.utf8.rawValue],
-                    documentAttributes: nil
-                )
-                if let font = textFont(for: message) {
-                    attr.setBaseFont(baseFont: font)
-                }
-//                if let textColor = textColor(for: message) {
-//                    attr.addAttributes([.foregroundColor: textColor], range: NSRange(location: 0, length: attr.string.count))
-//                }
-                self.textView.attributedText = attr
-            } catch {
-                self.textView.attributedText = NSAttributedString(
-                    string: self.textView.text ?? "",
-                    attributes: attributes(
-                        for: UltraCoreStyle.outcomeMessageCell?.textLabelConfig.font,
-                        textColor: UltraCoreStyle.outcomeMessageCell?.textLabelConfig.color
-                    )
-                )
-            }
-        } else {
-            self.textView.attributedText = NSAttributedString(
-                string: self.textView.text ?? "",
-                attributes: attributes(
-                    for: UltraCoreStyle.outcomeMessageCell?.textLabelConfig.font,
-                    textColor: UltraCoreStyle.outcomeMessageCell?.textLabelConfig.color
-                )
-            )
-        }
+        
+        self.textView.attributedText = attributedText(for: message)
         self.deliveryDateLabel.text = message.meta.created.dateBy(format: .hourAndMinute)
         if #available(iOS 13.0, *) {
             self.container.addInteraction(UIContextMenuInteraction.init(delegate: self))
@@ -170,28 +140,6 @@ class BaseMessageCell: BaseCell {
         self.container.backgroundColor = UltraCoreStyle.incomeMessageCell?.backgroundColor.color
         self.deliveryDateLabel.font = UltraCoreStyle.incomeMessageCell?.deliveryLabelConfig.font
         self.deliveryDateLabel.textColor = UltraCoreStyle.incomeMessageCell?.deliveryLabelConfig.color
-        
-//        self.textView.font = UltraCoreStyle.incomeMessageCell?.textLabelConfig.font
-//        self.textView.textColor = UltraCoreStyle.incomeMessageCell?.textLabelConfig.color
-//        let attributedStr = NSMutableAttributedString(
-//            string: self.textView.text ?? "",
-//            attributes: attributes(
-//                for: UltraCoreStyle.incomeMessageCell?.textLabelConfig.font,
-//                textColor: UltraCoreStyle.incomeMessageCell?.textLabelConfig.color
-//            )
-//        )
-//        if let messagePrefix = messagePrefix {
-//            let range = NSString(string: attributedStr.string).range(of: messagePrefix)
-//            attributedStr.setAttributes(
-//                attributes(
-//                    for: UltraCoreStyle.incomeMessageCell?.contactLabelConfig.font,
-//                    textColor: UltraCoreStyle.incomeMessageCell?.contactLabelConfig.color),
-//                range: range
-//            )
-//        }
-        
-//        self.textView.attributedText = attributedStr
-        
     }
     
     private func stylizeForOutcome() {
@@ -201,47 +149,107 @@ class BaseMessageCell: BaseCell {
             .underlineStyle: NSUnderlineStyle.single.rawValue
         ]
         self.container.backgroundColor = UltraCoreStyle.outcomeMessageCell?.backgroundColor.color
-        
         self.deliveryDateLabel.font = UltraCoreStyle.outcomeMessageCell?.deliveryLabelConfig.font
         self.deliveryDateLabel.textColor = UltraCoreStyle.outcomeMessageCell?.deliveryLabelConfig.color
-//        self.textView.font = UltraCoreStyle.outcomeMessageCell?.textLabelConfig.font
-//        self.textView.textColor = UltraCoreStyle.outcomeMessageCell?.textLabelConfig.color
-//        if let text = self.textView.text, let data = text.data(using: .utf8) {
-//            
-//            DispatchQueue.main.async {
-//                do {
-//                    let attr = try NSMutableAttributedString(
-//                        data: data,
-//                        options: [.documentType: NSAttributedString.DocumentType.html, .characterEncoding: String.Encoding.utf8.rawValue],
-//                        documentAttributes: nil
-//                    )
-//                    if let font = UltraCoreStyle.outcomeMessageCell?.textLabelConfig.font {
-//                        attr.setBaseFont(baseFont: font)
-//                    }
-//                    if let textColor = UltraCoreStyle.outcomeMessageCell?.textLabelConfig.color {
-//                        attr.setAttributes([.foregroundColor: UltraCoreStyle.outcomeMessageCell?.textLabelConfig.color ?? .clear], range: NSRange(location: 0, length: attr.string.count))
-//                    }
-//                    self.textView.attributedText = attr
-//                } catch {
-//                    self.textView.attributedText = NSAttributedString(
-//                        string: self.textView.text ?? "",
-//                        attributes: attributes(
-//                            for: UltraCoreStyle.outcomeMessageCell?.textLabelConfig.font,
-//                            textColor: UltraCoreStyle.outcomeMessageCell?.textLabelConfig.color
-//                        )
-//                    )
-//                }
-//            }
-//            
-//        } else {
-//            self.textView.attributedText = NSAttributedString(
-//                string: self.textView.text ?? "",
-//                attributes: attributes(
-//                    for: UltraCoreStyle.outcomeMessageCell?.textLabelConfig.font,
-//                    textColor: UltraCoreStyle.outcomeMessageCell?.textLabelConfig.color
-//                )
-//            )
-//        }
+    }
+    
+    private func attributedText(for message: Message) -> NSAttributedString {
+        let font = message.isIncome ? UltraCoreStyle.incomeMessageCell?.textLabelConfig.font : UltraCoreStyle.outcomeMessageCell?.textLabelConfig.font
+        let textColor = message.isIncome ? UltraCoreStyle.incomeMessageCell?.textLabelConfig.color : UltraCoreStyle.outcomeMessageCell?.textLabelConfig.color
+        guard !message.entities.isEmpty else {
+            return NSAttributedString(
+                string: message.text,
+                attributes: attributes(
+                    for: font,
+                    textColor: textColor
+                )
+            )
+        }
+        
+        let mutable = NSMutableAttributedString(string: message.text, attributes: attributes(for: font, textColor: textColor))
+        
+        for entity in message.entities {
+            switch entity.entity {
+            case .bold(let messageEntityBold):
+                let boldFont = message.isIncome ? UltraCoreStyle.incomeMessageCell?.textBoldFont : UltraCoreStyle.outcomeMessageCell?.textBoldFont
+                mutable.addAttributes(
+                    [NSAttributedString.Key.font: boldFont ?? .boldSystemFont(ofSize: 17)],
+                    range: .init(location: Int(messageEntityBold.offset), length: Int(messageEntityBold.length))
+                )
+            case .italic(let messageEntityItalic):
+                let italicFont = message.isIncome ? UltraCoreStyle.incomeMessageCell?.textItalicFont : UltraCoreStyle.outcomeMessageCell?.textItalicFont
+                mutable.addAttributes(
+                    [NSAttributedString.Key.font: italicFont ?? .italicSystemFont(ofSize: 17)],
+                    range: .init(location: Int(messageEntityItalic.offset), length: Int(messageEntityItalic.length))
+                )
+            case .pre:
+                break
+            case .url(let messageEntityUrl):
+                let start = message.text.index(message.text.startIndex, offsetBy: Int(messageEntityUrl.offset))
+                let end = message.text.index(message.text.startIndex, offsetBy: Int(messageEntityUrl.offset + messageEntityUrl.length))
+                let substring = message.text[start..<end]
+                guard let URL = URL(string: String(substring)) else {
+                    break
+                }
+                
+                mutable.addAttribute(
+                    .link,
+                    value: URL,
+                    range: .init(location: Int(messageEntityUrl.offset), length: Int(messageEntityUrl.length))
+                )
+            case .textURL(let messageEntityTextUrl):
+                guard let URL = URL(string: messageEntityTextUrl.url) else {
+                    break
+                }
+                
+                mutable.addAttribute(
+                    .link, 
+                    value: URL,
+                    range: .init(location: Int(messageEntityTextUrl.offset), length: Int(messageEntityTextUrl.length))
+                )
+            case .email:
+                break
+            case .phone:
+                break
+            case .underline(let messageEntityUnderline):
+                mutable.addAttribute(
+                    .underlineStyle,
+                    value: NSUnderlineStyle.single.rawValue,
+                    range: .init(location: Int(messageEntityUnderline.offset), length: Int(messageEntityUnderline.length))
+                )
+            case .strike(let messageEntityStrike):
+                mutable.addAttribute(
+                    .strikethroughStyle,
+                    value: NSUnderlineStyle.single.rawValue,
+                    range: .init(location: Int(messageEntityStrike.offset), length: Int(messageEntityStrike.length))
+                )
+            case .quote:
+                break
+            case .mention:
+                break
+            case .code(let messageEntityCode):
+                let backgroundColor = message.isIncome ?
+                    UltraCoreStyle.incomeMessageCell?.codeSnippetBackgroundColor.color :
+                    UltraCoreStyle.outcomeMessageCell?.codeSnippetBackgroundColor.color
+                let codeColor = message.isIncome ?
+                    UltraCoreStyle.incomeMessageCell?.codeSnippetConfig.color :
+                    UltraCoreStyle.outcomeMessageCell?.codeSnippetConfig.color
+                let font = message.isIncome ?
+                    UltraCoreStyle.incomeMessageCell?.codeSnippetConfig.font : UltraCoreStyle.outcomeMessageCell?.codeSnippetConfig.font
+                mutable.addAttributes(
+                    [
+                        .backgroundColor: backgroundColor ?? .gray,
+                        .font: font ?? .systemFont(ofSize: 16, weight: .light),
+                        .foregroundColor: codeColor ?? .black
+                    ],
+                    range: .init(location: Int(messageEntityCode.offset), length: Int(messageEntityCode.length))
+                )
+            case .none:
+                break
+            }
+        }
+        
+        return mutable
     }
     
     private func attributes(for font: UIFont?, textColor: UIColor?) -> [NSAttributedString.Key : Any] {

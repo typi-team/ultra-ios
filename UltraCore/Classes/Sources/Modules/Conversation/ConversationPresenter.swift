@@ -684,6 +684,15 @@ extension ConversationPresenter: ConversationPresenterInterface {
         params.message.text = text
         params.message.id = UUID().uuidString
         params.message.meta.created = Date().nanosec
+//        let entities: [MessageEntity] = [
+//            MessageEntity.with({ entity in
+//                entity.entity = .code(.with {
+//                    $0.offset = 0
+//                    $0.length = Int32(text.count)
+//                })
+//            })
+//        ]
+//        params.message.entities = entities
         
         if let messageMeta = UltraCoreSettings.delegate?.getMessageMeta() {
             params.message.properties = messageMeta
@@ -697,6 +706,7 @@ extension ConversationPresenter: ConversationPresenterInterface {
             guard let self else { return }
             $0.userID = userID
         })
+//        message.entities = entities
         message.meta = .with({
             $0.created = Date().nanosec
         })
