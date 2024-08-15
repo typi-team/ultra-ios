@@ -10,6 +10,7 @@ import UIKit
 class SystemMessageCell: BaseCell {
     private let label: UILabel = .init {
         $0.textAlignment = .center
+        $0.numberOfLines = 0
     }
     
     override func setupView() {
