@@ -40,6 +40,11 @@ struct ListenRequest {
   /// if "true" then "local_state" will be ignored
   var onlyNewest: Bool = false
 
+  /// allows to listen other user's updates
+  /// in case user doesn't have access to do that then listen
+  /// will take user id from session
+  var userID: String = String()
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -108,6 +113,11 @@ struct GetUpdatesRequest {
 
   var maxState: UInt64 = 0
 
+  /// allows to fetch other user's updates
+  /// in case user doesn't have access to do that then 
+  /// user id will be taken from session
+  var userID: String = String()
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
@@ -152,6 +162,7 @@ extension ListenRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     1: .standard(proto: "local_state"),
     2: .standard(proto: "user_status"),
     3: .standard(proto: "only_newest"),
+    4: .standard(proto: "user_id"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -163,6 +174,7 @@ extension ListenRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       case 1: try { try decoder.decodeSingularMessageField(value: &self._localState) }()
       case 2: try { try decoder.decodeSingularEnumField(value: &self.userStatus) }()
       case 3: try { try decoder.decodeSingularBoolField(value: &self.onlyNewest) }()
+      case 4: try { try decoder.decodeSingularStringField(value: &self.userID) }()
       default: break
       }
     }
@@ -182,6 +194,9 @@ extension ListenRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if self.onlyNewest != false {
       try visitor.visitSingularBoolField(value: self.onlyNewest, fieldNumber: 3)
     }
+    if !self.userID.isEmpty {
+      try visitor.visitSingularStringField(value: self.userID, fieldNumber: 4)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -189,6 +204,7 @@ extension ListenRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     if lhs._localState != rhs._localState {return false}
     if lhs.userStatus != rhs.userStatus {return false}
     if lhs.onlyNewest != rhs.onlyNewest {return false}
+    if lhs.userID != rhs.userID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -318,6 +334,7 @@ extension GetUpdatesRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "minState"),
     2: .same(proto: "maxState"),
+    3: .standard(proto: "user_id"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -328,6 +345,7 @@ extension GetUpdatesRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularUInt64Field(value: &self.minState) }()
       case 2: try { try decoder.decodeSingularUInt64Field(value: &self.maxState) }()
+      case 3: try { try decoder.decodeSingularStringField(value: &self.userID) }()
       default: break
       }
     }
@@ -340,12 +358,16 @@ extension GetUpdatesRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if self.maxState != 0 {
       try visitor.visitSingularUInt64Field(value: self.maxState, fieldNumber: 2)
     }
+    if !self.userID.isEmpty {
+      try visitor.visitSingularStringField(value: self.userID, fieldNumber: 3)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: GetUpdatesRequest, rhs: GetUpdatesRequest) -> Bool {
     if lhs.minState != rhs.minState {return false}
     if lhs.maxState != rhs.maxState {return false}
+    if lhs.userID != rhs.userID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

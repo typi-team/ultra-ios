@@ -15,6 +15,7 @@ struct SupportOfficesResponse: Codable {
 
 struct SupportChat: Codable {
     let reception: Int
+    let receptionService: Int
     let name: String
     let avatarUrl: String?
 }

@@ -37,34 +37,75 @@ struct User {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var id: String = String()
+  var id: String {
+    get {return _storage._id}
+    set {_uniqueStorage()._id = newValue}
+  }
 
-  var nickname: String = String()
+  var nickname: String {
+    get {return _storage._nickname}
+    set {_uniqueStorage()._nickname = newValue}
+  }
 
-  var firstname: String = String()
+  var firstname: String {
+    get {return _storage._firstname}
+    set {_uniqueStorage()._firstname = newValue}
+  }
 
-  var lastname: String = String()
+  var lastname: String {
+    get {return _storage._lastname}
+    set {_uniqueStorage()._lastname = newValue}
+  }
 
-  var phone: String = String()
+  var phone: String {
+    get {return _storage._phone}
+    set {_uniqueStorage()._phone = newValue}
+  }
 
   var photo: Photo {
-    get {return _photo ?? Photo()}
-    set {_photo = newValue}
+    get {return _storage._photo ?? Photo()}
+    set {_uniqueStorage()._photo = newValue}
   }
   /// Returns true if `photo` has been explicitly set.
-  var hasPhoto: Bool {return self._photo != nil}
+  var hasPhoto: Bool {return _storage._photo != nil}
   /// Clears the value of `photo`. Subsequent reads from it will return its default value.
-  mutating func clearPhoto() {self._photo = nil}
+  mutating func clearPhoto() {_uniqueStorage()._photo = nil}
 
-  var unread: UInt64 = 0
+  var unread: UInt64 {
+    get {return _storage._unread}
+    set {_uniqueStorage()._unread = newValue}
+  }
 
-  var isBlocked: Bool = false
+  var isBlocked: Bool {
+    get {return _storage._isBlocked}
+    set {_uniqueStorage()._isBlocked = newValue}
+  }
+
+  var type: UserTypeEnum {
+    get {return _storage._type}
+    set {_uniqueStorage()._type = newValue}
+  }
+
+  var group: String {
+    get {return _storage._group}
+    set {_uniqueStorage()._group = newValue}
+  }
+
+  var supportReceptions: [String] {
+    get {return _storage._supportReceptions}
+    set {_uniqueStorage()._supportReceptions = newValue}
+  }
+
+  var reception: String {
+    get {return _storage._reception}
+    set {_uniqueStorage()._reception = newValue}
+  }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
-  fileprivate var _photo: Photo? = nil
+  fileprivate var _storage = _StorageClass.defaultInstance
 }
 
 struct UserStatus {
@@ -137,68 +178,146 @@ extension User: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase,
     6: .same(proto: "photo"),
     7: .same(proto: "unread"),
     8: .standard(proto: "is_blocked"),
+    9: .same(proto: "type"),
+    10: .same(proto: "group"),
+    11: .same(proto: "supportReceptions"),
+    12: .same(proto: "reception"),
   ]
 
+  fileprivate class _StorageClass {
+    var _id: String = String()
+    var _nickname: String = String()
+    var _firstname: String = String()
+    var _lastname: String = String()
+    var _phone: String = String()
+    var _photo: Photo? = nil
+    var _unread: UInt64 = 0
+    var _isBlocked: Bool = false
+    var _type: UserTypeEnum = .userTypeUnknown
+    var _group: String = String()
+    var _supportReceptions: [String] = []
+    var _reception: String = String()
+
+    static let defaultInstance = _StorageClass()
+
+    private init() {}
+
+    init(copying source: _StorageClass) {
+      _id = source._id
+      _nickname = source._nickname
+      _firstname = source._firstname
+      _lastname = source._lastname
+      _phone = source._phone
+      _photo = source._photo
+      _unread = source._unread
+      _isBlocked = source._isBlocked
+      _type = source._type
+      _group = source._group
+      _supportReceptions = source._supportReceptions
+      _reception = source._reception
+    }
+  }
+
+  fileprivate mutating func _uniqueStorage() -> _StorageClass {
+    if !isKnownUniquelyReferenced(&_storage) {
+      _storage = _StorageClass(copying: _storage)
+    }
+    return _storage
+  }
+
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    while let fieldNumber = try decoder.nextFieldNumber() {
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every case branch when no optimizations are
-      // enabled. https://github.com/apple/swift-protobuf/issues/1034
-      switch fieldNumber {
-      case 1: try { try decoder.decodeSingularStringField(value: &self.id) }()
-      case 2: try { try decoder.decodeSingularStringField(value: &self.nickname) }()
-      case 3: try { try decoder.decodeSingularStringField(value: &self.firstname) }()
-      case 4: try { try decoder.decodeSingularStringField(value: &self.lastname) }()
-      case 5: try { try decoder.decodeSingularStringField(value: &self.phone) }()
-      case 6: try { try decoder.decodeSingularMessageField(value: &self._photo) }()
-      case 7: try { try decoder.decodeSingularUInt64Field(value: &self.unread) }()
-      case 8: try { try decoder.decodeSingularBoolField(value: &self.isBlocked) }()
-      default: break
+    _ = _uniqueStorage()
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      while let fieldNumber = try decoder.nextFieldNumber() {
+        // The use of inline closures is to circumvent an issue where the compiler
+        // allocates stack space for every case branch when no optimizations are
+        // enabled. https://github.com/apple/swift-protobuf/issues/1034
+        switch fieldNumber {
+        case 1: try { try decoder.decodeSingularStringField(value: &_storage._id) }()
+        case 2: try { try decoder.decodeSingularStringField(value: &_storage._nickname) }()
+        case 3: try { try decoder.decodeSingularStringField(value: &_storage._firstname) }()
+        case 4: try { try decoder.decodeSingularStringField(value: &_storage._lastname) }()
+        case 5: try { try decoder.decodeSingularStringField(value: &_storage._phone) }()
+        case 6: try { try decoder.decodeSingularMessageField(value: &_storage._photo) }()
+        case 7: try { try decoder.decodeSingularUInt64Field(value: &_storage._unread) }()
+        case 8: try { try decoder.decodeSingularBoolField(value: &_storage._isBlocked) }()
+        case 9: try { try decoder.decodeSingularEnumField(value: &_storage._type) }()
+        case 10: try { try decoder.decodeSingularStringField(value: &_storage._group) }()
+        case 11: try { try decoder.decodeRepeatedStringField(value: &_storage._supportReceptions) }()
+        case 12: try { try decoder.decodeSingularStringField(value: &_storage._reception) }()
+        default: break
+        }
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every if/case branch local when no optimizations
-    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-    // https://github.com/apple/swift-protobuf/issues/1182
-    if !self.id.isEmpty {
-      try visitor.visitSingularStringField(value: self.id, fieldNumber: 1)
-    }
-    if !self.nickname.isEmpty {
-      try visitor.visitSingularStringField(value: self.nickname, fieldNumber: 2)
-    }
-    if !self.firstname.isEmpty {
-      try visitor.visitSingularStringField(value: self.firstname, fieldNumber: 3)
-    }
-    if !self.lastname.isEmpty {
-      try visitor.visitSingularStringField(value: self.lastname, fieldNumber: 4)
-    }
-    if !self.phone.isEmpty {
-      try visitor.visitSingularStringField(value: self.phone, fieldNumber: 5)
-    }
-    try { if let v = self._photo {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
-    } }()
-    if self.unread != 0 {
-      try visitor.visitSingularUInt64Field(value: self.unread, fieldNumber: 7)
-    }
-    if self.isBlocked != false {
-      try visitor.visitSingularBoolField(value: self.isBlocked, fieldNumber: 8)
+    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every if/case branch local when no optimizations
+      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+      // https://github.com/apple/swift-protobuf/issues/1182
+      if !_storage._id.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._id, fieldNumber: 1)
+      }
+      if !_storage._nickname.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._nickname, fieldNumber: 2)
+      }
+      if !_storage._firstname.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._firstname, fieldNumber: 3)
+      }
+      if !_storage._lastname.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._lastname, fieldNumber: 4)
+      }
+      if !_storage._phone.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._phone, fieldNumber: 5)
+      }
+      try { if let v = _storage._photo {
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
+      } }()
+      if _storage._unread != 0 {
+        try visitor.visitSingularUInt64Field(value: _storage._unread, fieldNumber: 7)
+      }
+      if _storage._isBlocked != false {
+        try visitor.visitSingularBoolField(value: _storage._isBlocked, fieldNumber: 8)
+      }
+      if _storage._type != .userTypeUnknown {
+        try visitor.visitSingularEnumField(value: _storage._type, fieldNumber: 9)
+      }
+      if !_storage._group.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._group, fieldNumber: 10)
+      }
+      if !_storage._supportReceptions.isEmpty {
+        try visitor.visitRepeatedStringField(value: _storage._supportReceptions, fieldNumber: 11)
+      }
+      if !_storage._reception.isEmpty {
+        try visitor.visitSingularStringField(value: _storage._reception, fieldNumber: 12)
+      }
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: User, rhs: User) -> Bool {
-    if lhs.id != rhs.id {return false}
-    if lhs.nickname != rhs.nickname {return false}
-    if lhs.firstname != rhs.firstname {return false}
-    if lhs.lastname != rhs.lastname {return false}
-    if lhs.phone != rhs.phone {return false}
-    if lhs._photo != rhs._photo {return false}
-    if lhs.unread != rhs.unread {return false}
-    if lhs.isBlocked != rhs.isBlocked {return false}
+    if lhs._storage !== rhs._storage {
+      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
+        let _storage = _args.0
+        let rhs_storage = _args.1
+        if _storage._id != rhs_storage._id {return false}
+        if _storage._nickname != rhs_storage._nickname {return false}
+        if _storage._firstname != rhs_storage._firstname {return false}
+        if _storage._lastname != rhs_storage._lastname {return false}
+        if _storage._phone != rhs_storage._phone {return false}
+        if _storage._photo != rhs_storage._photo {return false}
+        if _storage._unread != rhs_storage._unread {return false}
+        if _storage._isBlocked != rhs_storage._isBlocked {return false}
+        if _storage._type != rhs_storage._type {return false}
+        if _storage._group != rhs_storage._group {return false}
+        if _storage._supportReceptions != rhs_storage._supportReceptions {return false}
+        if _storage._reception != rhs_storage._reception {return false}
+        return true
+      }
+      if !storagesAreEqual {return false}
+    }
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

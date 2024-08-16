@@ -36,37 +36,39 @@ struct GetMeResponse {
   // methods supported on all messages.
 
   var user: User {
-    get {return _storage._user ?? User()}
-    set {_uniqueStorage()._user = newValue}
+    get {return _user ?? User()}
+    set {_user = newValue}
   }
   /// Returns true if `user` has been explicitly set.
-  var hasUser: Bool {return _storage._user != nil}
+  var hasUser: Bool {return self._user != nil}
   /// Clears the value of `user`. Subsequent reads from it will return its default value.
-  mutating func clearUser() {_uniqueStorage()._user = nil}
+  mutating func clearUser() {self._user = nil}
 
   var status: UserStatus {
-    get {return _storage._status ?? UserStatus()}
-    set {_uniqueStorage()._status = newValue}
+    get {return _status ?? UserStatus()}
+    set {_status = newValue}
   }
   /// Returns true if `status` has been explicitly set.
-  var hasStatus: Bool {return _storage._status != nil}
+  var hasStatus: Bool {return self._status != nil}
   /// Clears the value of `status`. Subsequent reads from it will return its default value.
-  mutating func clearStatus() {_uniqueStorage()._status = nil}
+  mutating func clearStatus() {self._status = nil}
 
   var impersonatedUser: User {
-    get {return _storage._impersonatedUser ?? User()}
-    set {_uniqueStorage()._impersonatedUser = newValue}
+    get {return _impersonatedUser ?? User()}
+    set {_impersonatedUser = newValue}
   }
   /// Returns true if `impersonatedUser` has been explicitly set.
-  var hasImpersonatedUser: Bool {return _storage._impersonatedUser != nil}
+  var hasImpersonatedUser: Bool {return self._impersonatedUser != nil}
   /// Clears the value of `impersonatedUser`. Subsequent reads from it will return its default value.
-  mutating func clearImpersonatedUser() {_uniqueStorage()._impersonatedUser = nil}
+  mutating func clearImpersonatedUser() {self._impersonatedUser = nil}
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
-  fileprivate var _storage = _StorageClass.defaultInstance
+  fileprivate var _user: User? = nil
+  fileprivate var _status: UserStatus? = nil
+  fileprivate var _impersonatedUser: User? = nil
 }
 
 /// user_id or phone must be provided
@@ -263,77 +265,41 @@ extension GetMeResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     3: .standard(proto: "impersonated_user"),
   ]
 
-  fileprivate class _StorageClass {
-    var _user: User? = nil
-    var _status: UserStatus? = nil
-    var _impersonatedUser: User? = nil
-
-    static let defaultInstance = _StorageClass()
-
-    private init() {}
-
-    init(copying source: _StorageClass) {
-      _user = source._user
-      _status = source._status
-      _impersonatedUser = source._impersonatedUser
-    }
-  }
-
-  fileprivate mutating func _uniqueStorage() -> _StorageClass {
-    if !isKnownUniquelyReferenced(&_storage) {
-      _storage = _StorageClass(copying: _storage)
-    }
-    return _storage
-  }
-
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
-    _ = _uniqueStorage()
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      while let fieldNumber = try decoder.nextFieldNumber() {
-        // The use of inline closures is to circumvent an issue where the compiler
-        // allocates stack space for every case branch when no optimizations are
-        // enabled. https://github.com/apple/swift-protobuf/issues/1034
-        switch fieldNumber {
-        case 1: try { try decoder.decodeSingularMessageField(value: &_storage._user) }()
-        case 2: try { try decoder.decodeSingularMessageField(value: &_storage._status) }()
-        case 3: try { try decoder.decodeSingularMessageField(value: &_storage._impersonatedUser) }()
-        default: break
-        }
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._user) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._status) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._impersonatedUser) }()
+      default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      // The use of inline closures is to circumvent an issue where the compiler
-      // allocates stack space for every if/case branch local when no optimizations
-      // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
-      // https://github.com/apple/swift-protobuf/issues/1182
-      try { if let v = _storage._user {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-      } }()
-      try { if let v = _storage._status {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-      } }()
-      try { if let v = _storage._impersonatedUser {
-        try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-      } }()
-    }
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._user {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try { if let v = self._status {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+    } }()
+    try { if let v = self._impersonatedUser {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: GetMeResponse, rhs: GetMeResponse) -> Bool {
-    if lhs._storage !== rhs._storage {
-      let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
-        let _storage = _args.0
-        let rhs_storage = _args.1
-        if _storage._user != rhs_storage._user {return false}
-        if _storage._status != rhs_storage._status {return false}
-        if _storage._impersonatedUser != rhs_storage._impersonatedUser {return false}
-        return true
-      }
-      if !storagesAreEqual {return false}
-    }
+    if lhs._user != rhs._user {return false}
+    if lhs._status != rhs._status {return false}
+    if lhs._impersonatedUser != rhs._impersonatedUser {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

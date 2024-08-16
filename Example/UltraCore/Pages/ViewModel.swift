@@ -239,11 +239,13 @@ extension ViewModel: UltraCoreSettingsDelegate {
             "supportChats": [
                 [
                   "reception": 32,
+                  "receptionService": 32,
                   "name": "Цифра Брокер",
                   "avatarUrl": "https://tradernet.ru/data/images/receptions_settings/file-6645cb72a5d69.png"
                 ],
                 [
                   "reception": 36,
+                  "receptionService": 36,
                   "name": "FF Казахстан",
                   "avatarUrl": nil
                 ]
