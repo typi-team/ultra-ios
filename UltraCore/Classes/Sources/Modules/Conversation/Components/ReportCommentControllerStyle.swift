@@ -22,7 +22,7 @@ public protocol ReportCommentControllerStyle {
 class ReportCommentControllerStyleImpl: ReportCommentControllerStyle {
     var backgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .gray100, darkColor: .gray100)
     
-    var headlineImage: TwiceImage = TwiceImageImpl(dark: .fromAssets( "conversation.report.placeholder")!, default: .fromAssets("conversation.report.placeholder")!)
+    var headlineImage: TwiceImage = TwiceImageImpl(dark: .fromAssets( "conversation.report.placeholder"), default: .fromAssets("conversation.report.placeholder"))
     
     var headlineConfig: LabelConfig = LabelConfigImpl.init(darkColor: .white, defaultColor: .gray700,
                                                         font: .defaultRegularCallout,
@@ -36,7 +36,7 @@ class ReportCommentControllerStyleImpl: ReportCommentControllerStyle {
     
     var textFieldBackgroundColor: TwiceColor = TwiceColorImpl(defaultColor: .white, darkColor: .clear)
     
-    var textFieldEraseImage: TwiceImage = TwiceImageImpl(dark: .named("conversation_erase")!, default: .named("conversation_erase")!)
+    var textFieldEraseImage: TwiceImage = TwiceImageImpl(dark: .named("conversation_erase"), default: .named("conversation_erase"))
     
     var reportButtonConfig: ElevatedButtonStyle = ElevatedButtonStyleImpl()
     

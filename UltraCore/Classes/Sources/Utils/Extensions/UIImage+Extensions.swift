@@ -100,7 +100,10 @@ extension UIImage {
 
         guard let outputImage = lanczosFilter.outputImage else { return nil }
         let context = CIContext(options: [CIContextOption.useSoftwareRenderer: false])
-        let scaledImage = UIImage(cgImage: context.createCGImage(outputImage, from: outputImage.extent)!)
+        guard let cgImage = context.createCGImage(outputImage, from: outputImage.extent) else {
+            return nil
+        }
+        let scaledImage = UIImage(cgImage: cgImage)
 
         return scaledImage
     }

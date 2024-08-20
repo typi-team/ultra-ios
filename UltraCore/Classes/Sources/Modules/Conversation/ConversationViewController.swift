@@ -216,9 +216,12 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
     }
     
     override func setupInitialData() {
+        guard let presenter = presenter else {
+            return
+        }
         super.setupInitialData()
         NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground(_:)), name: UIApplication.didEnterBackgroundNotification, object: nil)
-        let sharedMessages = presenter!.messages
+        let sharedMessages = presenter.messages
             .distinctUntilChanged()
             .do { [weak self] messages in
                 if messages.isEmpty {
@@ -265,9 +268,9 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             .disposed(by: disposeBag)
         
         self.presenter?.viewDidLoad()
-        messageInputBar.canSendAttachments = presenter?.canAttach() ?? true
-        messageInputBar.canSendMoney = presenter?.canTransfer() ?? true
-        messageInputBar.canRecord = presenter?.canSendVoice() ?? true
+        messageInputBar.canSendAttachments = presenter.canAttach()
+        messageInputBar.canSendMoney = presenter.canTransfer()
+        messageInputBar.canRecord = presenter.canSendVoice()
         subscribeToInputBoundsChange()
     }
     
@@ -455,7 +458,10 @@ extension ConversationViewController: ConversationViewInterface {
     }
     func display(is typing: UserTypingWithDate) {
         self.headline.setup(user: typing)
-        if presenter!.conversation.isAssistant {
+        guard let presenter = presenter else {
+            return
+        }
+        if presenter.conversation.isAssistant {
             messageInputBar.isEnabled = !typing.isTyping
         }
     }
@@ -575,7 +581,7 @@ private extension ConversationViewController {
         controller.delegate = self
         controller.sourceType = type
         controller.videoQuality = .typeHigh
-        if presenter!.canSendVideo() {
+        if presenter?.canSendVideo() ?? false {
             controller.mediaTypes = ["public.movie", "public.image"]
             controller.videoMaximumDuration = 300
         } else {
@@ -713,11 +719,16 @@ extension ConversationViewController {
     
     func cell(_ message: Message, in tableView: UITableView) -> BaseMessageCell {
         
-        if presenter?.isGroupChat() ?? false && message.isIncome {
-            let contact = presenter?.getContact(for: message.sender.userID)
+        guard let presenter = presenter else {
+            let cell: BaseMessageCell = tableView.dequeueCell()
+            return cell
+        }
+        
+        if presenter.isGroupChat() && message.isIncome {
+            let contact = presenter.getContact(for: message.sender.userID)
             guard let content = message.content else {
                 let cell: GroupIncomeMessageCell = tableView.dequeueCell()
-                cell.setup(conversation: presenter!.conversation)
+                cell.setup(conversation: presenter.conversation)
                 cell.setup(message: message)
                 return cell
             }
@@ -725,43 +736,43 @@ extension ConversationViewController {
             switch content {
             case .photo:
                 let cell: GroupIncomePhotoCell = tableView.dequeueCell()
-                cell.setup(conversation: presenter!.conversation)
+                cell.setup(conversation: presenter.conversation)
                 cell.setup(message: message)
                 return cell
             case .video:
                 let cell: GroupIncomingVideoCell = tableView.dequeueCell()
-                cell.setup(conversation: presenter!.conversation)
+                cell.setup(conversation: presenter.conversation)
                 cell.setup(message: message)
                 return cell
             case .money:
                 let cell: GroupIncomeMoneyCell = tableView.dequeueCell()
-                cell.setup(conversation: presenter!.conversation)
+                cell.setup(conversation: presenter.conversation)
                 cell.setup(message: message)
                 return cell
             case .file:
                 let cell: GroupIncomeFileCell = tableView.dequeueCell()
-                cell.setup(conversation: presenter!.conversation)
+                cell.setup(conversation: presenter.conversation)
                 cell.setup(message: message)
                 return cell
             case .location:
                 let cell: GroupIncomeLocationCell = tableView.dequeueCell()
-                cell.setup(conversation: presenter!.conversation)
+                cell.setup(conversation: presenter.conversation)
                 cell.setup(message: message)
                 return cell
             case .contact:
                 let cell: GroupIncomeContactCell = tableView.dequeueCell()
-                cell.setup(conversation: presenter!.conversation)
+                cell.setup(conversation: presenter.conversation)
                 cell.setup(message: message)
                 return cell
             case .voice:
                 let cell: GroupIncomeVoiceCell = tableView.dequeueCell()
-                cell.setup(conversation: presenter!.conversation)
+                cell.setup(conversation: presenter.conversation)
                 cell.setup(message: message)
                 return cell
             default:
                 let cell: GroupIncomeMessageCell = tableView.dequeueCell()
                 cell.setup(message: message)
-                cell.setup(conversation: presenter!.conversation)
+                cell.setup(conversation: presenter.conversation)
                 return cell
             }
         }

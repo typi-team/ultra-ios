@@ -43,7 +43,9 @@ extension Date {
     
     func formattedTimeForConversationCell() -> String {
         let calendar = Calendar.current
-        let sevenDaysAgo = calendar.date(byAdding: .day, value: -7, to: Date())!
+        guard let sevenDaysAgo = calendar.date(byAdding: .day, value: -7, to: Date()) else {
+            return ""
+        }
         let formatter = DateFormatter()
         formatter.locale = UltraCoreSettings.appLocale
         if calendar.isDateInToday(self) {

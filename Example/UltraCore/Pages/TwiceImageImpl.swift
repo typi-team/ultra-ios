@@ -9,7 +9,7 @@
 import UltraCore
 
 struct TwiceImageImpl: TwiceImage {
-    var dark: UIImage
-    var `default`: UIImage
+    var dark: UIImage?
+    var `default`: UIImage?
 }
 

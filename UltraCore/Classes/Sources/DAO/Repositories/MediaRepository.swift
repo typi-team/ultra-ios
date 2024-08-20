@@ -60,7 +60,11 @@ extension MediaRepositoryImpl: MediaRepository {
     
     
     func isUploading(from message: Message) -> Bool {
-        return try! self.uploadingMedias.value().contains(where: { $0.fileID == message.fileID })
+        guard let medias = try? uploadingMedias.value() else {
+            return false
+        }
+
+        return medias.contains(where: { $0.fileID == message.fileID })
     }
 
     func upload(
@@ -93,9 +97,11 @@ extension MediaRepositoryImpl: MediaRepository {
     }
     
     func download(from message: Message) -> Single<Message> {
-        var inProgressValues = try! downloadingImages.value()
-        guard let fileID = message.fileID,
-              !inProgressValues.contains(where: {$0.fileID == fileID}) else {
+        guard 
+            var inProgressValues = try? downloadingImages.value(),
+            let fileID = message.fileID,
+            !inProgressValues.contains(where: {$0.fileID == fileID}) else 
+        {
             return Single.just(message)
         }
 

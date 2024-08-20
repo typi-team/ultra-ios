@@ -67,7 +67,10 @@ extension UIViewController {
         let alert = UIAlertController.init(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction.init(title: BaseStrings.close.localized, style: .cancel))
         alert.addAction(UIAlertAction.init(title: BaseStrings.settings.localized, style: .default, handler: { _ in
-            UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!, options: [:], completionHandler: nil)
+            guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else {
+                return
+            }
+            UIApplication.shared.open(settingsURL, options: [:], completionHandler: nil)
         }))
         self.present(alert, animated: true)
     }

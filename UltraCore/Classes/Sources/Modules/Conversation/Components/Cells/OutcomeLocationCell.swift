@@ -76,9 +76,9 @@ class OutcomeLocationCell: BaseMessageCell {
                 let image = snapshot.image
                 let point = snapshot.point(for: locationCoordinate)
                 if let pinImage = UltraCoreStyle.outcomeMessageCell?.locationPinImage {
-                    let pinPoint = CGPoint(x: point.x - (pinImage.image.size.width / 2), y: point.y - (pinImage.image.size.height / 2))
+                    let pinPoint = CGPoint(x: point.x - (pinImage.image?.size.width ?? 0.0 / 2), y: point.y - (pinImage.image?.size.height ?? 0.0 / 2))
                     image.draw(at: pinPoint, blendMode: .normal, alpha: 1.0)
-                    pinImage.image.draw(at: pinPoint, blendMode: .normal, alpha: 1.0)
+                    pinImage.image?.draw(at: pinPoint, blendMode: .normal, alpha: 1.0)
                 }
                 SDImageCache.shared.store(image, forKey: message.location.locationID, toDisk: true, completion: nil)
 

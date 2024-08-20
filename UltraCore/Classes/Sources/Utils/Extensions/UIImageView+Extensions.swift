@@ -12,7 +12,7 @@ extension UIImageView {
     enum PlaceholderType {
         case oval, rounded, square
         case initial(text: String)
-        case placeholder(image:UIImage)
+        case placeholder(image: UIImage?)
     }
 
     func set(contact: ContactDisplayable, placeholder: UIImage?) {
@@ -20,7 +20,7 @@ extension UIImageView {
         if let path = UltraCoreSettings.delegate?.info(from: contact.phone)?.imagePath?.url ?? contact.imagePath?.url {
             self.sd_setImage(with: path, placeholderImage: placeholder)
         } else {
-            let enumPlace: PlaceholderType = placeholder == nil ? .initial(text: contact.displaName.initails) : .placeholder(image: placeholder!)
+            let enumPlace: PlaceholderType = placeholder == nil ? .initial(text: contact.displaName.initails) : .placeholder(image: placeholder)
             self.set(placeholder: enumPlace)
         }
     }

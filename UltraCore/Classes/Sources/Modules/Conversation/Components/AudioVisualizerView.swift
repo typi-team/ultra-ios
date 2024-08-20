@@ -10,7 +10,7 @@ import AVFoundation
 class AudioVisualizerView: UIView {
     
     private var wavePowers: [Float] = []
-    private var waveformLayer: CAShapeLayer!
+    private var waveformLayer: CAShapeLayer?
     fileprivate var internalLineWidth: CGFloat = 2.0
     fileprivate var internalLineSeperation: CGFloat = 1.0
     
@@ -38,7 +38,7 @@ class AudioVisualizerView: UIView {
     
     func clearWaves() {
         self.wavePowers = []
-        self.waveformLayer.sublayers?.forEach({ $0.removeFromSuperlayer() })
+        self.waveformLayer?.sublayers?.forEach({ $0.removeFromSuperlayer() })
     }
 }
 
@@ -78,7 +78,7 @@ private extension AudioVisualizerView {
     }
 
     func updateWaveform(wavePowers: [Float]) {
-        self.waveformLayer.sublayers?.forEach({ $0.removeFromSuperlayer() })
+        self.waveformLayer?.sublayers?.forEach({ $0.removeFromSuperlayer() })
         let spacing: CGFloat = 1.0
         let columnWidth: CGFloat = 3.0
         let columnCount = wavePowers.count
@@ -92,7 +92,7 @@ private extension AudioVisualizerView {
             let y = self.bounds.height - columnHeight
 
             let columnLayer = createColumnLayer(at: CGPoint(x: x, y: y), height: columnHeight, width: columnWidth)
-            self.waveformLayer.addSublayer(columnLayer)
+            self.waveformLayer?.addSublayer(columnLayer)
         }
     }
 
@@ -110,6 +110,8 @@ private extension AudioVisualizerView {
         self.clipsToBounds = true
         self.backgroundColor = .clear
         self.waveformLayer = createWaveformLayer(position: CGPoint(x: frame.width / 2, y: frame.height / 2), width: frame.width)
-        self.layer.addSublayer(waveformLayer)
+        if waveformLayer != nil {
+            self.layer.addSublayer(waveformLayer!)
+        }
     }
 }

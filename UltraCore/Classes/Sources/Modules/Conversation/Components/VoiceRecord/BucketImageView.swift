@@ -14,9 +14,9 @@ protocol AnimationFinishedDelegate: AnyObject {
 
 class BucketImageView: UIImageView, CAAnimationDelegate {
 
-    var smallMicImage: UIImage! {
+    var smallMicImage: UIImage? {
         didSet {
-            micLayer.contents = smallMicImage.cgImage
+            micLayer.contents = smallMicImage?.cgImage
         }
     }
 
@@ -84,7 +84,7 @@ class BucketImageView: UIImageView, CAAnimationDelegate {
 
         self.micLayer.frame = CGRect(x: 0, y: 0, width: 25, height: 25)
         self.micLayer.bounds = CGRect(x: 0, y: 0, width: 25, height: 25)
-        self.micLayer.contents = smallMicImage.cgImage
+        self.micLayer.contents = smallMicImage?.cgImage
 
         //align bucket below the mic to be invisible
         self.bucketContainerLayer.frame = micLayer.frame.offsetBy(dx: 5, dy: 200)

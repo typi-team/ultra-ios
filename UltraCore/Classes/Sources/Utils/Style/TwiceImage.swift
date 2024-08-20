@@ -8,14 +8,14 @@
 import UIKit
 
 public protocol TwiceImage {
-    var `default`: UIImage { get set }
-    var dark: UIImage { get set }
+    var `default`: UIImage? { get set }
+    var dark: UIImage? { get set }
 
-    var image: UIImage { get }
+    var image: UIImage? { get }
 }
 
 public extension TwiceImage {
-    var image: UIImage {
+    var image: UIImage? {
         if #available(iOS 12.0, *) {
             switch UIScreen.main.traitCollection.userInterfaceStyle {
             case .dark:
@@ -32,6 +32,6 @@ public extension TwiceImage {
 }
 
 struct TwiceImageImpl: TwiceImage {
-    var dark: UIImage
-    var `default`: UIImage
+    var dark: UIImage?
+    var `default`: UIImage?
 }

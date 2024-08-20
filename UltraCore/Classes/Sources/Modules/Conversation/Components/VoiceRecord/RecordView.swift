@@ -276,11 +276,13 @@ public class RecordView: UIView, CAAnimationDelegate {
     //this will be called when user starts to move his finger
     func touchMoved(recordButton: RecordButton, sender: UIPanGestureRecognizer) {
 
-        guard !isSwiped else {
+        guard 
+            !isSwiped,
+            let button = sender.view
+        else {
             return
         }
 
-        let button = sender.view!
         let translation = sender.translation(in: button)
 
         switch sender.state {
