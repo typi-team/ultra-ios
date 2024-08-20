@@ -632,7 +632,7 @@ extension ConversationViewController: (UIImagePickerControllerDelegate & UINavig
 
 extension ConversationViewController: QLPreviewControllerDataSource  {
     func numberOfPreviewItems(in controller: QLPreviewController) -> Int {
-        return 1
+        return mediaItem == nil ? 0 : 1
     }
     
     func previewController(_ controller: QLPreviewController, previewItemAt index: Int) -> QLPreviewItem {

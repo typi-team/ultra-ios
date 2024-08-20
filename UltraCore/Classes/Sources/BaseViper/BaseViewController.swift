@@ -102,7 +102,7 @@ extension UIViewController {
         animationDuration: Double,
         animationOptions: UIView.AnimationOptions
     ) {
-        fatalError("implement this methode")
+        PP.error("Changed Keyboard not implemented")
     }
 
     @objc func keyboardWillHide(notification: NSNotification) {
@@ -123,7 +123,7 @@ extension UIViewController {
     }
     
     @objc func textFieldDidChange(_ sender: UITextField) {
-        fatalError("implement this methode")
+        PP.error("TextFieldDidChange Keyboard not implemented")
     }
 
     @objc func debugInitialData() {

@@ -34,7 +34,8 @@ class PermissionStateView: UIView {
     }
     
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        self.data = .init(imageName: "", headline: "", subline: "")
+        super.init(coder: coder)
     }
     
     fileprivate lazy var subline: RegularFootnote = .init({

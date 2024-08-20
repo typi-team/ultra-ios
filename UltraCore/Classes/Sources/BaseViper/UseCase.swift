@@ -3,17 +3,21 @@ import RxSwift
 
 class UseCase<P, R> {
     func execute(params: P) -> Observable<R> {
-        fatalError("execute(params:) has not been implemented")
+        PP.error("execute(params:) has not been implemented")
+        return .error(NSError.objectsIsNill)
     }
     func executeCompletable(params: P) -> Completable {
-        fatalError("executeCompletable(params:) has not been implemented")
+        PP.error("executeCompletable(params:) has not been implemented")
+        return .error(NSError.objectsIsNill)
     }
     func executeSingle(params: P) -> Single<R> {
-        fatalError("executeSingle(params:) has not been implemented")
+        PP.error("executeSingle(params:) has not been implemented")
+        return .error(NSError.objectsIsNill)
     }
 
     func executeMaybe(params: P) -> Maybe<R> {
-        fatalError("executeMaybe(params:) has not been implemented")
+        PP.error("executeMaybe(params:) has not been implemented")
+        return .error(NSError.objectsIsNill)
     }
     
     deinit {

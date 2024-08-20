@@ -36,7 +36,7 @@ class ElevatedButton: UIButton {
     }
     
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: coder)
     }
     
     func setupView() {
@@ -55,7 +55,7 @@ class TextButton: UIButton {
     }
 
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        super.init(coder: coder)
     }
 
     func setupView() {

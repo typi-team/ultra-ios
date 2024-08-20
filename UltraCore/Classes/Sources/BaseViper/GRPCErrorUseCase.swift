@@ -28,7 +28,8 @@ class GRPCErrorUseCase<P, R> {
     }
     
     func job(params: P) -> Single<R> {
-        fatalError("job(params:) has not been implemented")
+        PP.error("job(params:) has not been implemented")
+        return Single.error(NSError.objectsIsNill)
     }
     
     private func handleGRPC(error: Error) -> Single<Void> {
