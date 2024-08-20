@@ -66,6 +66,8 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         tableView.registerCell(type: GroupIncomeVoiceCell.self)
         tableView.registerCell(type: GroupIncomePhotoCell.self)
         tableView.registerCell(type: GroupIncomingVideoCell.self)
+        tableView.registerCell(type: IncomeCallCell.self)
+        tableView.registerCell(type: OutcomeCallCell.self)
         tableView.addGestureRecognizer(dismissKeyboardGesture)
         tableView.contentInset = .zero
     }
@@ -873,9 +875,16 @@ extension ConversationViewController {
         case .coin(_):
             let cell: BaseMessageCell = tableView.dequeueCell()
              return cell
-        case .call(_):
-            let cell: BaseMessageCell = tableView.dequeueCell()
-            return cell
+        case .call(let callMessage):
+            if message.isIncome {
+                let cell: IncomeCallCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            } else {
+                let cell: OutcomeCallCell = tableView.dequeueCell()
+                cell.setup(message: message)
+                return cell
+            }
         }
     }
     

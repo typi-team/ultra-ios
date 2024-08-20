@@ -127,7 +127,7 @@ class MessageDBService {
                 return Disposables.create()
             }
             let messages = realm.objects(DBMessage.self).where { $0.receiver.chatID.equals(chatID) }
-            let notificationKey = messages.observe(keyPaths: ["id", "text", "systemActionType", "state.read", "state.delivered", "state.edited"]) { changes in
+            let notificationKey = messages.observe(keyPaths: ["id", "text", "systemActionType", "state.read", "state.delivered", "state.edited", "callMessage.status"]) { changes in
                 switch changes {
                 case let .initial(collection):
                     observer.on(.next(collection.map({$0.toProto()})))
@@ -301,6 +301,24 @@ class MessageDBService {
 
             return Disposables.create()
         })
+    }
+    
+    func updateCall(_ call: Call) {
+        let realm = Realm.myRealm()
+        if let callDB = realm.object(ofType: DBCallMessage.self, forPrimaryKey: call.room),
+           let dbMessage = realm.objects(DBMessage.self).first(where: { $0.callMessage?.room == call.room })
+        {
+            do {
+                try realm.write {
+                    callDB.endTime = call.endTime
+                    callDB.startTime = call.startTime
+                    callDB.status = call.status.rawValue
+                }
+            }
+            catch {
+                PP.error("Failed to update call - \(call)")
+            }
+        }
     }
     
     func save(messages: [Message]) -> Single<Void> {

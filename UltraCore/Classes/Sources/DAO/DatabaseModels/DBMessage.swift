@@ -26,6 +26,7 @@ class DBMessage: Object {
     @objc dynamic var moneyMessage: DBMoneyMessage?
     @objc dynamic var contactMessage: DBContactMessage?
     @objc dynamic var locationMessage: DBLocationMessage?
+    @objc dynamic var callMessage: DBCallMessage?
     @objc dynamic var supportManagerAssigned: DBSystemActionSupportManagerAssigned?
     @objc dynamic var supportStatusChanged: DBSystemActionSupportStatusChanged?
     @objc dynamic var systemActionType: DBSystemActionType?
@@ -81,6 +82,8 @@ class DBMessage: Object {
             self.contactMessage = realm?.object(ofType: DBContactMessage.self, forPrimaryKey: contactMessage.phone) ?? DBContactMessage(contact: contactMessage, in: realm)
         case .location(let locationMessage):
             self.locationMessage = realm?.object(ofType: DBLocationMessage.self, forPrimaryKey: locationMessage.desc) ?? DBLocationMessage.init(location: locationMessage)
+        case .call(let call):
+            self.callMessage = realm?.object(ofType: DBCallMessage.self, forPrimaryKey: call.room) ?? DBCallMessage(callMessage: call)
         default: break
         }
         
@@ -138,6 +141,8 @@ class DBMessage: Object {
             message.content = .contact(contactMessage.toProto())
         } else if let locationMessage = locationMessage {
             message.content = .location(locationMessage.toProto())
+        } else if let callMessage = callMessage {
+            message.content = .call(callMessage.toProto())
         }
         
         return message

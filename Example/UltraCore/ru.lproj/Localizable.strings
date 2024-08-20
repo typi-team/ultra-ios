@@ -119,6 +119,11 @@
 "message.contact" = "📇 Контакт";
 "message.moneyTransfer" = "Перевод";
 "message.call" = "📞 Call";
+"message.callIncoming" = "Входящий вызов";
+"message.callMissed" = "Пропущенный вызов";
+"message.callOutgoing" = "Исходящий вызов";
+"message.callNoAnswer" = "Нет ответа";
+"message.callCancelled" = "Отмененный вызов";
 "message.uploadingInProgress" = "Идет выгрузка";
 
 "message.reply" = "Ответить";

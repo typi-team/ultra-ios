@@ -118,6 +118,11 @@
 "message.contact" = "📇 Contact";
 "message.moneyTransfer" = "Transfer";
 "message.call" = "📞 Call";
+"message.callIncoming" = "Incoming call";
+"message.callMissed" = "Missed call";
+"message.callOutgoing" = "Outgoing call";
+"message.callNoAnswer" = "No answer";
+"message.callCancelled" = "Call cancelled";
 "message.uploadingInProgress" = "Uploading in progress";
 "message.reply" = "Reply";
 "message.copy" = "Copy";

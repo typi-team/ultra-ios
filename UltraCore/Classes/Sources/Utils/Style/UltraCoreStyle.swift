@@ -105,6 +105,8 @@ public class UltraCoreStyle {
         darkColor: UIColor.from(hex: "e5e7eb").withAlphaComponent(0.5)
     )
     public static var systemMessageTextConfig: LabelConfig = LabelConfigImpl(darkColor: .textTertiary, defaultColor: .textTertiary, font: .defaultRegularFootnote)
+    public static var incomeCallCell: CallMessageCellConfig? = IncomeCallCellConfigImpl()
+    public static var outcomeCallCell: CallMessageCellConfig? = OutcomeCallCellConfigImpl()
 }
 
 private class MessageInputBarConfigImpl: MessageInputBarConfig {
@@ -293,5 +295,47 @@ private class OutcomeVoiceMessageCellConfigImpl: VoiceMessageCellConfig {
     var maximumTrackTintColor: TwiceColor = TwiceColorImpl(
         defaultColor: .from(hex: "#BFDBFE"),
         darkColor: .from(hex: "#BFDBFE")
+    )
+}
+
+private class IncomeCallCellConfigImpl: CallMessageCellConfig {
+    var titleConfig: LabelConfig = LabelConfigImpl(
+        darkColor: .gray700,
+        defaultColor: .gray700,
+        font: .defaultRegularBoldSubHeadline
+    )
+    var subtitleConfig: LabelConfig = LabelConfigImpl(
+        darkColor: .gray500,
+        defaultColor: .gray500,
+        font: .defaultRegularFootnote
+    )
+    var failIcon: TwiceImage = TwiceImageImpl(
+        dark: .fromAssets("call_fail")!,
+        default: .fromAssets("call_fail")!
+    )
+    var successIcon: TwiceImage = TwiceImageImpl(
+        dark: .fromAssets("call_income_success")!,
+        default: .fromAssets("call_income_success")!
+    )
+}
+
+private class OutcomeCallCellConfigImpl: CallMessageCellConfig {
+    var titleConfig: LabelConfig = LabelConfigImpl(
+        darkColor: .gray700,
+        defaultColor: .gray700,
+        font: .defaultRegularBoldSubHeadline
+    )
+    var subtitleConfig: LabelConfig = LabelConfigImpl(
+        darkColor: .gray500,
+        defaultColor: .gray500,
+        font: .defaultRegularFootnote
+    )
+    var failIcon: TwiceImage = TwiceImageImpl(
+        dark: .fromAssets("call_fail")!,
+        default: .fromAssets("call_fail")!
+    )
+    var successIcon: TwiceImage = TwiceImageImpl(
+        dark: .fromAssets("call_outcome_success")!,
+        default: .fromAssets("call_outcome_success")!
     )
 }
