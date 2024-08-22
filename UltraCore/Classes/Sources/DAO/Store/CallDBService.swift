@@ -12,7 +12,8 @@ class CallDBService {
     
     func callUpdates(for room: String) -> Observable<CallStatusEnum> {
         let realm = Realm.myRealm()
-        guard let call = realm.object(ofType: DBCallMessage.self, forPrimaryKey: room) else {
+        guard let call = realm?.object(ofType: DBCallMessage.self, forPrimaryKey: room) else {
+            PP.debug("[CALL] Couldn't find DBCallmessage for room - \(room)")
             return .just(.callStatusCreated)
         }
         let callStatus = CallStatusEnum(rawValue: call.status) ?? .callStatusCreated

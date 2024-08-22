@@ -304,19 +304,23 @@ class MessageDBService {
     }
     
     func updateCall(_ call: Call) {
-        let realm = Realm.myRealm()
-        if let callDB = realm.object(ofType: DBCallMessage.self, forPrimaryKey: call.room),
-           let dbMessage = realm.objects(DBMessage.self).first(where: { $0.callMessage?.room == call.room })
-        {
-            do {
-                try realm.write {
-                    callDB.endTime = call.endTime
-                    callDB.startTime = call.startTime
-                    callDB.status = call.status.rawValue
-                }
+        Realm.realmQueue.async {
+            guard let realm = Realm.myRealm() else {
+                return
             }
-            catch {
-                PP.error("Failed to update call - \(call)")
+            if let callDB = realm.object(ofType: DBCallMessage.self, forPrimaryKey: call.room),
+               let dbMessage = realm.objects(DBMessage.self).first(where: { $0.callMessage?.room == call.room })
+            {
+                do {
+                    try realm.write {
+                        callDB.endTime = call.endTime
+                        callDB.startTime = call.startTime
+                        callDB.status = call.status.rawValue
+                    }
+                }
+                catch {
+                    PP.error("Failed to update call - \(call)")
+                }
             }
         }
     }
