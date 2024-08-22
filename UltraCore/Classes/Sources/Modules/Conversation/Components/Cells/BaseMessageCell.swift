@@ -28,6 +28,7 @@ class BaseMessageCell: BaseCell {
     var messagePrefix: String?
     var message: Message?
     var canDelete: Bool = true
+    var canReport: Bool = true
     var cellActionCallback: (() -> Void)?
     var actionCallback: ((Message) -> Void)?
     var longTapCallback:((MessageMenuAction) -> Void)?
@@ -228,8 +229,11 @@ extension BaseMessageCell: UIContextMenuInteractionDelegate {
                 })
             }
             
-            if message.isIncome,
-                (UltraCoreSettings.futureDelegate?.availableToReport(message: message) ?? true) {
+            if 
+                message.isIncome,
+                canReport,
+                (UltraCoreSettings.futureDelegate?.availableToReport(message: message) ?? true)
+            {
                 if canDelete {
                     return UIMenu(title: "", children: [UIMenu(options: [.displayInline], children: action), self.makeReportMenu(), select])
                 } else {

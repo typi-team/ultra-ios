@@ -116,6 +116,7 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             
             let cell = self.cell(message, in: tableView)
             cell.canDelete = presenter?.canBlock() ?? true
+            cell.canReport = presenter?.canReport() ?? true
             cell.longTapCallback = {[weak self] actionType in
                 guard let `self` = self else { return }
                 switch actionType {

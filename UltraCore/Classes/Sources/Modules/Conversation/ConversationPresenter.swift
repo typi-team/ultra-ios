@@ -123,6 +123,10 @@ extension ConversationPresenter: ConversationPresenterInterface {
         conversation.chatType != .support && !isManager
     }
     
+    func canReport() -> Bool {
+        conversation.chatType != .support
+    }
+    
     func canTransfer() -> Bool {
         conversation.chatType != .support && !isManager
     }

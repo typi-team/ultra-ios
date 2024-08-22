@@ -60,4 +60,5 @@ protocol ConversationPresenterInterface: PresenterInterface {
     func canAttach() -> Bool
     func canSendVoice() -> Bool
     func canSendVideo() -> Bool
+    func canReport() -> Bool
 }
