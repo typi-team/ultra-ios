@@ -488,7 +488,9 @@ private extension UpdateRepositoryImpl {
                         InitSupportChatsRequest.Reception.with {
                             $0.name = supportChat.name
                             $0.reception = String(supportChat.reception)
-                            $0.receptionService = String(supportChat.receptionService)
+                            if let receptionService = supportChat.receptionService {
+                                $0.receptionService = String(receptionService)
+                            }
                         }
                     }
                     req.managers = response.personalManagers.map { manager in
