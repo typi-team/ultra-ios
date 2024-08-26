@@ -417,6 +417,11 @@ private extension UpdateRepositoryImpl {
             let senderID = appStore.userID()
             self.update(message: message, completion: { [weak self] in
                 guard message.sender.userID != senderID else { return }
+                if !message.call.room.isEmpty {
+                    DispatchQueue.main.async {
+                        UltraVoIPManager.shared.subscribeToCall(room: message.call.room)
+                    }
+                }
                 self?.triggerUnreadUpdate()
             })
         case let .contact(contact):

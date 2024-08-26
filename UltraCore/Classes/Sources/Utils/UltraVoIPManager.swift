@@ -99,13 +99,17 @@ extension UltraVoIPManager: PKPushRegistryDelegate {
                 callReport.remoteHandle = CXHandle(type: .generic, value: contact.displaName)
             }
             if callInfoMeta == nil {
-                UltraCoreSettings.updateSession { _ in }
+                if !UltraCoreSettings.isConnected {
+                    UltraCoreSettings.updateSession { _ in }
+                }
                 let uuid = UUID()
                 provider.reportNewIncomingCall(with: uuid, update: callReport, completion: { error in
                     completion()
                 })
                 callInfoMeta = CallMetadata(callInfo: caller, uuid: uuid, isOutgoing: false)
-                subscribeToCall()
+                if callStatusSubscription == nil {
+                    subscribeToCall(room: caller.room)
+                }
             }
         }
         catch {
@@ -161,6 +165,7 @@ extension UltraVoIPManager: CXProviderDelegate {
     public func provider(_ provider: CXProvider, perform action: CXEndCallAction) {
         PP.debug("[CALL] CXEndCallAction CXProviderDelegate")
         guard let callInfoMeta else {
+            cancelCallStatusSubscription()
             action.fail()
             return
         }
@@ -257,7 +262,7 @@ extension UltraVoIPManager: CXProviderDelegate {
             } else {
                 PP.debug("[CALL] Request transaction for starting outgoing call is successful")
                 DispatchQueue.main.async {
-                    self?.subscribeToCall()
+                    self?.subscribeToCall(room: callInfo.room)
                 }
             }
         }
@@ -391,26 +396,35 @@ extension UltraVoIPManager: CXProviderDelegate {
         }
     }
     
-    func subscribeToCall() {
+    func subscribeToCall(room: String) {
         guard let callInfoMeta else {
+            PP.debug("[CALL] Couldn't subscribe to call updates")
+            return
+        }
+        guard room == callInfoMeta.callInfo.room else {
+            PP.debug("[CALL] Couldn't subscribe due to room mismatch")
             return
         }
         callStatusSubscription = callDBService.callUpdates(for: callInfoMeta.callInfo.room)
             .debug("[CALL UPDATE]")
             .subscribe(on: MainScheduler.instance)
             .observe(on: MainScheduler.instance)
+            .do(onNext: { callStatus in
+                PP.debug("[CALL UPDATE] - [CALL STATUS] - \(callStatus)")
+            })
             .subscribe { [weak self] callStatus in
                 self?.callStatusEnum = callStatus
                 if callStatus.shouldFinish {
                     self?.serverEndCall()
                 }
-            } onError: { error in
-                
+            } onError: { [weak self] error in
+                self?.callStatusSubscription = nil
             }
     }
     
     func cancelCallStatusSubscription() {
         callStatusSubscription?.dispose()
+        callStatusSubscription = nil
     }
     
     func showCallTopView() {
