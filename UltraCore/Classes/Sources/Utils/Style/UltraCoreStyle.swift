@@ -310,12 +310,12 @@ private class IncomeCallCellConfigImpl: CallMessageCellConfig {
         font: .defaultRegularFootnote
     )
     var failIcon: TwiceImage = TwiceImageImpl(
-        dark: .fromAssets("call_fail")!,
-        default: .fromAssets("call_fail")!
+        dark: .fromAssets("call_fail"),
+        default: .fromAssets("call_fail")
     )
     var successIcon: TwiceImage = TwiceImageImpl(
-        dark: .fromAssets("call_income_success")!,
-        default: .fromAssets("call_income_success")!
+        dark: .fromAssets("call_income_success"),
+        default: .fromAssets("call_income_success")
     )
 }
 
@@ -331,11 +331,11 @@ private class OutcomeCallCellConfigImpl: CallMessageCellConfig {
         font: .defaultRegularFootnote
     )
     var failIcon: TwiceImage = TwiceImageImpl(
-        dark: .fromAssets("call_fail")!,
-        default: .fromAssets("call_fail")!
+        dark: .fromAssets("call_fail"),
+        default: .fromAssets("call_fail")
     )
     var successIcon: TwiceImage = TwiceImageImpl(
-        dark: .fromAssets("call_outcome_success")!,
-        default: .fromAssets("call_outcome_success")!
+        dark: .fromAssets("call_outcome_success"),
+        default: .fromAssets("call_outcome_success")
     )
 }
