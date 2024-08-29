@@ -123,7 +123,11 @@ class ChatToConversationInteractor: GRPCErrorUseCase<ChatToConversationParams, V
                         }
                         
                     }
-                    .subscribe()
+                    .subscribe(onNext: { _ in
+                        single(.success(()))
+                    }, onError: { error in
+                        single(.failure(error))
+                    })
                     .disposed(by: self.disposeBag)
             }
             
