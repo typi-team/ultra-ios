@@ -102,9 +102,23 @@ private let numberFormatter = NumberFormatter({ $0.numberStyle = .currency })
 
 extension Money {
     var formattedPrice: String {
-        numberFormatter.maximumFractionDigits = 0
-        numberFormatter.numberStyle = .currency
-        return numberFormatter.string(from: NSNumber(value: units)) ?? "\(units) \(currencyCode)"
+        numberFormatter.alwaysShowsDecimalSeparator = true
+        numberFormatter.groupingSeparator = " "
+        numberFormatter.usesGroupingSeparator = true
+        numberFormatter.minimumFractionDigits = 2
+        numberFormatter.maximumFractionDigits = 2
+        numberFormatter.numberStyle = .decimal
+        numberFormatter.decimalSeparator = "."
+        return "\(getSymbol() ?? "$")\(numberFormatter.string(from: NSNumber(value: units)) ?? "0.00")"
+    }
+    
+    func getSymbol() -> String? {
+        let locale = NSLocale(localeIdentifier: currencyCode)
+        if locale.displayName(forKey: .currencySymbol, value: currencyCode) == currencyCode {
+            let newlocale = NSLocale(localeIdentifier: currencyCode.dropLast() + "_en")
+            return newlocale.displayName(forKey: .currencySymbol, value: currencyCode)
+        }
+        return locale.displayName(forKey: .currencySymbol, value: currencyCode)
     }
 }
 
