@@ -29,6 +29,7 @@ final class ConversationWireframe: BaseWireframe<ConversationViewController> {
         self.conversation = conversation
         self.futureDelegate = futureDelegate
         let moduleViewController = ConversationViewController()
+        UltraCoreSettings.conversationViewController = moduleViewController
         super.init(viewController: moduleViewController)
         
         let sendTypingInteractor = SendTypingInteractor.init()

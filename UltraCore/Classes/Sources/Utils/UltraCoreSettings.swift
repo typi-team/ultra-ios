@@ -76,7 +76,8 @@ public extension UltraCoreSettings {
     static var appLocale: Locale = .current
     
     static var realmError: Error?
-    
+    static weak var conversationViewController: UIViewController?
+
     static var isConnected: Bool {
         AppSettingsImpl.shared.updateRepository.isConnectedToListenStream
     }
@@ -330,6 +331,14 @@ public extension UltraCoreSettings {
                 completion(result)
             }
             .disposed(by: Self.disposeBag)
+    }
+
+    static func openTransfer() {
+        guard let controller = conversationViewController as? ConversationViewController else {
+            return
+        }
+
+        controller.exchanges()
     }
 
     static func logout() {
