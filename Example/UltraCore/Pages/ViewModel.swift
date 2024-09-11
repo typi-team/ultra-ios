@@ -111,8 +111,13 @@ extension ViewModel: UltraCoreSettingsDelegate {
         return nil
     }
 
-    func provideTransferScreen(for userID: String, viewController: UIViewController, transferCallback: @escaping (UltraCore.MoneyTransfer) -> Void) {
-        
+    func provideTransferScreen(
+        for userID: String,
+        viewController: UIViewController,
+        transferCallback: @escaping (UltraCore.MoneyTransfer) -> Void,
+        retryCallback: @escaping (() -> Void)
+    ) {
+
     }
     
     func unreadAllMessagesUpdated(count: Int) {

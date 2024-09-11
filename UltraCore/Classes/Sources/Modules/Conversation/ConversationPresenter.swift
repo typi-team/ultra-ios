@@ -803,6 +803,9 @@ extension ConversationPresenter: ConversationPresenterInterface {
                         self?.playSentMessageSound()
                     })
                     .disposed(by: disposeBag)
+            },
+            retryCallback: { [weak self] in
+                self?.didTapTransfer()
             }
         )
     }

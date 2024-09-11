@@ -38,7 +38,8 @@ public protocol UltraCoreSettingsDelegate: AnyObject {
     func provideTransferScreen(
         for userID: String,
         viewController: UIViewController,
-        transferCallback: @escaping MoneyCallback
+        transferCallback: @escaping MoneyCallback,
+        retryCallback: @escaping (() -> Void)
     )
     func realmEncryptionKeyData() -> Data?
     func didTapTransactionCell(transactionID: String, viewController: UIViewController)
