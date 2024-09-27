@@ -30,6 +30,7 @@ class DBMessage: Object {
     @objc dynamic var supportManagerAssigned: DBSystemActionSupportManagerAssigned?
     @objc dynamic var supportStatusChanged: DBSystemActionSupportStatusChanged?
     @objc dynamic var systemActionType: DBSystemActionType?
+    var entities = List<DBMessageEntity>()
     
     @objc dynamic var isIncome: Bool = false
     
@@ -85,6 +86,39 @@ class DBMessage: Object {
         case .call(let call):
             self.callMessage = realm?.object(ofType: DBCallMessage.self, forPrimaryKey: call.room) ?? DBCallMessage(callMessage: call)
         default: break
+        }
+        
+        for entity in message.entities {
+            let dbMessageEntity = DBMessageEntity()
+            switch entity.entity {
+            case .bold(let messageEntityBold):
+                dbMessageEntity.bold = DBMessageEntityBold(proto: messageEntityBold)
+            case .italic(let messageEntityItalic):
+                dbMessageEntity.italic = DBMessageEntityItalic(proto: messageEntityItalic)
+            case .pre(let messageEntityPre):
+                dbMessageEntity.pre = DBMessageEntityPre(proto: messageEntityPre)
+            case .url(let messageEntityUrl):
+                dbMessageEntity.URL = DBMessageEntityURL(proto: messageEntityUrl)
+            case .textURL(let messageEntityTextUrl):
+                dbMessageEntity.textURL = DBMessageEntityTextURL(proto: messageEntityTextUrl)
+            case .email(let messageEntityEmail):
+                dbMessageEntity.email = DBMessageEntityEmail(proto: messageEntityEmail)
+            case .phone(let messageEntityPhone):
+                dbMessageEntity.phone = DBMessageEntityPhone(proto: messageEntityPhone)
+            case .underline(let messageEntityUnderline):
+                dbMessageEntity.underline = DBMessageEntityUnderline(proto: messageEntityUnderline)
+            case .strike(let messageEntityStrike):
+                dbMessageEntity.strike = DBMessageEntityStrike(proto: messageEntityStrike)
+            case .quote(let messageEntityQuote):
+                dbMessageEntity.quote = DBMessageEntityQuote(proto: messageEntityQuote)
+            case .mention(let messageEntityMention):
+                dbMessageEntity.mention = DBMessageEntityMention(proto: messageEntityMention)
+            case .code(let messageEntityCode):
+                dbMessageEntity.code = DBMessageEntityCode(proto: messageEntityCode)
+            case .none:
+                break
+            }
+            entities.append(dbMessageEntity)
         }
         
         if let id = id {
@@ -144,6 +178,38 @@ class DBMessage: Object {
         } else if let callMessage = callMessage {
             message.content = .call(callMessage.toProto())
         }
+        
+        let messageEntities: [MessageEntity] = entities.map { messageEntity in
+            if let bold = messageEntity.bold {
+                return .with { $0.entity = .bold(bold.toProto()) }
+            } else if let italic = messageEntity.italic {
+                return .with { $0.entity = .italic(italic.toProto()) }
+            } else if let pre = messageEntity.pre {
+                return .with { $0.entity = .pre(pre.toProto()) }
+            } else if let code = messageEntity.code {
+                return .with { $0.entity = .code(code.toProto()) }
+            } else if let URL = messageEntity.URL {
+                return .with { $0.entity = .url(URL.toProto()) }
+            } else if let textURL = messageEntity.textURL {
+                return .with { $0.entity = .textURL(textURL.toProto()) }
+            } else if let email = messageEntity.email {
+                return .with { $0.entity = .email(email.toProto()) }
+            } else if let phone = messageEntity.phone {
+                return .with { $0.entity = .phone(phone.toProto()) }
+            } else if let underline = messageEntity.underline {
+                return .with { $0.entity = .underline(underline.toProto()) }
+            } else if let strike = messageEntity.strike {
+                return .with { $0.entity = .strike(strike.toProto()) }
+            } else if let quote = messageEntity.quote {
+                return .with { $0.entity = .quote(quote.toProto()) }
+            } else if let mention = messageEntity.mention {
+                return .with { $0.entity = .mention(mention.toProto()) }
+            } else {
+                return .with { _ in }
+            }
+        }
+        
+        message.entities = messageEntities
         
         return message
     }

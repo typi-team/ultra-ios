@@ -57,7 +57,7 @@ extension Realm {
 
         var config = Realm.Configuration(
             fileURL: realmURL,
-            schemaVersion: 1
+            schemaVersion: 2
         )
         config.objectTypes = [
             DBContact.self, DBConversation.self, DBMessage.self, DBMessageState.self,
@@ -66,7 +66,10 @@ extension Realm {
             DBVideoMessage.self, DBPhotoMessage.self,
             DBMoneyMessage.self, DBFileMessage.self, DBContactMessage.self, DBLocationMessage.self,
             DBPhoto.self, DBSystemActionSupportManagerAssigned.self, DBSystemActionSupportStatusChanged.self,
-            DBSystemActionType.self, DBCallMessage.self
+            DBSystemActionType.self, DBCallMessage.self, DBMessageEntity.self, DBMessageEntityBold.self, DBMessageEntityItalic.self,
+            DBMessageEntityPre.self, DBMessageEntityCode.self, DBMessageEntityURL.self, DBMessageEntityTextURL.self,
+            DBMessageEntityEmail.self, DBMessageEntityPhone.self, DBMessageEntityUnderline.self,
+            DBMessageEntityStrike.self, DBMessageEntityQuote.self, DBMessageEntityMention.self
         ]
         
         if let encryptionKey = UltraCoreSettings.delegate?.realmEncryptionKeyData() {

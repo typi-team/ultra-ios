@@ -26,6 +26,13 @@ private class IncomeMessageCellConfigImpl: MessageCellConfig {
     var fileCellConfig: FileCellConfig = FileCellConfigImpl()
     var mediaImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_media_play"), default: .named("conversation_media_play"))
     var contactLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultBoldBody)
+    var textBoldFont: UIFont = UIFont.defaultBoldBody
+    var textItalicFont: UIFont = UIFont.italicSystemFont(ofSize: 17.0)
+    var codeSnippetConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .systemFont(ofSize: 16.0, weight: .light))
+    var codeSnippetBackgroundColor: TwiceColor = TwiceColorImpl(
+        defaultColor: .init(red: 0.93, green: 0.93, blue: 0.93, alpha: 1.0),
+        darkColor: .init(red: 0.93, green: 0.93, blue: 0.93, alpha: 1.0)
+    )
 }
 
 private class OutcomeMessageCellConfigImpl: OutcomingMessageCellConfig {
@@ -49,6 +56,13 @@ private class OutcomeMessageCellConfigImpl: OutcomingMessageCellConfig {
     var fileCellConfig: FileCellConfig = FileCellConfigImpl()
     var mediaImage: TwiceImage? = TwiceImageImpl(dark: .named("conversation_media_play"), default: .named("conversation_media_play"))
     var contactLabelConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .defaultBoldBody)
+    var textBoldFont: UIFont = UIFont.defaultBoldBody
+    var textItalicFont: UIFont = UIFont.italicSystemFont(ofSize: 17.0)
+    var codeSnippetConfig: LabelConfig = LabelConfigImpl(darkColor: .white, defaultColor: .gray700, font: .systemFont(ofSize: 16.0, weight: .light))
+    var codeSnippetBackgroundColor: TwiceColor = TwiceColorImpl(
+        defaultColor: .init(red: 0.93, green: 0.93, blue: 0.93, alpha: 1.0),
+        darkColor: .init(red: 0.93, green: 0.93, blue: 0.93, alpha: 1.0)
+    )
 }
 
 

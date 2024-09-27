@@ -34,7 +34,7 @@ class AttributedLabel: UILabel {
                     return NSAttributedString(string: "")
                 }
                 let text = NSMutableAttributedString(attributedString: newValue)
-                let links = getLinks(text: text.string)
+                let links = getLinks(attributedString: text)
                 for link in links {
                     text.addAttributes(hyperlinkAttributes, range: link.range)
                     text.addAttributes([.hyperLink : link.link], range: link.range)
@@ -121,12 +121,13 @@ class AttributedLabel: UILabel {
         let range: NSRange
     }
     
-    private func getLinks(text: String) -> [LinkData] {
+    private func getLinks(attributedString: NSAttributedString) -> [LinkData] {
         let checkTypes: NSTextCheckingTypes = NSTextCheckingResult.CheckingType.link.rawValue | NSTextCheckingResult.CheckingType.phoneNumber.rawValue
         guard let detector = try? NSDataDetector(types: checkTypes) else {
             return []
         }
         
+        let text = attributedString.string
         let matches = detector.matches(in: text, options: [], range: NSRange(location: 0, length: text.count))
         var ranges: [LinkData] = []
         for match in matches {
@@ -138,6 +139,11 @@ class AttributedLabel: UILabel {
                 let phoneURL = URL(string: "tel://\(phone.components(separatedBy: .whitespaces).joined())")
             {
                 ranges.append(.init(link: phoneURL, range: match.range))
+            }
+        }
+        attributedString.enumerateAttribute(.link, in: NSRange(location: 0, length: attributedString.length), options: .longestEffectiveRangeNotRequired) { value, subrange, _ in
+            if let url = value as? URL {
+                ranges.append(.init(link: url, range: subrange))
             }
         }
         return ranges
