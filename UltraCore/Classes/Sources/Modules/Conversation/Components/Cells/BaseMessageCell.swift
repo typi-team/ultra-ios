@@ -32,6 +32,11 @@ class BaseMessageCell: BaseCell {
     var cellActionCallback: (() -> Void)?
     var actionCallback: ((Message) -> Void)?
     var longTapCallback:((MessageMenuAction) -> Void)?
+    var onCodeTap: ((String) -> Void)? {
+        didSet {
+            textView.onCodeBlockTap = onCodeTap
+        }
+    }
     lazy var disposeBag: DisposeBag = .init()
     lazy var constants: MediaMessageConstants = .init(maxWidth: 300, maxHeight: 200)
     lazy var bubbleWidth = UIScreen.main.bounds.width - kHeadlinePadding * 4
@@ -114,6 +119,7 @@ class BaseMessageCell: BaseCell {
         if #available(iOS 13.0, *) {
             self.container.addInteraction(UIContextMenuInteraction.init(delegate: self))
         }
+        self.textView.onCodeBlockTap = onCodeTap
     }
     
     private func commonStyling() {
@@ -237,13 +243,16 @@ class BaseMessageCell: BaseCell {
                     UltraCoreStyle.outcomeMessageCell?.codeSnippetConfig.color
                 let font = message.isIncome ?
                     UltraCoreStyle.incomeMessageCell?.codeSnippetConfig.font : UltraCoreStyle.outcomeMessageCell?.codeSnippetConfig.font
+                let range = NSRange(location: Int(messageEntityCode.offset), length: Int(messageEntityCode.length))
+                let text = (message.text as NSString).substring(with: range)
                 mutable.addAttributes(
                     [
                         .backgroundColor: backgroundColor ?? .gray,
                         .font: font ?? .systemFont(ofSize: 16, weight: .light),
-                        .foregroundColor: codeColor ?? .black
+                        .foregroundColor: codeColor ?? .black,
+                        .codeBlock: text
                     ],
-                    range: .init(location: Int(messageEntityCode.offset), length: Int(messageEntityCode.length))
+                    range: range
                 )
             case .none:
                 break

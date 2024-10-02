@@ -61,10 +61,13 @@ class AttributedLabel: UILabel {
         }
         UIApplication.shared.open(url)
     }
-    
+    var onCodeBlockTap: ((String) -> Void)?
+
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let url = self.url(at: touches) {
             didTapURL(url)
+        } else if let code = self.code(at: touches) {
+            onCodeBlockTap?(code)
         } else {
             super.touchesEnded(touches, with: event)
         }
@@ -96,7 +99,35 @@ class AttributedLabel: UILabel {
         
         return textStorage.attribute(.hyperLink, at: characterIndex, effectiveRange: nil) as? URL
     }
-    
+
+    private func code(at touches: Set<UITouch>) -> String? {
+        guard let attributedText = attributedText, attributedText.length > 0 else {
+            return nil
+        }
+        guard let touchLocation = touches.sorted(by: { $0.timestamp < $1.timestamp }).last?.location(in: self) else {
+            return nil
+        }
+
+        guard let textStorage = prepareTextStorage() else {
+            return nil
+        }
+        let layoutManager = textStorage.layoutManagers[0]
+        let textContainer = layoutManager.textContainers[0]
+        let characterIndex = layoutManager.characterIndex(for: touchLocation, in: textContainer, fractionOfDistanceBetweenInsertionPoints: nil)
+
+        guard characterIndex >= 0, characterIndex != NSNotFound else {
+            return nil
+        }
+
+        let glyphRange = layoutManager.glyphRange(forCharacterRange: NSRange(location: characterIndex, length: 1), actualCharacterRange: nil)
+        let characterRect = layoutManager.boundingRect(forGlyphRange: glyphRange, in: textContainer)
+        guard characterRect.contains(touchLocation) else {
+            return nil
+        }
+
+        return textStorage.attribute(.codeBlock, at: characterIndex, effectiveRange: nil) as? String
+    }
+
     private func prepareTextStorage() -> NSTextStorage? {
         guard let attributedText = attributedText, attributedText.length > 0 else {
             return nil
@@ -130,6 +161,11 @@ class AttributedLabel: UILabel {
         let text = attributedString.string
         let matches = detector.matches(in: text, options: [], range: NSRange(location: 0, length: text.count))
         var ranges: [LinkData] = []
+        attributedString.enumerateAttribute(.link, in: NSRange(location: 0, length: attributedString.length), options: .longestEffectiveRangeNotRequired) { value, subrange, _ in
+            if let url = value as? URL {
+                ranges.append(.init(link: url, range: subrange))
+            }
+        }
         for match in matches {
             if let url = match.url {
                 ranges.append(.init(link: url, range: match.range))
@@ -141,11 +177,6 @@ class AttributedLabel: UILabel {
                 ranges.append(.init(link: phoneURL, range: match.range))
             }
         }
-        attributedString.enumerateAttribute(.link, in: NSRange(location: 0, length: attributedString.length), options: .longestEffectiveRangeNotRequired) { value, subrange, _ in
-            if let url = value as? URL {
-                ranges.append(.init(link: url, range: subrange))
-            }
-        }
         return ranges
     }
     
@@ -153,4 +184,5 @@ class AttributedLabel: UILabel {
 
 extension NSAttributedString.Key {
     static let hyperLink = NSAttributedString.Key("hyperlink")
+    static let codeBlock = NSAttributedString.Key("code_block")
 }

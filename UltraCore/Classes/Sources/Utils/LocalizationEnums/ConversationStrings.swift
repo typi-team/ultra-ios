@@ -67,7 +67,9 @@ enum ConversationStrings: String, StringLocalizable {
     
     case noMessages
     case noMessagesManager
-    
+
+    case textCopied
+
     var prefixOfTemplate: String { "conversation" }
     var localizableValue: String { rawValue }
 }

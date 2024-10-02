@@ -175,3 +175,4 @@
 
 "conversation.noMessages" = "Нет сообщений";
 "conversation.noMessagesManager" = "Нет сообщений от вашего мэнеджера";
+"conversation.textCopied" = "Текст скопирован в буфер обмена";

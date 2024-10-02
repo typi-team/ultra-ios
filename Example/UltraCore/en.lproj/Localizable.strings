@@ -172,3 +172,4 @@
 
 "conversation.noMessages" = "No messages";
 "conversation.noMessagesManager" = "No messages from your manager";
+"conversation.textCopied" = "Text is copied into the pasteboard";

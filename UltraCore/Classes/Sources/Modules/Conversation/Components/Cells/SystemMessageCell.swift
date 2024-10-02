@@ -8,11 +8,22 @@
 import UIKit
 
 class SystemMessageCell: BaseCell {
-    private let label: UILabel = .init {
-        $0.textAlignment = .center
-        $0.numberOfLines = 0
+    private lazy var cellAction = UITapGestureRecognizer(target: self, action: #selector(cellPress))
+    private let label: AttributedLabel = {
+        let label = AttributedLabel(frame: .zero)
+        label.textAlignment = .center
+        label.numberOfLines = 0
+        label.isUserInteractionEnabled = true
+        return label
+    }()
+    private var message: Message?
+
+    var onCodeTap: ((String) -> Void)? {
+        didSet {
+            label.onCodeBlockTap = onCodeTap
+        }
     }
-    
+
     override func setupView() {
         super.setupView()
         contentView.addSubview(label)
@@ -21,8 +32,15 @@ class SystemMessageCell: BaseCell {
         selectedBackgroundView = UIView({
             $0.backgroundColor = .clear
         })
-        label.font = UltraCoreStyle.systemMessageTextConfig.font
-        label.textColor = UltraCoreStyle.systemMessageTextConfig.color
+        contentView.isUserInteractionEnabled = true
+        label.hyperlinkAttributes = [
+            .foregroundColor: UltraCoreStyle.systemMessageTextConfig.linkColor.color,
+            .underlineStyle: NSUnderlineStyle.single.rawValue
+        ]
+        label.font = UltraCoreStyle.systemMessageTextConfig.textLabelConfig.font
+        label.textColor = UltraCoreStyle.systemMessageTextConfig.textLabelConfig.color
+        cellAction.cancelsTouchesInView = false
+        contentView.addGestureRecognizer(cellAction)
     }
     
     override func setupConstraints() {
@@ -30,19 +48,22 @@ class SystemMessageCell: BaseCell {
         
         label.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(8)
-            make.leading.equalToSuperview().offset(16)
-            make.trailing.equalToSuperview().offset(-16)
+            make.leading.greaterThanOrEqualToSuperview().offset(16)
+            make.trailing.lessThanOrEqualToSuperview().offset(-16)
+            make.centerX.equalToSuperview()
             make.bottom.equalToSuperview().offset(-8)
-        }
+        } 
     }
 
     func setup(message: Message) {
+        self.message = message
         label.attributedText = attributedText(for: message)
+        label.onCodeBlockTap = onCodeTap
     }
 
     private func attributedText(for message: Message) -> NSAttributedString {
-        let font = UltraCoreStyle.systemMessageTextConfig.font
-        let textColor = UltraCoreStyle.systemMessageTextConfig.color
+        let font = UltraCoreStyle.systemMessageTextConfig.textLabelConfig.font
+        let textColor = UltraCoreStyle.systemMessageTextConfig.textLabelConfig.color
         guard !message.entities.isEmpty else {
             return NSAttributedString(
                 string: message.supportMessage,
@@ -58,15 +79,13 @@ class SystemMessageCell: BaseCell {
         for entity in message.entities {
             switch entity.entity {
             case .bold(let messageEntityBold):
-                let boldFont = message.isIncome ? UltraCoreStyle.incomeMessageCell?.textBoldFont : UltraCoreStyle.outcomeMessageCell?.textBoldFont
                 mutable.addAttributes(
-                    [NSAttributedString.Key.font: boldFont ?? .boldSystemFont(ofSize: 17)],
+                    [NSAttributedString.Key.font: UltraCoreStyle.systemMessageTextConfig.textBoldFont],
                     range: .init(location: Int(messageEntityBold.offset), length: Int(messageEntityBold.length))
                 )
             case .italic(let messageEntityItalic):
-                let italicFont = message.isIncome ? UltraCoreStyle.incomeMessageCell?.textItalicFont : UltraCoreStyle.outcomeMessageCell?.textItalicFont
                 mutable.addAttributes(
-                    [NSAttributedString.Key.font: italicFont ?? .italicSystemFont(ofSize: 17)],
+                    [NSAttributedString.Key.font: UltraCoreStyle.systemMessageTextConfig.textItalicFont],
                     range: .init(location: Int(messageEntityItalic.offset), length: Int(messageEntityItalic.length))
                 )
             case .pre:
@@ -115,21 +134,19 @@ class SystemMessageCell: BaseCell {
             case .mention:
                 break
             case .code(let messageEntityCode):
-                let backgroundColor = message.isIncome ?
-                    UltraCoreStyle.incomeMessageCell?.codeSnippetBackgroundColor.color :
-                    UltraCoreStyle.outcomeMessageCell?.codeSnippetBackgroundColor.color
-                let codeColor = message.isIncome ?
-                    UltraCoreStyle.incomeMessageCell?.codeSnippetConfig.color :
-                    UltraCoreStyle.outcomeMessageCell?.codeSnippetConfig.color
-                let font = message.isIncome ?
-                    UltraCoreStyle.incomeMessageCell?.codeSnippetConfig.font : UltraCoreStyle.outcomeMessageCell?.codeSnippetConfig.font
+                let backgroundColor = UltraCoreStyle.systemMessageTextConfig.codeSnippetBackgroundColor.color
+                let codeColor = UltraCoreStyle.systemMessageTextConfig.codeSnippetConfig.color
+                let font = UltraCoreStyle.systemMessageTextConfig.codeSnippetConfig.font
+                let range = NSRange(location: Int(messageEntityCode.offset), length: Int(messageEntityCode.length))
+                let text = (message.text as NSString).substring(with: range)
                 mutable.addAttributes(
                     [
-                        .backgroundColor: backgroundColor ?? .gray,
-                        .font: font ?? .systemFont(ofSize: 16, weight: .light),
-                        .foregroundColor: codeColor ?? .black
+                        .backgroundColor: backgroundColor,
+                        .font: font,
+                        .foregroundColor: codeColor,
+                        .codeBlock: text
                     ],
-                    range: .init(location: Int(messageEntityCode.offset), length: Int(messageEntityCode.length))
+                    range: range
                 )
             case .none:
                 break
@@ -150,11 +167,15 @@ class SystemMessageCell: BaseCell {
         return attributes
     }
 
+    @objc private func cellPress() { }
+
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
-        
-        label.font = UltraCoreStyle.systemMessageTextConfig.font
-        label.textColor = UltraCoreStyle.systemMessageTextConfig.color
+
+        guard let message = message else {
+            return
+        }
+        label.attributedText = attributedText(for: message)
     }
     
 }

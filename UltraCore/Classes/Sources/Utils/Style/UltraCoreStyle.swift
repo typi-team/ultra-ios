@@ -118,7 +118,7 @@ public class UltraCoreStyle {
         defaultColor: UIColor.from(hex: "e5e7eb").withAlphaComponent(0.5),
         darkColor: UIColor.from(hex: "e5e7eb").withAlphaComponent(0.5)
     )
-    public static var systemMessageTextConfig: LabelConfig = LabelConfigImpl(darkColor: .textTertiary, defaultColor: .textTertiary, font: .defaultRegularFootnote)
+    public static var systemMessageTextConfig: SystemMessageCellConfig = SystemMessageCellConfigImpl()
     public static var incomeCallCell: CallMessageCellConfig? = IncomeCallCellConfigImpl()
     public static var outcomeCallCell: CallMessageCellConfig? = OutcomeCallCellConfigImpl()
 }
@@ -351,5 +351,25 @@ private class OutcomeCallCellConfigImpl: CallMessageCellConfig {
     var successIcon: TwiceImage = TwiceImageImpl(
         dark: .fromAssets("call_outcome_success"),
         default: .fromAssets("call_outcome_success")
+    )
+}
+
+private class SystemMessageCellConfigImpl: SystemMessageCellConfig {
+    var textLabelConfig: LabelConfig = LabelConfigImpl(
+        darkColor: .textTertiary,
+        defaultColor: .textTertiary,
+        font: .defaultRegularFootnote
+    )
+    var linkColor: TwiceColor = TwiceColorImpl(defaultColor: .systemBlue, darkColor: .systemBlue)
+    var textBoldFont: UIFont = UIFont.systemFont(ofSize: 13.0, weight: .bold)
+    var textItalicFont: UIFont = UIFont.italicSystemFont(ofSize: 13)
+    var codeSnippetConfig: LabelConfig = LabelConfigImpl(
+        darkColor: .white,
+        defaultColor: .gray700,
+        font: .systemFont(ofSize: 13, weight: .light)
+    )
+    var codeSnippetBackgroundColor: TwiceColor = TwiceColorImpl(
+        defaultColor: .init(red: 0.93, green: 0.93, blue: 0.93, alpha: 1.0),
+        darkColor: .init(red: 0.93, green: 0.93, blue: 0.93, alpha: 1.0)
     )
 }

@@ -80,3 +80,12 @@ public protocol CallMessageCellConfig {
     var failIcon: TwiceImage { get set }
     var successIcon: TwiceImage { get set }
 }
+
+public protocol SystemMessageCellConfig {
+    var textLabelConfig: LabelConfig { get set }
+    var linkColor: TwiceColor { get set }
+    var textBoldFont: UIFont { get set }
+    var textItalicFont: UIFont { get set }
+    var codeSnippetConfig: LabelConfig { get set }
+    var codeSnippetBackgroundColor: TwiceColor { get set }
+}

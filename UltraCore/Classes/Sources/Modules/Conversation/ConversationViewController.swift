@@ -111,12 +111,18 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
             if message.type == .system {
                 let cell: SystemMessageCell = tableView.dequeueCell()
                 cell.setup(message: message)
+                cell.onCodeTap = { [weak self] code in
+                    self?.handleCodeTap(code)
+                }
                 return cell
             }
             
             let cell = self.cell(message, in: tableView)
             cell.canDelete = presenter?.canBlock() ?? true
             cell.canReport = presenter?.canReport() ?? true
+            cell.onCodeTap = { [weak self] code in
+                self?.handleCodeTap(code)
+            }
             cell.longTapCallback = {[weak self] actionType in
                 guard let `self` = self else { return }
                 switch actionType {
@@ -612,6 +618,11 @@ private extension ConversationViewController {
             self.presenter?.send(location: message)
         }
         self.present(mapController, animated: true)
+    }
+
+    func handleCodeTap(_ code: String) {
+        UIPasteboard.general.string = code
+        showAlert(from: ConversationStrings.textCopied.localized)
     }
 }
 
