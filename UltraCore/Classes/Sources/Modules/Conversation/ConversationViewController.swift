@@ -281,6 +281,20 @@ final class ConversationViewController: BaseViewController<ConversationPresenter
         messageInputBar.canSendMoney = presenter.canTransfer()
         messageInputBar.canRecord = presenter.canSendVoice()
         subscribeToInputBoundsChange()
+        
+        tableView.rx
+            .willDisplayCell
+            .subscribe(onNext: { cell, indexPath in
+                if let cell = cell as? OutcomeVoiceCell,
+                   let message = cell.message {
+                    cell.setup(message: message)
+                }
+                if let cell = cell as? IncomeVoiceCell,
+                   let message = cell.message {
+                    cell.setup(message: message)
+                }
+            })
+            .disposed(by: disposeBag)
     }
     
     override func changedKeyboard(
@@ -1002,7 +1016,7 @@ extension ConversationViewController: VoiceInputBarDelegate {
     }
     
     func recordedVoice(url: URL, in duration: TimeInterval) {
-        guard duration > 2 else { return }
+        guard duration >= 1 else { return }
         presenter?.upload(file: .audio(url: url, duration: duration))
     }
 }
@@ -1024,7 +1038,7 @@ extension ConversationViewController: UITableViewDelegate {
     }
 }
 
-extension ConversationViewController: CNContactPickerDelegate {
+extension ConversationViewController: CNContactPickerDelegate, UIGestureRecognizerDelegate {
     func contactPicker(_ picker: CNContactPickerViewController, didSelect contact: CNContact) {
         for phoneNumber in contact.phoneNumbers {
             let phoneNumberValue = phoneNumber.value
